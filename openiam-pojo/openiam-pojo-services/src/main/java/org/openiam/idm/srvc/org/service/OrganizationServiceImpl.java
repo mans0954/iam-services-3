@@ -11,12 +11,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.OrgAttributeToOrganizationKeyGenerator;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
@@ -32,12 +33,10 @@ import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.loc.service.LocationDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -46,16 +45,15 @@ import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -71,6 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -297,6 +296,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
+    @Cacheable(value = "organizationEntities", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="#searchBean.findInCache")
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
         Set<String> filter = getDelegationFilter(requesterId, false);
         if(searchBean != null) {
@@ -318,18 +318,18 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
      * all parameter, which is what we want in this case.  
      * See <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html">here</a>
      */
-   /* @Override
+    @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     @Cacheable(value = "organizations", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="#searchBean.findInCache")
     public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
-        *//*final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
+        /*final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
         Set<String> filter = getDelegationFilter(requesterId, isUncoverParents);
         if (StringUtils.isBlank(searchBean.getKey()))
             searchBean.setKeys(filter);
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
             return new ArrayList<Organization>(0);
-        }*//*
+        }*/
 
         // Temporary solution
         final StopWatch sw = new StopWatch();
@@ -337,13 +337,13 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         //List<OrganizationEntity> organizationEntityList = orgDao.getByExample(searchBean, from, size);
         List<OrganizationEntity> organizationEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size, language);
         if (CollectionUtils.isNotEmpty(organizationEntityList) && searchBean.isDeepCopy() && searchBean.isForCurrentUsersOnly() && CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
-            OrganizationUserEntity organizationUserEntity = null;
-            Iterator<OrganizationUserEntity> organizationUserEntityIterator = null;
+        	UserToOrganizationMembershipXrefEntity organizationUserEntity = null;
+            Iterator<UserToOrganizationMembershipXrefEntity> organizationUserEntityIterator = null;
             for (OrganizationEntity organizationEntity : organizationEntityList) {
-                organizationUserEntityIterator = organizationEntity.getOrganizationUser().iterator();
+                organizationUserEntityIterator = organizationEntity.getUsers().iterator();
                 while (organizationUserEntityIterator.hasNext()) {
                     organizationUserEntity = organizationUserEntityIterator.next();
-                    if (!searchBean.getUserIdSet().contains(organizationUserEntity.getUser().getId())) {
+                    if (!searchBean.getUserIdSet().contains(organizationUserEntity.getMemberEntity().getId())) {
                         organizationUserEntityIterator.remove();
                     }
                 }
@@ -354,10 +354,16 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         	log.debug(String.format("FINISH TIME = %s", sw.getTime()));
         }
         return organizationDozerConverter.convertToDTOList(organizationEntityList, searchBean.isDeepCopy());
-    }*/
+    }
 
+    @Override
+    @LocalizedServiceGet
+    @Transactional(readOnly = true)
+    public List<OrganizationEntity> getParentOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity language) {
+        return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId), from, size);
+    }
 
-/*    @Override
+    @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language) {
@@ -366,14 +372,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
     }
 
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language) {
-        //List<OrganizationEntity> organizationEntityList = orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId), from, size);
-        List<OrganizationEntity> organizationEntityList = this.getProxyService().getChildOrganizations(orgId, requesterId, from, size, language);
-        return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
-    }*/
 
     @Override
     @Transactional(readOnly = true)
@@ -423,21 +421,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
-    @Caching(evict = {@CacheEvict(value = "organizations", allEntries = true)
-    })
-    public void removeAttribute(String attributeId) {
-        final OrganizationAttributeEntity entity = orgAttrDao.findById(attributeId);
-        if (entity != null) {
-            orgAttrDao.delete(entity);
-        }
-    }
-
-    @Override
-    @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "organizations", allEntries = true)
+            @CacheEvict(value = "organizations"),
+            @CacheEvict(value="organizationEntities")
     })
-    public Organization save(final Organization organization, final String requestorId) throws BasicDataServiceException {
+    public Organization save(final @CacheKeyEvict Organization organization, final String requestorId) throws BasicDataServiceException {
         return save(organization, requestorId, false);
     }
     
@@ -458,9 +446,10 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "organizations", allEntries = true)
+            @CacheEvict(value = "organizations"),
+            @CacheEvict(value="organizationEntities")
     })
-    public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException {
+    public Organization save(final @CacheKeyEvict Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
         final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
@@ -576,6 +565,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
 
             idmAuditLog.succeed();
+            organization.setId(org.getId());
             return org;
 
         } finally {
@@ -931,25 +921,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "organizations", allEntries = true)
+            @CacheEvict(value = "organizations"),
+            @CacheEvict(value="organizationEntities")
     })
-    public void save(OrganizationAttributeEntity attribute) {
-    	attribute.setElement(metadataDAO.findById(attribute.getElement().getId()));
-    	attribute.setOrganization(orgDao.findById(attribute.getOrganization().getId()));
-    	
-        if (StringUtils.isNotBlank(attribute.getId())) {
-            orgAttrDao.merge(attribute);
-        } else {
-            orgAttrDao.save(attribute);
-        }
-    }
-
-    @Override
-    @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "organizations", allEntries = true)
-    })
-    public void removeChildOrganization(String organizationId, String childOrganizationId) {
+    public void removeChildOrganization(final @CacheKeyEvict String organizationId, 
+    									final @CacheKeyEvict String childOrganizationId) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
         if (parent != null && child != null) {
@@ -961,9 +937,14 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "organizations", allEntries = true)
+            @CacheEvict(value = "organizations"),
+            @CacheEvict(value="organizationEntities")
     })
-    public void addChildOrganization(String organizationId, String childOrganizationId, final Set<String> rightIds, final Date startDate, final Date endDate) {
+    public void addChildOrganization(final @CacheKeyEvict String organizationId, 
+    								 final @CacheKeyEvict String childOrganizationId, 
+    								 final Set<String> rightIds, 
+    								 final Date startDate, 
+    								 final Date endDate) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
         if (parent != null && child != null) {
@@ -975,18 +956,20 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "organizations", allEntries = true)
+            @CacheEvict(value = "organizations"),
+            @CacheEvict(value="organizationEntities")
     })
-    public void deleteOrganization(String orgId) throws BasicDataServiceException {
+    public void deleteOrganization(final @CacheKeyEvict String orgId) throws BasicDataServiceException {
         deleteOrganization(orgId, false);
     }
 
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "organizations", allEntries = true)
+            @CacheEvict(value = "organizations"),
+            @CacheEvict(value="organizationEntities")
     })
-    public void deleteOrganization(String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
+    public void deleteOrganization(final @CacheKeyEvict String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
         final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();

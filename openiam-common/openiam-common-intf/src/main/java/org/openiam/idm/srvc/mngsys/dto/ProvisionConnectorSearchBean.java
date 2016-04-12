@@ -24,10 +24,30 @@ public class ProvisionConnectorSearchBean extends AbstractKeyNameSearchBean<Prov
 		this.typeId = typeId;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+		return result;
+	}
 
 	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(getKey() != null ? getKey() : "")
-				.toString();	}
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ProvisionConnectorSearchBean other = (ProvisionConnectorSearchBean) obj;
+		if (typeId == null) {
+			if (other.typeId != null)
+				return false;
+		} else if (!typeId.equals(other.typeId))
+			return false;
+		return true;
+	}
+
+	
 }

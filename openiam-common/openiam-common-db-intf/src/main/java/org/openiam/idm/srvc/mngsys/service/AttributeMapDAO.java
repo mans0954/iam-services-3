@@ -43,8 +43,6 @@ public interface AttributeMapDAO extends BaseDao<AttributeMapEntity, String> {
 
     List<AttributeMapEntity> findByManagedSysId(String managedSysId);
 
-    void removeResourceAttributeMaps(String resourceId);
-
     void delete(List<String> ids);
 
     void deleteAttributesMapList(List<AttributeMapEntity> attrMap);

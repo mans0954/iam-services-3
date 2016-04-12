@@ -65,12 +65,68 @@ public class BatchTaskScheduleSearchBean extends AbstractSearchBean<BatchTaskSch
 	public void setNextScheduledRunTo(Date nextScheduledRunTo) {
 		this.nextScheduledRunTo = nextScheduledRunTo;
 	}
-
-
 	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(getKey() != null ? getKey() : "")
-				.toString();
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((completed == null) ? 0 : completed.hashCode());
+		result = prime
+				* result
+				+ ((nextScheduledRun == null) ? 0 : nextScheduledRun.hashCode());
+		result = prime
+				* result
+				+ ((nextScheduledRunFrom == null) ? 0 : nextScheduledRunFrom
+						.hashCode());
+		result = prime
+				* result
+				+ ((nextScheduledRunTo == null) ? 0 : nextScheduledRunTo
+						.hashCode());
+		result = prime * result + ((running == null) ? 0 : running.hashCode());
+		result = prime * result + ((taskId == null) ? 0 : taskId.hashCode());
+		return result;
 	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BatchTaskScheduleSearchBean other = (BatchTaskScheduleSearchBean) obj;
+		if (completed == null) {
+			if (other.completed != null)
+				return false;
+		} else if (!completed.equals(other.completed))
+			return false;
+		if (nextScheduledRun == null) {
+			if (other.nextScheduledRun != null)
+				return false;
+		} else if (!nextScheduledRun.equals(other.nextScheduledRun))
+			return false;
+		if (nextScheduledRunFrom == null) {
+			if (other.nextScheduledRunFrom != null)
+				return false;
+		} else if (!nextScheduledRunFrom.equals(other.nextScheduledRunFrom))
+			return false;
+		if (nextScheduledRunTo == null) {
+			if (other.nextScheduledRunTo != null)
+				return false;
+		} else if (!nextScheduledRunTo.equals(other.nextScheduledRunTo))
+			return false;
+		if (running == null) {
+			if (other.running != null)
+				return false;
+		} else if (!running.equals(other.running))
+			return false;
+		if (taskId == null) {
+			if (other.taskId != null)
+				return false;
+		} else if (!taskId.equals(other.taskId))
+			return false;
+		return true;
+	}
+
+	
 }

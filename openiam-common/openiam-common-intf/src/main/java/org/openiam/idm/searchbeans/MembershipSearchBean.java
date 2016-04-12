@@ -37,14 +37,6 @@ public class MembershipSearchBean extends AbstractSearchBean<AbstractMembershipX
 	public void setRightIds(Set<String> rightIds) {
 		this.rightIds = rightIds;
 	}
-
-	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(getKey() != null ? getKey() : "")
-				.toString();
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -83,6 +75,6 @@ public class MembershipSearchBean extends AbstractSearchBean<AbstractMembershipX
 			return false;
 		return true;
 	}
-	
+
 	
 }

@@ -5,7 +5,6 @@ import java.util.Date;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.elasticsearch.common.lang3.StringUtils;
-import org.junit.Test;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -16,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 public class IdmAuditLogSearchRepositoryTest extends AbstractElasticSearchRepositoryTest<IdmAuditLogEntity, OpeniamElasticSearchRepository, IdmAuditLogDAO> {
 
@@ -35,6 +35,7 @@ public class IdmAuditLogSearchRepositoryTest extends AbstractElasticSearchReposi
 		service.save(entity);
 		Assert.assertNotNull(entity);
 		Assert.assertTrue(StringUtils.isNotBlank(entity.getId()));
+		Thread.sleep(5); /* need to wait until it's available to search */
 	}
 	
 	@Autowired
@@ -78,6 +79,7 @@ public class IdmAuditLogSearchRepositoryTest extends AbstractElasticSearchReposi
 		entity.setSource(randomString());
 		entity.setParentId(randomString());
 		entity.setUserId(randomString());
+		entity.put("foo", "bar");
 		return entity;
 	}
 	
@@ -142,6 +144,9 @@ public class IdmAuditLogSearchRepositoryTest extends AbstractElasticSearchReposi
 		sb.setTo(null);
 		sb.setFrom(null);
 		
+		sb.addAttribute("foo", "bar");
+		assertNotEmpty(sb);
+		
 		sb = new AuditLogSearchBean();
 		sb.setTargetId("3000");
 		sb.setTargetType(AuditTarget.USER.value());
@@ -151,8 +156,7 @@ public class IdmAuditLogSearchRepositoryTest extends AbstractElasticSearchReposi
 	private void assertEmpty(final AuditLogSearchBean sb) {
 		final Page<IdmAuditLogEntity> page = repo.find(sb, new PageRequest(0, 10));
 		Assert.assertNotNull(page);
-		Assert.assertTrue(CollectionUtils.isNotEmpty(page.getContent()));
-		Assert.assertEquals(page.getContent().get(0).getId(), entity.getId());
+		Assert.assertTrue(CollectionUtils.isEmpty(page.getContent()));
 	}
 	
 	private void assertNotEmpty(final AuditLogSearchBean sb) {

@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @DozerDTOCorrespondence(AuditLogTarget.class)
 @Cache(usage=CacheConcurrencyStrategy.NONE)
 @AttributeOverride(name = "id", column = @Column(name = "OPENIAM_LOG_TARGET_ID"))
-@Document(indexName = ESIndexName.AUDIT_LOG, type= ESIndexType.AUDIT_LOG_TARGETS)
+@Document(indexName = ESIndexName.AUDIT_LOG_TARGETS, type= ESIndexType.AUDIT_LOG_TARGETS)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuditLogTargetEntity extends KeyEntity {
 

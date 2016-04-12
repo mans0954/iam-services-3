@@ -50,18 +50,11 @@ public class PolicySearchBean extends AbstractKeyNameSearchBean<Policy, String> 
     }
 
 	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(name != null ? name : "")
-				.append(policyDefId != null ? policyDefId : "")
-				.append(attributes != null ? attributes.toString().hashCode() : "")
-				.append(getKey() != null ? getKey() : "")
-				.toString();	}
-
-	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result
+				+ ((attributes == null) ? 0 : attributes.hashCode());
 		result = prime * result
 				+ ((policyDefId == null) ? 0 : policyDefId.hashCode());
 		return result;
@@ -76,6 +69,11 @@ public class PolicySearchBean extends AbstractKeyNameSearchBean<Policy, String> 
 		if (getClass() != obj.getClass())
 			return false;
 		PolicySearchBean other = (PolicySearchBean) obj;
+		if (attributes == null) {
+			if (other.attributes != null)
+				return false;
+		} else if (!attributes.equals(other.attributes))
+			return false;
 		if (policyDefId == null) {
 			if (other.policyDefId != null)
 				return false;
@@ -84,11 +82,5 @@ public class PolicySearchBean extends AbstractKeyNameSearchBean<Policy, String> 
 		return true;
 	}
 
-	@Override
-	public String toString() {
-		return String.format(
-				"PolicySearchBean [policyDefId=%s, toString()=%s]",
-				policyDefId, super.toString());
-	}
 	
 }

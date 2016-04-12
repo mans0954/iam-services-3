@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -25,9 +26,8 @@ public interface ResourceService {
 	public void deleteResource(final String resourceId);
 	public void save(final ResourceEntity resource, final String requestorId);
     public void addRequiredAttributes(ResourceEntity resource);
-    public String getResourcePropValueByName(final String resourceId, final String propName);
-
-	public String getResourcePropValueByNameWeb(final String resourceId, final String propName);
+    public List<ResourceProp> findBeansDTO(final ResourcePropSearchBean sb, final int from, final int size);
+    public List<ResourcePropEntity> findBeans(final ResourcePropSearchBean sb, final int from, final int size);
 
     //For system use only
     //public ResourceEntity findResourceByIdNoLocalized(String resourceId);
@@ -85,9 +85,7 @@ public interface ResourceService {
 	public List<ResourceTypeEntity> getAllResourceTypes();
 	public List<ResourceType> getAllResourceTypesDto(final Language language);
 
-    public void save(final ResourcePropEntity entity);
     public ResourcePropEntity findResourcePropById(final String id);
-	public void deleteResourceProp(final String id);
 
 	//public List<ResourceEntity> getChildResources(final String resourceId, final int from, final int size);
 
@@ -123,15 +121,11 @@ public interface ResourceService {
 
 	public ResourceEntity saveResource(Resource resource, final String requesterId) throws BasicDataServiceException;
 
-	public ResourcePropEntity saveOrUpdateResourceProperty(ResourceProp prop, IdmAuditLogEntity idmAuditLog) throws BasicDataServiceException;
-
-	public void removeResourceProp(String resourcePropId, String requesterId) throws BasicDataServiceException;
-
-	public void removeUserFromResource(String resourceId, final String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
+	//public void removeUserFromResource(String resourceId, final String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
 	//public void addUserToResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
-	public void deleteResourceWeb(String resourceId, String requesterId) throws BasicDataServiceException;
+	//public void deleteResourceWeb(String resourceId, String requesterId) throws BasicDataServiceException;
 
 	//public void addChildResourceWeb(String resourceId, String childResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 

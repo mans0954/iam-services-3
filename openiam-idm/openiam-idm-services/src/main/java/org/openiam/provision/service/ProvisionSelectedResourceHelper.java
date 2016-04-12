@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
@@ -28,7 +29,9 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvOperationEnum;
@@ -118,7 +121,12 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                     }
 
                                     // Additional operation is required for managed system with property ON_DELETE = DISABLE
-                                    String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
+                                    final ResourcePropSearchBean sb = new ResourcePropSearchBean();
+                                    sb.setFindInCache(true);
+                                    sb.setResourceId(res.getId());
+                                    sb.setName("ON_DELETE");
+                                    final List<ResourceProp> props = resourceDataService.findResourceProps(sb, 0, Integer.MAX_VALUE);
+                                    String onDeleteProp = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
                                     if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
                                         ProvisionDataContainer enableData = provisionResource(res, userEntity, new ProvisionUser(user), bindingMap,
                                                 primaryIdentity, requestorUserId);
@@ -205,7 +213,12 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
             }
 
-            String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
+            final ResourcePropSearchBean sb = new ResourcePropSearchBean();
+            sb.setFindInCache(true);
+            sb.setResourceId(res.getId());
+            sb.setName("ON_DELETE");
+            final List<ResourceProp> props = resourceDataService.findResourceProps(sb, 0, Integer.MAX_VALUE);
+            String onDeleteProp = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
             if (StringUtils.isEmpty(onDeleteProp)) {
                 onDeleteProp = "DELETE";
             }

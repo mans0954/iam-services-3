@@ -27,13 +27,6 @@ public class BatchTaskSearchBean extends AbstractKeyNameSearchBean<BatchTask, St
 	}
 
 	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(name != null ? name : "")
-				.append(getKey() != null ? getKey() : "")
-				.toString();	}
-
-	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();

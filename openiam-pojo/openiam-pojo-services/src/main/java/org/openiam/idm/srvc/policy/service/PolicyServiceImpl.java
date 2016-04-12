@@ -5,6 +5,8 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.CacheKeyEviction;
 import org.openiam.exception.BasicDataServiceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -82,10 +84,8 @@ public class PolicyServiceImpl implements PolicyService {
 
 	@Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "policies", allEntries = true)
-    })
-	public void save(final Policy policy) {
+    @CacheEvict(value = "policies")
+	public void save(final @CacheKeyEvict(cacheName="policies") Policy policy) {
 		final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
 		if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
 			for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
@@ -143,11 +143,8 @@ public class PolicyServiceImpl implements PolicyService {
 
 	@Override
 	@Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "policies", allEntries = true),
-            @CacheEvict(value = "policyObjectAssoc", allEntries = true)
-    })
-	public void delete(final String policyId) throws BasicDataServiceException {
+    @CacheEvict(value = "policies")
+	public void delete(final @CacheKeyEvict(cacheName="policies") String policyId) throws BasicDataServiceException {
 		final PolicyEntity entity = policyDao.findById(policyId);
 		if(entity != null) {
 			if(CollectionUtils.isNotEmpty(entity.getPasswordPolicyProviders())) {
@@ -199,43 +196,6 @@ public class PolicyServiceImpl implements PolicyService {
             itPolicyDao.delete(itPolicyEntity);
         }
     }
-
-/* @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "policyObjectAssoc", key = "{#policyId}")
-    public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
-        return policyAssocObjectDozerConverter
-                .convertToDTOList(policyObjectAssocDAO.findByPolicy(policyId),
-                        true);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "policyObjectAssoc", key = "{#level, #value}")
-    public PolicyObjectAssoc findAssociationByLevel(String level, String value) {
-        return policyAssocObjectDozerConverter
-                .convertToDTO(policyObjectAssocDAO.findAssociationByLevel(level, value), true);
-    }
-
-    @Override
-    @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "policyObjectAssoc", allEntries = true)
-    })
-    public String savePolicyAssoc(PolicyObjectAssoc poa) {
-        if (poa == null) {
-            return null;
-        }
-        PolicyObjectAssocEntity poaEntity = policyAssocObjectDozerConverter
-                .convertToEntity(poa, true);
-        if (poaEntity.getPolicyObjectId() == null) {
-            poaEntity.setObjectId(null);
-            poaEntity = policyObjectAssocDAO.add(poaEntity);
-        } else {
-            policyObjectAssocDAO.update(poaEntity);
-        }
-        return poaEntity.getPolicyObjectId();
-    }*/
 
     @Override
     @Transactional

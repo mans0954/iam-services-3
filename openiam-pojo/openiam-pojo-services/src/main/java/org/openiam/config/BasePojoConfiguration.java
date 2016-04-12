@@ -9,6 +9,7 @@ import net.sf.ehcache.Ehcache;
 
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
+@EnableCaching
 @Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class, RedisConfig.class})
 public class BasePojoConfiguration {
 	

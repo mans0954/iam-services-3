@@ -31,6 +31,7 @@ import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.access.ws.AccessRightDataService;
+import org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
@@ -76,6 +77,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	@Qualifier("languageServiceClient")
 	protected LanguageWebService languageServiceClient;
+	
+	@Autowired
+	@Qualifier("auditServiceClient")
+	protected IdmAuditLogWebDataService auditLogService;
 	
 	@Autowired
 	@Qualifier("managedSysServiceClient")

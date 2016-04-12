@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 
 /**
@@ -55,39 +56,50 @@ public class ManagedSysSearchBean extends AbstractSearchBean<ManagedSysDto, Stri
         this.status = status;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((connectorId == null) ? 0 : connectorId.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		return result;
+	}
 
-        ManagedSysSearchBean that = (ManagedSysSearchBean) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ManagedSysSearchBean other = (ManagedSysSearchBean) obj;
+		if (connectorId == null) {
+			if (other.connectorId != null)
+				return false;
+		} else if (!connectorId.equals(other.connectorId))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		return true;
+	}
 
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (connectorId != null ? !connectorId.equals(that.connectorId) : that.connectorId != null) return false;
-        if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
-        return status != null ? status.equals(that.status) : that.status == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (connectorId != null ? connectorId.hashCode() : 0);
-        result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
-        result = 31 * result + (status != null ? status.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(name != null ? name : "")
-                .append(connectorId != null ? connectorId : "")
-                .append(resourceId != null ? resourceId : "")
-                .append(status != null ? status : "")
-                .append(getKey() != null ? getKey() : "")
-                .toString();
-    }
+    
 }

@@ -14,9 +14,12 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.annotation.ProxyCachingConfiguration;
+import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -39,6 +42,7 @@ import com.hazelcast.spring.cache.HazelcastCacheManager;
 @EnableAspectJAutoProxy
 @EnableAutoConfiguration(exclude={DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class})
 @ImportResource({"classpath:environmentContext.xml", "classpath:databaseContext.xml"})
+@Import(OpeniamCacheConfiguration.class)
 public class BaseConfiguration implements SchedulingConfigurer {
 	
 	@Autowired
@@ -120,13 +124,12 @@ public class BaseConfiguration implements SchedulingConfigurer {
 		 return new HazelcastCacheManager(hazelcastConfig.getHazelcastInstance());
 	 }
 	
-	 /*
-
 	 @Bean
 	 public KeyGenerator keyGenerator() {
 		 return null;
 	 }
 
+	 /*
 	@Override
 	public CacheResolver cacheResolver() {
 		// TODO Auto-generated method stub

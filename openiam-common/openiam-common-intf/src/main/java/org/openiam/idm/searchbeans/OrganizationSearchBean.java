@@ -37,8 +37,7 @@ import java.util.Set;
         "domainName",
         "uncoverParents"
 })
-public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
-        Serializable {
+public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String> {
     private static final long serialVersionUID = 1L;
     private Set<String> keySet;
     private Set<String> organizationTypeIdSet;
@@ -90,19 +89,6 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     @Override
     public void setKey(final String key) {
         this.addKey(key);
-    }
-
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(name != null ? name : "")
-                .append(validParentTypeId != null ? validParentTypeId : "")
-                .append(internalOrgId != null ? internalOrgId : "")
-                .append(attributes != null ? attributes.toString().hashCode() : "")
-                .append(uncoverParents != null ? uncoverParents.hashCode() : "")
-                .append(getKey() != null ? getKey() : "")
-                .append(getKeys() != null ? getKeys().hashCode() : "")
-                .toString();
     }
 
     public String getMetadataType() {
@@ -211,27 +197,101 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.domainName = domainName;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((abbreviation == null) ? 0 : abbreviation.hashCode());
+		result = prime * result
+				+ ((attributes == null) ? 0 : attributes.hashCode());
+		result = prime * result
+				+ ((domainName == null) ? 0 : domainName.hashCode());
+		result = prime * result + (forCurrentUsersOnly ? 1231 : 1237);
+		result = prime * result
+				+ ((internalOrgId == null) ? 0 : internalOrgId.hashCode());
+		result = prime * result
+				+ ((isSelectable == null) ? 0 : isSelectable.hashCode());
+		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
+		result = prime * result
+				+ ((metadataType == null) ? 0 : metadataType.hashCode());
+		result = prime
+				* result
+				+ ((organizationTypeIdSet == null) ? 0 : organizationTypeIdSet
+						.hashCode());
+		result = prime * result
+				+ ((uncoverParents == null) ? 0 : uncoverParents.hashCode());
+		result = prime
+				* result
+				+ ((validParentTypeId == null) ? 0 : validParentTypeId
+						.hashCode());
+		return result;
+	}
 
-        OrganizationSearchBean that = (OrganizationSearchBean) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OrganizationSearchBean other = (OrganizationSearchBean) obj;
+		if (abbreviation == null) {
+			if (other.abbreviation != null)
+				return false;
+		} else if (!abbreviation.equals(other.abbreviation))
+			return false;
+		if (attributes == null) {
+			if (other.attributes != null)
+				return false;
+		} else if (!attributes.equals(other.attributes))
+			return false;
+		if (domainName == null) {
+			if (other.domainName != null)
+				return false;
+		} else if (!domainName.equals(other.domainName))
+			return false;
+		if (forCurrentUsersOnly != other.forCurrentUsersOnly)
+			return false;
+		if (internalOrgId == null) {
+			if (other.internalOrgId != null)
+				return false;
+		} else if (!internalOrgId.equals(other.internalOrgId))
+			return false;
+		if (isSelectable == null) {
+			if (other.isSelectable != null)
+				return false;
+		} else if (!isSelectable.equals(other.isSelectable))
+			return false;
+		if (keySet == null) {
+			if (other.keySet != null)
+				return false;
+		} else if (!keySet.equals(other.keySet))
+			return false;
+		if (metadataType == null) {
+			if (other.metadataType != null)
+				return false;
+		} else if (!metadataType.equals(other.metadataType))
+			return false;
+		if (organizationTypeIdSet == null) {
+			if (other.organizationTypeIdSet != null)
+				return false;
+		} else if (!organizationTypeIdSet.equals(other.organizationTypeIdSet))
+			return false;
+		if (uncoverParents == null) {
+			if (other.uncoverParents != null)
+				return false;
+		} else if (!uncoverParents.equals(other.uncoverParents))
+			return false;
+		if (validParentTypeId == null) {
+			if (other.validParentTypeId != null)
+				return false;
+		} else if (!validParentTypeId.equals(other.validParentTypeId))
+			return false;
+		return true;
+	}
 
-        if (internalOrgId != null ? !internalOrgId.equals(that.internalOrgId) : that.internalOrgId != null)
-            return false;
-        return !(validParentTypeId != null ? !validParentTypeId.equals(that.validParentTypeId) : that.validParentTypeId != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (validParentTypeId != null ? validParentTypeId.hashCode() : 0);
-        result = 31 * result + (internalOrgId != null ? internalOrgId.hashCode() : 0);
-        result = 31 * result + ((uncoverParents == null) ? 0 : uncoverParents.hashCode());
-        return result;
-    }
+    
 
 }

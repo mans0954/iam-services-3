@@ -26,6 +26,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.base.ws.SortParam;
+import org.openiam.cache.CacheKeyEvict;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.*;
 import org.openiam.elasticsearch.dao.EmailElasticSearchRepository;
@@ -88,6 +89,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.PageRequest;
@@ -2609,7 +2613,13 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     
     @Override
     @Transactional
-    public void removeUserFromResource(String userId, String resourceId) {
+    @Caching(
+    	evict={
+    		@CacheEvict(value = "resources"),
+    		@CacheEvict(value = "resourceEntities")
+    	}
+    )
+    public void removeUserFromResource(String userId, final @CacheKeyEvict String resourceId) {
     	 final ResourceEntity resource = resourceDAO.findById(resourceId);
     	 final UserEntity user = userDao.findById(userId);
     	 if(resource != null && user != null) {
@@ -2622,7 +2632,13 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional
-    public void addUserToResource(final String userId, final String resourceId, final Set<String> rightIds, final Date startDate, final Date endDate) {
+    @Caching(
+    	evict={
+    		@CacheEvict(value = "resources"),
+    		@CacheEvict(value = "resourceEntities")
+    	}
+    )
+    public void addUserToResource(final String userId, final @CacheKeyEvict String resourceId, final Set<String> rightIds, final Date startDate, final Date endDate) {
     	final ResourceEntity resource = resourceDAO.findById(resourceId);
     	final UserEntity user = userDao.findById(userId);
     	if(resource != null && user != null) {

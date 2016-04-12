@@ -173,7 +173,7 @@
 		<maven.build.timestamp.format>yyyy/MM/dd HH:mm Z</maven.build.timestamp.format>
 		<maven.war.plugin.version>2.2</maven.war.plugin.version>
 		<maven.jar.plugin.version>2.3.1</maven.jar.plugin.version>
-		<hazelcast.version>3.5.3</hazelcast.version>
+		<hazelcast.version>3.6.2</hazelcast.version>
         <es.version>1.5.2</es.version>
 		<javaee.web.api.version>7.0</javaee.web.api.version>
 		<artifactory.version>2.2.1</artifactory.version>

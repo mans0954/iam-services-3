@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 
 
@@ -46,11 +47,38 @@ public class AddressSearchBean  extends AbstractSearchBean<Address, String> impl
         this.metadataTypeId = metadataTypeId;
     }
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(parentId != null ? parentId : "")
-                .append(metadataTypeId != null ? metadataTypeId : "")
-                .append(getKey() != null ? getKey() : "")
-                .toString();    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime * result
+				+ ((parentId == null) ? 0 : parentId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AddressSearchBean other = (AddressSearchBean) obj;
+		if (metadataTypeId == null) {
+			if (other.metadataTypeId != null)
+				return false;
+		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		if (parentId == null) {
+			if (other.parentId != null)
+				return false;
+		} else if (!parentId.equals(other.parentId))
+			return false;
+		return true;
+	}
+
+    
 }

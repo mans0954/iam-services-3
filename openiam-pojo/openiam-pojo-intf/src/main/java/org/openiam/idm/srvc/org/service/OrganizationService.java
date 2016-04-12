@@ -66,9 +66,9 @@ public interface OrganizationService {
 
     public List<Organization> getOrganizationsDtoForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language);
 
-    //public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity language);
 
-    //public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language);
+    public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language);
 
     //public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity language);
 
@@ -78,7 +78,7 @@ public interface OrganizationService {
     public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language);
 
 
-    //public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language);
+    public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language);
 
     public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity language);
 
@@ -102,11 +102,9 @@ public interface OrganizationService {
 	public int count(final OrganizationSearchBean searchBean, String requesterId);
 	public void addUserToOrg(final String orgId, final String userId, Set<String> rightIds, final Date startDate, final Date endDate);
 	public void removeUserFromOrg(String orgId, String userId);
-	public void removeAttribute(final String attributeId);
     public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException;
 	public Organization save(final Organization organization, final String requestorId) throws BasicDataServiceException;
     public void addRequiredAttributes(OrganizationEntity organization);
-	public void save(final OrganizationAttributeEntity attribute);
 	public void removeChildOrganization(final String organizationId, final String childOrganizationId);
 	public void addChildOrganization(final String organizationId, final String childOrganizationId, final Set<String> rightIds, final Date startDate, final Date endDate);
 	public void deleteOrganization(final String orgId) throws BasicDataServiceException;

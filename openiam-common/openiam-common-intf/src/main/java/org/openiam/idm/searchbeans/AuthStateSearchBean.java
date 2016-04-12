@@ -43,16 +43,10 @@ public class AuthStateSearchBean extends AbstractSearchBean<AuthStateEntity, Aut
 	}
 
 	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(onlyActive)
-				.append(getKey() != null ? getKey() : "")
-				.toString();	}
-
-	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + ((aa == null) ? 0 : aa.hashCode());
 		result = prime * result + (onlyActive ? 1231 : 1237);
 		return result;
 	}
@@ -66,14 +60,16 @@ public class AuthStateSearchBean extends AbstractSearchBean<AuthStateEntity, Aut
 		if (getClass() != obj.getClass())
 			return false;
 		AuthStateSearchBean other = (AuthStateSearchBean) obj;
-		return onlyActive == other.onlyActive;
+		if (aa == null) {
+			if (other.aa != null)
+				return false;
+		} else if (!aa.equals(other.aa))
+			return false;
+		if (onlyActive != other.onlyActive)
+			return false;
+		return true;
 	}
 
-	@Override
-	public String toString() {
-		return String.format(
-				"AuthStateSearchBean [onlyActive=%s, toString()=%s]",
-				onlyActive, super.toString());
-	}
+	
 
 }

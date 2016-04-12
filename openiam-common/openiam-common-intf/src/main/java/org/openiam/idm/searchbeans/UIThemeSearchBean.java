@@ -17,10 +17,4 @@ public class UIThemeSearchBean extends AbstractSearchBean<UITheme, String> imple
 
 	public UIThemeSearchBean() {}
 
-	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(getKey() != null ? getKey() : "")
-				.toString();
-	}
 }

@@ -73,12 +73,6 @@ public class AttributeMapDAOImpl extends
                 .addOrder(Order.asc("managedSystem.id")).list();
     }
 
-    public void removeResourceAttributeMaps(String resourceId) {
-        AttributeMapEntity ame = (AttributeMapEntity) getCriteria()
-                .add(Restrictions.eq("id", resourceId)).uniqueResult();
-        getSession().delete(ame);
-    }
-
     public AttributeMapEntity add(AttributeMapEntity entity) {
         if ((entity.getMngSysPolicy() == null)
                 && StringUtils.isEmpty(entity.getSynchConfigId())) {

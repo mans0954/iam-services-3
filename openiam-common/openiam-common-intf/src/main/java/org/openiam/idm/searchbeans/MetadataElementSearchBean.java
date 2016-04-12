@@ -93,23 +93,6 @@ public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<Metadat
 		keySet.add(key);
 	}
 
-	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(attributeName != null ? attributeName : "")
-				.append(typeIdSet != null ? typeIdSet.toString().hashCode() : "")
-				.append(auditable)
-				.append(required)
-				.append(selfEditable)
-				.append(templateId != null ? templateId : "")
-				.append(groupings != null ? groupings.toString().hashCode() : "")
-				.append(excludedGroupings != null ? excludedGroupings.toString().hashCode() : "")
-				.append(getKey() != null ? getKey() : "")
-				.append(getKeys() != null ? getKeys().toString().hashCode() : "")
-				.append(getSortKeyForCache())
-				.toString();
-	}
-
 	public Set<String> getKeys() {
 		return keySet;
 	}
@@ -177,6 +160,89 @@ public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<Metadat
 	public void setResourceId(String resourceId) {
 		this.resourceId = resourceId;
 	}
-
-    
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((attributeName == null) ? 0 : attributeName.hashCode());
+		result = prime * result + (auditable ? 1231 : 1237);
+		result = prime * result
+				+ ((dataType == null) ? 0 : dataType.hashCode());
+		result = prime
+				* result
+				+ ((excludedGroupings == null) ? 0 : excludedGroupings
+						.hashCode());
+		result = prime * result
+				+ ((groupings == null) ? 0 : groupings.hashCode());
+		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
+		result = prime * result + (required ? 1231 : 1237);
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + (selfEditable ? 1231 : 1237);
+		result = prime * result
+				+ ((templateId == null) ? 0 : templateId.hashCode());
+		result = prime * result
+				+ ((typeIdSet == null) ? 0 : typeIdSet.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MetadataElementSearchBean other = (MetadataElementSearchBean) obj;
+		if (attributeName == null) {
+			if (other.attributeName != null)
+				return false;
+		} else if (!attributeName.equals(other.attributeName))
+			return false;
+		if (auditable != other.auditable)
+			return false;
+		if (dataType == null) {
+			if (other.dataType != null)
+				return false;
+		} else if (!dataType.equals(other.dataType))
+			return false;
+		if (excludedGroupings == null) {
+			if (other.excludedGroupings != null)
+				return false;
+		} else if (!excludedGroupings.equals(other.excludedGroupings))
+			return false;
+		if (groupings == null) {
+			if (other.groupings != null)
+				return false;
+		} else if (!groupings.equals(other.groupings))
+			return false;
+		if (keySet == null) {
+			if (other.keySet != null)
+				return false;
+		} else if (!keySet.equals(other.keySet))
+			return false;
+		if (required != other.required)
+			return false;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (selfEditable != other.selfEditable)
+			return false;
+		if (templateId == null) {
+			if (other.templateId != null)
+				return false;
+		} else if (!templateId.equals(other.templateId))
+			return false;
+		if (typeIdSet == null) {
+			if (other.typeIdSet != null)
+				return false;
+		} else if (!typeIdSet.equals(other.typeIdSet))
+			return false;
+		return true;
+	}
+	
+	
 }

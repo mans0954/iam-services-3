@@ -14,10 +14,4 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 public class AccessRightSearchBean  extends AbstractKeyNameSearchBean<AccessRight, String> implements SearchBean {
 
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(getKey() != null ? getKey() : "")
-                .toString();
-    }
 }

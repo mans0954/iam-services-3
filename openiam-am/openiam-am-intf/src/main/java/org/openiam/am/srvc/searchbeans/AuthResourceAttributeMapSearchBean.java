@@ -34,11 +34,38 @@ public class AuthResourceAttributeMapSearchBean extends AbstractKeyNameSearchBea
         this.amAttributeId = amAttributeId;
     }
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(providerId != null ? providerId : "")
-                .append(amAttributeId != null ? amAttributeId : "")
-                .append(getKey() != null ? getKey() : "")
-                .toString();    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((amAttributeId == null) ? 0 : amAttributeId.hashCode());
+		result = prime * result
+				+ ((providerId == null) ? 0 : providerId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AuthResourceAttributeMapSearchBean other = (AuthResourceAttributeMapSearchBean) obj;
+		if (amAttributeId == null) {
+			if (other.amAttributeId != null)
+				return false;
+		} else if (!amAttributeId.equals(other.amAttributeId))
+			return false;
+		if (providerId == null) {
+			if (other.providerId != null)
+				return false;
+		} else if (!providerId.equals(other.providerId))
+			return false;
+		return true;
+	}
+
+    
 }

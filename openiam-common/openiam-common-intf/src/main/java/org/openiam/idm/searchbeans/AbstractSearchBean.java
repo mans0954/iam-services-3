@@ -24,6 +24,11 @@ public abstract class AbstractSearchBean<T, KeyType> {
 	private boolean findInCache;
 
     private List<SortParam> sortBy;
+    
+    /* used by Spring @Cacheable methods to determine the key */
+    public String getCacheKey() {
+    	return String.valueOf(this.hashCode());
+    }
 	
 	public KeyType getKey() {
 		return key;
@@ -65,12 +70,6 @@ public abstract class AbstractSearchBean<T, KeyType> {
 	public void setFindInCache(boolean findInCache) {
 		this.findInCache = findInCache;
 	}
-
-	/**
-     * This method must be used only for as a key for secondary level cache
-     * @return
-     */
-    public abstract String getCacheUniqueBeanKey();
 
 	protected String getSortKeyForCache(){
 		StringBuilder sb = new StringBuilder();

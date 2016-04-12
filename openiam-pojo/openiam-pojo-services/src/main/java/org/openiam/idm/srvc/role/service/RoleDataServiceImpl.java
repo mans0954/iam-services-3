@@ -17,6 +17,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.cache.CacheKeyEvict;
 import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -180,10 +181,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Override
 	@Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "roleEntities", allEntries=true),
-    })
-	public void removeRole(String roleId) {
+	@CacheEvict(value = "roleEntities")
+	public void removeRole(final @CacheKeyEvict String roleId) {
 		if(roleId != null) {
 			final RoleEntity roleEntity = roleDao.findById(roleId);
 			if(roleEntity != null) {
@@ -270,10 +269,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "roleEntities", allEntries=true),
-    })
-	public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
+    @CacheEvict(value = "roleEntities")
+	public void saveRole(final @CacheKeyEvict RoleEntity role, final String requestorId) throws BasicDataServiceException {
 		if(role != null && entityValidator.isValid(role)) {
 			if(role.getManagedSystem() != null && role.getManagedSystem().getId() != null) {
 				role.setManagedSystem(managedSysDAO.findById(role.getManagedSystem().getId()));
@@ -505,9 +502,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
     @Transactional(readOnly = true)
-/*
-    @Cacheable(value="roleEntities", key="{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
-*/
     public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId);
         if(StringUtils.isBlank(searchBean.getKey()))

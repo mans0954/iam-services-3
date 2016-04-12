@@ -34,12 +34,38 @@ public class AuthAttributeSearchBean extends AbstractSearchBean<AuthAttribute, S
         this.attributeName = attributeName;
     }
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(attributeName != null ? attributeName : "")
-                .append(providerType != null ? providerType : "")
-                .append(getKey() != null ? getKey() : "")
-                .toString();
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((attributeName == null) ? 0 : attributeName.hashCode());
+		result = prime * result
+				+ ((providerType == null) ? 0 : providerType.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AuthAttributeSearchBean other = (AuthAttributeSearchBean) obj;
+		if (attributeName == null) {
+			if (other.attributeName != null)
+				return false;
+		} else if (!attributeName.equals(other.attributeName))
+			return false;
+		if (providerType == null) {
+			if (other.providerType != null)
+				return false;
+		} else if (!providerType.equals(other.providerType))
+			return false;
+		return true;
+	}
+
+    
 }

@@ -19,6 +19,8 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.OrderConstants;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.SortParam;
+import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.CacheKeyEviction;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
@@ -65,6 +67,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -293,12 +296,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         }
         if (amE != null)
             attributeMapDAO.delete(amE);
-    }
-
-    @Override
-    @Transactional
-    public void removeResourceAttributeMaps(String resourceId) {
-        attributeMapDAO.removeResourceAttributeMaps(resourceId);
     }
 
     @Override
@@ -646,7 +643,13 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional
-    public void save(final ManagedSysEntity entity) throws BasicDataServiceException {
+    @Caching(
+    	evict={
+    		@CacheEvict(cacheNames="decryptManagedSysPassword", key="{#entity.id}"),
+    		@CacheEvict(cacheNames="managedSysAttributeMaps", key="{#entity.id}")
+    	}
+    )
+    public void save(final @CacheKeyEvict(cacheName="managedSysObjectParam") ManagedSysEntity entity) throws BasicDataServiceException {
         if (StringUtils.isBlank(entity.getResource().getId())) {
             final ResourceEntity resource = new ResourceEntity();
             resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));

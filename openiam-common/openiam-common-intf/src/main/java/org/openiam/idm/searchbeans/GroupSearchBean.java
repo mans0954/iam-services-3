@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -84,33 +85,6 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
         this.type = type;
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + (isRootsOnly ? 1231 : 1237);
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		GroupSearchBean other = (GroupSearchBean) obj;
-		return isRootsOnly == other.isRootsOnly;
-	}
-
-	@Override
-	public String toString() {
-		return String.format(
-				"GroupSearchBean [isRootsOnly=%s, keySet=%s, toString()=%s]",
-				isRootsOnly, keySet, super.toString());
-	}
-
     @Override
     public String getKey() {
         return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
@@ -123,18 +97,6 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
         }
         keySet.add(key);
     }
-
-	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(name != null ? name : "")
-				.append(managedSysId != null ? managedSysId : "")
-				.append(type != null ? type : "")
-				.append(isRootsOnly)
-				.append(attributes != null ? attributes.toString().hashCode() : "")
-				.append(getKey() != null ? getKey() : "")
-				.append(getKeys() != null ? getKeys().hashCode() : "")
-				.toString();	}
 
 	public Set<String> getKeys() {
         return keySet;
@@ -155,4 +117,60 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
         this.keySet = keySet;
     }
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((attributes == null) ? 0 : attributes.hashCode());
+		result = prime * result + (isRootsOnly ? 1231 : 1237);
+		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result
+				+ ((updatedSince == null) ? 0 : updatedSince.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GroupSearchBean other = (GroupSearchBean) obj;
+		if (attributes == null) {
+			if (other.attributes != null)
+				return false;
+		} else if (!attributes.equals(other.attributes))
+			return false;
+		if (isRootsOnly != other.isRootsOnly)
+			return false;
+		if (keySet == null) {
+			if (other.keySet != null)
+				return false;
+		} else if (!keySet.equals(other.keySet))
+			return false;
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		if (updatedSince == null) {
+			if (other.updatedSince != null)
+				return false;
+		} else if (!updatedSince.equals(other.updatedSince))
+			return false;
+		return true;
+	}
+
+    
 }

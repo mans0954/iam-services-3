@@ -1,13 +1,21 @@
 package org.openiam.service.integration;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.KeyDTO;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -100,4 +108,61 @@ public abstract class AbstractKeyServiceTest<T extends KeyDTO, S extends Abstrac
 			this.searchBean = searchBean;
 		}
 	}
+
+	protected void assertAuditLogSize(final List<IdmAuditLogEntity> logs, final int expectedSize) {
+		if(expectedSize == 0) {
+			Assert.assertTrue(CollectionUtils.isEmpty(logs));
+		} else {
+			Assert.assertTrue(CollectionUtils.isNotEmpty(logs));
+			Assert.assertEquals(expectedSize, logs.size());
+		}
+	}
+	
+	protected void assertCacheHit(final Date now, final String cacheName, final int numOfExpectedEntities) {
+		sleep(1); /* wait for persist due to redis*/
+		
+		/* only way to confirm that there haven't been multiple puts() into the same cache */
+		final AuditLogSearchBean auditLogSearchBean = new AuditLogSearchBean();
+		auditLogSearchBean.setAction(AuditAction.CACHE_PUT.value());
+		auditLogSearchBean.setFrom(now);
+		auditLogSearchBean.addAttribute(AuditAttributeName.CACHE_NAME.name(), cacheName);
+		List<IdmAuditLogEntity> logs = auditLogService.findBeans(auditLogSearchBean, 0, Integer.MAX_VALUE);
+		assertAuditLogSize(logs, 1);
+		Assert.assertEquals(Integer.toString(numOfExpectedEntities), logs.get(0).get(AuditAttributeName.NUM_OF_MULTIKEYS.name()));
+	}
+	
+	protected void assertCachePurge(final Date now, final String cacheName, final int numOfExpectedEntities) {
+		sleep(1); /* wait for persist due to redis*/
+		
+		/* only way to confirm that there haven't been multiple puts() into the same cache */
+		final AuditLogSearchBean auditLogSearchBean = new AuditLogSearchBean();
+		auditLogSearchBean.setAction(AuditAction.CACHE_EVICT.value());
+		auditLogSearchBean.setFrom(now);
+		auditLogSearchBean.addAttribute(AuditAttributeName.CACHE_NAME.name(), cacheName);
+		List<IdmAuditLogEntity> logs = auditLogService.findBeans(auditLogSearchBean, 0, Integer.MAX_VALUE);
+		assertAuditLogSize(logs, numOfExpectedEntities);
+		final int numOfMultikies = logs.stream().map(e -> e.get(AuditAttributeName.NUM_OF_MULTIKEYS.name()))
+			.filter(e -> StringUtils.isNotBlank(e)).mapToInt(e -> Integer.valueOf(e)).sum();
+		Assert.assertEquals(numOfExpectedEntities, numOfMultikies);
+	}
+	
+	protected void saveAndAssertCachePurge(final S sb, final T entity, final String[] cacheNames, final int numOfExpectedEntities) {
+		final Date now = new Date();
+		save(entity);
+		for(final String cacheName : cacheNames) {
+			assertCachePurge(now, cacheName, numOfExpectedEntities);
+		}
+	}
+	
+	protected void searchAndAssertCacheHit(final S sb, final T entity, final String cacheName) {
+		final Date now = new Date();
+		List<T> orgs = null;
+		for(int i = 0; i < 3; i++) {
+			orgs = find(sb, 0, Integer.MAX_VALUE);
+			Assert.assertNotNull(orgs);
+			Assert.assertEquals(entity.getId(), orgs.get(0).getId());
+		}
+		assertCacheHit(now, cacheName, orgs.size());
+	}
+	
 }

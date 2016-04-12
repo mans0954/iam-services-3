@@ -14,8 +14,11 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.query.TopChildrenQueryBuilder;
+import org.hibernate.jpa.criteria.CriteriaQueryImpl;
+import org.openiam.base.Tuple;
 import org.openiam.elasticsearch.dao.AuditLogElasticSearchRepositoryCustom;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
+import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.springframework.data.domain.Page;
@@ -26,17 +29,16 @@ import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
+
+import static org.elasticsearch.index.query.QueryBuilders.nestedQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
 @Repository
 public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<IdmAuditLogEntity, String, AuditLogSearchBean> implements AuditLogElasticSearchRepositoryCustom {
 
-	private String targetLogType;
-	
-	public AuditLogElasticSearchRepositoryImpl() {
-		targetLogType = IdmAuditLogEntity.class.getAnnotation(Document.class).type();
-	}
 	
 	@Override
 	protected CriteriaQuery getCriteria(final AuditLogSearchBean searchBean) {
@@ -74,7 +76,7 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
             	final Criteria criteria = gt("timestamp", searchBean.getFrom());
             	query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
             } else if(searchBean.getTo() != null) {
-            	final Criteria criteria = lt("timestamp", searchBean.getFrom());
+            	final Criteria criteria = lt("timestamp", searchBean.getTo());
             	query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
             }
             
@@ -84,7 +86,7 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
             }
             
             if(StringUtils.isNotBlank(searchBean.getSource())) {
-                final Criteria criteria = eq("source", searchBean.getManagedSysId());
+                final Criteria criteria = eq("source", searchBean.getSource());
             	query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
             }
             
@@ -98,30 +100,26 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
             }
             
             if(StringUtils.isNotBlank(searchBean.getTargetId()) && StringUtils.isNotBlank(searchBean.getTargetType())) {
-            	final List<String> ids = getAuditLogIdsForTargetIdAndType(searchBean.getTargetId(), searchBean.getTargetType());
-            	if(CollectionUtils.isNotEmpty(ids)) {
-            		final Criteria criteria = inCriteria("id", ids);
-            		query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
-            	} else {
-            		/* 
-            		 * at this point, the ids collection is empty, so we have no overall results.
-            		 * Return null so that the caller handles it
-            		 */
-            		return null;
-            	}
+            	final Criteria criteria = getAuditLogIdsForTargetIdAndType(searchBean.getTargetId(), searchBean.getTargetType());
+            	query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
             }
             
             if(StringUtils.isNotBlank(searchBean.getSecondaryTargetId()) && StringUtils.isNotBlank(searchBean.getSecondaryTargetType())) {
-            	final List<String> ids = getAuditLogIdsForTargetIdAndType(searchBean.getSecondaryTargetId(), searchBean.getSecondaryTargetType());
-            	if(CollectionUtils.isNotEmpty(ids)) {
-            		final Criteria criteria = inCriteria("id", ids);
-            		query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
-            	} else {
-            		/* 
-            		 * at this point, the ids collection is empty, so we have no overall results.
-            		 * Return null so that the caller handles it
-            		 */
-            		return null;
+            	final Criteria criteria = getAuditLogIdsForTargetIdAndType(searchBean.getSecondaryTargetId(), searchBean.getSecondaryTargetType());
+            	query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+            }
+            
+            if(CollectionUtils.isNotEmpty(searchBean.getAttributes())) {
+            	for(final Tuple<String, String> tuple : searchBean.getAttributes()) {
+            		final String key = tuple.getKey();
+            		final String value = tuple.getValue();
+            		if(StringUtils.isNotBlank(key)) {
+            			Criteria criteria = null;
+            			if(StringUtils.isNotBlank(value)) {
+            				criteria = eq(String.format("attributes.%s", key), value);
+            				query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+            			}
+            		}
             	}
             }
 		}
@@ -159,18 +157,36 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
 		return retval;
 	}
 	
-	private List<String> getAuditLogIdsForTargetIdAndType(final String targetId, final String targetType) {
+	private Criteria getAuditLogIdsForTargetIdAndType(final String targetId, final String targetType) {
+		return eq("targets.targetId", targetId).and(eq("targets.targetType", targetType));
+		/*
 		final BoolQueryBuilder boolQuery = targetTypeQuery(targetId, targetType);
 		if(boolQuery != null) {
 	    	final NativeSearchQuery nativeQuery = new NativeSearchQuery(boolQuery);
 	    	nativeQuery.addFields("id");
+	    	try {
+	    		elasticSearchTemplate.queryForList(nativeQuery, IdmAuditLogEntity.class);
+	    	} catch(Throwable e) {
+	    		e.printStackTrace();
+	    	}
 	    	final List<String> ids = elasticSearchTemplate.queryForList(nativeQuery, IdmAuditLogEntity.class).stream().map(e -> e.getId()).collect(Collectors.toList());
 	    	return (ids != null) ? ids : Collections.EMPTY_LIST;
 		} else {
 			return Collections.EMPTY_LIST;
 		}
+		final QueryBuilder builder = nestedQuery("targets", boolQuery().must(termQuery("targets.targetId", targetId)).must(termQuery("targets.targetType", targetType)));
+
+		final SearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(builder).build();
+		final List<IdmAuditLogEntity> logs = elasticSearchTemplate.queryForList(searchQuery, IdmAuditLogEntity.class);
+		if(CollectionUtils.isNotEmpty(logs)) {
+			return logs.stream().map(e -> e.getId()).collect(Collectors.toList());
+		} else {
+			return Collections.EMPTY_LIST;
+		}
+		*/
 	}
 	
+	/*
 	private BoolQueryBuilder targetTypeQuery(final String targetId, final String targetType) {
 		final QueryBuilder targetIdQuery = childQuery(targetLogType, "targetId", targetId);
 		final QueryBuilder targetTypeQuery = childQuery(targetLogType, "targetType", targetType);
@@ -193,4 +209,5 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
 			return null;
 		}
 	}
+	*/
 }

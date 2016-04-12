@@ -8,6 +8,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -83,45 +84,6 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
         this.attributes = attributes;
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result
-				+ ((isRootsOnly == null) ? 0 : isRootsOnly.hashCode());
-        result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RoleSearchBean other = (RoleSearchBean) obj;
-		if (isRootsOnly == null) {
-			if (other.isRootsOnly != null)
-				return false;
-		} else if (!isRootsOnly.equals(other.isRootsOnly))
-			return false;
-        if (managedSysId == null) {
-            if (other.managedSysId != null)
-                return false;
-        } else if (!managedSysId.equals(other.managedSysId))
-            return false;
-		return true;
-	}
-
-	@Override
-	public String toString() {
-		return String.format(
-				"RoleSearchBean [keySet=%s, isRootsOnly=%s]", keySet,
-				isRootsOnly);
-	}
-
     @Override
     public String getKey() {
         return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
@@ -134,20 +96,6 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
         }
         keySet.add(key);
     }
-
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(name != null ? name : "")
-                .append(description != null ? description : "")
-                .append(managedSysId != null ? managedSysId : "")
-                .append(isRootsOnly)
-                .append(type != null ? type : "")
-                .append(attributes != null ? attributes.toString().hashCode() : "")
-                .append(getKey() != null ? getKey() : "")
-                .append(getKeys() != null ? getKeys().toString().hashCode() : "")
-                .append(super.hashCode())
-                .toString();    }
 
     public Set<String> getKeys() {
         return keySet;
@@ -168,4 +116,64 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
         this.keySet = keySet;
     }
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((attributes == null) ? 0 : attributes.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((isRootsOnly == null) ? 0 : isRootsOnly.hashCode());
+		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RoleSearchBean other = (RoleSearchBean) obj;
+		if (attributes == null) {
+			if (other.attributes != null)
+				return false;
+		} else if (!attributes.equals(other.attributes))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (isRootsOnly == null) {
+			if (other.isRootsOnly != null)
+				return false;
+		} else if (!isRootsOnly.equals(other.isRootsOnly))
+			return false;
+		if (keySet == null) {
+			if (other.keySet != null)
+				return false;
+		} else if (!keySet.equals(other.keySet))
+			return false;
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		return true;
+	}
+
+    
 }

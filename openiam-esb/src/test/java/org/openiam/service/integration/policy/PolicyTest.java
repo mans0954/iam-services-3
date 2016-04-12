@@ -148,4 +148,7 @@ public class PolicyTest extends AbstractKeyNameServiceTest<Policy, PolicySearchB
 		attribute.setRule(getRandomName());
 		instance.addPolicyAttribute(attribute);
 	}
+	
+	@Test
+	public void foo() {}
 }
