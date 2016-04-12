@@ -453,6 +453,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "managedSysObjectParam", key = "{ #managedSystemId, #objectType}")
     public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
             String managedSystemId, String objectType) {
         return matchDAO.findBySystemId(managedSystemId, objectType);
