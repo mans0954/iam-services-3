@@ -1267,7 +1267,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         }
         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "- Primary Identity: " + primaryIdentity.getLogin());
         ProvisionUser finalProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
-
+        finalProvUser.setSkipPostProcessor(pUser.isSkipPostProcessor());
         if (!isAdd) {
             //If identity for resource exists and it's status is 'INACTIVE' user should be deprovisioned from target system
             Set<Resource> inactiveResources = new HashSet<Resource>();

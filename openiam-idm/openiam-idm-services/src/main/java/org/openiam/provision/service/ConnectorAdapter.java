@@ -21,6 +21,11 @@
  */
 package org.openiam.provision.service;
 
+import org.activiti.engine.impl.util.json.CDL;
+import org.activiti.engine.impl.util.json.JSONArray;
+import org.activiti.engine.impl.util.json.JSONObject;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +45,8 @@ import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.LookupAttributeResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.idm.parser.csv.CSVHelper;
+import org.openiam.idm.parser.csv.CSVUtil;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
@@ -50,17 +57,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Wraps around the connector interface and manages the calls to the varous
@@ -93,7 +97,6 @@ public class ConnectorAdapter {
             }
             log.info("ConnectorAdapter:addRequest called. Managed sys ="
                     + managedSys.getId());
-
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
@@ -661,12 +664,7 @@ public class ConnectorAdapter {
         }
 
         log.debug("Simulation mode. Start build data from RequestType");
-        ObjectMapper mapper = new ObjectMapper();
-        StringBuilder sb = new StringBuilder();
-        sb.append("ExtensibleObject = ").append(obj.getExtensibleObject().getAttributesAsJSON(new String[]{})).append("\n");
-        sb.append("ObjectIdentity = ").append(mapper.writeValueAsString(obj.getObjectIdentity())).append("\n\n");
-
-        return simulationMode(sb.toString(), type);
+        return simulationMode(obj.getExtensibleObject().getAttributesAsJSON(new String[]{}), type);
     }
 
     private ObjectResponse simulationMode(String body, String type) throws IOException {
@@ -683,36 +681,93 @@ public class ConnectorAdapter {
             res.setStatus(StatusCodeType.SUCCESS);
         }
 
+        String v = CSVUtil.toCSV(body);
+        if (!StringUtils.isNotBlank(v)) {
+            res.setStatus(StatusCodeType.FAILURE);
+            res.setError(ErrorCode.CSV_ERROR);
+            log.debug("Simulation mode. Not data in CSV format");
+            return res;
+        }
+
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String time = formatter.format(System.currentTimeMillis());
 
         log.debug("Simulation mode. Build Paths locationStorage = '" + locationStorageSimulationLdapFile + "' name file = 'ldap_" + time + ".csv");
-        Path path = Paths.get(locationStorageSimulationLdapFile, "ldap_" + time + ".csv");
-        log.debug("Simulation mode. Paths = " + path);
+        File file = new File(locationStorageSimulationLdapFile + "/ldap_" + time + ".csv");
+
+        List<String> newVal = new ArrayList<>();
+
+        formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        time = formatter.format(System.currentTimeMillis());
+
+        String[] val = v.split("\n");
+        for (int i = 0; i <= val.length - 1; i++) {
+            if (i == 0)
+                newVal.add("createTime,typeRequest," + val[i]);
+            else
+                newVal.add(time + "," + type + "," + val[i]);
+        }
+
+        List<String> result = new ArrayList<>();
+
+        if (file.exists())
+            result = CSVUtil.merge(CSVUtil.read(new FileInputStream(file)), newVal);
+        else
+            result = newVal;
+
+
+        if (result.size() >= 5000) {
+            incrementName(file);
+            result = newVal;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (String s : result)
+            sb.append(s).append("\n");
+
+        //
+
+        log.debug("Simulation mode. AbsolutePath = " + file.getAbsolutePath());
         PrintWriter writer = null;
 
         try {
             log.debug("Simulation mode. Try create new PrintWriter");
-            writer = new PrintWriter(Files.newBufferedWriter(path, Charset.forName("UTF-8"), StandardOpenOption.WRITE,
-                    StandardOpenOption.APPEND, StandardOpenOption.CREATE));
+            writer = new PrintWriter(new FileOutputStream(file.getAbsolutePath(), false));
+            log.debug("Simulation mode. Write data in file");
+            writer.write(sb.toString());
         } catch (IOException ex) {
             res.setStatus(StatusCodeType.FAILURE);
             log.error("Can not insert to file");
             log.error(ex);
-        }
-
-        if (writer != null) {
-            formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            time = formatter.format(System.currentTimeMillis());
-
-            log.debug("Simulation mode. Append data in file");
-            writer.append("<---------- " + time + " Type request = " + type + " ---------->").append("\n").append(body);
+        } finally {
             writer.close();
-        } else {
-            log.debug("Simulation mode. PrintWriter is null");
         }
 
         return res;
     }
 
+    /**
+     * Increment file names
+     *
+     * @param file
+     * @throws IOException I/O error
+     */
+    private void incrementName(File file) throws IOException {
+        incrementName(file.getPath(), 0);
+    }
+
+    /**
+     * Increment file names
+     *
+     * @param path path to fist renamed file
+     * @param i    file index, 0 means file has no index
+     * @throws IOException I/O error
+     */
+    private void incrementName(String path, int i) throws IOException {
+        Path source = i == 0 ? Paths.get(path) : Paths.get(path + '.' + i);
+        Path target = Paths.get(path + '.' + (i + 1));
+        if (Files.exists(target))
+            incrementName(path, i + 1);
+        Files.move(source, target);
+    }
 }

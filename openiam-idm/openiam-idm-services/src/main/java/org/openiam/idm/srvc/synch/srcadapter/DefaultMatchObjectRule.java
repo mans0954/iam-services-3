@@ -68,7 +68,6 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
         //Map<String, UserAttribute> atMap = user.getUserAttributes();
         matchAttrName = matchConfig.getMatchFieldName();
         matchAttrValue = (StringUtils.isNotBlank(matchConfig.getCustomMatchAttr())) ? rowAttr.get(matchConfig.getCustomMatchAttr()).getValue() : null;
-
         if (StringUtils.isBlank(matchAttrName) || StringUtils.isBlank(matchAttrValue)) {
             throw new IllegalArgumentException("matchAttrName and matchAttrValue can not be blank");
         }
@@ -78,19 +77,19 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             //search.setUserId(matchAttrValue);
 
         } else if (matchAttrName.equalsIgnoreCase("PRINCIPAL")) {
-            LoginSearchBean lsb = new LoginSearchBean();
-            lsb.setLoginMatchToken(new SearchParam(matchAttrValue.toLowerCase(), MatchType.EXACT));
-            lsb.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
-            searchBean.setPrincipal(lsb);
+//            LoginSearchBean lsb = new LoginSearchBean();
+//            lsb.setLoginMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
+//            lsb.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+//            searchBean.setPrincipal(lsb);
+            return userDataWebService.getUserByPrincipal(matchAttrValue.toLowerCase(), sysConfiguration.getDefaultManagedSysId(), true);
             //search.setPrincipal(matchAttrValue);
-
         } else if (matchAttrName.equalsIgnoreCase("MANAGED_SYS_PRINCIPAL")) {
-            LoginSearchBean lsb = new LoginSearchBean();
-            lsb.setLoginMatchToken(new SearchParam(matchAttrValue.toLowerCase(), MatchType.EXACT));
-            lsb.setManagedSysId(matchConfig.getManagedSysId());
-            searchBean.setPrincipal(lsb);
+//            LoginSearchBean lsb = new LoginSearchBean();
+//            lsb.setLoginMatchToken(new SearchParam(matchAttrValue.toLowerCase(), MatchType.EXACT));
+//            lsb.setManagedSysId(matchConfig.getManagedSysId());
+//            searchBean.setPrincipal(lsb);
+            return userDataWebService.getUserByPrincipal(matchAttrValue.toLowerCase(), matchConfig.getManagedSysId(), true);
             //search.setPrincipal(matchAttrValue);
-
         } else if (matchAttrName.equalsIgnoreCase("EMAIL")) {
             searchBean.setEmailAddressMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
             //search.setEmailAddress(matchAttrValue);
@@ -100,26 +99,23 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             //search.setEmployeeId(matchAttrValue);
 
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
-            if (log.isDebugEnabled()) {
-                log.debug("- cofiguring search by attribute..");
-                log.debug("- match attr=.." + matchConfig.getMatchSrcFieldName());
-                log.debug("- src field value=.." + matchAttrValue);
-            }
+            System.out.println("- cofiguring search by attribute..");
+            System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
+
+            // get the attribute value from the data_set
+            System.out.println("- src field value=.." + matchAttrValue);
             matchAttrName = matchConfig.getMatchSrcFieldName();
 
             searchBean.addAttribute(matchAttrName, matchAttrValue);
 
         }
-        searchBean.setDeepCopy(true);
-        searchBean.setFindInCache(true);
-        List<User> userList = userDataWebService.findBeans(searchBean, 0, 1);
+
+        List<User> userList = userDataWebService.findBeans(searchBean, 0, Integer.MAX_VALUE);
 
 
         if (userList != null && !userList.isEmpty()) {
-            if (log.isDebugEnabled()) {
-                log.debug("User matched with existing user...");
-            }
-            return userList.get(0);
+            System.out.println("User matched with existing user...");
+            return userDataWebService.getUserWithDependent(userList.get(0).getId(), null, true);
         }
         return null;
     }
@@ -138,11 +134,11 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             searchBean = new GroupSearchBean();
             searchBean.setName(matchAttrValue);
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
-            if (log.isDebugEnabled()) {
-                log.debug("- cofiguring search by attribute..");
-                log.debug("- match attr=.." + matchConfig.getMatchSrcFieldName());
-                log.debug("- src field value=.." + matchAttrValue);
-            }
+            System.out.println("- cofiguring search by attribute..");
+            System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
+
+            // get the attribute value from the data_set
+            System.out.println("- src field value=.." + matchAttrValue);
             matchAttrName = matchConfig.getMatchSrcFieldName();
 
             searchBean = new GroupSearchBean();
@@ -164,9 +160,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
         if (searchBean != null) {
             List<GroupEntity> groupEntities = groupManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
             if (groupEntities != null && !groupEntities.isEmpty()) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Group matched with existing group...");
-                }
+                System.out.println("Group matched with existing group...");
                 return groupDozerConverter.convertToDTO(groupEntities.get(0), true);
             }
         }
@@ -186,11 +180,11 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
         if (matchAttrName.equalsIgnoreCase("NAME")) {
             searchBean.setName(matchAttrValue);
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
-            if (log.isDebugEnabled()) {
-                log.debug("- cofiguring search by attribute..");
-                log.debug("- match attr=.." + matchConfig.getMatchSrcFieldName());
-                log.debug("- src field value=.." + matchAttrValue);
-            }
+            System.out.println("- cofiguring search by attribute..");
+            System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
+
+            // get the attribute value from the data_set
+            System.out.println("- src field value=.." + matchAttrValue);
             matchAttrName = matchConfig.getMatchSrcFieldName();
 
             searchBean.addAttribute(matchAttrName, matchAttrValue);
@@ -210,9 +204,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
         List<RoleEntity> roleEntities = roleManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
         if (roleEntities != null && !roleEntities.isEmpty()) {
-            if (log.isDebugEnabled()) {
-                log.debug("Role matched with existing role...");
-            }
+            System.out.println("Role matched with existing role...");
             return roleDozerConverter.convertToDTO(roleEntities.get(0), true);
         }
         return null;
@@ -231,12 +223,11 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
         if (matchAttrName.equalsIgnoreCase("NAME")) {
             searchBean.setName(matchAttrValue);
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
-            if (log.isDebugEnabled()) {
-                log.debug("- cofiguring search by attribute..");
-                log.debug("- match attr=.." + matchConfig.getMatchSrcFieldName());
-                // get the attribute value from the data_set
-                log.debug("- src field value=.." + matchAttrValue);
-            }
+            System.out.println("- cofiguring search by attribute..");
+            System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
+
+            // get the attribute value from the data_set
+            System.out.println("- src field value=.." + matchAttrValue);
             matchAttrName = matchConfig.getMatchSrcFieldName();
 
             searchBean.addAttribute(matchAttrName, matchAttrValue);
@@ -256,9 +247,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
         List<Organization> orgEntities = orgManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
         if (orgEntities != null && !orgEntities.isEmpty()) {
-            if (log.isDebugEnabled()) {
-                log.debug("Organization matched with existing role...");
-            }
+            System.out.println("Organization matched with existing role...");
             return orgEntities.get(0);
         }
         return null;
