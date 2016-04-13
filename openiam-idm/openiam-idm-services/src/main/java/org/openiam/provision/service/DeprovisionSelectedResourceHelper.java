@@ -86,7 +86,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 Resource res = resourceDataService.getResource(resId, null);
                                 try {
                                     Map<String, Object> bindingMap = new HashMap<String, Object>(); //TODO: check if enough bindingMap data for UPDATE
-                                    ProvisionDataContainer data = deprovisionResourceDataPrepare(res, userEntity, new ProvisionUser(user), requestorUserId, bindingMap);
+                                    ProvisionDataContainer data = deprovisionResourceDataPrepare(res, new ProvisionUser(user), new ProvisionUser(user), requestorUserId, bindingMap);
 
                                     auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                             "De-Provisioning for resource: " + res.getName());
@@ -123,25 +123,22 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         return res;
     }
 
-    public ProvisionDataContainer deprovisionResourceDataPrepare(Resource res, UserEntity userEntity, ProvisionUser pUser,
-                                                       String requestId, Map<String, Object> tmpMap) {
+    public ProvisionDataContainer deprovisionResourceDataPrepare(Resource res, ProvisionUser targetSysProvUser, ProvisionUser pUser,
+                                                                 String requestId, Map<String, Object> tmpMap) {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap); // prevent data rewriting
 
         // ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-        ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
-        String managedSysId = (mSys != null) ? mSys.getId() : null;
-        if (mSys == null || mSys.getConnectorId() == null) {
-            return null;
-        }
-        ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+//        ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
+        String managedSysId = managedSysDaoService.getManagedSysIdByResource(res.getId(), "ACTIVE");
+//        ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
         setCurrentSuperiors(targetSysProvUser);
         targetSysProvUser.setStatus(pUser.getStatus());
 
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
         bindingMap.put(AbstractProvisioningService.USER, targetSysProvUser);
-        bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES,userMgr.getUserAttributesDto(pUser.getId()));
+        bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
 
         ManagedSystemObjectMatch matchObj = null;
         ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
@@ -152,7 +149,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, AbstractProvisioningService.IDENTITY_EXIST);
 
         String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
-        if(StringUtils.isEmpty(onDeleteProp)) {
+        if (StringUtils.isEmpty(onDeleteProp)) {
             onDeleteProp = "DELETE";
         }
         ProvLoginStatusEnum provLoginStatus = null;
@@ -167,8 +164,8 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                 provLoginStatus = ProvLoginStatusEnum.PENDING_UPDATE;
         }
 
-        LoginEntity mLg = null;
-        for (LoginEntity l : userEntity.getPrincipalList()) {
+        Login mLg = null;
+        for (Login l : targetSysProvUser.getPrincipalList()) {
             if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
                 l.setStatus(LoginStatusEnum.INACTIVE);
                 l.setProvStatus(provLoginStatus);
@@ -177,7 +174,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         }
 
         if (mLg != null) {
-            Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
+            Login targetSysLogin = mLg;
             for (Login l : pUser.getPrincipalList()) { // saving Login
                 // properties from pUser
                 if (l.getLoginId() != null && l.getLoginId().equals(targetSysLogin.getLoginId())) {
@@ -193,9 +190,9 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
             try {
                 decPassword = loginManager.decryptPassword(mLg.getUserId(), mLg.getPassword());
             } catch (Exception e) {
-            	if(log.isDebugEnabled()) {
-            		log.debug(" - Failed to decrypt password for " + mLg.getUserId());
-            	}
+                if (log.isDebugEnabled()) {
+                    log.debug(" - Failed to decrypt password for " + mLg.getUserId());
+                }
             }
             bindingMap.put("password", decPassword);
 
@@ -226,10 +223,10 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
     }
 
     @Deprecated
-    public ProvisionUserResponse deprovisionSelectedResources( String userId, String requestorUserId, List<String> resourceList)  {
-    	if(log.isDebugEnabled()) {
-    		log.debug("deprovisionSelectedResources().....for userId=" + userId);
-    	}
+    public ProvisionUserResponse deprovisionSelectedResources(String userId, String requestorUserId, List<String> resourceList) {
+        if (log.isDebugEnabled()) {
+            log.debug("deprovisionSelectedResources().....for userId=" + userId);
+        }
 
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
@@ -260,7 +257,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
         if (lRequestor != null && lTargetUser != null) {
-        	/*
+            /*
             auditLog = auditHelper.addLog("DEPROVISION RESOURCE", lRequestor.getDomainId(), lRequestor.getLogin(),
                     "IDM SERVICE", usr.getCreatedBy(), "0", "USER", usr.getUserId(),
                     null, "SUCCESS", null, "USER_STATUS",
@@ -282,30 +279,30 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                 if (preProcessScript != null && !preProcessScript.isEmpty()) {
                     PreProcessor ppScript = createPreProcessScript(preProcessScript);
                     if (ppScript != null) {
-                        if (executePreProcess(ppScript, bindingMap, pUser, null,  "DELETE") == ProvisioningConstants.FAIL) {
+                        if (executePreProcess(ppScript, bindingMap, pUser, null, "DELETE") == ProvisioningConstants.FAIL) {
                             continue;
                         }
                     }
                 }
             }
 
-            if(log.isDebugEnabled()) {
-            	log.debug("Resource object = " + res);
+            if (log.isDebugEnabled()) {
+                log.debug("Resource object = " + res);
             }
 
             ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
             String mSysId = (managedSys != null) ? managedSys.getId() : null;
-            if (mSysId != null)  {
+            if (mSysId != null) {
 
                 if (!mSysId.equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
-                	if(log.isDebugEnabled()) {
-                		log.debug("Looking up identity for : " + mSysId);
-                	}
+                    if (log.isDebugEnabled()) {
+                        log.debug("Looking up identity for : " + mSysId);
+                    }
 
                     LoginEntity l = getLoginForManagedSys(mSysId, principalList);
 
-                    if(log.isDebugEnabled()) {
-                    	log.debug("Identity for Managedsys =" + l);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Identity for Managedsys =" + l);
                     }
 
                     if (l != null) {
@@ -323,9 +320,9 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                         if (matchObjAry != null && matchObjAry.length > 0) {
                             matchObj = matchObjAry[0];
                         }
-                        if(log.isDebugEnabled()) {
-                        	log.debug("Deleting id=" + l.getLogin());
-                        	log.debug("- delete using managed sys id=" + mSys.getId());
+                        if (log.isDebugEnabled()) {
+                            log.debug("Deleting id=" + l.getLogin());
+                            log.debug("- delete using managed sys id=" + mSys.getId());
                         }
 
                         boolean connectorSuccess = false;

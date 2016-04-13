@@ -114,9 +114,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
-    public String getManagedSysIdByResource(String id, String status) {
+    @Cacheable(value = "managedSysRegion", key = "{#resourceId, #status}")
+    public String getManagedSysIdByResource(String resourceId, String status) {
         ManagedSysSearchBean searchBean = getDefaultSearchBean();
-        searchBean.setResourceId(id);
+        searchBean.setResourceId(resourceId);
         searchBean.setStatus(status);
         List<ManagedSysEntity> managedSysEntities = managedSysDAO.getByExample(searchBean);
         if (CollectionUtils.isNotEmpty(managedSysEntities)) {
