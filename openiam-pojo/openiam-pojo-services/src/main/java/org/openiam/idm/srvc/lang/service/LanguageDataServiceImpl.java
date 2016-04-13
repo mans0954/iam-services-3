@@ -92,13 +92,13 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     }
 
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "languages"),
-    		@CacheEvict(value = "localizedLanguages")
-    	}
-    )
-    public void removeLanguage(final @CacheKeyEvict String languageId) {
+    @CacheKeyEviction(
+        	evictions={
+            	@CacheKeyEvict("resources"),
+            	@CacheKeyEvict("resourceEntities")
+            }
+        )
+    public void removeLanguage(final String languageId) {
         if (languageId == null) {
             throw new NullPointerException("languageCd is null");
         }
@@ -107,13 +107,13 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     }
 
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "languages"),
-    		@CacheEvict(value = "localizedLanguages")
-    	}
-    )
-    public void updateLanguage(final @CacheKeyEvict LanguageEntity lg) {
+    @CacheKeyEviction(
+        	evictions={
+            	@CacheKeyEvict("resources"),
+            	@CacheKeyEvict("resourceEntities")
+            }
+        )
+    public void updateLanguage(final LanguageEntity lg) {
         if (lg == null) {
             throw new NullPointerException("lg is null");
         }
@@ -174,13 +174,13 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 
     @Override
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "languages"),
-    		@CacheEvict(value = "localizedLanguages")
-    	}
-    )
-    public String save(final @CacheKeyEvict Language language) throws BasicDataServiceException {
+    @CacheKeyEviction(
+        	evictions={
+            	@CacheKeyEvict("resources"),
+            	@CacheKeyEvict("resourceEntities")
+            }
+        )
+    public String save(final Language language) throws BasicDataServiceException {
         if (language == null) {
             throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR);
         }

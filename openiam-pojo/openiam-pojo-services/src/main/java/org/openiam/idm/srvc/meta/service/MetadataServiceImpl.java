@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.CacheKeyEviction;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -191,11 +192,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     @Override
 	@Transactional
-	@Caching(evict = {
-			@CacheEvict(value = "metadataElements"),
-			@CacheEvict(value = "metadataElementEntities")
-	})
-	public void save(final @CacheKeyEvict MetadataElement element) {
+    @CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("metadataElements"),
+            @CacheKeyEvict("metadataElementEntities")
+        }
+    )
+	public void save(final MetadataElement element) {
 		if(element != null) {
             MetadataElementEntity entity = metaDataElementDozerConverter.convertToEntity(element,true);
 			if(StringUtils.isBlank(entity.getId())) {
@@ -303,11 +306,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	
 	@Override
 	@Transactional
-	@Caching(evict = {
-			@CacheEvict(value = "metadataTypes"),
-			@CacheEvict(value = "metadataTypeEntities")
-	})
-	public void save(final @CacheKeyEvict MetadataType dto) throws BasicDataServiceException {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("metadataTypes"),
+            @CacheKeyEvict("metadataTypeEntities")
+        }
+    )
+	public void save(final MetadataType dto) throws BasicDataServiceException {
 		if(dto!=null) {
 			final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
 
@@ -340,11 +345,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	
 	@Override
 	@Transactional
-	@Caching(evict = {
-			@CacheEvict(value = "metadataElements"),
-			@CacheEvict(value = "metadataElementEntities")
-	})
-	public void deleteMetdataElement(final @CacheKeyEvict String id) {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("metadataElements"),
+            @CacheKeyEvict("metadataElementEntities")
+        }
+    )
+	public void deleteMetdataElement(final String id) {
 		final MetadataElementEntity entity = metadataElementDao.findById(id);
 		if(entity != null) {
 			/*
@@ -367,11 +374,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
 	@Override
 	@Transactional
-	@Caching(evict = {
-			@CacheEvict(value = "metadataTypes"),
-			@CacheEvict(value = "metadataTypeEntities")
-	})
-	public void deleteMetdataType(final @CacheKeyEvict String id) {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("metadataTypes"),
+            @CacheKeyEvict("metadataTypeEntities")
+        }
+    )
+	public void deleteMetdataType(final String id) {
 		final MetadataTypeEntity entity = metadataTypeDao.findById(id);
 		if(entity != null) {
 			metadataTypeDao.delete(entity);

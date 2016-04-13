@@ -2,6 +2,7 @@ package org.openiam.cache;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -118,14 +119,10 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 	}
 	
 	//private Map<Class<?>, Map<Method, List<CacheKeyEvictToken>>> annotationCache = new HashMap<Class<?>, Map<Method,List<CacheKeyEvictToken>>>();
-	
-	private abstract class AnnotationVisit {
-		boolean exists;
-	}
-	
+
 	private Map<Method, CacheKeyEvictionAnnotationVisit> cacheKeyEvictionMap = new HashMap<Method, CacheKeyEvictionAnnotationVisit>();
-	private class CacheKeyEvictionAnnotationVisit extends AnnotationVisit {
-		private CacheKeyEviction annotation;
+	private class CacheKeyEvictionAnnotationVisit {
+		private List<CacheKeyEviction> annotations;
 		CacheKeyEvictionAnnotationVisit() {
 			
 		}
@@ -133,35 +130,27 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 	}
 	
 	private Map<Parameter, CacheKeyEvictAnnotationVisit> cacheKeyEvictMap = new HashMap<Parameter, CacheKeyEvictAnnotationVisit>();
-	private class CacheKeyEvictAnnotationVisit extends AnnotationVisit {
+	private class CacheKeyEvictAnnotationVisit {
 		private CacheKeyEvict annotation;
 		CacheKeyEvictAnnotationVisit() {
 			
 		}
 	}
 	
-	private CacheKeyEviction getCacheKeyEvictionAnnotation(final Method method) {
+	private List<CacheKeyEviction> getCacheKeyEvictionAnnotations(final Method method) {
 		CacheKeyEvictionAnnotationVisit visit = cacheKeyEvictionMap.get(method);
 		if(visit == null) {
-			final CacheKeyEviction annotation =  method.getAnnotation(CacheKeyEviction.class);
 			visit = new CacheKeyEvictionAnnotationVisit();
-			visit.exists = (annotation != null);
-			visit.annotation = annotation;
+			
+			if(method.isAnnotationPresent(CacheKeyEviction.class)) {
+				final CacheKeyEviction annotation =  method.getAnnotation(CacheKeyEviction.class);
+				visit.annotations = Arrays.asList(new CacheKeyEviction[] {annotation});
+			} else if(method.isAnnotationPresent(CacheKeyEvictions.class)) {
+				visit.annotations = Arrays.asList(method.getAnnotation(CacheKeyEvictions.class).value());
+			}
 			cacheKeyEvictionMap.put(method, visit);
 		}
-		return visit.exists ? visit.annotation : null;
-	}
-	
-	private CacheKeyEvict getCacheKeyEvictAnnotation(final Parameter parameter) {
-		CacheKeyEvictAnnotationVisit visit = cacheKeyEvictMap.get(parameter);
-		if(visit == null) {
-			final CacheKeyEvict annotation =  parameter.getAnnotation(CacheKeyEvict.class);
-			visit = new CacheKeyEvictAnnotationVisit();
-			visit.exists = (annotation != null);
-			visit.annotation = annotation;
-			cacheKeyEvictMap.put(parameter, visit);
-		}
-		return visit.exists ? visit.annotation : null;
+		return visit.annotations;
 	}
 	
 	private List<CacheKeyEvictToken> getEvictionMetadata(final Object target, 
@@ -192,36 +181,13 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 		*/
 		final List<CacheKeyEvictToken> evictions = new LinkedList<CacheKeyEvictToken>();
 		final Parameter[] parameters = method.getParameters();
-		final CacheKeyEviction eviction = getCacheKeyEvictionAnnotation(method);
-		if(eviction != null) {
-			boolean parameterExists =  false;
-			final String paramName = eviction.parameterName();
-			if(parameters != null) {
-				for(int index = 0; index < parameters.length; index++) {
-					final Parameter parameter = parameters[index];
-					if(parameter.getName().equals(paramName)) {
-						parameterExists = true;
-						for(final CacheKeyEvict evict : eviction.evictions()) {
-							evictions.add(new CacheKeyEvictToken(evict, args[index]));
-						}
-					}
+		final List<CacheKeyEviction> evictionAnnotations = getCacheKeyEvictionAnnotations(method);
+		if(evictionAnnotations != null) {
+			evictionAnnotations.forEach(eviction -> {
+				for(final CacheKeyEvict evict : eviction.evictions()) {
+					evictions.add(new CacheKeyEvictToken(evict, args[eviction.parameterIndex()]));
 				}
-			}
-			
-			if(!parameterExists) {
-				throw new IllegalStateException(String.format("%s:%s had an %s annotation, but the parameterName %s was not found on the method", 
-						targetClass, method, CacheKeyEviction.class, paramName));
-			}
-		} else {
-			if(parameters != null) {
-				for(int index = 0; index < parameters.length; index++) {
-					final Parameter parameter = parameters[index];
-					final CacheKeyEvict evict = getCacheKeyEvictAnnotation(parameter);
-					if(evict != null) {
-						evictions.add(new CacheKeyEvictToken(evict, args[index]));
-					}
-				}
-			}
+			});
 		}
 		return evictions;
 	}
@@ -241,21 +207,29 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 				return invoker.invoke();
 			}
 		};
-		final Object returnValue = super.execute(invokerWrapper, target, method, args);
-		/* consider doing this in a separate thread */
 		final Class<?> targetClass = getTargetClass(target);
+		final Collection<CacheOperation> operations = getCacheOperationSource().getCacheOperations(method, targetClass);
+		
+		final boolean isCustomCacheEviction = (operations.stream().filter(e -> e instanceof OpeniamCacheEviction).count() > 0);
+		final boolean isCustomCacheEvictionOnlyOperation = (isCustomCacheEviction && operations.size() == 1);
+		
+		
+		final Object returnValue = (isCustomCacheEvictionOnlyOperation) ? 
+				invokerWrapper.invoke() :
+				super.execute(invokerWrapper, target, method, args);
+					
+		/* consider doing this in a separate thread */
 		final Set<BaseIdentity> baseIdentities = getBaseIdentities(returnValue, targetClass, method) ;
 		
 		final List<CacheKeyEvictToken> evictions = getEvictionMetadata(target, method, args, targetClass);
 		
-		final Collection<CacheOperation> operations = getCacheOperationSource().getCacheOperations(method, targetClass);
 		if(CollectionUtils.isNotEmpty(operations)) {
 			for(final CacheOperation operation : operations) {
-				final OpeniamCacheOperationContext cacheOperationContext = getOperationContext(operation, method, args, target, targetClass);
-				final Object cacheKey = cacheOperationContext.getKey();
-				if (cacheOperationContext.isConditionPassing() && cacheOperationContext.canPutInCache()) {
-					for(final Cache cache : cacheOperationContext.getCaches()) {
-						if(operation instanceof CacheableOperation || operation instanceof CachePutOperation) {
+				if(operation instanceof CacheableOperation || operation instanceof CachePutOperation) {
+					final OpeniamCacheOperationContext cacheOperationContext = getOperationContext(operation, method, args, target, targetClass);
+					final Object cacheKey = cacheOperationContext.getKey();
+					if (cacheOperationContext.isConditionPassing() && cacheOperationContext.canPutInCache()) {
+						for(final Cache cache : cacheOperationContext.getCaches()) {
 							if(cacheMiss.booleanValue()) { /* only process this on a cache miss */
 								logPut(cache, cacheKey, baseIdentities.size());
 								
@@ -280,50 +254,50 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 									}
 								}
 							}
-						} else if(operation instanceof CacheEvictOperation) {
-
-							/*
-							 * Now process all of the evictions that take place, as a result of the method call
-							 */
-							for(final CacheKeyEvictToken token : evictions) {
-								Cache evictCache = cache;
-								final List<String> primaryKeys = applicationContext.getBean(token.getEvict().keyGenerator()).generateKey(token.getArgument());
-								if(primaryKeys != null) {
-									if(StringUtils.isNotBlank(token.getEvict().cacheName())) {
-										final String cacheName = token.getEvict().cacheName();
-										evictCache = this.cacheManager.getCache(cacheName);
-										if(evictCache == null) {
-											throw new IllegalStateException(String.format("No cache called %s exists", cacheName));
-										}
-									}
-									for(final String primaryKey : primaryKeys) {
-										final String cacheManagementKey = generatePrimaryKeyCacheKey(evictCache, primaryKey);
-										Set<Object> keySet = cacheManagementCache.get(cacheManagementKey);
-										if(CollectionUtils.isNotEmpty(keySet)) {
-											logEviction(evictCache, cacheManagementKey, keySet.size());
-											if(keySet != null) {
-												/* 
-												 * this is a synchronizedSet, and thus requires a synchronized block around it
-												 * https://docs.oracle.com/javase/7/docs/api/java/util/Collections.html#synchronizedSet(java.util.Set)
-												 */
-												synchronized(keySet) {
-													for(final Iterator<Object> it = keySet.iterator(); it.hasNext();) {
-														final Object keyToPurge = it.next();
-														doEvict(evictCache, keyToPurge);
-														it.remove();
-													}
-												}
-												cacheManagementCache.put(cacheManagementKey, keySet);
-											}
-										}
+						}
+					}
+				}
+			}
+		}
+		
+		/*
+		 * Now process all of the evictions that take place, as a result of the method call
+		 */
+		if(isCustomCacheEviction) {
+			for(final CacheKeyEvictToken token : evictions) {
+				Cache evictCache = null;
+				final List<String> primaryKeys = applicationContext.getBean(token.getEvict().keyGenerator()).generateKey(token.getArgument());
+				if(primaryKeys != null) {
+					final String cacheName = token.getEvict().value();
+					evictCache = this.cacheManager.getCache(cacheName);
+					if(evictCache == null) {
+						throw new IllegalStateException(String.format("No cache called %s exists", cacheName));
+					}
+					for(final String primaryKey : primaryKeys) {
+						final String cacheManagementKey = generatePrimaryKeyCacheKey(evictCache, primaryKey);
+						Set<Object> keySet = cacheManagementCache.get(cacheManagementKey);
+						if(CollectionUtils.isNotEmpty(keySet)) {
+							logEviction(evictCache, cacheManagementKey, keySet.size());
+							if(keySet != null) {
+								/* 
+								 * this is a synchronizedSet, and thus requires a synchronized block around it
+								 * https://docs.oracle.com/javase/7/docs/api/java/util/Collections.html#synchronizedSet(java.util.Set)
+								 */
+								synchronized(keySet) {
+									for(final Iterator<Object> it = keySet.iterator(); it.hasNext();) {
+										final Object keyToPurge = it.next();
+										doEvict(evictCache, keyToPurge);
+										it.remove();
 									}
 								}
+								cacheManagementCache.put(cacheManagementKey, keySet);
 							}
 						}
 					}
 				}
 			}
 		}
+		
 		return returnValue;
 	}
 	

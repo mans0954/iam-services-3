@@ -24,7 +24,7 @@ import org.springframework.cache.interceptor.KeyGenerator;
  *
  * @author Lev Bornovalov
  */
-@Target({ElementType.PARAMETER})
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
@@ -33,7 +33,7 @@ public @interface CacheKeyEvict {
 	 * The cache name to evict
 	 * If not specified, it the cache specified in @CacheEvict will be used
 	 */
-	String cacheName() default "";
+	String value();
 	
 	/**
 	 * A spring bean that will return the key for this parameter

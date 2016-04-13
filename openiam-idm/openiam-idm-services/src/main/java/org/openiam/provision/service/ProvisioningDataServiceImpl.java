@@ -294,10 +294,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     @Override
     @CacheKeyEviction(
     	evictions={
-    		@CacheKeyEvict(cacheName="resources",keyGenerator=ProvisionUserResourceKeyGenerator.class),
-    		@CacheKeyEvict(cacheName="resourceEntities",keyGenerator=ProvisionUserResourceKeyGenerator.class)
+    		@CacheKeyEvict(value="resources",keyGenerator=ProvisionUserResourceKeyGenerator.class),
+    		@CacheKeyEvict(value="resourceEntities",keyGenerator=ProvisionUserResourceKeyGenerator.class)
     	},
-    	parameterName="pUser"
+    	parameterIndex=0
     )
     @Caching(
     	evict={
@@ -311,10 +311,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     @CacheKeyEviction(
     	evictions={
-    		@CacheKeyEvict(cacheName="resources",keyGenerator=ProvisionUserResourceKeyGenerator.class),
-    		@CacheKeyEvict(cacheName="resourceEntities",keyGenerator=ProvisionUserResourceKeyGenerator.class)
+    		@CacheKeyEvict(value="resources",keyGenerator=ProvisionUserResourceKeyGenerator.class),
+    		@CacheKeyEvict(value="resourceEntities",keyGenerator=ProvisionUserResourceKeyGenerator.class)
     	},
-    	parameterName="pUser"
+    	parameterIndex=0
     )
     @Caching(
     	evict={
@@ -328,10 +328,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     @CacheKeyEviction(
     	evictions={
-    		@CacheKeyEvict(cacheName="resources",keyGenerator=ProvisionUserResourceKeyGenerator.class),
-    		@CacheKeyEvict(cacheName="resourceEntities",keyGenerator=ProvisionUserResourceKeyGenerator.class)
+    		@CacheKeyEvict(value="resources",keyGenerator=ProvisionUserResourceKeyGenerator.class),
+    		@CacheKeyEvict(value="resourceEntities",keyGenerator=ProvisionUserResourceKeyGenerator.class)
     	},
-    	parameterName="pUser"
+    	parameterIndex=0
     )
     @Caching(
     	evict={

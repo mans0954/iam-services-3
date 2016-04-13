@@ -185,7 +185,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }*/
 
     @Override
-    public Response saveResource(final @CacheKeyEvict Resource resource, final String requesterId) {
+    public Response saveResource(final Resource resource, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
           /*resourceService.validate(resource);

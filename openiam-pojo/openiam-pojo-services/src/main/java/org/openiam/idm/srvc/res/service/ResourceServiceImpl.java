@@ -18,6 +18,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
+import org.openiam.cache.CacheKeyEvictions;
 import org.openiam.cache.ResourceToResourcePropKeyGenerator;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
@@ -184,13 +185,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
-    	}
-    )
-    public void deleteResource(final @CacheKeyEvict String resourceId) {
+    @CacheKeyEviction(
+        	evictions={
+            	@CacheKeyEvict("resources"),
+            	@CacheKeyEvict("resourceEntities")
+            }
+        )
+    public void deleteResource(final String resourceId) {
         if (StringUtils.isNotBlank(resourceId)) {
             final ResourceEntity entity = resourceDao.findById(resourceId);
             if (entity != null) {
@@ -470,14 +471,24 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
-    	}
-    )
-    public void addChildResource(final @CacheKeyEvict String parentResourceId,
-                                 final @CacheKeyEvict String childResourceId,
+    @CacheKeyEvictions({
+    	@CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	},
+        	parameterIndex=0
+        ),
+        @CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	},
+        	parameterIndex=1
+        )
+    })
+    public void addChildResource(final String parentResourceId,
+                                 final String childResourceId,
                                  final Set<String> rights,
                                  final Date startDate,
                                  final Date endDate) {
@@ -489,14 +500,24 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
-    	}
-    )
-    public void deleteChildResource(final @CacheKeyEvict String resourceId, 
-    								final @CacheKeyEvict String childResourceId) {
+    @CacheKeyEvictions({
+    	@CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	},
+        	parameterIndex=0
+        ),
+        @CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	},
+        	parameterIndex=1
+        )
+    })
+    public void deleteChildResource(final String resourceId, 
+    								final String childResourceId) {
         final ResourceEntity parent = resourceDao.findById(resourceId);
         final ResourceEntity child = resourceDao.findById(childResourceId);
         parent.removeChildResource(child);
@@ -505,13 +526,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
-    	}
+    @CacheKeyEviction(
+    	evictions={
+        	@CacheKeyEvict("resources"),
+        	@CacheKeyEvict("resourceEntities")
+        }
     )
-    public void addResourceGroup(final @CacheKeyEvict String resourceId,
+    public void addResourceGroup(final String resourceId,
                                  final String groupId,
                                  final Set<String> rightIds,
                                  final Date startDate,
@@ -525,13 +546,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
-    	}
-    )
-    public void deleteResourceGroup(final @CacheKeyEvict String resourceId, String groupId) {
+    @CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	}
+        )
+    public void deleteResourceGroup(final String resourceId, String groupId) {
         final ResourceEntity resource = resourceDao.findById(resourceId);
         final GroupEntity group = groupDao.findById(groupId);
         if(resource != null && group != null) {
@@ -542,13 +563,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
+    @CacheKeyEviction(
+    	evictions={
+    		@CacheKeyEvict("resources"),
+    		@CacheKeyEvict("resourceEntities")
     	}
     )
-    public void addResourceToRole(final @CacheKeyEvict String resourceId,
+    public void addResourceToRole(final String resourceId,
                                   final String roleId,
                                   final Set<String> rightIds,
                                   final Date startDate,
@@ -563,13 +584,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
-    	}
-    )
-    public void deleteResourceRole(final @CacheKeyEvict String resourceId, String roleId) {
+    @CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	}
+        )
+    public void deleteResourceRole(final String resourceId, String roleId) {
         final ResourceEntity resource = resourceDao.findById(resourceId);
         final RoleEntity role = roleDao.findById(roleId);
         if(resource != null && role != null) {
@@ -901,14 +922,14 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     //TODO - does saving the resource require purging the resource attributes from the cache as well?
     //       if so, there is no easy way to figure out which attributes have changed
     @Override
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
+    @CacheKeyEviction(
+    	evictions={
+    		@CacheKeyEvict("resources"),
+    		@CacheKeyEvict("resourceEntities")
     	}
     )
     @Transactional
-    public ResourceEntity saveResource(final @CacheKeyEvict Resource resource, final String requesterId) throws BasicDataServiceException {
+    public ResourceEntity saveResource(final Resource resource, final String requesterId) throws BasicDataServiceException {
         this.validate(resource);
         final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
         this.save(entity, requesterId);
@@ -918,14 +939,14 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
 
     @Override
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
-    	}
-    )
+    @CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	}
+        )
     @Transactional
-    public void removeRoleToResource(final @CacheKeyEvict String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
+    public void removeRoleToResource(final String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);

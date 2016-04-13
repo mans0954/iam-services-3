@@ -649,7 +649,12 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     		@CacheEvict(cacheNames="managedSysAttributeMaps", key="{#entity.id}")
     	}
     )
-    public void save(final @CacheKeyEvict(cacheName="managedSysObjectParam") ManagedSysEntity entity) throws BasicDataServiceException {
+    @CacheKeyEviction(
+        	evictions={
+                @CacheKeyEvict("managedSysObjectParam")
+            }
+        )
+    public void save(final ManagedSysEntity entity) throws BasicDataServiceException {
         if (StringUtils.isBlank(entity.getResource().getId())) {
             final ResourceEntity resource = new ResourceEntity();
             resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));

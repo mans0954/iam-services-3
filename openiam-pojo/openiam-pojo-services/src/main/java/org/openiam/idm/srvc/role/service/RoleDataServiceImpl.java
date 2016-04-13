@@ -18,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.CacheKeyEviction;
 import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -181,8 +182,12 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Override
 	@Transactional
-	@CacheEvict(value = "roleEntities")
-	public void removeRole(final @CacheKeyEvict String roleId) {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("roleEntities")
+        }
+    )
+	public void removeRole(final String roleId) {
 		if(roleId != null) {
 			final RoleEntity roleEntity = roleDao.findById(roleId);
 			if(roleEntity != null) {
@@ -269,8 +274,12 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
     @Transactional
-    @CacheEvict(value = "roleEntities")
-	public void saveRole(final @CacheKeyEvict RoleEntity role, final String requestorId) throws BasicDataServiceException {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("roleEntities")
+        }
+    )
+	public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
 		if(role != null && entityValidator.isValid(role)) {
 			if(role.getManagedSystem() != null && role.getManagedSystem().getId() != null) {
 				role.setManagedSystem(managedSysDAO.findById(role.getManagedSystem().getId()));

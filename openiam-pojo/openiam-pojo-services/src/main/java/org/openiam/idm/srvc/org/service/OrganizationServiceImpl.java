@@ -17,6 +17,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.CacheKeyEviction;
+import org.openiam.cache.CacheKeyEvictions;
 import org.openiam.cache.OrgAttributeToOrganizationKeyGenerator;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.LocationDozerConverter;
@@ -422,11 +424,13 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "organizations"),
-            @CacheEvict(value="organizationEntities")
-    })
-    public Organization save(final @CacheKeyEvict Organization organization, final String requestorId) throws BasicDataServiceException {
+    @CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("organizations"),
+            @CacheKeyEvict("organizationEntities")
+        }
+    )
+    public Organization save(final Organization organization, final String requestorId) throws BasicDataServiceException {
         return save(organization, requestorId, false);
     }
     
@@ -446,11 +450,13 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "organizations"),
-            @CacheEvict(value="organizationEntities")
-    })
-    public Organization save(final @CacheKeyEvict Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException {
+    @CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("organizations"),
+            @CacheKeyEvict("organizationEntities")
+        }
+    )
+    public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
         final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
@@ -921,12 +927,24 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "organizations"),
-            @CacheEvict(value="organizationEntities")
+    @CacheKeyEvictions({
+    	@CacheKeyEviction(
+        	evictions={
+                @CacheKeyEvict("organizations"),
+                @CacheKeyEvict("organizationEntities")
+            },
+            parameterIndex=0
+        ),
+        @CacheKeyEviction(
+        	evictions={
+                @CacheKeyEvict("organizations"),
+                @CacheKeyEvict("organizationEntities")
+            },
+            parameterIndex=1
+        )
     })
-    public void removeChildOrganization(final @CacheKeyEvict String organizationId, 
-    									final @CacheKeyEvict String childOrganizationId) {
+    public void removeChildOrganization(final String organizationId, 
+    									final String childOrganizationId) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
         if (parent != null && child != null) {
@@ -937,12 +955,24 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "organizations"),
-            @CacheEvict(value="organizationEntities")
+    @CacheKeyEvictions(value={
+    	@CacheKeyEviction(
+        	evictions={
+                @CacheKeyEvict("organizations"),
+                @CacheKeyEvict("organizationEntities")
+            },
+            parameterIndex=0
+        ),
+        @CacheKeyEviction(
+        	evictions={
+                @CacheKeyEvict("organizations"),
+                @CacheKeyEvict("organizationEntities")
+            },
+            parameterIndex=1
+        )
     })
-    public void addChildOrganization(final @CacheKeyEvict String organizationId, 
-    								 final @CacheKeyEvict String childOrganizationId, 
+    public void addChildOrganization(final String organizationId, 
+    								 final String childOrganizationId, 
     								 final Set<String> rightIds, 
     								 final Date startDate, 
     								 final Date endDate) {
@@ -956,21 +986,25 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "organizations"),
-            @CacheEvict(value="organizationEntities")
-    })
-    public void deleteOrganization(final @CacheKeyEvict String orgId) throws BasicDataServiceException {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("organizations"),
+            @CacheKeyEvict("organizationEntities")
+        }
+    )
+    public void deleteOrganization(final String orgId) throws BasicDataServiceException {
         deleteOrganization(orgId, false);
     }
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "organizations"),
-            @CacheEvict(value="organizationEntities")
-    })
-    public void deleteOrganization(final @CacheKeyEvict String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
+    @CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("organizations"),
+            @CacheKeyEvict("organizationEntities")
+        }
+    )
+    public void deleteOrganization(final String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
         final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();

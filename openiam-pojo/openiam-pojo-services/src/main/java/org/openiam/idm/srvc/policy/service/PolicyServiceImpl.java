@@ -84,8 +84,12 @@ public class PolicyServiceImpl implements PolicyService {
 
 	@Override
     @Transactional
-    @CacheEvict(value = "policies")
-	public void save(final @CacheKeyEvict(cacheName="policies") Policy policy) {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("policies")
+        }
+    )
+	public void save(final Policy policy) {
 		final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
 		if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
 			for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
@@ -143,8 +147,12 @@ public class PolicyServiceImpl implements PolicyService {
 
 	@Override
 	@Transactional
-    @CacheEvict(value = "policies")
-	public void delete(final @CacheKeyEvict(cacheName="policies") String policyId) throws BasicDataServiceException {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("policies")
+        }
+    )
+	public void delete(final String policyId) throws BasicDataServiceException {
 		final PolicyEntity entity = policyDao.findById(policyId);
 		if(entity != null) {
 			if(CollectionUtils.isNotEmpty(entity.getPasswordPolicyProviders())) {

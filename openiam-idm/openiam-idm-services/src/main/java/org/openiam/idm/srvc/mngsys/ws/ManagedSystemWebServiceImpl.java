@@ -483,8 +483,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
      * (org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
      */
     @Override
-    @CacheEvict(value = "managedSysObjectParam")
-    public Response saveManagedSystemObjectMatch(final @CacheKeyEvict ManagedSystemObjectMatch obj) {
+    @CacheKeyEviction(
+        	evictions={
+                @CacheKeyEvict("managedSysObjectParam")
+            }
+        )
+    public Response saveManagedSystemObjectMatch(final ManagedSystemObjectMatch obj) {
     	final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (obj == null) {
@@ -509,8 +513,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @CacheEvict(value = "managedSysObjectParam")
-    public void removeManagedSystemObjectMatch(final @CacheKeyEvict ManagedSystemObjectMatch obj) {
+    @CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("managedSysObjectParam")
+        }
+    )
+    public void removeManagedSystemObjectMatch(final ManagedSystemObjectMatch obj) {
         this.managedSystemService.deleteManagedSystemObjectMatch(obj.getObjectSearchId());
     }
 
@@ -528,8 +536,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @CacheEvict(value = "resourceAttributeMaps")
-    public AttributeMap addAttributeMap(final @CacheKeyEvict AttributeMap attributeMap) {
+    @CacheKeyEviction(
+        	evictions={
+                @CacheKeyEvict("resourceAttributeMaps")
+            }
+        )
+    public AttributeMap addAttributeMap(final AttributeMap attributeMap) {
         if (attributeMap == null) {
             throw new IllegalArgumentException("AttributeMap object is null");
         }
@@ -540,14 +552,22 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @CacheEvict(value = "resourceAttributeMaps")
-    public void deleteAttributesMapList(final @CacheKeyEvict List<String> ids) throws Exception {
+    @CacheKeyEviction(
+        	evictions={
+                @CacheKeyEvict("resourceAttributeMaps")
+            }
+        )
+    public void deleteAttributesMapList(final List<String> ids) throws Exception {
         managedSystemService.deleteAttributesMapList(ids);
     }
 
     @Override
-    @CacheEvict(value = "resourceAttributeMaps")
-    public AttributeMap updateAttributeMap(final @CacheKeyEvict AttributeMap attributeMap) {
+    @CacheKeyEviction(
+        	evictions={
+                @CacheKeyEvict("resourceAttributeMaps")
+            }
+        )
+    public AttributeMap updateAttributeMap(final AttributeMap attributeMap) {
         if (attributeMap == null) {
             throw new IllegalArgumentException("attributeMap object is null");
         }
@@ -557,8 +577,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @CacheEvict(value = "resourceAttributeMaps")
-    public void removeAttributeMap(final @CacheKeyEvict String id) {
+    @CacheKeyEviction(
+        	evictions={
+                @CacheKeyEvict("resourceAttributeMaps")
+            }
+        )
+    public void removeAttributeMap(final String id) {
         if (id == null) {
             throw new IllegalArgumentException("attributeMapId is null");
         }
