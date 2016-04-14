@@ -5,12 +5,15 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, MetadataTypeSearchBean> {
@@ -62,29 +65,63 @@ public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, M
 		return metadataServiceClient.findTypeBeans(searchBean, from, size, getDefaultLanguage());
 	}
 
-/*	@Override
-	protected String getId(MetadataType bean) {
-		return bean.getId();
+	private MetadataTypeSearchBean getCacheableSearchBean(final MetadataType entity) {
+		final MetadataTypeSearchBean sb = new MetadataTypeSearchBean();
+		sb.setFindInCache(true);
+		sb.setDeepCopy(true);
+		sb.setName(entity.getName());
+		return sb;
 	}
-
-	@Override
-	protected void setId(MetadataType bean, String id) {
-		bean.setId(id);
+	
+	private MetadataType createAndSave() {
+		MetadataType entity = createBean();
+		final Response response = metadataServiceClient.saveMetadataType(entity);
+		assertSuccess(response);
+		entity = get((String)response.getResponseValue());
+		Assert.assertNotNull(entity);
+		return entity;
 	}
-
-	@Override
-	protected void setName(MetadataType bean, String name) {
-		bean.setDescription(name);
+	
+	@Test
+	public void testSearchBeanCache() throws Exception {
+		for(int j = 0; j < 2; j++) {
+			final MetadataType entity = createAndSave();
+			final MetadataTypeSearchBean sb = getCacheableSearchBean(entity);
+			try {
+				searchAndAssertCacheHit(sb, entity, "metadataTypes");
+			} finally {
+				deleteAndAssert(entity);
+				sleep(1);
+				Assert.assertTrue(CollectionUtils.isEmpty(find(sb, 0, Integer.MAX_VALUE)));
+			}
+		}
 	}
-
-	@Override
-	protected String getName(MetadataType bean) {
-		return bean.getDescription();
+	
+	@Test
+	public void testCreateAndDelete() throws Exception {
+		for(int j = 0; j < 2; j++) {
+			final MetadataType entity = createAndSave();
+			Assert.assertNotNull(get(entity.getId()));
+			deleteAndAssert(entity);
+			Assert.assertNull(get(entity.getId()));
+		}
 	}
-
-	@Override
-	protected void setNameForSearch(MetadataTypeSearchBean searchBean, String name) {
-		searchBean.setName(name);
-	}*/
+	
+	@Test
+	public void testSearchBeanCacheAfterSave() {
+		final MetadataType entity = createAndSave();
+		final MetadataTypeSearchBean sb = getCacheableSearchBean(entity);
+		try {
+			/* trigger and assert cache hit */
+			searchAndAssertCacheHit(sb, entity, "metadataTypes");
+			
+			saveAndAssertCachePurge(sb, entity, new String[] {"metadataTypes"}, 1, 1);
+			
+			/* trigger and assert cache hit */
+			searchAndAssertCacheHit(sb, entity, "metadataTypes");
+		} finally {
+			deleteAndAssert(entity);
+		}
+	}
 
 }

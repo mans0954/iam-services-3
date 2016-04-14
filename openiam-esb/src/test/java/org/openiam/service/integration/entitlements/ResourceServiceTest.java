@@ -238,7 +238,7 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 			
 			Date now = new Date();
 			resourceDataService.addUserToResource(resource.getId(), user.getId(), getRequestorId(), null, null, null);
-			assertCachePurge(now, "resourceEntities", 1);
+			assertCachePurge(now, "resourceEntities", 1, 1);
 			
 			/* trigger and assert cache hit */
 			now = new Date();

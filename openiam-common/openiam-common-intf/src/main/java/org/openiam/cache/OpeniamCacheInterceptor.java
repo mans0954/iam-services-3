@@ -340,15 +340,23 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 		}
 		
 		public boolean isConditionPassing() {
-			return super.isConditionPassing(null);
+			return isConditionPassing(null);
 		}
 		
 		public boolean canPutInCache() {
-			return super.canPutToCache(null);
+			return canPutToCache(null);
 		}
 		
 		public Collection<? extends Cache> getCaches() {
 			return super.getCaches();
+		}
+		
+		
+
+		@Override
+		protected boolean isConditionPassing(Object result) {
+			// TODO Auto-generated method stub
+			return super.isConditionPassing(result);
 		}
 
 		@Override

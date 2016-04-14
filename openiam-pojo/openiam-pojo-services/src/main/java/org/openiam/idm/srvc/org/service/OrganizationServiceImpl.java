@@ -299,7 +299,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value = "organizationEntities", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="#searchBean.findInCache")
+    @Cacheable(value = "organizationEntities", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
         Set<String> filter = getDelegationFilter(requesterId, false);
         if(searchBean != null) {
@@ -324,7 +324,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value = "organizations", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="#searchBean.findInCache")
+    @Cacheable(value = "organizations", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
         /*final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
         Set<String> filter = getDelegationFilter(requesterId, isUncoverParents);

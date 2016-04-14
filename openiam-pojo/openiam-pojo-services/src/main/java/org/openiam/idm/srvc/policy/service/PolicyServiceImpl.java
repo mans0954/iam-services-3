@@ -175,9 +175,8 @@ public class PolicyServiceImpl implements PolicyService {
 
 	@Override
 	@Transactional(readOnly=true)
-    @Cacheable(value = "policies", key = "{#searchBean, #from, #size}")
-	public List<Policy> findBeans(PolicySearchBean searchBean, int from,
-			int size) {
+    @Cacheable(value = "policies", key = "{#searchBean, #from, #size}", condition="{#searchBean != null and #searchBean.findInCache}")
+	public List<Policy> findBeans(final PolicySearchBean searchBean, final int from, final int size) {
         List<PolicyEntity> entities = policyDao.getByExampleNoLocalize(searchBean, from, size);
         return policyDozerConverter.convertToDTOList(entities, true);
 	}

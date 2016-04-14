@@ -124,6 +124,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Override
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
+    @Cacheable(value="metadataElements",  key="{ #searchBean, #from, #size, #language}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataElementEntity> retVal = findEntityBeans(searchBean, from,size);
         return (retVal != null) ? metaDataElementDozerConverter.convertToDTOList(retVal,true) : null;
@@ -134,11 +135,11 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     /**
      * Without localization loop
      */
-    @Cacheable(value="metadataElements",  key="{ #searchBean, #from, #size }", condition="#searchBean.findInCache")
+    @Cacheable(value="metadataElements",  key="{ #searchBean, #from, #size }", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<MetadataElement> findBeans(MetadataElementSearchBean searchBean, int from, int size) {
        return this.findBeans(searchBean, from, size, null);
     }
-	@Cacheable(value="metadataElementEntities",  key="{ #searchBean, #from, #size }", condition="#searchBean.findInCache")
+	@Cacheable(value="metadataElementEntities",  key="{ #searchBean, #from, #size }", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size){
 		List<MetadataElementEntity> retVal = null;
 		if(searchBean != null  && searchBean.hasMultipleKeys()) {
@@ -153,6 +154,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Override
     @LocalizedServiceGet
 	@Transactional(readOnly=true)
+    @Cacheable(value="metadataTypes", key="{ #searchBean, #from, #size, #language}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean != null && searchBean.hasMultipleKeys()) {
@@ -166,7 +168,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@Override
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
-	@Cacheable(value="metadataTypeEntities", key="{ #searchBean, #from, #size,#language}", condition="#searchBean.findInCache")
+	@Cacheable(value="metadataTypeEntities", key="{ #searchBean, #from, #size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language){
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
@@ -178,7 +180,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
     @Override
-    @Cacheable(value="metadataTypes", key="{ #searchBean, #from, #size }", condition="#searchBean.findInCache")
+    @Cacheable(value="metadataTypes", key="{ #searchBean, #from, #size }", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<MetadataType> findBeansNoLocalize(MetadataTypeSearchBean searchBean, int from, int size) {
         return this.findBeans(searchBean, from, size, null);
     }

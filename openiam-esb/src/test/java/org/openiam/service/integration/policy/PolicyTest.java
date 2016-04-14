@@ -7,6 +7,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
@@ -15,6 +16,7 @@ import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyConstants;
@@ -30,7 +32,6 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -149,6 +150,62 @@ public class PolicyTest extends AbstractKeyNameServiceTest<Policy, PolicySearchB
 		instance.addPolicyAttribute(attribute);
 	}
 	
+	private PolicySearchBean getCacheableSearchBean(final Policy entity) {
+		final PolicySearchBean sb = new PolicySearchBean();
+		sb.setFindInCache(true);
+		sb.setDeepCopy(true);
+		sb.setName(entity.getName());
+		return sb;
+	}
+	
+	private Policy createPolicy() {
+		Policy entity = createBean();
+		final Response response = policyServiceClient.savePolicy(entity);
+		assertSuccess(response);
+		entity = get((String)response.getResponseValue());
+		Assert.assertNotNull(entity);
+		return entity;
+	}
+	
 	@Test
-	public void foo() {}
+	public void testSearchBeanCache() throws Exception {
+		for(int j = 0; j < 2; j++) {
+			final Policy entity = createPolicy();
+			final PolicySearchBean sb = getCacheableSearchBean(entity);
+			try {
+				searchAndAssertCacheHit(sb, entity, "policies");
+			} finally {
+				deleteAndAssert(entity);
+				sleep(1);
+				Assert.assertTrue(CollectionUtils.isEmpty(find(sb, 0, Integer.MAX_VALUE)));
+			}
+		}
+	}
+	
+	@Test
+	public void testGetPolicyCache() throws Exception {
+		for(int j = 0; j < 2; j++) {
+			final Policy entity = createPolicy();
+			Assert.assertNotNull(get(entity.getId()));
+			deleteAndAssert(entity);
+			Assert.assertNull(get(entity.getId()));
+		}
+	}
+	
+	@Test
+	public void testSearchBeanCacheAfterSave() {
+		final Policy entity = createPolicy();
+		final PolicySearchBean sb = getCacheableSearchBean(entity);
+		try {
+			/* trigger and assert cache hit */
+			searchAndAssertCacheHit(sb, entity, "policies");
+			
+			saveAndAssertCachePurge(sb, entity, new String[] {"policies"}, 2, 1);
+			
+			/* trigger and assert cache hit */
+			searchAndAssertCacheHit(sb, entity, "policies");
+		} finally {
+			deleteAndAssert(entity);
+		}
+	}
 }

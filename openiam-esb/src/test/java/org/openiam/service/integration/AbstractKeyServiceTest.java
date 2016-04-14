@@ -109,12 +109,12 @@ public abstract class AbstractKeyServiceTest<T extends KeyDTO, S extends Abstrac
 		}
 	}
 
-	protected void assertAuditLogSize(final List<IdmAuditLogEntity> logs, final int expectedSize) {
-		if(expectedSize == 0) {
+	protected void assertAuditLogSize(final List<IdmAuditLogEntity> logs, final int numOfCacheEvents) {
+		if(numOfCacheEvents == 0) {
 			Assert.assertTrue(CollectionUtils.isEmpty(logs));
 		} else {
 			Assert.assertTrue(CollectionUtils.isNotEmpty(logs));
-			Assert.assertEquals(expectedSize, logs.size());
+			Assert.assertEquals(logs.size(), numOfCacheEvents);
 		}
 	}
 	
@@ -131,7 +131,11 @@ public abstract class AbstractKeyServiceTest<T extends KeyDTO, S extends Abstrac
 		Assert.assertEquals(Integer.toString(numOfExpectedEntities), logs.get(0).get(AuditAttributeName.NUM_OF_MULTIKEYS.name()));
 	}
 	
-	protected void assertCachePurge(final Date now, final String cacheName, final int numOfExpectedEntities) {
+	protected void assertCachePurge(final Date now, final String cacheName, final int numOfPurgedEntities) {
+		assertCachePurge(now, cacheName, numOfPurgedEntities, numOfPurgedEntities);
+	}
+	
+	protected void assertCachePurge(final Date now, final String cacheName, final int numOfPurgedEntities, final int numOfCacheEvents) {
 		sleep(1); /* wait for persist due to redis*/
 		
 		/* only way to confirm that there haven't been multiple puts() into the same cache */
@@ -140,17 +144,17 @@ public abstract class AbstractKeyServiceTest<T extends KeyDTO, S extends Abstrac
 		auditLogSearchBean.setFrom(now);
 		auditLogSearchBean.addAttribute(AuditAttributeName.CACHE_NAME.name(), cacheName);
 		List<IdmAuditLogEntity> logs = auditLogService.findBeans(auditLogSearchBean, 0, Integer.MAX_VALUE);
-		assertAuditLogSize(logs, numOfExpectedEntities);
+		assertAuditLogSize(logs, numOfCacheEvents);
 		final int numOfMultikies = logs.stream().map(e -> e.get(AuditAttributeName.NUM_OF_MULTIKEYS.name()))
 			.filter(e -> StringUtils.isNotBlank(e)).mapToInt(e -> Integer.valueOf(e)).sum();
-		Assert.assertEquals(numOfExpectedEntities, numOfMultikies);
+		Assert.assertEquals(numOfMultikies, numOfPurgedEntities, String.format("Expected %s, but got %s", numOfPurgedEntities, numOfMultikies));
 	}
 	
-	protected void saveAndAssertCachePurge(final S sb, final T entity, final String[] cacheNames, final int numOfExpectedEntities) {
+	protected void saveAndAssertCachePurge(final S sb, final T entity, final String[] cacheNames, final int numOfPurgedEntities, final int numOfCacheEvents) {
 		final Date now = new Date();
 		save(entity);
 		for(final String cacheName : cacheNames) {
-			assertCachePurge(now, cacheName, numOfExpectedEntities);
+			assertCachePurge(now, cacheName, numOfPurgedEntities, numOfCacheEvents);
 		}
 	}
 	

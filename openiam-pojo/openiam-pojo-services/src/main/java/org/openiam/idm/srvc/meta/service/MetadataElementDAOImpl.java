@@ -54,6 +54,10 @@ public class MetadataElementDAOImpl extends OrderDaoImpl<MetadataElementEntity, 
 					criteria.add(Restrictions.eq("dataType", metaSearchBean.getDataType()));
 				}
 				
+				if(StringUtils.isNotBlank(metaSearchBean.getName())) {
+					criteria.add(Restrictions.eq("name", metaSearchBean.getName()));
+				}
+				
 				if(CollectionUtils.isNotEmpty(metaSearchBean.getTypeIdSet())) {
 					criteria.add(Restrictions.in("metadataType.id", metaSearchBean.getTypeIdSet()));
 				}

@@ -125,7 +125,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value="languages",key="{ #searchBean, #from, #size}", condition="#searchBean.findInCache")
+    @Cacheable(value="languages",key="{ #searchBean, #from, #size}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<Language> findBeans(final LanguageSearchBean searchBean, final int from, final int size) {
         List<LanguageEntity> languageEntities = languageDao.getByExample(searchBean, from, size);
         return languageEntities != null ? languageDozerConverter.convertToDTOList(languageEntities, true) : null;
@@ -134,7 +134,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value="languages", key="{ #searchBean, #from, #size,#language}", condition="#searchBean.findInCache")
+    @Cacheable(value="languages", key="{ #searchBean, #from, #size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size,
             final Language language) {
         return this.findBeans(searchBean, from, size);

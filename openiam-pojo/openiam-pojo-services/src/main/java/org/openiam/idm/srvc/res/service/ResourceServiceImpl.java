@@ -1017,7 +1017,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    @Cacheable(value = "resourceEntities", key = "{ #searchBean,#from,#size,#language}", condition="#searchBean.findInCache")
+    @Cacheable(value = "resourceEntities", key = "{ #searchBean,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
         return resourceDao.getByExample(searchBean, from, size);
     }

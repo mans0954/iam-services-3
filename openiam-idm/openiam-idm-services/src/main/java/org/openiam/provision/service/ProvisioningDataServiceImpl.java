@@ -299,12 +299,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     	},
     	parameterIndex=0
     )
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
-    	}
-    )
     public ProvisionUserResponse modifyUser(final ProvisionUser pUser) {
         return modifyUser(pUser, null);
     }
@@ -316,12 +310,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     	},
     	parameterIndex=0
     )
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
-    	}
-    )
     private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLogEntity auditLog) {
         return modifyUser(pUser, auditLog, null);
     }
@@ -332,12 +320,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     		@CacheKeyEvict(value="resourceEntities",keyGenerator=ProvisionUserResourceKeyGenerator.class)
     	},
     	parameterIndex=0
-    )
-    @Caching(
-    	evict={
-    		@CacheEvict(value = "resources"),
-    		@CacheEvict(value = "resourceEntities")
-    	}
     )
     private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLogEntity auditLog, final AuditAction auditAction) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();

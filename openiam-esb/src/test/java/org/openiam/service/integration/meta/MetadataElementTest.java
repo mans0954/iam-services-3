@@ -15,6 +15,7 @@ import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElement, MetadataElementSearchBean> {
@@ -76,24 +77,62 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 		assertSuccess(save(e));
 	}
 
-/*	@Override
-	protected void setId(MetadataElement bean, String id) {
-		bean.setId(id);
+	private MetadataElementSearchBean getCacheableSearchBean(final MetadataElement entity) {
+		final MetadataElementSearchBean sb = new MetadataElementSearchBean();
+		sb.setFindInCache(true);
+		sb.setDeepCopy(true);
+		sb.setName(entity.getName());
+		return sb;
 	}
-
-	@Override
-	protected void setName(MetadataElement bean, String name) {
-		bean.setAttributeName(name);
+	
+	private MetadataElement createAndSave() {
+		MetadataElement entity = createBean();
+		final Response response = metadataServiceClient.saveMetadataEntity(entity);
+		assertSuccess(response);
+		entity = get((String)response.getResponseValue());
+		Assert.assertNotNull(entity);
+		return entity;
 	}
-
-	@Override
-	protected String getName(MetadataElement bean) {
-		return bean.getAttributeName();
+	
+	@Test
+	public void testSearchBeanCache() throws Exception {
+		for(int j = 0; j < 2; j++) {
+			final MetadataElement entity = createAndSave();
+			final MetadataElementSearchBean sb = getCacheableSearchBean(entity);
+			try {
+				searchAndAssertCacheHit(sb, entity, "metadataElements");
+			} finally {
+				deleteAndAssert(entity);
+				sleep(1);
+				Assert.assertTrue(CollectionUtils.isEmpty(find(sb, 0, Integer.MAX_VALUE)));
+			}
+		}
 	}
-
-	@Override
-	protected void setNameForSearch(MetadataElementSearchBean searchBean, String name) {
-		searchBean.setAttributeName(name);
-	}*/
-
+	
+	@Test
+	public void testCreateAndDelete() throws Exception {
+		for(int j = 0; j < 2; j++) {
+			final MetadataElement entity = createAndSave();
+			Assert.assertNotNull(get(entity.getId()));
+			deleteAndAssert(entity);
+			Assert.assertNull(get(entity.getId()));
+		}
+	}
+	
+	@Test
+	public void testSearchBeanCacheAfterSave() {
+		final MetadataElement entity = createAndSave();
+		final MetadataElementSearchBean sb = getCacheableSearchBean(entity);
+		try {
+			/* trigger and assert cache hit */
+			searchAndAssertCacheHit(sb, entity, "metadataElements");
+			
+			saveAndAssertCachePurge(sb, entity, new String[] {"metadataElements"}, 1, 1);
+			
+			/* trigger and assert cache hit */
+			searchAndAssertCacheHit(sb, entity, "metadataElements");
+		} finally {
+			deleteAndAssert(entity);
+		}
+	}
 }

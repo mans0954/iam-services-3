@@ -196,7 +196,7 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 			
 			final Date now = new Date();
 			organizationServiceClient.addChildOrganization(organization1.getId(), organization2.getId(), getRequestorId(), null, null, null);
-			assertCachePurge(now, "organizationEntities", 2);
+			assertCachePurge(now, "organizationEntities", 2, 2);
 			
 		} finally {
 			for(final Organization organization : new Organization[] {organization1, organization2}) {
