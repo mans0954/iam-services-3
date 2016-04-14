@@ -788,7 +788,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     @Override
     public List<UserEntity> getUserByIds(Set<String> ids) {
         if(ids != null && !ids.isEmpty()) {
-            if (ids.size()>2000){
+            if (ids.size()<2000){
             final Criteria criteria = getCriteria()
                     .add(Restrictions.in("id", ids));
             return criteria.list();}
