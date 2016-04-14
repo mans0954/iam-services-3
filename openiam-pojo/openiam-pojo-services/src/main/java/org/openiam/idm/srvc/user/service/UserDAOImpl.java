@@ -19,6 +19,7 @@ import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -787,9 +788,16 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     @Override
     public List<UserEntity> getUserByIds(Set<String> ids) {
         if(ids != null && !ids.isEmpty()) {
+            if (ids.size()>2000){
             final Criteria criteria = getCriteria()
                     .add(Restrictions.in("id", ids));
-            return criteria.list();
+            return criteria.list();}
+            else {
+                HibernateTemplate template = getHibernateTemplate();
+                template.setCacheQueries(true);
+                String sql = String.format("FROM UserEntity r where r.id in (\'%s\')",StringUtils.join(ids,"\',\'"));
+                return template.find(sql);
+            }
         }
         return new ArrayList<UserEntity>(0);
     }
