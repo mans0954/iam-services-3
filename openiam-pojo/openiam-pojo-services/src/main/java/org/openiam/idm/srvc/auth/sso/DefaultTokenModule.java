@@ -102,17 +102,22 @@ public class DefaultTokenModule implements SSOTokenModule {
         long curTime = System.currentTimeMillis();
 
 		try {
-			
-			log.debug("Token=" + token);
-			log.debug("cryptor =" + cryptor);
+			if(log.isDebugEnabled()) {
+				log.debug("Token=" + token);
+				log.debug("cryptor =" + cryptor);
+			}
             long startTime = System.currentTimeMillis();
 			decString = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.token.name()),token);
-            log.debug("decrypt time: " + (System.currentTimeMillis() - startTime));
+			if(log.isDebugEnabled()) {
+				log.debug("decrypt time: " + (System.currentTimeMillis() - startTime));
+			}
 
 		}catch(EncryptionException encExcep) {
 			return false;
 		}
-		log.debug("Parsing token" );
+		if(log.isDebugEnabled()) {
+			log.debug("Parsing token" );
+		}
 		
 		// tokenize this string
 		StringTokenizer tokenizer = new StringTokenizer(decString,":");
@@ -122,7 +127,9 @@ public class DefaultTokenModule implements SSOTokenModule {
 			return false;
 		}
 		
-		log.debug("- userId = " + decUserId );
+		if(log.isDebugEnabled()) {
+			log.debug("- userId = " + decUserId );
+		}
 		
 		if (tokenizer.hasMoreTokens()) {
 			decTime =  tokenizer.nextToken();
@@ -137,23 +144,25 @@ public class DefaultTokenModule implements SSOTokenModule {
 		
 		long ldecTime = Long.parseLong( decTime );
 
-        log.debug("- Time found in Token => " + ldecTime );
-        log.debug("- Time found in Token as date => " + new Date(ldecTime) );
-
-        log.debug("- Token life in millis => " + getIdleTime());
-
-        // decTime + idleTime = validTime for Token
-       // long tokenValidTime = ldecTime + getIdleTime();
-
-        log.debug("Valid token time=" + ldecTime + " curtime = " + curTime);
-        log.debug("Token is valid till = " + new Date(ldecTime));
-        log.debug("Current time=" + new Date(curTime));
-        log.debug("Diff between token and curTime = " + (ldecTime - curTime));
-
+		if(log.isDebugEnabled()) {
+	        log.debug("- Time found in Token => " + ldecTime );
+	        log.debug("- Time found in Token as date => " + new Date(ldecTime) );
+	
+	        log.debug("- Token life in millis => " + getIdleTime());
+	
+	        // decTime + idleTime = validTime for Token
+	       // long tokenValidTime = ldecTime + getIdleTime();
+	
+	        log.debug("Valid token time=" + ldecTime + " curtime = " + curTime);
+	        log.debug("Token is valid till = " + new Date(ldecTime));
+	        log.debug("Current time=" + new Date(curTime));
+	        log.debug("Diff between token and curTime = " + (ldecTime - curTime));
+		}
 		if ( curTime > ldecTime ) {
 			//current time is greater then the allowed idle time
-			
-			log.debug("Token Failed time check"  );
+			if(log.isDebugEnabled()) {
+				log.debug("Token Failed time check"  );
+			}
 			return false;
 		}
 		return true;

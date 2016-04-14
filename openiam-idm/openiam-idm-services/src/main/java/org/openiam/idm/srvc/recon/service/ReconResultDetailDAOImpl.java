@@ -39,10 +39,8 @@ public class ReconResultDetailDAOImpl implements ReconResultDetailDAO {
 	}
 
 	public void add(ReconResultDetail transientInstance) {
-		log.debug("persisting ReconResultDetail instance");
 		try {
 			sessionFactory.getCurrentSession().persist(transientInstance);
-			log.debug("persist successful");
 		} catch (RuntimeException re) {
 			log.error("persist failed", re);
 			throw re;
@@ -51,10 +49,8 @@ public class ReconResultDetailDAOImpl implements ReconResultDetailDAO {
 
 
 	public void remove(ReconResultDetail persistentInstance) {
-		log.debug("deleting ReconResultDetail instance");
 		try {
 			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
 		} catch (RuntimeException re) {
 			log.error("delete failed", re);
 			throw re;
@@ -62,11 +58,9 @@ public class ReconResultDetailDAOImpl implements ReconResultDetailDAO {
 	}
 
 	public ReconResultDetail update(ReconResultDetail detachedInstance) {
-		log.debug("merging ReconResultDetail instance");
 		try {
 			ReconResultDetail result = (ReconResultDetail) sessionFactory
 					.getCurrentSession().merge(detachedInstance);
-			log.debug("merge successful");
 			return result;
 		} catch (RuntimeException re) {
 			log.error("merge failed", re);
@@ -75,17 +69,11 @@ public class ReconResultDetailDAOImpl implements ReconResultDetailDAO {
 	}
 
 	public ReconResultDetail findById(java.lang.String id) {
-		log.debug("getting ReconResultDetail instance with id: " + id);
 		try {
 			ReconResultDetail instance = (ReconResultDetail) sessionFactory
 					.getCurrentSession()
 					.get("org.openiam.idm.srvc.pswd.service.ReconResultDetail",
 							id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
 			return instance;
 		} catch (RuntimeException re) {
 			log.error("get failed", re);

@@ -8,6 +8,7 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -192,23 +193,6 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.adminResourceId = adminResourceId;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-
-        OrganizationSearchBean that = (OrganizationSearchBean) o;
-
-        if (internalOrgId != null ? !internalOrgId.equals(that.internalOrgId) : that.internalOrgId != null)
-            return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (validParentTypeId != null ? !validParentTypeId.equals(that.validParentTypeId) : that.validParentTypeId != null)
-            return false;
-
-        return true;
-    }
-
     public boolean isForCurrentUsersOnly() {
         return forCurrentUsersOnly;
     }
@@ -233,14 +217,7 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.domainName = domainName;
     }
 
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (validParentTypeId != null ? validParentTypeId.hashCode() : 0);
-        result = 31 * result + (internalOrgId != null ? internalOrgId.hashCode() : 0);
-        return result;
-    }
+
 
     @Override
     public String getCacheUniqueBeanKey() {
@@ -255,4 +232,114 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
                 .append(getKeys() != null ? getKeys().hashCode() : "")
                 .toString();
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((abbreviation == null) ? 0 : abbreviation.hashCode());
+		result = prime * result
+				+ ((adminResourceId == null) ? 0 : adminResourceId.hashCode());
+		result = prime * result
+				+ ((attributes == null) ? 0 : attributes.hashCode());
+		result = prime * result
+				+ ((domainName == null) ? 0 : domainName.hashCode());
+		result = prime * result + (forCurrentUsersOnly ? 1231 : 1237);
+		result = prime * result
+				+ ((internalOrgId == null) ? 0 : internalOrgId.hashCode());
+		result = prime * result
+				+ ((isSelectable == null) ? 0 : isSelectable.hashCode());
+		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
+		result = prime * result
+				+ ((metadataType == null) ? 0 : metadataType.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime
+				* result
+				+ ((organizationTypeIdSet == null) ? 0 : organizationTypeIdSet
+						.hashCode());
+		result = prime * result
+				+ ((uncoverParents == null) ? 0 : uncoverParents.hashCode());
+		result = prime
+				* result
+				+ ((validParentTypeId == null) ? 0 : validParentTypeId
+						.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OrganizationSearchBean other = (OrganizationSearchBean) obj;
+		if (abbreviation == null) {
+			if (other.abbreviation != null)
+				return false;
+		} else if (!abbreviation.equals(other.abbreviation))
+			return false;
+		if (adminResourceId == null) {
+			if (other.adminResourceId != null)
+				return false;
+		} else if (!adminResourceId.equals(other.adminResourceId))
+			return false;
+		if (attributes == null) {
+			if (other.attributes != null)
+				return false;
+		} else if (!attributes.equals(other.attributes))
+			return false;
+		if (domainName == null) {
+			if (other.domainName != null)
+				return false;
+		} else if (!domainName.equals(other.domainName))
+			return false;
+		if (forCurrentUsersOnly != other.forCurrentUsersOnly)
+			return false;
+		if (internalOrgId == null) {
+			if (other.internalOrgId != null)
+				return false;
+		} else if (!internalOrgId.equals(other.internalOrgId))
+			return false;
+		if (isSelectable == null) {
+			if (other.isSelectable != null)
+				return false;
+		} else if (!isSelectable.equals(other.isSelectable))
+			return false;
+		if (keySet == null) {
+			if (other.keySet != null)
+				return false;
+		} else if (!keySet.equals(other.keySet))
+			return false;
+		if (metadataType == null) {
+			if (other.metadataType != null)
+				return false;
+		} else if (!metadataType.equals(other.metadataType))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (organizationTypeIdSet == null) {
+			if (other.organizationTypeIdSet != null)
+				return false;
+		} else if (!organizationTypeIdSet.equals(other.organizationTypeIdSet))
+			return false;
+		if (uncoverParents == null) {
+			if (other.uncoverParents != null)
+				return false;
+		} else if (!uncoverParents.equals(other.uncoverParents))
+			return false;
+		if (validParentTypeId == null) {
+			if (other.validParentTypeId != null)
+				return false;
+		} else if (!validParentTypeId.equals(other.validParentTypeId))
+			return false;
+		return true;
+	}
+    
+    
 }

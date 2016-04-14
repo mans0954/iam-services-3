@@ -93,24 +93,13 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                     // prevent bindingMap rewrite in dataList
                                     Map<String, Object> tmpMap = new HashMap<>(bindingMap);
                                     ProvisionDataContainer data = provisionResource(res, userEntity, new ProvisionUser(user), tmpMap,
-                                            primaryIdentity, requestorUserId, false);
+                                            primaryIdentity, requestorUserId);
 
                                     auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                             "Provisioning for resource: " + res.getName());
                                     if (data != null) {
                                         data.setParentAuditLogId(auditLog.getId());
                                         dataList.add(data);
-                                    }
-
-                                    // Additional operation is required for managed system with property ON_DELETE = DISABLE
-                                    String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
-                                    if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
-                                        ProvisionDataContainer enableData = provisionResource(res, userEntity, new ProvisionUser(user), bindingMap,
-                                                primaryIdentity, requestorUserId, true);
-                                        if (enableData != null) {
-                                            enableData.setParentAuditLogId(auditLog.getId());
-                                            dataList.add(enableData);
-                                        }
                                     }
 
                                 } catch (Throwable tw) {
@@ -147,11 +136,12 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                                     final ProvisionUser pUser,
                                                     final Map<String, Object> tmpMap,
                                                     final Login primaryIdentity,
-                                                    final String requestId,
-                                                    boolean doEnable) {
+                                                    final String requestId) {
 
         Map<String, Object> bindingMap = new HashMap<>(tmpMap); // prevent data rewriting
-        log.debug(" - provisionResource started ");
+        if(log.isDebugEnabled()) {
+        	log.debug(" - provisionResource started ");
+        }
         String managedSysId = managedSysDaoService.getManagedSysIdByResource(res.getId(), "ACTIVE");
         if (managedSysId != null) {
             // we are checking if SrcSystemId is set in ProvisionUser it
@@ -202,10 +192,12 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 }
             }
 
-            if (mLg != null) {
-                log.debug("PROCESSING IDENTITY ="+mLg.getLogin()); //SIA 2015-08-01
-            } else {
-                log.debug("BUILDING NEW IDENTITY");
+            if(log.isDebugEnabled()) {
+	            if (mLg != null) {
+	                log.debug("PROCESSING IDENTITY ="+mLg.getLogin()); //SIA 2015-08-01
+	            } else {
+	                log.debug("BUILDING NEW IDENTITY");
+	            }
             }
 
             boolean isMngSysIdentityExistsInOpeniam = (mLg != null);
@@ -214,18 +206,26 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
 
             if (!isMngSysIdentityExistsInOpeniam) {
                 try {
-                    log.debug(" - Building principal Name for: " + managedSysId);
+                	if(log.isDebugEnabled()) {
+                		log.debug(" - Building principal Name for: " + managedSysId);
+                	}
                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, new HashMap<>());
                     String newPrincipalName = ProvisionServiceUtil
                             .buildUserPrincipalName(attrMap, scriptRunner, bindingMap);
                     if (StringUtils.isBlank(newPrincipalName)) {
-                        log.debug("Principal name for managed sys " + managedSysId + " is blank.");
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("Principal name for managed sys " + managedSysId + " is blank.");
+                    	}
                         return null;
                     }
-                    log.debug(" - New principalName = " + newPrincipalName);
+                    if(log.isDebugEnabled()) {
+                    	log.debug(" - New principalName = " + newPrincipalName);
+                    }
 
                     mLg = new LoginEntity();
-                    log.debug(" - PrimaryIdentity for build new identity for target system");
+                    if(log.isDebugEnabled()) {
+                    	log.debug(" - PrimaryIdentity for build new identity for target system");
+                    }
 
                     mLg.setLogin(newPrincipalName);
                     mLg.setManagedSysId(managedSysId);
@@ -254,16 +254,22 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 String decPassword = "";
                 try {
                     decPassword = loginManager.decryptPassword(mLg.getUserId(), mLg.getPassword());
-                    log.debug(" - decryptPassword ");
+                    if(log.isDebugEnabled()) {
+                    	log.debug(" - decryptPassword ");
+                    }
                 } catch (Exception e) {
-                    log.debug(" - Failed to decrypt password for " + mLg.getUserId());
+                	if(log.isDebugEnabled()) {
+                		log.debug(" - Failed to decrypt password for " + mLg.getUserId());
+                	}
                 }
                 bindingMap.put("password", decPassword);
             }
 
             // Identity of current target system
             Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
-            log.debug(" - targetSysLogin converted ");
+            if(log.isDebugEnabled()) {
+            	log.debug(" - targetSysLogin converted ");
+            }
             for (Login l : pUser.getPrincipalList()) { // saving Login
                 // properties from pUser
                 if (l.getLoginId() != null && l.getLoginId().equals(targetSysLogin.getLoginId())) {
@@ -275,10 +281,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             }
 
             ProvisionDataContainer data = new ProvisionDataContainer();
-            if (doEnable) {
-                data.setOperation(ProvOperationEnum.ENABLE);
-                bindingMap.put("operation", "RESUME");
-            } else if (isMngSysIdentityExistsInOpeniam) {
+            if (isMngSysIdentityExistsInOpeniam) {
                 data.setOperation(ProvOperationEnum.UPDATE);
                 bindingMap.put("operation", "MODIFY");
             } else {
@@ -290,7 +293,9 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             data.setIdentity(targetSysLogin);
             data.setProvUser(targetSysProvUser);
             data.setBindingMap(bindingMap);
-            log.debug(" - provisionResource finished ");
+            if(log.isDebugEnabled()) {
+            	log.debug(" - provisionResource finished ");
+            }
             return data;
         }
         return null;
@@ -314,8 +319,9 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             //used just to check on hidden to defin show the value in logs or not
             String[] hiddenAttributesArr = hiddenAttributes.toLowerCase().trim().split(",");
             List<String> hiddenAttributesList = Arrays.asList(hiddenAttributesArr);
-
-            log.debug("buildFromRules: attrMap IS NOT null");
+            if(log.isDebugEnabled()) {
+            	log.debug("buildFromRules: attrMap IS NOT null");
+            }
 
             for (AttributeMap attr : attrMap) {
 
@@ -338,10 +344,12 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                             continue;
                         }
 
-                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
-                                ", SCRIPT OUTPUT=" +
-                                (hiddenAttributesList.contains(attr.getAttributeName().toLowerCase())
-                                        ? "******" : output));
+                        if(log.isDebugEnabled()) {
+	                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+	                                ", SCRIPT OUTPUT=" +
+	                                (hiddenAttributesList.contains(attr.getAttributeName().toLowerCase())
+	                                        ? "******" : output));
+                        }
 
                         if (output != null) {
                             ExtensibleAttribute newAttr;
@@ -404,7 +412,9 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                             .getDataType().getValue());
                                     newAttr.setObjectType(objectType);
                                     extUser.getAttributes().add(newAttr);
-                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                    if(log.isDebugEnabled()) {
+                                    	log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                    }
                                 }
                             }
                         }

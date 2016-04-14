@@ -42,10 +42,8 @@ public class ReconciliationResultDAOImpl implements ReconciliationResultDAO {
 	}
 
 	public void add(ReconciliationResult transientInstance) {
-		log.debug("persisting ReconiliationResult instance");
 		try {
 			sessionFactory.getCurrentSession().persist(transientInstance);
-			log.debug("persist successful");
 		} catch (RuntimeException re) {
 			log.error("persist failed", re);
 			throw re;
@@ -55,10 +53,8 @@ public class ReconciliationResultDAOImpl implements ReconciliationResultDAO {
 
 
 	public void remove(ReconciliationResult persistentInstance) {
-		log.debug("deleting ReconiliationResult instance");
 		try {
 			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
 		} catch (RuntimeException re) {
 			log.error("delete failed", re);
 			throw re;
@@ -66,11 +62,9 @@ public class ReconciliationResultDAOImpl implements ReconciliationResultDAO {
 	}
 
 	public ReconciliationResult update(ReconciliationResult detachedInstance) {
-		log.debug("merging ReconiliationResult instance");
 		try {
 			ReconciliationResult result = (ReconciliationResult) sessionFactory
 					.getCurrentSession().merge(detachedInstance);
-			log.debug("merge successful");
 			return result;
 		} catch (RuntimeException re) {
 			log.error("merge failed", re);
@@ -79,18 +73,12 @@ public class ReconciliationResultDAOImpl implements ReconciliationResultDAO {
 	}
 
 	public ReconciliationResult findById(java.lang.String id) {
-		log.debug("getting ReconiliationResult instance with id: " + id);
 		try {
 			ReconciliationResult instance = (ReconciliationResult) sessionFactory
 					.getCurrentSession()
 					.get(
 							"org.openiam.idm.srvc.recon.dto.ReconiliationResult",
 							id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
 			return instance;
 		} catch (RuntimeException re) {
 			log.error("get failed", re);

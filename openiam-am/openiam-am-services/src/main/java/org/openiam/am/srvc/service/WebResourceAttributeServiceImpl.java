@@ -50,17 +50,23 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
     @Override
     public List<AttributeMap> getAttributeMapCollection(String resourceId) throws Exception {
         if (!StringUtils.hasText(resourceId)) throw new NullPointerException("resourceId is null or empty");
-        log.debug("try to get attribute list by resource id:" + resourceId);
+        if(log.isDebugEnabled()) {
+        	log.debug("try to get attribute list by resource id:" + resourceId);
+        }
         List<WebResourceAttribute> attributeList = webResourceAttributeDao.getAttributesByResourceId(resourceId);
         List<AttributeMap> resultList = new ArrayList<AttributeMap>();
         if (attributeList != null && !attributeList.isEmpty()) {
-            log.debug("AttributeMap datas has been found for given resource id:" + resourceId + "; Attributes count: "
-                      + attributeList.size());
+        	if(log.isDebugEnabled()) {
+	            log.debug("AttributeMap datas has been found for given resource id:" + resourceId + "; Attributes count: "
+	                      + attributeList.size());
+        	}
             for (WebResourceAttribute attr : attributeList) {
                 resultList.add(fromEntity(attr));
             }
         } else {
-            log.debug("There no any attributes for given resource id:" + resourceId);
+        	if(log.isDebugEnabled()) {
+        		log.debug("There no any attributes for given resource id:" + resourceId);
+        	}
         }
         return resultList;
     }
@@ -112,7 +118,9 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
     public List<Attribute> getSSOAttributes(String resourceId, String principalName, String managedSysId) {
         List<Attribute> resultList = new ArrayList<Attribute>();
         try {
-            log.debug("try to get attribute list by resource id:" + resourceId);
+        	if(log.isDebugEnabled()) {
+        		log.debug("try to get attribute list by resource id:" + resourceId);
+        	}
             // get attribute list for resource Id
             List<AttributeMap> attributeMapList = getAttributeMapCollection(resourceId);
             if (attributeMapList == null || attributeMapList.isEmpty()) {

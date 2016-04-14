@@ -32,10 +32,8 @@ public class SynchActivityLogHome {
 	}
 
 	public void persist(SynchActivityLog transientInstance) {
-		log.debug("persisting SynchActivityLog instance");
 		try {
 			sessionFactory.getCurrentSession().persist(transientInstance);
-			log.debug("persist successful");
 		} catch (RuntimeException re) {
 			log.error("persist failed", re);
 			throw re;
@@ -43,10 +41,8 @@ public class SynchActivityLogHome {
 	}
 
 	public void attachDirty(SynchActivityLog instance) {
-		log.debug("attaching dirty SynchActivityLog instance");
 		try {
 			sessionFactory.getCurrentSession().saveOrUpdate(instance);
-			log.debug("attach successful");
 		} catch (RuntimeException re) {
 			log.error("attach failed", re);
 			throw re;
@@ -54,10 +50,8 @@ public class SynchActivityLogHome {
 	}
 
 	public void attachClean(SynchActivityLog instance) {
-		log.debug("attaching clean SynchActivityLog instance");
 		try {
 			sessionFactory.getCurrentSession().lock(instance, LockMode.NONE);
-			log.debug("attach successful");
 		} catch (RuntimeException re) {
 			log.error("attach failed", re);
 			throw re;
@@ -65,10 +59,8 @@ public class SynchActivityLogHome {
 	}
 
 	public void delete(SynchActivityLog persistentInstance) {
-		log.debug("deleting SynchActivityLog instance");
 		try {
 			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
 		} catch (RuntimeException re) {
 			log.error("delete failed", re);
 			throw re;
@@ -76,11 +68,9 @@ public class SynchActivityLogHome {
 	}
 
 	public SynchActivityLog merge(SynchActivityLog detachedInstance) {
-		log.debug("merging SynchActivityLog instance");
 		try {
 			SynchActivityLog result = (SynchActivityLog) sessionFactory
 					.getCurrentSession().merge(detachedInstance);
-			log.debug("merge successful");
 			return result;
 		} catch (RuntimeException re) {
 			log.error("merge failed", re);
@@ -89,17 +79,12 @@ public class SynchActivityLogHome {
 	}
 
 	public SynchActivityLog findById(java.lang.String id) {
-		log.debug("getting SynchActivityLog instance with id: " + id);
 		try {
 			SynchActivityLog instance = (SynchActivityLog) sessionFactory
 					.getCurrentSession()
 					.get("org.openiam.idm.srvc.pswd.service.SynchActivityLog",
 							id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
+			
 			return instance;
 		} catch (RuntimeException re) {
 			log.error("get failed", re);
@@ -108,15 +93,12 @@ public class SynchActivityLogHome {
 	}
 
 	public List<SynchActivityLog> findByExample(SynchActivityLog instance) {
-		log.debug("finding SynchActivityLog instance by example");
 		try {
 			List<SynchActivityLog> results = (List<SynchActivityLog>) sessionFactory
 					.getCurrentSession()
 					.createCriteria(
 							"org.openiam.idm.srvc.pswd.service.SynchActivityLog")
 					.add(create(instance)).list();
-			log.debug("find by example successful, result size: "
-					+ results.size());
 			return results;
 		} catch (RuntimeException re) {
 			log.error("find by example failed", re);

@@ -42,6 +42,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
@@ -171,6 +172,9 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     private SupervisorDozerConverter supervisorDozerConverter;
 
     @Autowired
+    private MetadataService metadataService;
+
+    @Autowired
     protected AuditLogService auditLogService;
 
     @Value("${org.openiam.organization.type.id}")
@@ -280,7 +284,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         if (user != null && user.getType() != null && StringUtils.isNotBlank(user.getType().getId())) {
             MetadataElementSearchBean sb = new MetadataElementSearchBean();
             sb.addTypeId(user.getType().getId());
-            List<MetadataElementEntity> elementList = metadataElementDAO.getByExampleNoLocalize(sb, -1, -1);
+            List<MetadataElementEntity> elementList = metadataService.findEntityBeans(sb, -1, -1);
             if (CollectionUtils.isNotEmpty(elementList)) {
                 for (MetadataElementEntity element : elementList) {
                     if (element.isRequired()) {
@@ -618,7 +622,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), -1, -1));
         }
 
-        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
+        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet()) && searchBean.getRoleIdSet().size()<2100) {
             nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), -1, -1));
         }
 
@@ -778,7 +782,6 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                 && searchBean.getInitDefaulLoginFlag()) {
             setDefaultLogin(entityList);
         }
-
 
         return userDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
     }
@@ -1959,13 +1962,17 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             // update supervisor
             List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getId(), 0, Integer.MAX_VALUE);
             for (UserEntity s : supervisorList) {
-                log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
+            	if(log.isDebugEnabled()) {
+            		log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
+            	}
                 if (s.getId().equalsIgnoreCase(supervisorId)) {
                     break;
                 }
                 // this.removeSupervisor(s.getOrgStructureId());
             }
-            log.debug("adding supervisor: " + supervisorId);
+            if(log.isDebugEnabled()) {
+            	log.debug("adding supervisor: " + supervisorId);
+            }
             this.addSuperior(supervisorId, newUserEntity.getId());
         }
         return userId;
@@ -2789,6 +2796,12 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     private UserDataService getProxyService() {
         UserDataService service = (UserDataService)ac.getBean("userManager");
         return service;
+    }
+
+    @Override
+    public List<Supervisor> findSupervisors(SupervisorSearchBean sb) {
+        List<SupervisorEntity> supers = supervisorDao.getByExample(sb);
+        return supervisorDozerConverter.convertToDTOList(supers, true);
     }
 
 }

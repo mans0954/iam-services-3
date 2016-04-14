@@ -2,13 +2,12 @@ package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.*;
-import org.openiam.exception.BasicDataServiceException;
-import org.openiam.hibernate.HibernateUtils;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -17,66 +16,35 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
-import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
-import org.openiam.idm.srvc.org.service.OrganizationAttributeDAO;
-import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.res.service.ResourcePropDAO;
-import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.service.RoleAttributeDAO;
-import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.srcadapter.*;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.thread.Sweepable;
-import org.openiam.util.AttributeUtil;
-import org.openiam.util.MuleContextProvider;
+import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jms.core.BrowserCallback;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PostConstruct;
-import javax.jms.*;
-import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.OutputKeys;
@@ -85,8 +53,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.beans.XMLEncoder;
-import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -121,6 +87,12 @@ public class SourceAdapterDispatcher implements Runnable {
 
     @Autowired
     protected AuditLogService auditLogService;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
+
+    @Value("${org.openiam.idm.source.adapter.pre.processor}")
+    protected String preProcessorFile;
 
     final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     final static String WARNING = "Warning! %s.\n";
@@ -131,14 +103,16 @@ public class SourceAdapterDispatcher implements Runnable {
 
     private volatile boolean terminate = false;
 
-    private synchronized void setTerminate(boolean terminate){
-        this.terminate=terminate;
+    private synchronized void setTerminate(boolean terminate) {
+        this.terminate = terminate;
     }
-    private synchronized boolean getTerminate(){
+
+    private synchronized boolean getTerminate() {
         return this.terminate;
     }
+
     @PostConstruct
-    public void init(){
+    public void init() {
         final ExecutorService executorService = Executors.newCachedThreadPool();
         executorService.submit(this);
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -165,9 +139,9 @@ public class SourceAdapterDispatcher implements Runnable {
         return requestQueue.take();
     }
 
-    public void run(){
+    public void run() {
         try {
-            SourceAdapterRequest request=null;
+            SourceAdapterRequest request = null;
             while (!getTerminate() && (request = pullFromQueue()) != null) {
                 process(request);
                 // keep this due to existed in old code
@@ -178,66 +152,6 @@ public class SourceAdapterDispatcher implements Runnable {
         }
 
     }
-//    @Autowired
-//    private JmsTemplate jmsTemplate;
-//
-//    @Autowired
-//    @Qualifier(value = "sourceAdapterQueue")
-//    private Queue queue;
-//
-//    @Autowired
-//    @Qualifier("transactionManager")
-//    private PlatformTransactionManager platformTransactionManager;
-//    private final Object mutex = new Object();
-
-//    @Override
-//    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.metadata.threadsweep}")
-//    @Scheduled(fixedDelay = 10000)
-//    public void sweep() {
-//        jmsTemplate.browse(queue, new BrowserCallback<Object>() {
-//            @Override
-//            public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-//                synchronized (mutex) {
-//
-//                    final StopWatch sw = new StopWatch();
-//                    sw.start();
-//                    try {
-//                        log.info("Starting SourceAdapterRequest sweeper thread");
-//
-//                        Enumeration e = browser.getEnumeration();
-//
-//                        while (e.hasMoreElements()) {
-//                            final SourceAdapterRequest request = (SourceAdapterRequest) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
-//
-//                            TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-//                            transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-//                            Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
-//                                @Override
-//                                public Boolean doInTransaction(TransactionStatus status) {
-//                                    process(request);
-//
-//                                    //stupid
-//                                    try {
-//                                        // to give other threads chance to be executed
-//                                        Thread.sleep(100);
-//                                    } catch (InterruptedException e1) {
-//                                        log.warn(e1.getMessage());
-//                                    }
-//                                    return true;
-//                                }
-//                            });
-//
-//                            e.nextElement();
-//                        }
-//
-//                    } finally {
-//                        log.info(String.format("Done with SourceAdapterRequest sweeper thread.  Took %s ms", sw.getTime()));
-//                    }
-//                    return null;
-//                }
-//            }
-//        });
-//    }
 
     private void process(SourceAdapterRequest request) {
 //        MuleContextProvider.getCtx().getDefaultMessageReceiverThreadingProfile().get
@@ -249,6 +163,19 @@ public class SourceAdapterDispatcher implements Runnable {
             log.error("Can't serialize request to XML");
         }
         long time = System.currentTimeMillis();
+        //call Pre processor
+        SourceAdapterPreProcessor preProcessor = this.getSourceAdapterPreProcessor(preProcessorFile);
+        try {
+            int retVal = 0;
+            if (preProcessor != null) {
+                retVal = preProcessor.perform(request);
+                if (retVal != 0) {
+                    this.getWarning("Source Adapter Pre processor fail");
+                }
+            }
+        } catch (Exception e) {
+            this.getWarning("Source Adapter Pre processor fail. " + e);
+        }
         if (request.isForceMode()) {
             idmAuditLog.addCustomRecord("Skip Warnings", "true");
             warnings.append(getWarning("Warnings will be skipped!"));
@@ -267,7 +194,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 request.setAction(SourceAdapterOperationEnum.MODIFY);
             }
 
-            User requestor = this.getUser(request.getRequestor(), request);
+            User requestor = this.getUser(request.getRequestor(), request, false);
             if (requestor != null && StringUtils.isNotBlank(requestor.getId())) {
                 requestorId = requestor.getId();
             }
@@ -276,15 +203,12 @@ public class SourceAdapterDispatcher implements Runnable {
             }
             idmAuditLog.setRequestorUserId(requestorId);
         } catch (Exception e) {
-//            response.setStatus(ResponseStatus.FAILURE);
-//            response.setError(e.getMessage());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
             idmAuditLog.addCustomRecord(WARNING, warnings.toString());
-            auditLogService.save(idmAuditLog);
+            auditLogService.enqueue(idmAuditLog);
             return;
-//            return response;
         }
         ProvisionUser pUser = null;
         try {
@@ -293,26 +217,21 @@ public class SourceAdapterDispatcher implements Runnable {
                 throw new Exception("Such user exists. Can't add! User=" + pUser.getDisplayName());
             }
         } catch (Exception e) {
-//            response.setStatus(ResponseStatus.FAILURE);
-//            response.setError(e.toString());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
             idmAuditLog.addCustomRecord(WARNING, warnings.toString());
-            auditLogService.save(idmAuditLog);
+            auditLogService.enqueue(idmAuditLog);
             return;
-//            return response;
         }
         idmAuditLog.setUserId(pUser.getId());
         idmAuditLog.setAction(AuditAction.SOURCE_ADAPTER_CALL.value());
         idmAuditLog.setSource("Source Adapter");
         idmAuditLog.setAuditDescription("Operation:" + request.getAction().name());
         if (warnings.length() > 0 && !request.isForceMode()) {
-//            response.setStatus(ResponseStatus.FAILURE);
-//            response.setError(warnings.toString());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(warnings.toString());
-            auditLogService.save(idmAuditLog);
+            auditLogService.enqueue(idmAuditLog);
             idmAuditLog.addCustomRecord(WARNING, warnings.toString());
             return;
 //            return response;
@@ -321,33 +240,23 @@ public class SourceAdapterDispatcher implements Runnable {
             case ADD: {
                 pUser.setOperation(AttributeOperationEnum.ADD);
                 ProvisionUserResponse provisionUserResponse = provisioningDataService.addUser(pUser);
-//                response.setStatus(provisionUserResponse.getStatus());
-//                response.setError(provisionUserResponse.getErrorText());
                 break;
             }
             case MODIFY: {
                 pUser.setOperation(AttributeOperationEnum.REPLACE);
                 ProvisionUserResponse provisionUserResponse = provisioningDataService.modifyUser(pUser);
-//                response.setStatus(provisionUserResponse.getStatus());
-//                response.setError(provisionUserResponse.getErrorText());
                 break;
             }
             case DELETE: {
                 ProvisionUserResponse provisionUserResponse = provisioningDataService.deleteByUserWithSkipManagedSysList(pUser.getId(), UserStatusEnum.REMOVE, requestorId, null);
-//                response.setStatus(provisionUserResponse.getStatus());
-//                response.setError(provisionUserResponse.getErrorText());
                 break;
             }
             case ENABLE: {
                 Response resp = provisioningDataService.disableUser(pUser.getId(), false, requestorId);
-//                response.setStatus(resp.getStatus());
-//                response.setError(resp.getErrorText());
                 break;
             }
             case DISABLE: {
                 Response resp = provisioningDataService.disableUser(pUser.getId(), true, requestorId);
-//                response.setStatus(resp.getStatus());
-//                response.setError(resp.getErrorText());
                 break;
             }
             case CHANGE_PASSWORD: {
@@ -362,10 +271,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     PasswordValidationResponse resetPasswordResponse = provisioningDataService.setPassword(passwordSync);
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(warnings.toString());
-//                    response.setStatus(resetPasswordResponse.getStatus());
-//                    response.setError(resetPasswordResponse.getErrorText());
                 } else {
-//                    response.setStatus(ResponseStatus.FAILURE);
                     warnings.append("Change password request is empty");
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(warnings.toString());
@@ -382,10 +288,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     passwordSync.setSendPasswordToUser(request.getPasswordRequest().isSendToUser());
                     passwordSync.setUserActivateFlag(request.getPasswordRequest().isActivate());
                     PasswordResponse resetPasswordResponse = provisioningDataService.resetPassword(passwordSync);
-//                    response.setStatus(resetPasswordResponse.getStatus());
-//                    response.setError(resetPasswordResponse.getErrorText());
                 } else {
-//                    response.setStatus(ResponseStatus.FAILURE);
                     warnings.append("Reset password request is empty");
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(warnings.toString());
@@ -396,17 +299,14 @@ public class SourceAdapterDispatcher implements Runnable {
                 break;
             }
             default:
-//                response.setStatus(ResponseStatus.FAILURE);
-//                response.setError("Operation not supported");
                 idmAuditLog.fail();
                 idmAuditLog.setFailureReason("Operation not supported");
                 idmAuditLog.fail();
                 idmAuditLog.setFailureReason(warnings.toString());
         }
-//        response.setError(warnings.toString());
         idmAuditLog.addCustomRecord(WARNING, warnings.toString());
         idmAuditLog.setAuditDescription("Processing time=" + ((System.currentTimeMillis() - time) / 1000) + "s");
-        auditLogService.save(idmAuditLog);
+        auditLogService.enqueue(idmAuditLog);
     }
 
     private ProvisionUser convertToProvisionUser(SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {
@@ -431,7 +331,7 @@ public class SourceAdapterDispatcher implements Runnable {
             }
         }
         if (u == null)
-            u = this.getUser(request.getKey(), request);
+            u = this.getUser(request.getKey(), request, true);
         if (u == null)
             throw new Exception("Can't find user!");
         ProvisionUser pUser = new ProvisionUser(u);
@@ -446,6 +346,7 @@ public class SourceAdapterDispatcher implements Runnable {
         fillOrganizations(pUser, request, warnings, requestorId);
         fillSuperVisors(pUser, request, warnings);
         fillPrincipals(pUser, request, warnings, requestorId);
+        fillAlternativeContact(pUser, request, warnings);
         return pUser;
     }
 
@@ -580,6 +481,8 @@ public class SourceAdapterDispatcher implements Runnable {
                     GroupSearchBean gsb = new GroupSearchBean();
                     gsb.setName(group.getName());
                     gsb.setManagedSysId(group.getManagedSystemId());
+                    gsb.setDeepCopy(false);
+                    gsb.setFindInCache(true);
                     List<Group> dbGroups = groupDataWebService.findBeans(gsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbGroups)) {
                         if (dbGroups.size() > 1) {
@@ -683,6 +586,8 @@ public class SourceAdapterDispatcher implements Runnable {
         if (StringUtils.isNotBlank(org.getName()) && StringUtils.isNotBlank(org.getOrganizationTypeId())) {
             osb.setName(org.getName());
             osb.setOrganizationTypeId(org.getOrganizationTypeId());
+            osb.setFindInCache(true);
+            osb.setDeepCopy(false);
         } else if (org.getAttributeLookup() != null && StringUtils.isNotBlank(org.getAttributeLookup().getName()) && StringUtils.isNotBlank(org.getAttributeLookup().getValue())) {
             osb.addAttribute(org.getAttributeLookup().getName(), org.getAttributeLookup().getValue());
         }
@@ -814,6 +719,24 @@ public class SourceAdapterDispatcher implements Runnable {
         return orgDB;
     }
 
+    private void fillAlternativeContact(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
+            Exception {
+        SourceAdapterKey alternativeContact = request.getAlternativeContact();
+        if (alternativeContact == null || alternativeContact.getName() == null || StringUtils.isBlank(alternativeContact.getValue())) {
+            return;
+        }
+        if ("null".equalsIgnoreCase(alternativeContact.getValue())) {
+            pUser.setAlternateContactId(null);
+            return;
+        }
+
+        User alternativeUser = this.getUser(alternativeContact, request, false);
+        if (alternativeUser != null) {
+            pUser.setAlternateContactId(alternativeUser.getId());
+        }
+
+    }
+
     private void fillSuperVisors(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
             Exception {
         if (CollectionUtils.isNotEmpty(request.getSupervisors())) {
@@ -827,13 +750,28 @@ public class SourceAdapterDispatcher implements Runnable {
             }
             List<User> result = new ArrayList<User>();
             for (SourceAdapterMemberhipKey superUser : request.getSupervisors()) {
+                if (superUser.getValue() == null || "NULL".equalsIgnoreCase(superUser.getValue())) {
+                    warnings.append(this.getWarning("Supervisor has NULL identifier value."));
+                    continue;
+                }
                 isFound = false;
-                User user = this.getUser(superUser, request);
+                User user = this.getUser(superUser, request, false);
                 if (superUser.getOperation() == null) {
                     superUser.setOperation(AttributeOperationEnum.ADD);
                 }
                 if (user == null || user.getId() == null) {
                     warnings.append(getWarning("No such manager in system=" + superUser.getValue() + " Skip this!"));
+                    String value = superUser.getName() + "=" + superUser.getValue();
+                    UserAttribute supervisorDetails = pUser.getAttribute("SUPERVISOR_DETAILS");
+                    if (supervisorDetails == null) {
+                        supervisorDetails = new UserAttribute();
+                        supervisorDetails.setName("SUPERVISOR_DETAILS");
+                        supervisorDetails.setOperation(AttributeOperationEnum.ADD);
+                        pUser.saveAttribute(supervisorDetails);
+                    } else {
+                        supervisorDetails.setOperation(AttributeOperationEnum.REPLACE);
+                    }
+                    supervisorDetails.setValue(value);
                     break;
                 }
                 for (User supervisor : pUser.getSuperiors()) {
@@ -885,6 +823,8 @@ public class SourceAdapterDispatcher implements Runnable {
                     RoleSearchBean rsb = new RoleSearchBean();
                     rsb.setName(role.getName());
                     rsb.setManagedSysId(role.getManagedSystemId());
+                    rsb.setDeepCopy(false);
+                    rsb.setFindInCache(true);
                     List<Role> dbRoles = roleDataWebService.findBeans(rsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbRoles)) {
                         if (dbRoles.size() > 1) {
@@ -1033,6 +973,12 @@ public class SourceAdapterDispatcher implements Runnable {
                 }
             }
         }
+        //Mark that user created from source adapter.
+        if (StringUtils.isBlank(pUser.getId())) {
+            UserAttribute attr = new UserAttribute("USER_CREATION_SOURCE", "SOURCE_ADAPTER");
+            attr.setOperation(AttributeOperationEnum.ADD);
+            pUser.saveAttribute(attr);
+        }
     }
 
 
@@ -1121,7 +1067,7 @@ public class SourceAdapterDispatcher implements Runnable {
         return (source == null || "NULL".equals(source)) ? null : source;
     }
 
-    private User getUser(SourceAdapterKey keyPair, SourceAdapterRequest request) throws Exception {
+    private User getUser(SourceAdapterKey keyPair, SourceAdapterRequest request, boolean deepCopy) throws Exception {
         if (keyPair == null && SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
             //create
             return new User();
@@ -1131,7 +1077,7 @@ public class SourceAdapterDispatcher implements Runnable {
         } else if (keyPair != null && keyPair.getName() == null && StringUtils.isNotBlank(keyPair.getValue())) {
             User u = null;
             for (SourceAdapterKeyEnum keyEnum : SourceAdapterKeyEnum.values()) {
-                u = this.findByKey(keyEnum, keyPair.getValue(), request);
+                u = this.findByKey(keyEnum, keyPair.getValue(), request, deepCopy);
                 if (u != null) {
                     break;
                 }
@@ -1139,14 +1085,14 @@ public class SourceAdapterDispatcher implements Runnable {
             //try to find by all keys
             return u;
         } else if (keyPair != null && keyPair.getName() != null && StringUtils.isNotBlank(keyPair.getValue())) {
-            return this.findByKey(keyPair.getName(), keyPair.getValue(), request);
+            return this.findByKey(keyPair.getName(), keyPair.getValue(), request, deepCopy);
         } else {
             return null;
         }
     }
 
 
-    private User findByKey(SourceAdapterKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request) throws Exception {
+    private User findByKey(SourceAdapterKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request, boolean deepCopy) throws Exception {
         UserSearchBean searchBean = new UserSearchBean();
         if (SourceAdapterKeyEnum.USERID.equals(matchAttrName)) {
             searchBean.setKey(matchAttrValue);
@@ -1161,7 +1107,8 @@ public class SourceAdapterDispatcher implements Runnable {
         } else if (SourceAdapterKeyEnum.EMPLOYEE_ID.equals(matchAttrName)) {
             searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         }
-        searchBean.setDeepCopy(true);
+        searchBean.setDeepCopy(deepCopy);
+        searchBean.setFindInCache(true);
         List<User> userList = userDataService.findBeans(searchBean, 0, Integer.MAX_VALUE);
         if (CollectionUtils.isNotEmpty(userList)) {
             if (userList.size() > 1) {
@@ -1212,4 +1159,15 @@ public class SourceAdapterDispatcher implements Runnable {
             throw new RuntimeException(e); // simple exception handling, please review it
         }
     }
+
+    protected SourceAdapterPreProcessor getSourceAdapterPreProcessor(String scriptName) {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        try {
+            return (SourceAdapterPreProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
+    }
+
 }

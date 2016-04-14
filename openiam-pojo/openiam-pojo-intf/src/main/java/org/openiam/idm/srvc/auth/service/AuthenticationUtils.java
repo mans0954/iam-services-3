@@ -39,7 +39,9 @@ public class AuthenticationUtils {
                 try {
                     if (StringUtils.isNotBlank(authCredentialsValidatorScript)) {
                         validator = (AuthCredentialsValidator)scriptRunner.instantiateClass(null, authCredentialsValidatorScript);
-                        log.debug("Using custom credentials validator " + authCredentialsValidatorScript);
+                        if(log.isDebugEnabled()) {
+                        	log.debug("Using custom credentials validator " + authCredentialsValidatorScript);
+                        }
                     } else {
                         validator = defaultAuthCredentialsValidator;
                     }
@@ -56,7 +58,9 @@ public class AuthenticationUtils {
             try {
                 if (StringUtils.isNotBlank(authCredentialsValidatorScript)) {
                     validator = (AuthCredentialsValidator)scriptRunner.instantiateClass(null, authCredentialsValidatorScript);
-                    log.debug("Using custom credentials validator " + authCredentialsValidatorScript);
+                    if(log.isDebugEnabled()) {
+                    	log.debug("Using custom credentials validator " + authCredentialsValidatorScript);
+                    }
                 } else {
                     validator = defaultAuthCredentialsValidator;
                 }

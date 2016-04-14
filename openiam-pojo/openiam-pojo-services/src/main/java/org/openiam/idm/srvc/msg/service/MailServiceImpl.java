@@ -86,9 +86,10 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
      */
     public void sendEmail(String from, String to, String cc, String subject, String msg, String attachment,
             boolean isHtmlFormat) {
-        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
-                + ", Format:" + isHtmlFormat);
-
+    	if(log.isDebugEnabled()) {
+	        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
+	                + ", Format:" + isHtmlFormat);
+    	}
         Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, null);
         try {
             mailSender.send(message);
@@ -99,9 +100,10 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     public void sendEmailByDateTime(String from, String to, String cc, String subject, String msg, String attachment,
                                     boolean isHtmlFormat, Date executionDateTime) {
-        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
-                + ", Format:" + isHtmlFormat);
-
+    	if(log.isDebugEnabled()) {
+	    	log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
+	                + ", Format:" + isHtmlFormat);
+    	}
         Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, executionDateTime);
         try {
             mailSender.send(message);
@@ -119,9 +121,10 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
      */
     public void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg,
             boolean isHtmlFormat, String[] attachmentPath) {
-        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", CC:" + cc + ", BCC:" + bcc
-                + ", Attachment:" + attachmentPath);
-
+    	if(log.isDebugEnabled()) {
+	        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", CC:" + cc + ", BCC:" + bcc
+	                + ", Attachment:" + attachmentPath);
+    	}
         Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, null);
         try {
             mailSender.send(message);
@@ -255,7 +258,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         if (req == null) {
             return false;
         }
-        log.debug("Send Notification called with notificationType = " + req.getNotificationType());
+        if(log.isDebugEnabled()) {
+        	log.debug("Send Notification called with notificationType = " + req.getNotificationType());
+        }
 
         if (req.getUserId() != null) {
             return sendEmailForUser(req);
@@ -270,7 +275,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
      * @return
      */
     private boolean sendCustomEmail(NotificationRequest req) {
-        log.debug("sendNotification to = " + req.getTo());
+    	if(log.isDebugEnabled()) {
+    		log.debug("sendNotification to = " + req.getTo());
+    	}
 
         String[] emailDetails = fetchEmailDetails(req.getNotificationType());
         if (emailDetails == null) {

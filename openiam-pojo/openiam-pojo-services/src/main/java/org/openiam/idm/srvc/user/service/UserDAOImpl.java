@@ -64,7 +64,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.add(Restrictions.in("g.id", delegationFilter.getGroupIdSet()));
             }
 
-            if (CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
+            if (CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet()) && delegationFilter.getRoleIdSet().size()<2100) {
                 criteria.createAlias("roles", "r");
                 criteria.add(Restrictions.in("r.id", delegationFilter.getRoleIdSet()));
             }
@@ -488,14 +488,14 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     public UserEntity findPrimarySupervisor(String employeeId) {
         Criteria criteria = getCriteria().createAlias("supervisors", "s").add(Restrictions.eq("id", employeeId))
-                        .add(Restrictions.eq("s.isPrimarySuper", true)).setProjection(Projections.property("s.supervisor"));
+                .add(Restrictions.eq("s.isPrimarySuper", true)).setProjection(Projections.property("s.supervisor"));
 
         return (UserEntity) criteria.uniqueResult();
     }
 
     private Criteria getSuperiorsCriteria(String userId) {
         Criteria criteria = getSession().createCriteria(SupervisorEntity.class).setProjection(Projections.property("supervisor"))
-                        .createAlias("employee", "employee").add(Restrictions.eq("employee.id", userId));
+                .createAlias("employee", "employee").add(Restrictions.eq("employee.id", userId));
         return criteria;
     }
 
@@ -584,7 +584,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(roleIds)) {
             final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.id", roleIds))
-                            .setProjection(Projections.property("id"));
+                    .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -739,8 +739,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenCreateDate(Date fromDate, Date toDate) {
-        log.debug("--------- created createDate ----------- : " + fromDate);
-        log.debug("--------- created toDate ----------- : " + toDate);
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- created createDate ----------- : " + fromDate);
+	        log.debug("--------- created toDate ----------- : " + toDate);
+    	}
         if (fromDate != null && toDate != null ) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.ge("createDate",fromDate))
@@ -761,8 +763,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenStartDate(Date fromDate, Date toDate) {
-        log.debug("--------- created startDate ----------- : " + fromDate);
-        log.debug("--------- created toDate ----------- : " + toDate);
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- created startDate ----------- : " + fromDate);
+	        log.debug("--------- created toDate ----------- : " + toDate);
+    	}
         if (fromDate != null && toDate != null ) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.ge("startDate",fromDate))
@@ -792,18 +796,20 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenLastDate(Date fromDate, Date toDate) {
-        log.debug("--------- lastDate fromDate ----------- : " + fromDate);
-        log.debug("--------- lastDate toDate ----------- : " + toDate);
-        if (fromDate != null && toDate != null ) {
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- lastDate fromDate ----------- : " + fromDate);
+	        log.debug("--------- lastDate toDate ----------- : " + toDate);
+    	}
+        if (fromDate != null && toDate != null) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.ge("lastDate",fromDate))
                     .add(Restrictions.lt("lastDate",toDate));
             return criteria.list();
-        } else if(fromDate != null) {
+        } else if (fromDate != null) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.ge("lastDate",fromDate));
             return criteria.list();
-        } else if(toDate != null) {
+        } else if (toDate != null) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.lt("lastDate",toDate));
             return criteria.list();
@@ -813,8 +819,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenUpdatedDate(Date fromDate, Date toDate) {
-        log.debug("--------- updated user fromdate ----------- : "+fromDate);
-        log.debug("--------- updated user todate ----------- : "+toDate);
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- updated user fromdate ----------- : "+fromDate);
+	        log.debug("--------- updated user todate ----------- : "+toDate);
+    	}
         if (fromDate != null && toDate != null) {
             final Criteria criteria = getCriteria().add(
                     Restrictions.lt("lastUpdate", toDate)).add(
@@ -888,4 +896,5 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
         }
     }
+
 }

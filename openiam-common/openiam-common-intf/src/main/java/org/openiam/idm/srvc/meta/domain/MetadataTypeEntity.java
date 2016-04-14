@@ -24,7 +24,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "METADATA_TYPE")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region="MetadataTypeEntity")
 @DozerDTOCorrespondence(MetadataType.class)
 @AttributeOverride(name = "id", column = @Column(name = "TYPE_ID"))
 @Internationalized

@@ -22,7 +22,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "COMPANY")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "OrganizationEntity")
 @DozerDTOCorrespondence(Organization.class)
 @AttributeOverride(name = "id", column = @Column(name = "COMPANY_ID"))
 @Internationalized
@@ -101,7 +101,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     private Set<OrganizationEntity> childOrganizations;
 
     @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy = "primaryKey.organization")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     public Set<OrganizationUserEntity> organizationUser;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})

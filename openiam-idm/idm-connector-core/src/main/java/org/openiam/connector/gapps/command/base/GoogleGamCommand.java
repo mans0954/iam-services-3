@@ -35,11 +35,15 @@ public class GoogleGamCommand implements Comparable<GoogleGamCommand> {
 				} catch (NumberFormatException ex) {
 					displayOrder = 1;
 				}
-				log.debug("GAM command: display order=" + displayOrder);
+				if(log.isDebugEnabled()) {
+					log.debug("GAM command: display order=" + displayOrder);
+				}
 			}
 			while (com.find()) {
 				command = com.group(2);
-				log.debug("GAM command: command=" + command);
+				if(log.isDebugEnabled()) {
+					log.debug("GAM command: command=" + command);
+				}
 			}
 			while (meth.find()) {
 				String meths = meth.group(2);
@@ -51,7 +55,9 @@ public class GoogleGamCommand implements Comparable<GoogleGamCommand> {
 								+ ex);
 					}
 				}
-				log.debug("GAM command: methods=" + methods);
+				if(log.isDebugEnabled()) {
+					log.debug("GAM command: methods=" + methods);
+				}
 			}
 		} else {
 			log.warn("GAM Value is empty!");

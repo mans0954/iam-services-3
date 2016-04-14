@@ -25,7 +25,7 @@ import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 @Entity
 @Table(name = "LANGUAGE_MAPPING")
 @DozerDTOCorrespondence(LanguageMapping.class)
-@Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage=CacheConcurrencyStrategy.READ_WRITE, region = "LanguageMappingEntity")
 public class LanguageMappingEntity implements Serializable {
 	
 	@Id

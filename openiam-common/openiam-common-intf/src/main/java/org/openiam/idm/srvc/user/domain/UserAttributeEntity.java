@@ -22,7 +22,7 @@ import java.util.List;
 	@AttributeOverride(name = "id", column = @Column(name = "ID")),
 	@AttributeOverride(name = "value", column = @Column(name="VALUE", length=4000))
 })
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "UserAttributeEntity")
 public class UserAttributeEntity extends AbstractAttributeEntity {
     private static final long serialVersionUID = 6695609793883291213L;
 

@@ -14,7 +14,9 @@ public abstract class AbstractCalbackHandler implements CallbackHandler {
      */
     @Override
     public void handle(Callback[] callbackAry) throws IOException, UnsupportedCallbackException {
-        log.debug(this.getClass().getSimpleName() + " is called.");
+    	if(log.isDebugEnabled()) {
+    		log.debug(this.getClass().getSimpleName() + " is called.");
+    	}
 
         for(Callback callback: callbackAry)   {
             processCallback(callback);
@@ -23,17 +25,21 @@ public abstract class AbstractCalbackHandler implements CallbackHandler {
 
     protected void processCallback(Callback callback)throws IOException, UnsupportedCallbackException{
         if (callback instanceof TextOutputCallback) {
-            log.debug("TextOutputCallback found");
-
+        	if(log.isDebugEnabled()) {
+        		log.debug("TextOutputCallback found");
+        	}
         } else if (callback instanceof NameCallback) {
-            log.debug("NameCallback found");
-            log.debug("Default name" + ((NameCallback)callback).getDefaultName());
-            log.debug("Name" + ((NameCallback) callback).getName());
-
+        	if(log.isDebugEnabled()) {
+	            log.debug("NameCallback found");
+	            log.debug("Default name" + ((NameCallback)callback).getDefaultName());
+	            log.debug("Name" + ((NameCallback) callback).getName());
+        	}
             ((NameCallback)callback).setName(this.getUserName());
 
         } else if (callback instanceof PasswordCallback) {
-            log.debug("PasswordCallback found");
+        	if(log.isDebugEnabled()) {
+        		log.debug("PasswordCallback found");
+        	}
             ((PasswordCallback)callback).setPassword(this.getPassword());
         } else {
             log.error("CallbackName=" + callback.getClass().getName());

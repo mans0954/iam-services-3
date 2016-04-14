@@ -16,7 +16,7 @@ import java.util.Set;
         "middleName", "prefix", "sex", "status", "secondaryStatus", "suffix",
         "title", "nickname", "maidenName", "userTypeId", "startDate", "lastDate",
         "userAttributes", "groups", "roles", "resources", "organizations", "emails", "addresses", "phones",
-        /*"subordinates",*/ "supervisors", "passwordRequest", "userSubTypeId", "prefixPartnerName", "prefixLastName", "partnerName"})
+        /*"subordinates",*/ "supervisors","alternativeContact", "passwordRequest", "userSubTypeId", "prefixPartnerName", "prefixLastName", "partnerName"})
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "user",namespace = "http://www.openiam.org/service/provision/dto/srcadapter")
 public class SourceAdapterRequest implements Serializable {
@@ -24,6 +24,7 @@ public class SourceAdapterRequest implements Serializable {
     private SourceAdapterKey key;
     @XmlElement(required = true)
     private SourceAdapterKey requestor;
+    private SourceAdapterKey alternativeContact;
     private String firstName;
     private String lastName;
     private String employeeId;
@@ -395,5 +396,13 @@ public class SourceAdapterRequest implements Serializable {
 
     public void setPrefixLastName(String prefixLastName) {
         this.prefixLastName = prefixLastName;
+    }
+
+    public SourceAdapterKey getAlternativeContact() {
+        return alternativeContact;
+    }
+
+    public void setAlternativeContact(SourceAdapterKey alternativeContact) {
+        this.alternativeContact = alternativeContact;
     }
 }

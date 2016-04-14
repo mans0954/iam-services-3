@@ -50,6 +50,7 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
 import org.openiam.idm.srvc.pswd.dto.*;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
+import org.openiam.idm.srvc.pswd.rule.AbstractPasswordRule;
 import org.openiam.idm.srvc.pswd.rule.PasswordRuleException;
 import org.openiam.idm.srvc.pswd.rule.PasswordRuleViolation;
 import org.openiam.idm.srvc.pswd.rule.PasswordValidator;
@@ -191,8 +192,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
-    public PasswordValidationResponse isPasswordValidForUserAndPolicy(
-            Password pswd, UserEntity user, LoginEntity lg, Policy policy)
+    public PasswordValidationResponse isPasswordValidForUserAndPolicy(Password pswd, UserEntity user, LoginEntity lg, Policy policy)
             throws ObjectNotFoundException {
         final PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
         Policy pswdPolicy = policy;
@@ -212,9 +212,11 @@ public class PasswordServiceImpl implements PasswordService {
         log.info(String.format("Selected Password policy=%s", pswdPolicy.getPolicyId()));
 
         try {
-            final List<PasswordRule> rules = passwordValidator.getPasswordRules(pswdPolicy, pswd, user, lg);
-            retVal.setRules(rules);
-            passwordValidator.validateForUser(pswdPolicy, pswd, user, lg);
+            final List<AbstractPasswordRule> rules = passwordValidator.getRules(pswdPolicy, pswd, user, lg);
+
+            passwordValidator.validateForUser(pswdPolicy, pswd, user, lg, rules);
+
+            retVal.setRules(passwordValidator.getPasswordRules(rules));
         } catch (PasswordRuleException e) {
             retVal.setErrorCode(e.getCode());
             retVal.fail();

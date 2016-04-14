@@ -243,6 +243,8 @@ public enum AuditAction {
     USER_LEAVER("USER LEAVER"),
     SEND_SMS_OTP_TOKEN("SEND SMS OTP TOKEN"),
     VALIDATE_SMS_OTP_TOKEN("VALIDATE SMS OTP TOKEN")
+
+    NOTHING_TO_CERTIFY("Nothing To Certify")
 	;
 
     private String value;

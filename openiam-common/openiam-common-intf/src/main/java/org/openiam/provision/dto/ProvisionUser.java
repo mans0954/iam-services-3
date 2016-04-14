@@ -32,7 +32,6 @@ import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.util.Collection;
 import java.util.HashSet;
@@ -425,4 +424,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
             notProvisioninResourcesIds.add(notProvisioninResourceId);
         }
     }
+
+
 }

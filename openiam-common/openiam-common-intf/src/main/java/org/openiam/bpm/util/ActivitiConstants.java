@@ -40,7 +40,8 @@ public enum ActivitiConstants {
 	
 	IS_REQUESTOR_ONLY_APROVER("IsRequestorOnlyApprover"),
 	IS_REQUESTOR_CANDIDATE("IsRequestorCandidate"),
-	CANDIDATE_USER_IDS("CandidateUserIds");
+	CANDIDATE_USER_IDS("CandidateUserIds"),
+	ATTESTATION_MANAGED_SYS_RESOURCES("ATTESTATION_MANAGED_SYS_RESOURCES"),;
 	
 	private String name;
 	

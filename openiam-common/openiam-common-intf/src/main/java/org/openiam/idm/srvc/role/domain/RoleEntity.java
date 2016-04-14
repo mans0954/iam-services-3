@@ -38,7 +38,7 @@ import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name="ROLE")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "RoleEntity")
 @DozerDTOCorrespondence(Role.class)
 @AttributeOverride(name = "id", column = @Column(name = "ROLE_ID"))
 @Internationalized

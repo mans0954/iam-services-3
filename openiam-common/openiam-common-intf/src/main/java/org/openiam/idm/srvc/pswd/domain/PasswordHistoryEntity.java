@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.pswd.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.*;
@@ -13,7 +14,7 @@ import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 @Entity
 @Table(name = "PWD_HISTORY")
 @DozerDTOCorrespondence(PasswordHistory.class)
-public class PasswordHistoryEntity {
+public class PasswordHistoryEntity implements Serializable {
 
 	@Id
     @GeneratedValue(generator = "system-uuid")

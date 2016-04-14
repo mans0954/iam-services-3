@@ -12,6 +12,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
+import org.openiam.idm.searchbeans.SupervisorSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
@@ -886,4 +887,11 @@ public interface UserDataWebService {
 //    @WebMethod
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId);
 
+    /**
+     * Call to find supervisors by various criteria
+     * @param supervisorSearchBean
+     * @return a List Supervisor objects
+     */
+    @WebMethod
+    public List<Supervisor> findSupervisors(@WebParam(name = "searchBean", targetNamespace = "") SupervisorSearchBean supervisorSearchBean);
 }

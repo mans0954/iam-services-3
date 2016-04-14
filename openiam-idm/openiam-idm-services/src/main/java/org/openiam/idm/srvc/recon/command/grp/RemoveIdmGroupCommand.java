@@ -28,9 +28,10 @@ public class RemoveIdmGroupCommand extends BaseReconciliationGroupCommand {
 
 	@Override
 	public boolean execute(ReconciliationSituation config, String principal, String mSysID, Group group, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering RemoveIdmGroupCommand");
-        log.debug("Remove  group: " + principal);
-
+		if(log.isDebugEnabled()) {
+	        log.debug("Entering RemoveIdmGroupCommand");
+	        log.debug("Remove  group: " + principal);
+		}
 		try {
 			ProvisionGroup pGroup = new ProvisionGroup(group);
 			pGroup.setSrcSystemId(mSysID);

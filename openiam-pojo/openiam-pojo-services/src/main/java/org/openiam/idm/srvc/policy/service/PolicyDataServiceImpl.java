@@ -59,7 +59,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     private PolicyService policyService;
 
     @Override
-    @Cacheable(value = "policies", key = "{#policyId}")
     public Policy getPolicy(String policyId) {
         if (policyId == null) {
             throw new NullPointerException("PolicyId is null");

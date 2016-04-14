@@ -572,4 +572,17 @@
             <b>grouping</b>
         </field>
     </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.user.domain.SupervisorIDEntity</class-a>
+        <class-b>org.openiam.idm.srvc.user.dto.SupervisorID</class-b>
+        <field>
+            <a>employeeId</a>
+            <b>employeeId</b>
+        </field>
+        <field>
+            <a>supervisorId</a>
+            <b>supervisorId</b>
+        </field>
+    </mapping>
 </mappings>

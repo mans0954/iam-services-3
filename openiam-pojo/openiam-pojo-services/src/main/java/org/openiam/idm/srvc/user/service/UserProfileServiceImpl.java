@@ -2,23 +2,30 @@ package org.openiam.idm.srvc.user.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditTarget;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
+import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.user.domain.ProfilePictureEntity;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
-import org.openiam.idm.srvc.user.dto.ProfilePicture;
-import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
+import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,8 +33,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 @Service("userProfileService")
 @Transactional
@@ -74,20 +83,26 @@ public class UserProfileServiceImpl implements UserProfileService {
 
 	@Override
 	public void saveUserProfile(UserProfileRequestModel request) throws Exception {
+
+		if (request.getUser() == null)
+			throw new BasicDataServiceException(ResponseCode.USER_NOT_FOUND);
+
 		final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
 		entityValidator.isValid(userEntity);
         pageTemplateService.validate(request);
-		
-        final UserEntity dbEntity = userManager.getUser(request.getUser().getId());
+
+		String userId = request.getUser().getId();
+
+        final UserEntity dbEntity = userManager.getUser(userId);
         
         final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 
         final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
         final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
-        
+
         saveEmails(userEntity, emailList);
         saveAddresses(userEntity, addressList);
         savePhones(userEntity, phoneList);
-        
+
         if(StringUtils.isBlank(userEntity.getFirstName())) {
         	throw new BasicDataServiceException(ResponseCode.FIRST_NAME_REQUIRED);
         }
@@ -157,7 +172,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         		}
         	}
         }
-        
+
         final PageTemplateAttributeToken token = pageTemplateService.getAttributesFromTemplate(request);
         if(token != null) {
         	if(CollectionUtils.isNotEmpty(token.getSaveList())) {
@@ -177,11 +192,16 @@ public class UserProfileServiceImpl implements UserProfileService {
         		}
         	}
         }
-        
+
+		addOrDeleteOrganizations(dbEntity, request.getOrganizationsUser(), userId);
+
         //pageTemplateService.saveTemplate(request);
         userManager.mergeUserFields(dbEntity, userEntity);
         userManager.updateUser(dbEntity);
         //pageTemplateService.saveTemplate(request);
+
+		addOrDeleteSupervisors(request.getSupervisors(), userId);
+
 	}
 	
 	@Override
@@ -241,18 +261,50 @@ public class UserProfileServiceImpl implements UserProfileService {
         	}
         }
 	}
-	
+
 	private void saveAddresses(final UserEntity userEntity, final List<AddressEntity> addressList) {
 		if(CollectionUtils.isNotEmpty(addressList)) {
-        	for(final AddressEntity address : addressList) {
-        		address.setParent(userEntity);
-        		if(StringUtils.isBlank(address.getAddressId())) {
-        			userManager.addAddress(address);
-        		} else {
-        			userManager.updateAddress(address);
-        		}
-        	}
-        }
+			for(final AddressEntity address : addressList) {
+				address.setParent(userEntity);
+				if(StringUtils.isBlank(address.getAddressId())) {
+					userManager.addAddress(address);
+				} else {
+					userManager.updateAddress(address);
+				}
+			}
+		}
+	}
+
+	private void addOrDeleteSupervisors(final List<User> supervisors, String userId) {
+		if (CollectionUtils.isNotEmpty(supervisors))
+			for (final User supervisor : supervisors)
+				if (supervisor.getId() != null)
+					if (supervisor.getOperation().equals(AttributeOperationEnum.ADD))
+						userManager.addSuperior(supervisor.getId(), userId);
+					else if(supervisor.getOperation().equals(AttributeOperationEnum.DELETE))
+						userManager.removeSupervisor(supervisor.getId(), userId);
+	}
+
+	private void addOrDeleteOrganizations(final UserEntity userEntity, final List<OrganizationUserDTO> organizations, String userId){
+		if (CollectionUtils.isNotEmpty(organizations)) {
+			for (OrganizationUserDTO o : organizations) {
+				AttributeOperationEnum operation = o.getOperation();
+				if (operation == AttributeOperationEnum.ADD) {
+					if (userEntity.getOrganizationUser() == null)
+						userEntity.setOrganizationUser(new HashSet<OrganizationUserEntity>());
+					userEntity.getOrganizationUser().add(new OrganizationUserEntity(userEntity.getId(), o.getOrganization().getId(), o.getMdTypeId()));
+				} else if (operation == AttributeOperationEnum.DELETE) {
+					Set<OrganizationUserEntity> affiliations = userEntity.getOrganizationUser();
+					for (OrganizationUserEntity a : affiliations) {
+						if (a.getOrganization() != null && org.mule.util.StringUtils.equals(o.getOrganization().getId(), a.getOrganization().getId())) {
+							userEntity.getOrganizationUser().remove(a);
+							break;
+						}
+					}
+
+				}
+			}
+		}
 	}
 
     @Override

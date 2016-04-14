@@ -164,4 +164,11 @@ public class PolicyTest extends AbstractKeyNameServiceTest<Policy, PolicySearchB
 		attribute.setRule(getRandomName());
 		instance.addPolicyAttribute(attribute);
 	}
+
+	@Test
+	public void pwdPolicyTest(){
+		List<PolicyDefParam> attrList = policyServiceClient.getAllPolicyAttributes("100", "PSWD_COMPOSITION");
+		attrList = policyServiceClient.getAllPolicyAttributes("100", "PSWD_COMPOSITION");
+		attrList = policyServiceClient.getAllPolicyAttributes("100", "PSWD_COMPOSITION");
+	}
 }

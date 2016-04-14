@@ -198,6 +198,7 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
                 .append(attributes != null ? attributes.toString().hashCode() : "")
                 .append(getKey() != null ? getKey() : "")
                 .append(getKeys() != null ? getKeys().toString().hashCode() : "")
+                .append(super.hashCode())
                 .toString();
     }
 }

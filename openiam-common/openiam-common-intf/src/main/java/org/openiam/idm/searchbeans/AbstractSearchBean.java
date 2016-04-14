@@ -6,6 +6,7 @@ import org.openiam.base.ws.SortParam;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,12 +16,19 @@ import java.util.Set;
 @XmlType(name = "AbstractSearchBean", propOrder = {
         "key",
         "deepCopy",
-        "sortBy"
+        "sortBy",
+        "findInCache"
 })
 public abstract class AbstractSearchBean<T, KeyType> {
 
 	private boolean deepCopy = true;
 	private KeyType key;
+	
+	/**
+	 * If true, the Service-level will attempt to find the given entity in the cache.
+	 * By default this is false to support backwards compatability.
+	 */
+	private boolean findInCache;
 
     private List<SortParam> sortBy;
 	
@@ -57,16 +65,15 @@ public abstract class AbstractSearchBean<T, KeyType> {
 		}
 	}
 
-    @Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (deepCopy ? 1231 : 1237);
-		result = prime * result + ((key == null) ? 0 : key.hashCode());
-		return result;
+	public boolean isFindInCache() {
+		return findInCache;
 	}
 
-    /**
+	public void setFindInCache(boolean findInCache) {
+		this.findInCache = findInCache;
+	}
+
+	/**
      * This method must be used only for as a key for secondary level cache
      * @return
      */
@@ -86,6 +93,17 @@ public abstract class AbstractSearchBean<T, KeyType> {
 	}
 
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (deepCopy ? 1231 : 1237);
+		result = prime * result + (findInCache ? 1231 : 1237);
+		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		result = prime * result + ((sortBy == null) ? 0 : sortBy.hashCode());
+		return result;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
@@ -96,19 +114,20 @@ public abstract class AbstractSearchBean<T, KeyType> {
 		AbstractSearchBean other = (AbstractSearchBean) obj;
 		if (deepCopy != other.deepCopy)
 			return false;
+		if (findInCache != other.findInCache)
+			return false;
 		if (key == null) {
 			if (other.key != null)
 				return false;
 		} else if (!key.equals(other.key))
 			return false;
+		if (sortBy == null) {
+			if (other.sortBy != null)
+				return false;
+		} else if (!sortBy.equals(other.sortBy))
+			return false;
 		return true;
 	}
 
-	@Override
-	public String toString() {
-		return String.format("AbstractSearchBean [deepCopy=%s, key=%s]",
-				deepCopy, key);
-	}
-	
 	
 }

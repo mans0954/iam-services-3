@@ -23,7 +23,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "LOGIN")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "LoginEntity")
 @DozerDTOCorrespondence(Login.class)
 @Indexed
 @Embeddable

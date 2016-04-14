@@ -29,7 +29,7 @@ import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name = "GRP")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "GroupEntity")
 @AttributeOverride(name = "id", column = @Column(name = "GRP_ID"))
 @DozerDTOCorrespondence(Group.class)
 @Internationalized

@@ -27,10 +27,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordRule;
+import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
+import org.openiam.util.encrypt.Cryptor;
 
 import java.util.List;
 
@@ -42,6 +45,9 @@ import java.util.List;
 public class PasswordHistoryRule extends AbstractPasswordRule {
 
     private static final Log log = LogFactory.getLog(PasswordHistoryRule.class);
+    protected PasswordHistoryDAO passwordHistoryDao;
+    protected Cryptor cryptor;
+    protected KeyManagementService keyManagementService;
 
     @Override
     public String getAttributeName() {
@@ -50,9 +56,9 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 
     @Override
     public void validate(PolicyAttribute attribute) throws PasswordRuleException {
-
-        log.info("PasswordHistoryRule called.");
-
+        if(log.isInfoEnabled()) {
+            log.info("PasswordHistoryRule called.");
+        }
         boolean enabled = false;
 
         if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
@@ -60,7 +66,14 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
         }
 
         if (enabled) {
-            log.info("password history rule is enabled.");
+            if(log.isInfoEnabled()) {
+                log.info("password history rule is enabled.");
+            }
+            if(StringUtils.isBlank(user.getId()) || StringUtils.isBlank(lg.getLogin())){
+                // new user skip validation
+                return;
+            }
+
             Password pswd = new Password();
             pswd.setManagedSysId(lg.getManagedSysId());
             pswd.setPrincipal(lg.getLogin());
@@ -74,15 +87,18 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
             }
             // check the list.
             String userId = (user == null) ? lg.getUserId() : user.getId();
-
-            log.info("Found " + historyList.size() + " passwords in the history");
+            if(log.isInfoEnabled()) {
+                log.info("Found " + historyList.size() + " passwords in the history");
+            }
             for (PasswordHistoryEntity hist : historyList) {
                 String pwd = hist.getPassword();
                 String decrypt = null;
                 try {
                     decrypt = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), pwd);
                     if (StringUtils.equals(pswd.getPassword(), decrypt)) {
-                        log.info("matching password found.");
+                        if(log.isInfoEnabled()) {
+                            log.info("matching password found.");
+                        }
                         throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
                     }
                 } catch (PasswordRuleException e) {
@@ -129,5 +145,29 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
         } else {
             return null;
         }
+    }
+
+    public PasswordHistoryDAO getPasswordHistoryDao() {
+        return passwordHistoryDao;
+    }
+
+    public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
+        this.passwordHistoryDao = passwordHistoryDao;
+    }
+
+    public Cryptor getCryptor() {
+        return cryptor;
+    }
+
+    public void setCryptor(Cryptor cryptor) {
+        this.cryptor = cryptor;
+    }
+
+    public KeyManagementService getKeyManagementService() {
+        return keyManagementService;
+    }
+
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        this.keyManagementService = keyManagementService;
     }
 }
