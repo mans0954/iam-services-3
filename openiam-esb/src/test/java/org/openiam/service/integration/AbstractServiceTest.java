@@ -309,6 +309,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		return RandomStringUtils.randomAlphanumeric(count);
 	}
 	
+	protected static String getRandomNameStatic() {
+		return RandomStringUtils.randomAlphanumeric(5);
+	}
+	
 	protected String getRandomName() {
 		return getRandomName(5);
 	}

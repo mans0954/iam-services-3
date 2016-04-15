@@ -75,7 +75,7 @@ public abstract class AbstractURIFederationTest extends AbstractServiceTest {
 		final Set<URIPatternErrorMapping> retval = new HashSet<URIPatternErrorMapping>();
 		for(int i = 0; i < 3; i++) {
 			final URIPatternErrorMapping val = new URIPatternErrorMapping();
-			val.setErrorCode(RandomUtils.nextInt(500));
+			val.setErrorCode(RandomUtils.nextInt(5000));
 			val.setRedirectURL("/" + getRandomName());
 			retval.add(val);
 		}
