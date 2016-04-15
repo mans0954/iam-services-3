@@ -1,5 +1,7 @@
 package org.openiam.config;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.cache.OpeniamAnnotationCacheOperationSource;
 import org.openiam.cache.OpeniamCacheInterceptor;
 import org.openiam.hazelcast.HazelcastConfiguration;
@@ -25,6 +27,8 @@ import org.springframework.context.annotation.Role;
 @Configuration
 public class OpeniamCacheConfiguration extends ProxyCachingConfiguration implements ApplicationContextAware {
 	
+	private static final Log LOG = LogFactory.getLog(OpeniamCacheConfiguration.class);
+	
 	@Autowired
     private HazelcastConfiguration hazelcastConfiguration;
 	
@@ -36,6 +40,9 @@ public class OpeniamCacheConfiguration extends ProxyCachingConfiguration impleme
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public CacheOperationSource cacheOperationSource() {
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Creating cacheOperationSource...");
+		}
 		return new OpeniamAnnotationCacheOperationSource();
 	}
 
@@ -49,6 +56,9 @@ public class OpeniamCacheConfiguration extends ProxyCachingConfiguration impleme
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	@Override
 	public CacheInterceptor cacheInterceptor() {
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Creating cacheInterceptor...");
+		}
 		final OpeniamCacheInterceptor interceptor = new OpeniamCacheInterceptor();
 		interceptor.setApplicationContext(ctx);
 		interceptor.setCacheOperationSources(cacheOperationSource());

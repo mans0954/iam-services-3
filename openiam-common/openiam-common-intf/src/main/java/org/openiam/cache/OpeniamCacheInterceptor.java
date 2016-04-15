@@ -199,6 +199,12 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 	
 	@Override
 	protected Object execute(final CacheOperationInvoker invoker, Object target, Method method, Object[] args) {
+		final long threadId = Thread.currentThread().getId();
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(String.format("Thread ID.  Starting execution...", threadId));
+		}
+		
+		
 		final MutableBoolean cacheMiss = new MutableBoolean(false);
 		final CacheOperationInvoker invokerWrapper = new CacheOperationInvoker() {
 			
@@ -214,7 +220,6 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 		final boolean isCustomCacheEviction = (operations.stream().filter(e -> e instanceof OpeniamCacheEviction).count() > 0);
 		final boolean isCustomCacheEvictionOnlyOperation = (isCustomCacheEviction && operations.size() == 1);
 		
-		final long threadId = Thread.currentThread().getId();
 		if(LOG.isDebugEnabled()) {
 			LOG.debug(String.format("Thread ID: %s.  Called OpeniamCacheInterceptor with Target %s, method %s, args %s", threadId, target, method, ArrayUtils.toString(args)));
 		}
