@@ -17,6 +17,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.elasticsearch.common.lang3.ArrayUtils;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.base.BaseIdentity;
 import org.openiam.cache.CacheKeyEvict;
@@ -213,15 +214,26 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 		final boolean isCustomCacheEviction = (operations.stream().filter(e -> e instanceof OpeniamCacheEviction).count() > 0);
 		final boolean isCustomCacheEvictionOnlyOperation = (isCustomCacheEviction && operations.size() == 1);
 		
+		final long threadId = Thread.currentThread().getId();
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(String.format("Thread ID: %s.  Called OpeniamCacheInterceptor with Target %s, method %s, args %s", threadId, target, method, ArrayUtils.toString(args)));
+		}
 		
 		final Object returnValue = (isCustomCacheEvictionOnlyOperation) ? 
 				invokerWrapper.invoke() :
 				super.execute(invokerWrapper, target, method, args);
-					
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(String.format("Thread ID: %s.  OpeniamCacheInterceptor return Value %s.  Is cache miss? %s", threadId, returnValue, cacheMiss.booleanValue()));
+		}
+				
 		/* consider doing this in a separate thread */
 		final Set<BaseIdentity> baseIdentities = getBaseIdentities(returnValue, targetClass, method) ;
 		
 		final List<CacheKeyEvictToken> evictions = getEvictionMetadata(target, method, args, targetClass);
+		
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(String.format("Thread ID: %s.  OpeniamCacheInterceptor getting read to custom cache put.  Base Entities: %s.  Evictions: %s", threadId, baseIdentities, evictions));
+		}
 		
 		if(CollectionUtils.isNotEmpty(operations)) {
 			for(final CacheOperation operation : operations) {
@@ -233,6 +245,11 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 							if(cacheMiss.booleanValue()) { /* only process this on a cache miss */
 								logPut(cache, cacheKey, baseIdentities.size());
 								
+								if(LOG.isDebugEnabled()) {
+									LOG.debug(String.format("Thread ID: %s.  OpeniamCacheInterceptor ready to do custom cache put.  Cache: %s.  Cache key %s.  Number of Entities being put: %s", 
+											threadId, cache.getName(), cacheKey, baseIdentities.size()));
+								}
+								
 								/*
 								 * Now populate our custom cache, so that @CacheEvict operations will be able to refernece them
 								 * without knowing the generated key (which may be quite complicated)
@@ -240,6 +257,11 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 								if(CollectionUtils.isNotEmpty(baseIdentities)) {
 									for(final BaseIdentity identity : baseIdentities) {
 										final String cacheManagementKey = generatePrimaryKeyCacheKey(cache, identity.getId());
+								
+										if(LOG.isDebugEnabled()) {
+											LOG.debug(String.format("Thread ID: %s.  Putting custom cache key: %s", threadId, cacheManagementKey));
+										}
+										
 										Set<Object> keySet = cacheManagementCache.get(cacheManagementKey);
 										if(keySet == null) {
 											keySet = Collections.synchronizedSet(new HashSet<Object>());
@@ -264,9 +286,16 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 		 * Now process all of the evictions that take place, as a result of the method call
 		 */
 		if(isCustomCacheEviction) {
+			if(LOG.isDebugEnabled()) {
+				LOG.debug(String.format("Thread ID: %s.  Processing Custom Cache Eviction", threadId));
+			}
 			for(final CacheKeyEvictToken token : evictions) {
 				Cache evictCache = null;
 				final List<String> primaryKeys = applicationContext.getBean(token.getEvict().keyGenerator()).generateKey(token.getArgument());
+				
+				if(LOG.isDebugEnabled()) {
+					LOG.debug(String.format("Thread ID: %s.  Going to purge primary keys %s", threadId, primaryKeys));
+				}
 				if(primaryKeys != null) {
 					final String cacheName = token.getEvict().value();
 					evictCache = this.cacheManager.getCache(cacheName);
@@ -275,8 +304,16 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 					}
 					for(final String primaryKey : primaryKeys) {
 						final String cacheManagementKey = generatePrimaryKeyCacheKey(evictCache, primaryKey);
+						if(LOG.isDebugEnabled()) {
+							LOG.debug(String.format("Thread ID: %s.  Purging entites for key %s", threadId, cacheManagementKey));
+						}
 						Set<Object> keySet = cacheManagementCache.get(cacheManagementKey);
 						if(CollectionUtils.isNotEmpty(keySet)) {
+							
+							if(LOG.isDebugEnabled()) {
+								LOG.debug(String.format("Thread ID: %s.  Purging keys %s for Cache Key %s", threadId, keySet, cacheManagementKey));
+							}
+							
 							logEviction(evictCache, cacheManagementKey, keySet.size());
 							if(keySet != null) {
 								/* 
