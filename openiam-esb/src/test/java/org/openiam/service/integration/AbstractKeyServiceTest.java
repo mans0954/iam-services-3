@@ -119,7 +119,7 @@ public abstract class AbstractKeyServiceTest<T extends KeyDTO, S extends Abstrac
 	}
 	
 	protected void assertCacheHit(final Date now, final String cacheName, final int numOfExpectedEntities) {
-		sleep(1); /* wait for persist due to redis*/
+		sleep(5); /* wait for persist due to redis*/
 		
 		/* only way to confirm that there haven't been multiple puts() into the same cache */
 		final AuditLogSearchBean auditLogSearchBean = new AuditLogSearchBean();
@@ -136,7 +136,7 @@ public abstract class AbstractKeyServiceTest<T extends KeyDTO, S extends Abstrac
 	}
 	
 	protected void assertCachePurge(final Date now, final String cacheName, final int numOfPurgedEntities, final int numOfCacheEvents) {
-		sleep(1); /* wait for persist due to redis*/
+		sleep(5); /* wait for persist due to redis*/
 		
 		/* only way to confirm that there haven't been multiple puts() into the same cache */
 		final AuditLogSearchBean auditLogSearchBean = new AuditLogSearchBean();
