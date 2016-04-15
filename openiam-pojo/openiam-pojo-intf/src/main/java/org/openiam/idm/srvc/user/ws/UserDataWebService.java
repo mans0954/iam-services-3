@@ -894,4 +894,7 @@ public interface UserDataWebService {
      */
     @WebMethod
     public List<Supervisor> findSupervisors(@WebParam(name = "searchBean", targetNamespace = "") SupervisorSearchBean supervisorSearchBean);
+
+    @WebMethod
+    public List<User> getUsersFromAuditByActionAndDate(@WebParam(name = "action", targetNamespace = "") String action, @WebParam(name = "from", targetNamespace = "") Date from, @WebParam(name = "to", targetNamespace = "") Date to, @WebParam(name = "isDeepCopy", targetNamespace = "") boolean isDeepCopy);
 }

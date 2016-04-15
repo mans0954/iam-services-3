@@ -26,6 +26,8 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -230,6 +232,12 @@ public class AuditLogServiceImpl implements AuditLogService {
         }
         return idmAuditLogs;
 	}
+    @Override
+    @Transactional(readOnly=true)
+    public List<UserEntity> getUsersFromAuditByActionAndDate(String action, Date from, Date to){
+        return logDAO.getUsersByAction(action,from,to);
+    }
+
 
     @Override
     @Transactional(readOnly=true)

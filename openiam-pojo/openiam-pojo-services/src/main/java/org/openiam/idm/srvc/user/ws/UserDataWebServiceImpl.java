@@ -1351,4 +1351,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     public List<Supervisor> findSupervisors(SupervisorSearchBean supervisorSearchBean) {
         return userManager.findSupervisors(supervisorSearchBean);
     }
+
+    @Override
+    public List<User> getUsersFromAuditByActionAndDate(String action, Date from, Date to, boolean isDeepCopy) {
+        return userManager.getUsersFromAuditByActionAndDate(action,from,to,isDeepCopy);
+    }
+
 }

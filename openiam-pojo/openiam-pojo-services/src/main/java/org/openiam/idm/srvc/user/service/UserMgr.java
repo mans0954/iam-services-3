@@ -622,7 +622,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), -1, -1));
         }
 
-        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet()) && searchBean.getRoleIdSet().size()<2100) {
+        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet()) && searchBean.getRoleIdSet().size() < 2100) {
             nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), -1, -1));
         }
 
@@ -651,7 +651,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
         if (searchBean.getPrincipal() != null) {
             /*
-        	 * DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.
+             * DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.
         	 * Use 4.0 code 
         	 */
             if (isLuceneEnabled && searchBean.getPrincipal().isUseLucene()) {
@@ -1811,8 +1811,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
         List<UserEntity> entityList = userDao.findByIds(userIds);
 
-        if(CollectionUtils.isNotEmpty(entityList)
-                && searchBean.getInitDefaulLoginFlag()){
+        if (CollectionUtils.isNotEmpty(entityList)
+                && searchBean.getInitDefaulLoginFlag()) {
             setDefaultLogin(entityList);
         }
 
@@ -1962,16 +1962,16 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             // update supervisor
             List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getId(), 0, Integer.MAX_VALUE);
             for (UserEntity s : supervisorList) {
-            	if(log.isDebugEnabled()) {
-            		log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
-            	}
+                if (log.isDebugEnabled()) {
+                    log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
+                }
                 if (s.getId().equalsIgnoreCase(supervisorId)) {
                     break;
                 }
                 // this.removeSupervisor(s.getOrgStructureId());
             }
-            if(log.isDebugEnabled()) {
-            	log.debug("adding supervisor: " + supervisorId);
+            if (log.isDebugEnabled()) {
+                log.debug("adding supervisor: " + supervisorId);
             }
             this.addSuperior(supervisorId, newUserEntity.getId());
         }
@@ -2751,8 +2751,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public List<User> getUserDtoBetweenCreateDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserBetweenCreateDate( fromDate, toDate );
-        return userDozerConverter.convertToDTOList(userEntityList, true);
+        List<UserEntity> userEntityList = userDao.getUserBetweenCreateDate(fromDate, toDate);
+        return userDozerConverter.convertToDTOList(userEntityList, false);
     }
 
     @Override
@@ -2765,20 +2765,20 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public List<User> getUserDtoBetweenLastDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserBetweenLastDate( fromDate, toDate );
+        List<UserEntity> userEntityList = userDao.getUserBetweenLastDate(fromDate, toDate);
 
-        return userDozerConverter.convertToDTOList(userEntityList, true);
+        return userDozerConverter.convertToDTOList(userEntityList, false);
     }
 
     @Override
-	@Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public List<User> getUserDtoBySearchBean(AuditLogSearchBean searchBean) {
         List<IdmAuditLog> auditLogs = auditLogService.findBeans(searchBean, -1, -1, true);
         Set<String> userIds = new HashSet<String>();
         for (IdmAuditLog log : auditLogs) {
             String userId = null;
             Set<AuditLogTarget> targets = log.getTargets();
-            if(targets != null) {
+            if (targets != null) {
                 for (AuditLogTarget target : targets) {
                     if (target.getTargetType().equalsIgnoreCase("user")) {
                         userId = target.getTargetId();
@@ -2790,12 +2790,27 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         }
         List<UserEntity> userEntityList = userDao.getUserByIds(userIds);
 
-        return userDozerConverter.convertToDTOList(userEntityList, true);
+        return userDozerConverter.convertToDTOList(userEntityList, searchBean.isDeepCopy());
     }
 
     private UserDataService getProxyService() {
-        UserDataService service = (UserDataService)ac.getBean("userManager");
+        UserDataService service = (UserDataService) ac.getBean("userManager");
         return service;
+    }
+    @Override
+    public List<User> getUsersFromAuditByActionAndDate(String action, Date from, Date to, boolean isDeepCopy) {
+        List<UserEntity> users = auditLogService.getUsersFromAuditByActionAndDate(action, from, to);
+        if (users!=null){
+            List<User> userList = new ArrayList<User>();
+            for (UserEntity u:users){
+                User user = new User();
+                user.setId(u.getId());
+                user.setEmployeeId(u.getEmployeeId());
+            }
+            return userList;
+        }else {
+            return null;
+        }
     }
 
     @Override
