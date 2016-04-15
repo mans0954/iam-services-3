@@ -53,6 +53,7 @@
 		</classes>
 	</test>
 	
+	<!--
 	<test name="integration.user">
 		<classes>
 			<class name="org.openiam.service.integration.login.LoginServiceTest" />
@@ -98,6 +99,7 @@
             <class name="org.openiam.service.integration.provisioning.GroupManagementServiceTest" />
         </classes>
     </test>
+    -->
 	
 	<!--
 	Container runs out of memory if we run these, since we have the ESB running simultaneously.  CircleCI is limited to 4G, which we exceed :(
