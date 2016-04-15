@@ -53,7 +53,7 @@ public abstract class AbstractURIFederationTest extends AbstractServiceTest {
 		Assert.assertTrue(StringUtils.isNotBlank(response.getRedirectTo()));
 		Assert.assertNotNull(response.getServer());
 		Assert.assertTrue(CollectionUtils.isNotEmpty(response.getSubstitutionList()));
-		Assert.assertTrue(CollectionUtils.isNotEmpty(response.getErrorMappingList()));
+		//Assert.assertTrue(CollectionUtils.isNotEmpty(response.getErrorMappingList()));
 		Assert.assertTrue(CollectionUtils.isNotEmpty(response.getAuthLevelTokenList()));
 		Assert.assertTrue(CollectionUtils.isNotEmpty(response.getRuleTokenList()));
 		if(shouldHaveMethod) {
