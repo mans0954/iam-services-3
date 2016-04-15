@@ -261,7 +261,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
      * @return
      */
     @Override
-    @Cacheable(value = "managedSysObjectParam", key = "{ #managedSystemId, #objectType}")
     public ManagedSystemObjectMatch[] managedSysObjectParam(
             String managedSystemId, String objectType) {
         if (managedSystemId == null) {

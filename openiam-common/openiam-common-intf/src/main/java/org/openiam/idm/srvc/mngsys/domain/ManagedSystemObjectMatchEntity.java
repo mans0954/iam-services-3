@@ -11,7 +11,6 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "MNG_SYS_OBJECT_MATCH")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(ManagedSystemObjectMatch.class)
 public class ManagedSystemObjectMatchEntity implements Serializable {
     @Id
@@ -22,7 +21,6 @@ public class ManagedSystemObjectMatchEntity implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "MANAGED_SYS_ID")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ManagedSysEntity managedSys;
 
     @Column(name="OBJECT_TYPE", length=20)
