@@ -8,7 +8,10 @@ import org.openiam.hazelcast.HazelcastConfiguration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.cache.annotation.AbstractCachingConfiguration;
 import org.springframework.cache.annotation.ProxyCachingConfiguration;
+import org.springframework.cache.config.CacheManagementConfigUtils;
+import org.springframework.cache.interceptor.BeanFactoryCacheOperationSourceAdvisor;
 import org.springframework.cache.interceptor.CacheInterceptor;
 import org.springframework.cache.interceptor.CacheOperationSource;
 import org.springframework.context.ApplicationContext;
@@ -23,9 +26,12 @@ import org.springframework.context.annotation.Role;
  * Overrides Spring's defualt cache configuration, allowing us to provide a custom cache interceptor.
  * 
  * Required for IDMAPPS-3644
+ * 
+ * We are extending AbstractCachingConfiguration, and not ProxyCachingConfiguration, because the overridden methods (when extending ProxyCachingConfiguration)
+ * are not called when building on CircleCI
  */
 @Configuration
-public class OpeniamCacheConfiguration extends ProxyCachingConfiguration implements ApplicationContextAware {
+public class OpeniamCacheConfiguration extends /*ProxyCachingConfiguration*/AbstractCachingConfiguration implements ApplicationContextAware {
 	
 	private static final Log LOG = LogFactory.getLog(OpeniamCacheConfiguration.class);
 	
@@ -46,7 +52,7 @@ public class OpeniamCacheConfiguration extends ProxyCachingConfiguration impleme
 	 */
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-	@Override
+	//@Override
 	public CacheOperationSource cacheOperationSource() {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Creating cacheOperationSource...");
@@ -62,7 +68,7 @@ public class OpeniamCacheConfiguration extends ProxyCachingConfiguration impleme
 	 */
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-	@Override
+	//@Override
 	public CacheInterceptor cacheInterceptor() {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Creating cacheInterceptor...");
@@ -85,6 +91,18 @@ public class OpeniamCacheConfiguration extends ProxyCachingConfiguration impleme
 		interceptor.setHazelcastConfiguration(hazelcastConfiguration);
 		interceptor.init();
 		return interceptor;
+	}
+	
+	/* copy paste from ProxyCachingConfiguration */
+	@Bean(name = CacheManagementConfigUtils.CACHE_ADVISOR_BEAN_NAME)
+	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+	public BeanFactoryCacheOperationSourceAdvisor cacheAdvisor() {
+		BeanFactoryCacheOperationSourceAdvisor advisor =
+				new BeanFactoryCacheOperationSourceAdvisor();
+		advisor.setCacheOperationSource(cacheOperationSource());
+		advisor.setAdvice(cacheInterceptor());
+		advisor.setOrder(this.enableCaching.<Integer>getNumber("order"));
+		return advisor;
 	}
 
 	@Override
