@@ -51,7 +51,6 @@ public class OpeniamCacheConfiguration extends /*ProxyCachingConfiguration*/Abst
 	 * 
 	 */
 	@Bean
-	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	//@Override
 	public CacheOperationSource cacheOperationSource() {
 		if(LOG.isDebugEnabled()) {
@@ -67,7 +66,6 @@ public class OpeniamCacheConfiguration extends /*ProxyCachingConfiguration*/Abst
 	 * which we need in order to do get access to the generated @Cacheable and @Cachevict keys
 	 */
 	@Bean
-	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	//@Override
 	public CacheInterceptor cacheInterceptor() {
 		if(LOG.isDebugEnabled()) {
@@ -95,7 +93,6 @@ public class OpeniamCacheConfiguration extends /*ProxyCachingConfiguration*/Abst
 	
 	/* copy paste from ProxyCachingConfiguration */
 	@Bean(name = CacheManagementConfigUtils.CACHE_ADVISOR_BEAN_NAME)
-	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanFactoryCacheOperationSourceAdvisor cacheAdvisor() {
 		BeanFactoryCacheOperationSourceAdvisor advisor =
 				new BeanFactoryCacheOperationSourceAdvisor();
