@@ -34,11 +34,19 @@ public class OpeniamCacheConfiguration extends ProxyCachingConfiguration impleme
 	
 	private ApplicationContext ctx;
 	
+	public OpeniamCacheConfiguration() {
+		super();
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Constructing OpeniamCacheConfiguration...");
+		}
+	}
+	
 	/**
 	 * 
 	 */
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+	@Override
 	public CacheOperationSource cacheOperationSource() {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Creating cacheOperationSource...");
