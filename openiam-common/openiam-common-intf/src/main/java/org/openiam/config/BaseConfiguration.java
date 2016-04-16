@@ -42,7 +42,6 @@ import com.hazelcast.spring.cache.HazelcastCacheManager;
 @EnableAspectJAutoProxy
 @EnableAutoConfiguration(exclude={DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class})
 @ImportResource({"classpath:environmentContext.xml", "classpath:databaseContext.xml"})
-@Import(OpeniamCacheConfiguration.class)
 public class BaseConfiguration implements SchedulingConfigurer {
 	
 	@Autowired

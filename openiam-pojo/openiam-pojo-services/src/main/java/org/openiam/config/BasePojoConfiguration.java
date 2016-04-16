@@ -20,7 +20,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 @EnableCaching
-@Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class, RedisConfig.class})
+@Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class, RedisConfig.class, OpeniamCacheConfiguration.class})
 public class BasePojoConfiguration {
 	
 	@Value("${mail.host}")
