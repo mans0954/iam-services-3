@@ -27,11 +27,9 @@ import org.springframework.context.annotation.Role;
  * 
  * Required for IDMAPPS-3644
  * 
- * We are extending AbstractCachingConfiguration, and not ProxyCachingConfiguration, because the overridden methods (when extending ProxyCachingConfiguration)
- * are not called when building on CircleCI
  */
 @Configuration
-public class OpeniamCacheConfiguration extends /*ProxyCachingConfiguration*/AbstractCachingConfiguration implements ApplicationContextAware {
+public class OpeniamCacheConfiguration extends ProxyCachingConfiguration implements ApplicationContextAware {
 	
 	private static final Log LOG = LogFactory.getLog(OpeniamCacheConfiguration.class);
 	
@@ -51,7 +49,8 @@ public class OpeniamCacheConfiguration extends /*ProxyCachingConfiguration*/Abst
 	 * 
 	 */
 	@Bean
-	//@Override
+	@Override
+	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public CacheOperationSource cacheOperationSource() {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Creating cacheOperationSource...");
@@ -66,7 +65,8 @@ public class OpeniamCacheConfiguration extends /*ProxyCachingConfiguration*/Abst
 	 * which we need in order to do get access to the generated @Cacheable and @Cachevict keys
 	 */
 	@Bean
-	//@Override
+	@Override
+	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public CacheInterceptor cacheInterceptor() {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Creating cacheInterceptor...");
@@ -91,17 +91,6 @@ public class OpeniamCacheConfiguration extends /*ProxyCachingConfiguration*/Abst
 		return interceptor;
 	}
 	
-	/* copy paste from ProxyCachingConfiguration */
-	@Bean(name = CacheManagementConfigUtils.CACHE_ADVISOR_BEAN_NAME)
-	public BeanFactoryCacheOperationSourceAdvisor cacheAdvisor() {
-		BeanFactoryCacheOperationSourceAdvisor advisor =
-				new BeanFactoryCacheOperationSourceAdvisor();
-		advisor.setCacheOperationSource(cacheOperationSource());
-		advisor.setAdvice(cacheInterceptor());
-		advisor.setOrder(this.enableCaching.<Integer>getNumber("order"));
-		return advisor;
-	}
-
 	@Override
 	public void setApplicationContext(ApplicationContext ctx)
 			throws BeansException {
