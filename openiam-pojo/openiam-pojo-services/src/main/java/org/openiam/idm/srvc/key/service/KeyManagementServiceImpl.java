@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.key.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.core.dao.UserKeyDao;
@@ -102,15 +103,43 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
         } else {
             jksManager = new JksManager(this.jksFile, this.iterationCount);
         }
+
+        cacheUserKeys();
+    }
+
+    private void cacheUserKeys() {
+        long userCount = userDAO.countAll();
+        int from = 0;
+        int maxSize = 1000;
+        KeyManagementService proxyService = getProxyService();
+        try {
+            while (from < userCount){
+                log.info(String.format("CacheUserKeys: Fetching from %s, size: %s", from, maxSize));
+                List<String> userIds = userDAO.getUserIdList(from, maxSize);
+                log.info(String.format("CacheUserKeys: Fetched from %s, size: %s.  Caching keys...", from, maxSize));
+                if(CollectionUtils.isNotEmpty(userIds)){
+                    for(String userId: userIds){
+                        proxyService.getUserKey(userId, KeyName.password.name());
+                    }
+
+                }
+                from += maxSize;
+            }
+        } catch (EncryptionException e) {
+            log.error(e.getMessage(), e);
+        }
+
     }
 
     @Override
+    @Transactional(readOnly = true)
     public byte[] getSystemUserKey(String keyName) throws EncryptionException {
         return getProxyService().getUserKey(systemUserId, keyName);
     }
 
     @Override
     @Cacheable(value = "userkeys", key = "{ #userId, #keyName}")
+    @Transactional(readOnly = true)
     public byte[] getUserKey(String userId, String keyName) throws EncryptionException {
         System.out.println(String.format("==== GET USER KEY FOR PWD: {userID:%s, keyName:%s} ", userId, keyName));
         try {
