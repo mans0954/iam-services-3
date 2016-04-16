@@ -15,6 +15,8 @@ import java.util.Set;
 public class AuthorizationRole extends AbstractAuthorizationEntity implements Serializable  {
 	
 	private static final long serialVersionUID = 1L;
+
+	private String adminResourceId;
 	
 	@XmlTransient
 	private Set<AuthorizationRole> parentRoles;
@@ -32,6 +34,13 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 	
 	public AuthorizationRole() {
 		
+	}
+	public String getAdminResourceId() {
+		return adminResourceId;
+	}
+
+	public void setAdminResourceId(String adminResourceId) {
+		this.adminResourceId = adminResourceId;
 	}
 	
 	public void addParentRole(final AuthorizationRole role) {
