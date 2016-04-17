@@ -3,6 +3,7 @@ package org.openiam.service.integration.policy;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.AfterClass;
 import org.mortbay.jetty.servlet.HashSessionIdManager;
+import org.mortbay.log.Log;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
@@ -197,6 +198,7 @@ public class PolicyTest extends AbstractKeyNameServiceTest<Policy, PolicySearchB
 		final Policy entity = createPolicy();
 		final PolicySearchBean sb = getCacheableSearchBean(entity);
 		try {
+			Log.info(String.format("Search Bean: %s.  Policy:  %s", sb, entity));
 			/* trigger and assert cache hit */
 			searchAndAssertCacheHit(sb, entity, "policies");
 			
