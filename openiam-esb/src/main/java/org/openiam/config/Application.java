@@ -6,25 +6,30 @@ import java.util.Map;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.openiam.authmanager.web.AuthorizationManagerHessianServlet;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.annotation.ProxyCachingConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.orm.hibernate4.support.OpenSessionInViewFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-@ComponentScan("org.openiam")
+@ComponentScan(basePackages={"org.openiam"},excludeFilters={})
 @Configuration
-@SpringBootApplication(exclude=ProxyCachingConfiguration.class)
+@SpringBootApplication
 @EnableWebMvc
-//@EnableAutoConfiguration
-//@EnableJpaRepositories
-@Import(value={BasePojoConfiguration.class, BaseAuthManagerConfiguration.class, BaseActivitiConfiguration.class, BaseAccessManagerConfig.class})
-//@ImportResource("classpath:ws-beans.xml")
+//@EnableCaching
+@EnableAutoConfiguration(exclude={DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class})
+@Import(value={BasePojoConfiguration.class, BaseAuthManagerConfiguration.class, BaseActivitiConfiguration.class, BaseAccessManagerConfig.class, OpeniamCacheConfiguration.class})
 public class Application {
 
 	public static void main(final String[] args) {

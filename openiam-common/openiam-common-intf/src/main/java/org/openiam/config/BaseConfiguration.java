@@ -37,10 +37,8 @@ import com.hazelcast.spring.cache.HazelcastCacheManager;
 @Configuration
 @EnableAsync
 @EnableScheduling
-@EnableCaching
 @EnableTransactionManagement
 @EnableAspectJAutoProxy
-@EnableAutoConfiguration(exclude={DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class})
 @ImportResource({"classpath:environmentContext.xml", "classpath:databaseContext.xml"})
 public class BaseConfiguration implements SchedulingConfigurer {
 	
@@ -113,31 +111,4 @@ public class BaseConfiguration implements SchedulingConfigurer {
 		e.setQueueCapacity(queueCapacity);
 		return e;
 	}
-	
-	/**
-	 * See http://docs.hazelcast.org/docs/3.5/manual/html/springintegration.html
-	 * @return
-	 */
-	 @Bean
-	 public CacheManager cacheManager() {
-		 return new HazelcastCacheManager(hazelcastConfig.getHazelcastInstance());
-	 }
-	
-	 @Bean
-	 public KeyGenerator keyGenerator() {
-		 return null;
-	 }
-
-	 /*
-	@Override
-	public CacheResolver cacheResolver() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public CacheErrorHandler errorHandler() {
-		return new SimpleCacheErrorHandler();
-	}
-	*/
 }
