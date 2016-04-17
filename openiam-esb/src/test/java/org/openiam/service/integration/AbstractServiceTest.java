@@ -25,6 +25,7 @@ import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.config.IntegrationTestConfig;
 import org.openiam.http.client.OpenIAMHttpClient;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
@@ -60,6 +61,7 @@ import org.openiam.idm.srvc.user.ws.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
@@ -68,7 +70,7 @@ import org.testng.Assert;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 //@Import(TestConfg.class)
-@ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
+@SpringApplicationConfiguration(IntegrationTestConfig.class)
 public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTests {
 
 	protected ContentProvider cp = null;

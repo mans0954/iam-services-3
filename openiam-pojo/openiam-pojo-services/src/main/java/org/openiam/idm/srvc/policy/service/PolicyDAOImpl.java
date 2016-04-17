@@ -30,40 +30,6 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements 
         return true;
     }	
 
-@SuppressWarnings("unchecked")
-	@Override
-	public List<PolicyEntity> findAllPolicies(String policyDefId, int startAt, int size) {
-		log.debug("finding all PolicyEntities instances");
-		try {
-
-			Criteria cr = this.getCriteria()
-					.add(Restrictions.eq("policyDef.id", policyDefId))
-					.addOrder(Order.asc(getPKfieldName()));
-			if (startAt > -1) {
-	            cr.setFirstResult(startAt);
-	        }
-
-	        if (size > -1) {
-	            cr.setMaxResults(size);
-	        }
-			return (List<PolicyEntity>) cr.list();
-		} catch (HibernateException re) {
-			log.error("find all Policies failed", re);
-			throw re;
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<PolicyEntity> findPolicyByName(String policyDefId, String policyName) {
-			Criteria cr = this.getCriteria().add(
-					Restrictions.and(
-							Restrictions.eq("policyDef.id", policyDefId),
-							Restrictions.eq("name", policyName)));
-
-			return (List<PolicyEntity>) cr.list();
-	}
-
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         final Criteria criteria = getCriteria();
@@ -88,6 +54,10 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements 
 				} else {
 					criteria.add(Restrictions.eq("name", name));
 				}
+                
+                if(StringUtils.isNotBlank(sb.getPolicyDefId())) {
+                	criteria.add(Restrictions.eq("policyDef.id", sb.getPolicyDefId()));
+                }
             }
         }
         return criteria;

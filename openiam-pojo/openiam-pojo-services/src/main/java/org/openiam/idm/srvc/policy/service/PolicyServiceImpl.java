@@ -137,14 +137,6 @@ public class PolicyServiceImpl implements PolicyService {
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "policies", key = "{#policyDefId, #policyName}")
-    public List<Policy> findPolicyByName(String policyDefId, String policyName) {
-        List<PolicyEntity> policyEntities = policyDao.findPolicyByName(policyDefId, policyName);
-        return policyDozerConverter.convertToDTOList(policyEntities, false);
-	}
-
 	@Override
 	@Transactional
 	@CacheKeyEviction(

@@ -119,8 +119,12 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                 throw new BasicDataServiceException(
                         ResponseCode.POLICY_NAME_NOT_SET);
             }
+            
+            final PolicySearchBean sb = new PolicySearchBean();
+            sb.setName(policy.getName());
+            sb.setPolicyDefId(policy.getPolicyDefId());
 
-            final List<Policy> found = policyService.findPolicyByName(policy.getPolicyDefId(), policy.getName());
+            final List<Policy> found = policyService.findBeans(sb, 0, Integer.MAX_VALUE);
             if (found != null && found.size() > 0) {
                 if (StringUtils.isBlank(policy.getId())) {
                     throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
