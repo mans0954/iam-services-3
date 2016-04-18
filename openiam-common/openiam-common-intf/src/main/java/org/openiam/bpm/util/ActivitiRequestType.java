@@ -19,7 +19,8 @@ public enum ActivitiRequestType {
 	ATTESTATION("attestationWorkflow", "Attestation", true),
     GROUP_ATTESTATION("groupAttestationWorkflow", "Group Attestation", true),
 	RESOURCE_CERTIFICATION("resourceCertification", "Resource Certification", true),
-	
+	ROLE_CERTIFICATION("roleCertification", "Role Certification", true),
+
 	ADD_SUPERIOR("addSuperior", "Add Superior", true),
 	REMOVE_SUPERIOR("removeSuperior", "Remove Superior", true),
     REPLACE_SUPERIOR("replaceSuperior", "Replace Superior", true),

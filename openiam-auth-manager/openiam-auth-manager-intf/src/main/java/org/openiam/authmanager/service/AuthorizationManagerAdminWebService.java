@@ -29,4 +29,9 @@ public interface AuthorizationManagerAdminWebService {
     @WebMethod
     public ObjectOwnerBean getOwnerIdsForGroupSet(@WebParam(name = "groupIdSet", targetNamespace = "") Set<String> groupIdSet);
 
+    @WebMethod
+    public Set<String> getOwnerIdsForRole(@WebParam(name = "roleId", targetNamespace = "") String roleId);
+
+    @WebMethod
+    public ObjectOwnerBean getOwnerIdsForRoleSet(@WebParam(name = "roleIdSet", targetNamespace = "") Set<String> roleIdSet);
 }

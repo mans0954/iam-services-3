@@ -250,17 +250,25 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
             return response;
         }
         ProvisionUser pUser = new ProvisionUser(usr);
-
-        LoginEntity lg = loginManager.getPrimaryIdentity(userId);
+//2DB calls at the same time
+//        LoginEntity lg = loginManager.getPrimaryIdentity(userId);
 
         List<LoginEntity> principalList = loginManager.getLoginByUser(userId);
 
+        LoginEntity lg = null;
+        for (LoginEntity l : principalList) {
+            if (sysConfiguration.getDefaultManagedSysId().equals(l.getManagedSysId())) {
+                lg = l;
+                break;
+            }
+        }
+
         // setup audit information
-
-        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorUserId);
-        LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
-
-        if (lRequestor != null && lTargetUser != null) {
+//this doesn't make sense
+//        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorUserId);
+//        LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
+//
+//        if (lRequestor != null && lTargetUser != null) {
             /*
             auditLog = auditHelper.addLog("DEPROVISION RESOURCE", lRequestor.getDomainId(), lRequestor.getLogin(),
                     "IDM SERVICE", usr.getCreatedBy(), "0", "USER", usr.getUserId(),
@@ -269,8 +277,8 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                     requestId, null, null, null,
                     null, lTargetUser.getLogin(), lTargetUser.getDomainId());
 			*/
-        }
-
+//        }
+//// TODO: 4/15/16 Dmitry 
 
         for (String resourceId : resourceList) {
 
