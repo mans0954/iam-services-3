@@ -69,8 +69,9 @@ import org.springframework.web.client.RestTemplate;
 import org.testng.Assert;
 
 @RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
 //@Import(TestConfg.class)
-@SpringApplicationConfiguration(IntegrationTestConfig.class)
+//@SpringApplicationConfiguration(IntegrationTestConfig.class)
 public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTests {
 
 	protected ContentProvider cp = null;
