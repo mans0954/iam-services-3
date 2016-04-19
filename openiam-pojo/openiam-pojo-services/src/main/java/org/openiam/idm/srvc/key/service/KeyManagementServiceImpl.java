@@ -107,6 +107,7 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
         cacheUserKeys();
     }
 
+
     private void cacheUserKeys() {
         long userCount = userDAO.countAll();
         int from = 0;
@@ -118,9 +119,14 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
                 List<String> userIds = userDAO.getUserIdList(from, maxSize);
                 log.info(String.format("CacheUserKeys: Fetched from %s, size: %s.  Caching keys...", from, maxSize));
                 if(CollectionUtils.isNotEmpty(userIds)){
-                    for(String userId: userIds){
-                        proxyService.getUserKey(userId, KeyName.password.name());
+                    List<UserKey> userKeys = proxyService.getByUserIdsKeyName(userIds, KeyName.password.name());
+                    if(CollectionUtils.isNotEmpty(userKeys)){
+                        for(UserKey userKey: userKeys){
+                            proxyService.getUserKey(userKey);
+                        }
                     }
+
+
 
                 }
                 from += maxSize;
@@ -136,6 +142,13 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
     public byte[] getSystemUserKey(String keyName) throws EncryptionException {
         return getProxyService().getUserKey(systemUserId, keyName);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserKey> getByUserIdsKeyName(List<String> userIds, String keyName) {
+        return userKeyDao.getByUserIdsKeyName(userIds, keyName);
+    }
+
 
     @Override
     @Cacheable(value = "userkeys", key = "{ #userId, #keyName}")
@@ -154,6 +167,7 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
     @Override
     @Cacheable(value = "userkeys", key = "{ #uk.userId, #uk.name}")
     public byte[] getUserKey(UserKey uk) throws EncryptionException {
+        System.out.println(String.format("==== GET USER KEY FOR PWD: {userID:%s, keyName:%s} ", uk.getUserId(), uk.getName()));
         if (uk == null) {
             return null;
         }
