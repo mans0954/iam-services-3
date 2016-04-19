@@ -234,6 +234,16 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return getUser(login.getUserId(), null);
 
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getUserIDs(int from, int size){
+        return userDao.getUserIdList(from, size);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public Long getTotalNumberOfUsers(){
+        return userDao.countAll();
+    }
 
     @Override
     @Transactional(readOnly = true)

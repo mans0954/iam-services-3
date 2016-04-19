@@ -22,9 +22,11 @@ import org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -82,6 +84,10 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
     private ManagedSysDAO managedSysDAO;
     @Autowired
     private UserIdentityAnswerDAO userIdentityAnswerDAO;
+    @Autowired
+    @Qualifier("userManager")
+    private UserDataService userManager;
+
 
     private ApplicationContext ac;
 
@@ -116,14 +122,14 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
 
 
     private void cacheUserKeys() {
-        long userCount = userDAO.countAll();
+        long userCount = userManager.getTotalNumberOfUsers();
         int from = 0;
         int maxSize = 1000;
         KeyManagementService proxyService = getProxyService();
         try {
             while (from < userCount){
                 log.info(String.format("CacheUserKeys: Fetching from %s, size: %s", from, maxSize));
-                List<String> userIds = userDAO.getUserIdList(from, maxSize);
+                List<String> userIds = userManager.getUserIDs(from, maxSize);
                 log.info(String.format("CacheUserKeys: Fetched from %s, size: %s.  Caching keys...", from, maxSize));
                 if(CollectionUtils.isNotEmpty(userIds)){
                     List<UserKey> userKeys = proxyService.getByUserIdsKeyName(userIds, KeyName.password.name());

@@ -42,6 +42,10 @@ public interface UserDataService {
      */
     public UserEntity getUserByPrincipal(String principal, String managedSysId, boolean dependants);
 
+    public List<String> getUserIDs(int from, int size);
+
+    public Long getTotalNumberOfUsers();
+
     public User getUserDtoByPrincipal(String principal, String managedSysId, boolean dependants);
 
     public void addUser(UserEntity user) throws Exception;
