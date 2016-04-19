@@ -63,6 +63,11 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
 
+    @Value("${org.openiam.userkeys.cache.enabled.on.init}")
+    private Boolean initCacheOnInit;
+
+
+
     @Autowired
     private Cryptor cryptor;
     @Autowired
@@ -103,8 +108,10 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
         } else {
             jksManager = new JksManager(this.jksFile, this.iterationCount);
         }
+        if(initCacheOnInit){
+            cacheUserKeys();
+        }
 
-        cacheUserKeys();
     }
 
 
