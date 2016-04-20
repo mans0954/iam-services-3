@@ -65,7 +65,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.add(Restrictions.in("g.id", delegationFilter.getGroupIdSet()));
             }
 
-            if (CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet()) && delegationFilter.getRoleIdSet().size()<2100) {
+            if (CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
                 criteria.createAlias("roles", "r");
                 criteria.add(Restrictions.in("r.id", delegationFilter.getRoleIdSet()));
             }
