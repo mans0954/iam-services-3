@@ -5,11 +5,15 @@ import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Created by: Alexander Duckardt
  * Date: 09.10.12
  */
 public interface KeyManagementService {
+    public List<UserKey> getByUserIdsKeyName(List<String> userIds, String keyName);
     public  byte[] getUserKey(String userId, String keyName) throws EncryptionException;
     public byte[] getUserKey(UserKey uk) throws EncryptionException;
     public  byte[] getSystemUserKey(String keyName) throws EncryptionException;

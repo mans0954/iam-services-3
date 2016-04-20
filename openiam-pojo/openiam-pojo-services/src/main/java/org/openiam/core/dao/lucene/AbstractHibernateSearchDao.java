@@ -21,6 +21,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -40,13 +41,13 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
 	//object is singleton, so it safe to have this field
 	private transient Date lastUpdateDBDate;
 	private transient Date reindexingCompletedOn;
-
-	private boolean rebuildIndexesAtInit = true;
+	@Value("${org.openiam.usersearch.lucene.reindex.enabled}")
+	private Boolean rebuildIndexesAtInit = true;
 	private transient long reindexDuration;
 	
 	private String lastModifiedFieldName;
 	private String idFieldName;
-	
+
 	@Autowired
 	public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
 		super.setHibernateTemplate(hibernateTemplate);
@@ -382,7 +383,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
     		StopWatch stopWatch = new StopWatch();
     		logger.info(String.format("begin re-indexing %s", getEntityClass().getSimpleName()));
     		stopWatch.start();
-    		buidIndexes();
+			buidIndexes();
     		stopWatch.stop();
 			synchronized (this) {
 				reindexDuration = stopWatch.getTime();
