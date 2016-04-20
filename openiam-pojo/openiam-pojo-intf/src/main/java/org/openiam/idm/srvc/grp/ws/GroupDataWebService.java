@@ -377,6 +377,17 @@ public interface GroupDataWebService {
     							  final @WebParam(name = "childGroupId") String childGroupId,
                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
+    /**
+     * Makes Groups specified by childGroupIds a child of Group specified by groupId
+     * @param groupId - the Group ID to which another group specified by childGroupId will be added
+     * @param childGroupIds - the Groups IDs which will be added to the group specified by groupId
+     * @return a Response Object, containing the status of this operation.
+     */
+    @WebMethod
+    public Response bulkAddChildGroup(final @WebParam(name = "groupId") String groupId,
+                                  final @WebParam(name = "childGroupIds") List <String> childGroupIds,
+                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
     @WebMethod
     public Response validateGroup2GroupAddition(final @WebParam(name = "groupId") String groupId, 
 			  									final @WebParam(name = "childGroupId") String childGroupId);

@@ -75,7 +75,7 @@ import java.util.*;
  * well as related objects such as Users. Groups are stored in an hierarchical
  * relationship. A user belongs to one or more groups.<br>
  * Groups are often modeled after an organizations structure.
- * 
+ *
  * @author Suneet Shah
  * @version 2.0
  */
@@ -93,32 +93,32 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
     @Autowired
     private ResourceDAO resourceDao;
-	
+
 	@Autowired
 	private GroupAttributeDAO groupAttrDao;
 
     @Autowired
     private UserDataService userDataService;
-    
+
     @Autowired
     private UserDAO userDAO;
-    
+
     @Autowired
     private GroupDozerConverter groupDozerConverter;
 
     @Autowired
     @Qualifier("entityValidator")
     private EntityValidator entityValidator;
-    
+
     @Autowired
     private ManagedSysDAO managedSysDAO;
-    
+
 	@Value("${org.openiam.resource.admin.resource.type.id}")
 	private String adminResourceTypeId;
-	
+
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
-	
+
 	@Autowired
 	private OrganizationDAO organizationDAO;
 
@@ -581,7 +581,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 			}
 		}
 		return false;
-		
+
 	}
 
 	@Override
@@ -811,7 +811,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         }
         bean.setParentGroups(dbParents);
     }
-	
+
 	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject, final String requesterId) {
 		Set<GroupAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<GroupAttributeEntity>();
         Set<GroupAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? new HashSet<GroupAttributeEntity>(dbObject.getAttributes()) : new HashSet<GroupAttributeEntity>();
@@ -820,7 +820,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         Iterator<GroupAttributeEntity> dbIteroator = dbProps.iterator();
         while(dbIteroator.hasNext()) {
         	final GroupAttributeEntity dbProp = dbIteroator.next();
-        	
+
         	boolean contains = false;
             for (final GroupAttributeEntity beanProp : beanProps) {
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
@@ -860,7 +860,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             }
         }
         dbProps.addAll(toAdd);
-        
+
         bean.setAttributes(dbProps);
 	}
 
@@ -978,6 +978,28 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 		}
 	}
 
+    @Override
+    @Transactional
+    public void bulkAddChildGroup(String groupId, List<String> childGroupIds) throws BasicDataServiceException {
+        if(groupId != null) {
+            final GroupEntity group = groupDao.findById(groupId);
+            if(group != null)
+            for (String childGroupId : childGroupIds) {
+                validateGroup2GroupAddition(groupId,childGroupId);
+                GroupEntity child = groupDao.findById(childGroupId);
+                if (child != null) {
+                    if (!group.hasChildGroup(childGroupId)) {
+                        group.addChildGroup(child);
+
+                    }
+                }
+            }
+            groupDao.update(group);
+            groupDao.evictCache();
+        }
+
+    }
+
     private Set<String> getDelegationFilter(String requesterId){
         Set<String> filterData = null;
         if(StringUtils.isNotBlank(requesterId)){
@@ -1021,24 +1043,24 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 	public void validateGroup2GroupAddition(String parentId, String memberId) throws BasicDataServiceException {
 		final GroupEntity parent = groupDao.findById(parentId);
 		final GroupEntity child = groupDao.findById(memberId);
-		
+
 		if(parent == null || child == null) {
 			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 		}
-		
+
 		if(causesCircularDependency(parent, child, new HashSet<GroupEntity>())) {
 			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
 		}
-		
+
 		if(parent.hasChildGroup(child.getId())) {
 			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 		}
-		
+
 		if(StringUtils.equals(parentId, memberId)) {
 			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
 		}
 	}
-	
+
 	private boolean causesCircularDependency(final GroupEntity parent, final GroupEntity child, final Set<GroupEntity> visitedSet) {
 		boolean retval = false;
 		if(parent != null && child != null) {

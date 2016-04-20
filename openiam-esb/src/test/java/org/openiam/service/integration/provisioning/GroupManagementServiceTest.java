@@ -47,7 +47,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     private static final String groupSameName1 = "Group Unique Name 1";
     private static final String groupSameName2 = "Group Unique Name 2";
 
-    @Resource(name="groupServiceClient")
+    @Resource(name = "groupServiceClient")
     private GroupDataWebService groupServiceClient;
 
     @Resource(name = "groupProvisionServiceClient")
@@ -81,14 +81,16 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             for (String groupId : groupIds) {
                 try {
                     groupProvisionServiceClient.remove(groupId, REQUESTER_ID);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
         }
         if (CollectionUtils.isNotEmpty(userIds)) {
             for (String userId : userIds) {
                 try {
                     provisionServiceClient.deleteByUserId(userId, UserStatusEnum.REMOVE, REQUESTER_ID);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
         }
 
@@ -96,7 +98,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void createGroup() throws Exception{
+    public void createGroup() throws Exception {
         //create group
         Group group = new Group();
         group.setName(getRandomName());
@@ -104,7 +106,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
         Assert.assertNotNull(res, "Response can not be null");
         Assert.assertTrue(res.isSuccess(), "Response should be successful");
-        String id = (String)res.getResponseValue();
+        String id = (String) res.getResponseValue();
         Assert.assertNotNull(id, "Group id can not be null");
         groupIds.add(id);
 
@@ -200,7 +202,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         List<ExtensibleAttribute> extAttrs = new ArrayList<ExtensibleAttribute>();
         LookupObjectResponse lookupResp = null;
 
-        for (int i=0; i<15; i++) {
+        for (int i = 0; i < 15; i++) {
             Thread.sleep(2000);
             lookupResp = groupProvisionServiceClient.getTargetSystemObject(identity.getIdentity(), AD_MNGSYS_ID, extAttrs);
             if (lookupResp.isSuccess()) {
@@ -229,7 +231,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         extAttrs.add(new ExtensibleAttribute("description", ""));
 
         LookupObjectResponse lookupResp = null;
-        for (int i=0; i<15; i++) {
+        for (int i = 0; i < 15; i++) {
             Thread.sleep(2000);
             lookupResp = groupProvisionServiceClient.getTargetSystemObject(identity.getIdentity(), AD_MNGSYS_ID, extAttrs);
             if (lookupResp.isSuccess()) {
@@ -237,7 +239,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             }
         }
         Assert.assertNotNull(lookupResp, "Response can not be null");
-        ObjectValue objectValue = (ObjectValue)lookupResp.getResponseValue();
+        ObjectValue objectValue = (ObjectValue) lookupResp.getResponseValue();
         Assert.assertNotNull(objectValue, "Object value can not be null");
         Assert.assertTrue(CollectionUtils.isNotEmpty(objectValue.getAttributeList()), "Attribute list should not be empty");
 
@@ -283,10 +285,10 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         }
         Assert.assertNotNull(principal, "Principal can not be null");
         List<ExtensibleAttribute> extAttrs = new ArrayList<ExtensibleAttribute>();
-        extAttrs.add(new ExtensibleAttribute("sAMAccountName",""));
+        extAttrs.add(new ExtensibleAttribute("sAMAccountName", ""));
 
         LookupUserResponse lookupResp = null;
-        for (int i=0; i<15; i++) {
+        for (int i = 0; i < 15; i++) {
             Thread.sleep(2000);
             lookupResp = provisionServiceClient.getTargetSystemUser(principal, AD_MNGSYS_ID, extAttrs);
             if (lookupResp.isSuccess()) {
@@ -294,7 +296,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             }
         }
         Assert.assertNotNull(lookupResp, "Response can not be null");
-        ObjectValue objectValue = (ObjectValue)lookupResp.getResponseValue();
+        ObjectValue objectValue = (ObjectValue) lookupResp.getResponseValue();
         Assert.assertNotNull(objectValue, "Object value can not be null");
         Assert.assertTrue(CollectionUtils.isNotEmpty(objectValue.getAttributeList()), "Attribute list should not be empty");
 
@@ -314,10 +316,10 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
         IdentityDto identity = identityServiceClient.getIdentityByManagedSys(id, AD_RES_ID);
         List<ExtensibleAttribute> grpExtAttrs = new ArrayList<ExtensibleAttribute>();
-        grpExtAttrs.add(new ExtensibleAttribute("member",""));
+        grpExtAttrs.add(new ExtensibleAttribute("member", ""));
 
         LookupObjectResponse groupLookupResp = null;
-        for (int i=0; i<15; i++) {
+        for (int i = 0; i < 15; i++) {
             Thread.sleep(2000);
             groupLookupResp = groupProvisionServiceClient.getTargetSystemObject(identity.getIdentity(), AD_MNGSYS_ID, grpExtAttrs);
             if (groupLookupResp.isSuccess()) {
@@ -325,7 +327,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             }
         }
         Assert.assertNotNull(groupLookupResp, "Response can not be null");
-        ObjectValue objValue = (ObjectValue)groupLookupResp.getResponseValue();
+        ObjectValue objValue = (ObjectValue) groupLookupResp.getResponseValue();
         Assert.assertNotNull(objValue, "Object value can not be null");
         Assert.assertTrue(CollectionUtils.isNotEmpty(objValue.getAttributeList()), "Attribute list should not be empty");
 
@@ -358,10 +360,10 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
         IdentityDto identity = identityServiceClient.getIdentityByManagedSys(id, AD_RES_ID);
         List<ExtensibleAttribute> grpExtAttrs = new ArrayList<ExtensibleAttribute>();
-        grpExtAttrs.add(new ExtensibleAttribute("member",""));
+        grpExtAttrs.add(new ExtensibleAttribute("member", ""));
 
         LookupObjectResponse groupLookupResp = null;
-        for (int i=0; i<15; i++) {
+        for (int i = 0; i < 15; i++) {
             Thread.sleep(2000);
             groupLookupResp = groupProvisionServiceClient.getTargetSystemObject(identity.getIdentity(), AD_MNGSYS_ID, grpExtAttrs);
             if (groupLookupResp.isSuccess()) {
@@ -369,7 +371,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             }
         }
         Assert.assertNotNull(groupLookupResp, "Response can not be null");
-        ObjectValue objValue = (ObjectValue)groupLookupResp.getResponseValue();
+        ObjectValue objValue = (ObjectValue) groupLookupResp.getResponseValue();
         Assert.assertNotNull(objValue, "Object value can not be null");
         Assert.assertTrue(CollectionUtils.isNotEmpty(objValue.getAttributeList()), "Attribute list should not be empty");
 
@@ -411,7 +413,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         group.setManagedSysId(adMngSysId);
         Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
         Assert.assertNotNull(res);
-        String groupId = (String)res.getResponseValue();
+        String groupId = (String) res.getResponseValue();
         sameGroupIds.add(groupId);
 
         Group newGroup = new Group();
@@ -419,7 +421,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         newGroup.setManagedSysId(ldapMngSysId);
         Response newRes = groupServiceClient.saveGroup(newGroup, REQUESTER_ID);
         Assert.assertNotNull(newRes);
-        String newGroupId = (String)newRes.getResponseValue();
+        String newGroupId = (String) newRes.getResponseValue();
         sameGroupIds.add(newGroupId);
 
         Assert.assertTrue(res.isSuccess());
@@ -438,7 +440,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         group.setManagedSysId(adMngSysId);
         Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
         Assert.assertNotNull(res);
-        String groupId = (String)res.getResponseValue();
+        String groupId = (String) res.getResponseValue();
         sameGroupIds.add(groupId);
 
         Group newGroup = new Group();
@@ -446,7 +448,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         newGroup.setManagedSysId(adMngSysId);
         Response newRes = groupServiceClient.saveGroup(newGroup, REQUESTER_ID);
         Assert.assertNotNull(newRes);
-        String newGroupId = (String)newRes.getResponseValue();
+        String newGroupId = (String) newRes.getResponseValue();
         sameGroupIds.add(newGroupId);
 
         Assert.assertTrue(res.isSuccess());
@@ -457,13 +459,13 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void createGroupsWithoutMngSys () throws Exception {
+    public void createGroupsWithoutMngSys() throws Exception {
         Group group = new Group();
         group.setName(groupSameName2);
         group.setManagedSysId(null);
         Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
         Assert.assertNotNull(res);
-        String groupId = (String)res.getResponseValue();
+        String groupId = (String) res.getResponseValue();
         sameGroupIds.add(groupId);
 
         Group newGroup = new Group();
@@ -471,7 +473,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         newGroup.setManagedSysId(null);
         Response newRes = groupServiceClient.saveGroup(newGroup, REQUESTER_ID);
         Assert.assertNotNull(newRes);
-        String newGroupId = (String)newRes.getResponseValue();
+        String newGroupId = (String) newRes.getResponseValue();
         sameGroupIds.add(newGroupId);
 
         Assert.assertTrue(res.isSuccess());
@@ -532,6 +534,33 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
                 groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
             }
         }
+
+    }
+
+    public void bulkAddChild() throws Exception {
+        Group parent = new Group();
+        parent.setName("Parent");
+        Response res = groupServiceClient.saveGroup(parent, REQUESTER_ID);
+        parent.setId((String) res.getResponseValue());
+
+        Group ch1 = new Group();
+        ch1.setName("Ch1");
+        Response res1 = groupServiceClient.saveGroup(ch1, REQUESTER_ID);
+        ch1.setId((String) res1.getResponseValue());
+
+        Group ch2 = new Group();
+        ch2.setName("Ch2");
+        Response res2 = groupServiceClient.saveGroup(ch2, REQUESTER_ID);
+        ch2.setId((String) res2.getResponseValue());
+
+
+        //modify group
+        List<String> chIds = new ArrayList<>();
+        chIds.add(ch1.getId());
+        chIds.add(ch2.getId());
+        groupServiceClient.bulkAddChildGroup(parent.getId(), chIds, REQUESTER_ID);
+        Assert.assertEquals(parent.getChildGroups().size(), 2);
+
 
     }
 }

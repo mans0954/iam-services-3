@@ -537,6 +537,44 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    public Response bulkAddChildGroup(String groupId, List<String> childGroupIds, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLog auditLog = new IdmAuditLog();
+        auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
+        auditLog.setTargetGroup(groupId, groupEntity.getName());
+//        GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
+        //auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setAuditDescription(String.format("Add %s child groups to group: %s",childGroupIds.size(), groupId));
+
+        try {
+            if (groupId == null ) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId is null");
+            }
+
+            groupManager.bulkAddChildGroup(groupId, childGroupIds);
+            auditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            auditLog.fail();
+            auditLog.setFailureReason(e.getCode());
+            auditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("can't add child group", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            auditLog.fail();
+            auditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(auditLog);
+        }
+        return response;
+
+    }
+
+    @Override
     @WebMethod
     public Response removeChildGroup(final String groupId, final String childGroupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);

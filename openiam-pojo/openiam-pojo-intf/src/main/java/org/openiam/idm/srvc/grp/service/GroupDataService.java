@@ -110,7 +110,8 @@ public interface GroupDataService {
 
     public void addChildGroup(final String groupId, final String childGroupId);
     public void removeChildGroup(final String groupId, final String childGroupId);
-    
+
+    public void bulkAddChildGroup(final String groupId, final List<String> childGroupIds) throws BasicDataServiceException;
     public void validateGroup2GroupAddition(final String parentId, final String memberId) throws BasicDataServiceException;
     
     public Group getGroupDTO(final String groupId);
