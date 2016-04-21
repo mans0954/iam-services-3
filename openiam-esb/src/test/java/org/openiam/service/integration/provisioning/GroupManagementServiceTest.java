@@ -460,6 +460,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
     @Test
     public void createGroupsWithoutMngSys() throws Exception {
+        deleteGroupsWithSameName();
         Group group = new Group();
         group.setName(groupSameName2);
         group.setManagedSysId(null);
@@ -485,56 +486,48 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
     private void deleteGroupsWithSameName() {
         // for createGroupsWithSameName
-        if (sameGroupIds.get(0) != null) {
-            String firstGroupName = sameGroupIds.get(0);
-            Response resFirst = groupServiceClient.validateDelete(firstGroupName);
-            if (resFirst.isSuccess()) {
-                groupServiceClient.deleteGroup(firstGroupName, REQUESTER_ID);
-            }
-        }
 
-        if (sameGroupIds.get(1) != null) {
-            String secondGroupName = sameGroupIds.get(1);
-            Response resSecond = groupServiceClient.validateDelete(secondGroupName);
-            if (resSecond.isSuccess()) {
-                groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
+        for (String id : sameGroupIds) {
+            if (id != null) {
+                Response resFirst = groupServiceClient.validateDelete(id);
+                if (resFirst.isSuccess()) {
+                    groupServiceClient.deleteGroup(id, REQUESTER_ID);
+                }
             }
         }
+    }
 
-        //for createGroupsWithSameNameInSameMngSys
-        if (sameGroupIds.get(2) != null) {
-            String firstGroupName = sameGroupIds.get(2);
-            Response resFirst = groupServiceClient.validateDelete(firstGroupName);
-            if (resFirst.isSuccess()) {
-                groupServiceClient.deleteGroup(firstGroupName, REQUESTER_ID);
-            }
-        }
+    @Test
+    public void bulkAddChild() throws Exception {
+        deleteGroupsWithSameName();
+        Group parent = new Group();
+        parent.setName(groupSameName);
+        Response res = groupServiceClient.saveGroup(parent, REQUESTER_ID);
+        parent.setId((String) res.getResponseValue());
+        sameGroupIds.add(parent.getId());
+        Group ch1 = new Group();
+        ch1.setName(groupSameName1);
+        Response res1 = groupServiceClient.saveGroup(ch1, REQUESTER_ID);
+        ch1.setId((String) res1.getResponseValue());
+        sameGroupIds.add(ch1.getId());
+        Group ch2 = new Group();
+        ch2.setName(groupSameName2);
+        Response res2 = groupServiceClient.saveGroup(ch2, REQUESTER_ID);
+        ch2.setId((String) res2.getResponseValue());
+        sameGroupIds.add(ch2.getId());
+        Assert.assertTrue(res.isSuccess());
+        Assert.assertTrue(res1.isSuccess());
+        Assert.assertTrue(res2.isSuccess());
 
-        if (sameGroupIds.get(3) != null) {
-            String secondGroupName = sameGroupIds.get(3);
-            Response resSecond = groupServiceClient.validateDelete(secondGroupName);
-            if (resSecond.isSuccess()) {
-                groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
-            }
-        }
 
-        //for createGroupsWithoutMngSys
-        if (sameGroupIds.get(4) != null) {
-            String firstGroupName = sameGroupIds.get(4);
-            Response resFirst = groupServiceClient.validateDelete(firstGroupName);
-            if (resFirst.isSuccess()) {
-                groupServiceClient.deleteGroup(firstGroupName, REQUESTER_ID);
-            }
-        }
+        List<String> chIds = new ArrayList<>();
+        chIds.add(ch1.getId());
+        chIds.add(ch2.getId());
+        Response res3 = groupServiceClient.bulkAddChildGroup(parent.getId(), chIds, REQUESTER_ID);
+        Assert.assertTrue(res3.isSuccess());
 
-        if (sameGroupIds.get(5) != null) {
-            String secondGroupName = sameGroupIds.get(5);
-            Response resSecond = groupServiceClient.validateDelete(secondGroupName);
-            if (resSecond.isSuccess()) {
-                groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
-            }
-        }
 
     }
+
 
 }
