@@ -537,30 +537,4 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
     }
 
-    public void bulkAddChild() throws Exception {
-        Group parent = new Group();
-        parent.setName("Parent");
-        Response res = groupServiceClient.saveGroup(parent, REQUESTER_ID);
-        parent.setId((String) res.getResponseValue());
-
-        Group ch1 = new Group();
-        ch1.setName("Ch1");
-        Response res1 = groupServiceClient.saveGroup(ch1, REQUESTER_ID);
-        ch1.setId((String) res1.getResponseValue());
-
-        Group ch2 = new Group();
-        ch2.setName("Ch2");
-        Response res2 = groupServiceClient.saveGroup(ch2, REQUESTER_ID);
-        ch2.setId((String) res2.getResponseValue());
-
-
-        //modify group
-        List<String> chIds = new ArrayList<>();
-        chIds.add(ch1.getId());
-        chIds.add(ch2.getId());
-        groupServiceClient.bulkAddChildGroup(parent.getId(), chIds, REQUESTER_ID);
-        Assert.assertEquals(parent.getChildGroups().size(), 2);
-
-
-    }
 }
