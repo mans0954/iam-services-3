@@ -5,6 +5,7 @@ import org.openiam.core.domain.UserKey;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -16,6 +17,12 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
     @Override
     protected String getPKfieldName() {
         return "userKeyId";
+    }
+
+    @Override
+    public List<UserKey> getByUserIdsKeyName(List<String> userIds, String keyName){
+        return (getCriteria().add(Restrictions.in("userId", userIds))
+                .add(Restrictions.eq("name", keyName)).list());
     }
 
     @Override
