@@ -101,6 +101,7 @@ public class ManagedSysEntity implements Serializable {
     private boolean simulationMode = false;
 
     @OneToMany(mappedBy = "managedSys")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "managedSysRegion")
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "managedSystem")
@@ -111,7 +112,7 @@ public class ManagedSysEntity implements Serializable {
     private Set<GroupEntity> groups;
 
     @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "managedSysRegion")
     private Set<RoleEntity> roles;
 
 
