@@ -11,12 +11,16 @@ import org.junit.Assert;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.service.integration.AbstractAttributeServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -197,5 +201,137 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 		Assert.assertTrue(String.format("Could not add child resource: %s", response), response.isSuccess());
 		
 		return new Tuple<Resource, Resource>(resource1, resource2);
+	}
+	
+	private ResourceSearchBean getCacheableSearchBean(final Resource resource) {
+		final ResourceSearchBean sb = new ResourceSearchBean();
+		sb.setFindInCache(true);
+		sb.setDeepCopy(true);
+		sb.setName(resource.getName());
+		return sb;
+	}
+	
+	@Test
+	public void testSearchBeanCache() throws Exception {
+		for(int j = 0; j < 2; j++) {
+			final Resource resource = super.createResource();
+			final ResourceSearchBean sb = getCacheableSearchBean(resource);
+			try {
+				searchAndAssertCacheHit(sb, resource, "resourceEntities");
+			} finally {
+				deleteAndAssert(resource);
+				sleep(1);
+				Assert.assertTrue(CollectionUtils.isEmpty(find(sb, 0, Integer.MAX_VALUE)));
+			}
+		}
+	}
+	
+	@Test
+	public void testAddUserToResourceCache() {
+		final User user = super.createUser();
+		final Resource resource = super.createResource();
+		try {
+			final ResourceSearchBean sb = getCacheableSearchBean(resource);
+			
+			/* trigger and assert cache hit */
+			searchAndAssertCacheHit(sb, resource, "resourceEntities");
+			
+			Date now = new Date();
+			resourceDataService.addUserToResource(resource.getId(), user.getId(), getRequestorId(), null, null, null);
+			assertCachePurge(now, "resourceEntities", 1, 1);
+			
+			/* trigger and assert cache hit */
+			now = new Date();
+			searchAndAssertCacheHit(sb, resource, "resourceEntities");
+			resourceDataService.removeUserFromResource(resource.getId(), user.getId(), getRequestorId());
+			assertCachePurge(now, "resourceEntities", 1);
+		} finally {
+			deleteAndAssert(resource);
+			assertSuccess(userServiceClient.removeUser(user.getId()));
+		}
+	}
+	
+	@Test
+	public void testAddResourceToRoleCache() {
+		final Role role = super.createRole();
+		final Resource resource = super.createResource();
+		try {
+			final ResourceSearchBean sb = getCacheableSearchBean(resource);
+			
+			/* trigger and assert cache hit */
+			searchAndAssertCacheHit(sb, resource, "resourceEntities");
+			
+			Date now = new Date();
+			resourceDataService.addRoleToResource(resource.getId(), role.getId(), getRequestorId(), null, null, null);
+			assertCachePurge(now, "resourceEntities", 1);
+			
+			/* trigger and assert cache hit */
+			now = new Date();
+			searchAndAssertCacheHit(sb, resource, "resourceEntities");
+			resourceDataService.removeRoleToResource(resource.getId(), role.getId(), getRequestorId());
+			assertCachePurge(now, "resourceEntities", 1);
+		} finally {
+			deleteAndAssert(resource);
+			assertSuccess(roleServiceClient.removeRole(role.getId(), getRequestorId()));
+		}
+	}
+	
+	@Test
+	public void testAddResourceToGroupCache() {
+		final Group group = super.createGroup();
+		final Resource resource = super.createResource();
+		try {
+			final ResourceSearchBean sb = getCacheableSearchBean(resource);
+			
+			/* trigger and assert cache hit */
+			searchAndAssertCacheHit(sb, resource, "resourceEntities");
+			
+			Date now = new Date();
+			resourceDataService.addGroupToResource(resource.getId(), group.getId(), getRequestorId(), null, null, null);
+			assertCachePurge(now, "resourceEntities", 1);
+			
+			/* trigger and assert cache hit */
+			now = new Date();
+			searchAndAssertCacheHit(sb, resource, "resourceEntities");
+			resourceDataService.removeGroupToResource(resource.getId(), group.getId(), getRequestorId());
+			assertCachePurge(now, "resourceEntities", 1);
+		} finally {
+			deleteAndAssert(resource);
+			assertSuccess(groupServiceClient.deleteGroup(group.getId(), getRequestorId()));
+		}
+	}
+	
+	@Test
+	public void testAddAndRemoveChildCachePurge() {
+		final Resource entity1 = createResource();
+		final Resource entity2 = createResource();
+		
+		try {
+			/* trigger and assert cache hit */
+			for(final Resource resource : new Resource[] {entity1, entity2}) {
+				final ResourceSearchBean sb = getCacheableSearchBean(resource);
+				searchAndAssertCacheHit(sb, resource, "resourceEntities");
+			}
+			
+			Date now = new Date();
+			resourceDataService.addChildResource(entity1.getId(), entity2.getId(), getRequestorId(), null, null, null);
+			assertCachePurge(now, "resourceEntities", 2);
+			
+			/* trigger and assert cache hit */
+			now = new Date();
+			/* trigger and assert cache hit */
+			for(final Resource resource : new Resource[] {entity1, entity2}) {
+				final ResourceSearchBean sb = getCacheableSearchBean(resource);
+				searchAndAssertCacheHit(sb, resource, "resourceEntities");
+			}
+			
+			resourceDataService.deleteChildResource(entity1.getId(), entity2.getId(), getRequestorId());
+			assertCachePurge(now, "resourceEntities", 2);
+			
+		} finally {
+			for(final Resource entity : new Resource[] {entity1, entity2}) {
+				deleteAndAssert(entity);
+			}
+		}
 	}
 }

@@ -9,7 +9,8 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MngSysPolicySearchBean", propOrder = {
-        "managedSystemId", "metadataTypeId"
+        "managedSystemId", 
+        "metadataTypeId"
 })
 public class MngSysPolicySearchBean extends AbstractKeyNameSearchBean<MngSysPolicyDto, String> implements SearchBean {
 
@@ -32,10 +33,38 @@ public class MngSysPolicySearchBean extends AbstractKeyNameSearchBean<MngSysPoli
         this.metadataTypeId = metadataTypeId;
     }
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(getKey() != null ? getKey() : "")
-                .toString();
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((managedSystemId == null) ? 0 : managedSystemId.hashCode());
+		result = prime * result
+				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MngSysPolicySearchBean other = (MngSysPolicySearchBean) obj;
+		if (managedSystemId == null) {
+			if (other.managedSystemId != null)
+				return false;
+		} else if (!managedSystemId.equals(other.managedSystemId))
+			return false;
+		if (metadataTypeId == null) {
+			if (other.metadataTypeId != null)
+				return false;
+		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		return true;
+	}
+
+    
 }

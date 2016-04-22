@@ -78,7 +78,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 	    	pattern.setContentProviderId(cp.getId());
 	    	pattern.setPattern(tuple.getKey());
 	    	pattern.setMatchMode(tuple.getValue());
-	    	pattern.setErrorMappings(getErrorMappings());
+	    	//pattern.setErrorMappings(getErrorMappings());
 	    	pattern.setSubstitutions(getSubstitutions());
 	    	pattern.setServers(getPatternServers());
 	    	pattern.setRedirectTo("/" + getRandomName());

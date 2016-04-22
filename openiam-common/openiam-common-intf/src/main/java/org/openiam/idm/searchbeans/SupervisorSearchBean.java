@@ -55,13 +55,47 @@ public class SupervisorSearchBean extends AbstractSearchBean<Supervisor, String>
         this.supervisor = supervisor;
     }
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(isPrimarySuper)
-                .append(id != null ? id.hashCode() : "")
-                .append(employee != null ? employee.hashCode() : "")
-                .append(supervisor != null ? supervisor.hashCode() : "")
-                .toString();
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((employee == null) ? 0 : employee.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + (isPrimarySuper ? 1231 : 1237);
+		result = prime * result
+				+ ((supervisor == null) ? 0 : supervisor.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SupervisorSearchBean other = (SupervisorSearchBean) obj;
+		if (employee == null) {
+			if (other.employee != null)
+				return false;
+		} else if (!employee.equals(other.employee))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (isPrimarySuper != other.isPrimarySuper)
+			return false;
+		if (supervisor == null) {
+			if (other.supervisor != null)
+				return false;
+		} else if (!supervisor.equals(other.supervisor))
+			return false;
+		return true;
+	}
+
+    
 }

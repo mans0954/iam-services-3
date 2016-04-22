@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.res.dto.ResourceRisk;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -161,28 +162,6 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 		keySet.add(key);
 	}
 
-	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(name != null ? name : "")
-				.append(rootsOnly)
-				.append(ownerId != null ? ownerId : "")
-				.append(risk != null ? risk.name() : "")
-				.append(metadataType != null ? metadataType : "")
-				.append(URL != null ? URL : "")
-				.append(coorelatedName != null ? coorelatedName : "")
-				.append(attributes != null ? attributes.toString().hashCode() : "")
-				.append(getKey() != null ? getKey() : "")
-				.append(excludeResourceTypes != null ? excludeResourceTypes.toString().hashCode() : "")
-				.append(groupIdSet != null ? groupIdSet.toString().hashCode() : "")
-				.append(roleIdSet != null ? roleIdSet.toString().hashCode() : "")
-				.append(resourceIdSet != null ? resourceIdSet.toString().hashCode() : "")
-				.append(organizationIdSet != null ? organizationIdSet.toString().hashCode() : "")
-				.append(userIdSet != null ? userIdSet.toString().hashCode() : "")
-				.append(getParentIdSet() != null ? getParentIdSet().toString().hashCode() : "")
-				.append(getChildIdSet() != null ? getChildIdSet().toString().hashCode() : "")
-				.append(getSortKeyForCache())
-				.toString();	}
 
 	public Set<String> getKeys() {
 		return keySet;
@@ -225,18 +204,29 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 		result = prime * result + ((URL == null) ? 0 : URL.hashCode());
 		result = prime * result
 				+ ((attributes == null) ? 0 : attributes.hashCode());
+		result = prime * result
+				+ ((coorelatedName == null) ? 0 : coorelatedName.hashCode());
 		result = prime
 				* result
 				+ ((excludeResourceTypes == null) ? 0 : excludeResourceTypes
 						.hashCode());
+		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
 		result = prime * result
-				+ ((resourceTypeIdSet == null) ? 0 : resourceTypeIdSet.hashCode());
+				+ ((metadataType == null) ? 0 : metadataType.hashCode());
+		result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
+		result = prime * result
+				+ ((referenceId == null) ? 0 : referenceId.hashCode());
+		result = prime
+				* result
+				+ ((resourceTypeIdSet == null) ? 0 : resourceTypeIdSet
+						.hashCode());
 		result = prime * result + ((risk == null) ? 0 : risk.hashCode());
 		result = prime * result
 				+ ((rootsOnly == null) ? 0 : rootsOnly.hashCode());
 		return result;
 	}
-@Override
+
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
@@ -255,10 +245,35 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 				return false;
 		} else if (!attributes.equals(other.attributes))
 			return false;
+		if (coorelatedName == null) {
+			if (other.coorelatedName != null)
+				return false;
+		} else if (!coorelatedName.equals(other.coorelatedName))
+			return false;
 		if (excludeResourceTypes == null) {
 			if (other.excludeResourceTypes != null)
 				return false;
 		} else if (!excludeResourceTypes.equals(other.excludeResourceTypes))
+			return false;
+		if (keySet == null) {
+			if (other.keySet != null)
+				return false;
+		} else if (!keySet.equals(other.keySet))
+			return false;
+		if (metadataType == null) {
+			if (other.metadataType != null)
+				return false;
+		} else if (!metadataType.equals(other.metadataType))
+			return false;
+		if (ownerId == null) {
+			if (other.ownerId != null)
+				return false;
+		} else if (!ownerId.equals(other.ownerId))
+			return false;
+		if (referenceId == null) {
+			if (other.referenceId != null)
+				return false;
+		} else if (!referenceId.equals(other.referenceId))
 			return false;
 		if (resourceTypeIdSet == null) {
 			if (other.resourceTypeIdSet != null)
@@ -274,4 +289,6 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 			return false;
 		return true;
 	}
+
+	
 }

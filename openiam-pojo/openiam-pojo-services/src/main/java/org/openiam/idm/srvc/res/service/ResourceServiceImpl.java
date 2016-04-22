@@ -16,11 +16,16 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.CacheKeyEviction;
+import org.openiam.cache.CacheKeyEvictions;
+import org.openiam.cache.ResourceToResourcePropKeyGenerator;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
@@ -69,6 +74,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -160,21 +166,32 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Value("${org.openiam.resource.admin.resource.type.id}")
     private String adminResourceTypeId;
 
+    
     @Override
     @Transactional(readOnly = true)
-    public String getResourcePropValueByName(final String resourceId, final String propName) {
-        return resourcePropDao.findValueByName(resourceId, propName);
+    @Cacheable(value = "resourcePropCache", key = "{ #sb, #from, #size}")
+    public List<ResourceProp> findBeansDTO(final ResourcePropSearchBean sb, final int from, final int size) {
+    	final List<ResourcePropEntity> props = this.getProxyService().findBeans(sb, from, size);
+    	return resourcePropConverter.convertToDTOList(props, sb.isDeepCopy());
     }
-
+    
     @Override
-    @Cacheable(value = "resourcePropCache", key = "{ #resourceId, #propName}")
-    public String getResourcePropValueByNameWeb(final String resourceId, final String propName) {
-        return this.getResourcePropValueByName(resourceId, propName);
+    @Transactional(readOnly = true)
+    @Cacheable(value = "resourcePropEntityCache", key = "{ #sb, #from, #size}")
+    public List<ResourcePropEntity> findBeans(final ResourcePropSearchBean sb, final int from, final int size) {
+    	final List<ResourcePropEntity> props = resourcePropDao.getByExample(sb, from, size);
+    	return props;
     }
 
     @Override
     @Transactional
-    public void deleteResource(String resourceId) {
+    @CacheKeyEviction(
+        	evictions={
+            	@CacheKeyEvict("resources"),
+            	@CacheKeyEvict("resourceEntities")
+            }
+        )
+    public void deleteResource(final String resourceId) {
         if (StringUtils.isNotBlank(resourceId)) {
             final ResourceEntity entity = resourceDao.findById(resourceId);
             if (entity != null) {
@@ -398,7 +415,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "resources", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
+    @Cacheable(value = "resources", key = "{ #searchBean, #from, #size, #language}")
     public List<Resource> findBeansLocalizedDto(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
         //List<ResourceEntity> resourceEntityList = this.findBeansLocalized(searchBean, from, size, language);
 
@@ -454,25 +471,22 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    public void save(ResourcePropEntity entity) {
-        if (StringUtils.isBlank(entity.getId())) {
-            resourcePropDao.save(entity);
-        } else {
-            resourcePropDao.merge(entity);
-        }
-    }
-
-    @Override
-    @Transactional
-    public void deleteResourceProp(String id) {
-        final ResourcePropEntity entity = resourcePropDao.findById(id);
-        if (entity != null) {
-            resourcePropDao.delete(entity);
-        }
-    }
-
-    @Override
-    @Transactional
+    @CacheKeyEvictions({
+    	@CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	},
+        	parameterIndex=0
+        ),
+        @CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	},
+        	parameterIndex=1
+        )
+    })
     public void addChildResource(final String parentResourceId,
                                  final String childResourceId,
                                  final Set<String> rights,
@@ -486,7 +500,24 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    public void deleteChildResource(String resourceId, String childResourceId) {
+    @CacheKeyEvictions({
+    	@CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	},
+        	parameterIndex=0
+        ),
+        @CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	},
+        	parameterIndex=1
+        )
+    })
+    public void deleteChildResource(final String resourceId, 
+    								final String childResourceId) {
         final ResourceEntity parent = resourceDao.findById(resourceId);
         final ResourceEntity child = resourceDao.findById(childResourceId);
         parent.removeChildResource(child);
@@ -495,6 +526,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
+    @CacheKeyEviction(
+    	evictions={
+        	@CacheKeyEvict("resources"),
+        	@CacheKeyEvict("resourceEntities")
+        }
+    )
     public void addResourceGroup(final String resourceId,
                                  final String groupId,
                                  final Set<String> rightIds,
@@ -509,7 +546,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    public void deleteResourceGroup(String resourceId, String groupId) {
+    @CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	}
+        )
+    public void deleteResourceGroup(final String resourceId, String groupId) {
         final ResourceEntity resource = resourceDao.findById(resourceId);
         final GroupEntity group = groupDao.findById(groupId);
         if(resource != null && group != null) {
@@ -520,6 +563,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
+    @CacheKeyEviction(
+    	evictions={
+    		@CacheKeyEvict("resources"),
+    		@CacheKeyEvict("resourceEntities")
+    	}
+    )
     public void addResourceToRole(final String resourceId,
                                   final String roleId,
                                   final Set<String> rightIds,
@@ -535,7 +584,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    public void deleteResourceRole(String resourceId, String roleId) {
+    @CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	}
+        )
+    public void deleteResourceRole(final String resourceId, String roleId) {
         final ResourceEntity resource = resourceDao.findById(resourceId);
         final RoleEntity role = roleDao.findById(roleId);
         if(resource != null && role != null) {
@@ -864,228 +919,34 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         entityValidator.isValid(entity);
     }
 
+    //TODO - does saving the resource require purging the resource attributes from the cache as well?
+    //       if so, there is no easy way to figure out which attributes have changed
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resourcePropCache", allEntries = true)
-    })
+    @CacheKeyEviction(
+    	evictions={
+    		@CacheKeyEvict("resources"),
+    		@CacheKeyEvict("resourceEntities")
+    	}
+    )
     @Transactional
-    public ResourceEntity saveResource(Resource resource, final String requesterId) throws BasicDataServiceException {
-        //final Response response = new Response(ResponseStatus.SUCCESS);
+    public ResourceEntity saveResource(final Resource resource, final String requesterId) throws BasicDataServiceException {
         this.validate(resource);
         final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
         this.save(entity, requesterId);
-        //response.setResponseValue(entity.getId());
-
+        resource.setId(entity.getId());
         return entity;
     }
 
-    @Override
-    @CacheEvict(value = "resourcePropCache", allEntries = true)
-    @Transactional
-    public ResourcePropEntity saveOrUpdateResourceProperty(ResourceProp prop, IdmAuditLogEntity idmAuditLog) throws BasicDataServiceException {
-        if (prop == null) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Resource Property object is null");
-        }
-
-        final ResourcePropEntity entity = resourcePropConverter.convertToEntity(prop, false);
-        if (StringUtils.isNotBlank(prop.getId())) {
-            final ResourcePropEntity dbObject = this.findResourcePropById(prop.getId());
-            if (dbObject == null) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND,
-                        "No Resource Property object is found");
-            }
-        }
-
-        if (StringUtils.isBlank(entity.getName())) {
-            throw new BasicDataServiceException(ResponseCode.NO_NAME, "Resource Property name is not set");
-        }
-
-        if (StringUtils.isBlank(entity.getValue())) {
-            throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_VALUE_MISSING,
-                    "Resource Property value is not set");
-        }
-
-        if (entity == null || StringUtils.isBlank(entity.getResource().getId())) {
-            throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_RESOURCE_ID_MISSING,
-                    "Resource ID is not set for Resource Property object");
-        }
-        this.save(entity);
-        ResourcePropEntity resourcePropEntity = entity;
-        //response.setResponseValue(entity.getId());
-        //idmAuditLog.succeed();
-
-        return resourcePropEntity;
-    }
 
     @Override
-    @CacheEvict(value = "resourcePropCache", allEntries = true)
+    @CacheKeyEviction(
+        	evictions={
+        		@CacheKeyEvict("resources"),
+        		@CacheKeyEvict("resourceEntities")
+        	}
+        )
     @Transactional
-    public void removeResourceProp(String resourcePropId, String requesterId) throws BasicDataServiceException {
-        if (StringUtils.isBlank(resourcePropId)) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
-                    "Resource property ID is not specified");
-        }
-        this.deleteResourceProp(resourcePropId);
-    }
-
-    @Override
-    @CacheEvict(value = "resources", allEntries = true)
-    @Transactional
-    public void removeUserFromResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
-        UserEntity userEntity = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
-        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
-        ResourceEntity resourceEntity = this.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-
-        idmAuditLog.setAuditDescription(String.format("Remove user %s from resource: %s", userId, resourceId));
-
-        if (resourceId == null || userId == null) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
-        }
-        userDataService.removeUserFromResource(userId, resourceId);
-    }
-
-/*
-    @Override
-    @Transactional
-    @CacheEvict(value = "resources", allEntries = true)
-    public void addUserToResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
-        UserEntity userEntity = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
-        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
-        ResourceEntity resourceEntity = this.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-
-        idmAuditLog.setAuditDescription(String.format("Add user %s to resource: %s", userId, resourceId));
-
-        if (resourceId == null || userId == null) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
-        }
-
-        userDataService.addUserToResource(userId, resourceId);
-    }
-*/
-
-    @Override
-    @CacheEvict(value = "resources", allEntries = true)
-    @Transactional
-    public void deleteResourceWeb(String resourceId, String requesterId) throws BasicDataServiceException {
-        if (resourceId == null) {
-            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Resource ID is not specified");
-        }
-
-        this.validateResourceDeletion(resourceId);
-        this.deleteResource(resourceId);
-    }
-
-/*    @Override
-    @CacheEvict(value = "resources", allEntries = true)
-    @Transactional
-    public void addChildResourceWeb(String resourceId, String childResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.ADD_CHILD_RESOURCE.value());
-        ResourceEntity resourceEntity = this.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-        ResourceEntity resourceEntityChild = this.findResourceById(childResourceId);
-        idmAuditLog.setTargetResource(childResourceId, resourceEntityChild.getName());
-
-        idmAuditLog.setAuditDescription(
-                String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
-
-        this.validateResource2ResourceAddition(resourceId, childResourceId);
-        this.addChildResource(resourceId, childResourceId);
-    }
-
-    @Override
-    @CacheEvict(value = "resources", allEntries = true)
-    @Transactional
-    public void deleteChildResourceWeb(String resourceId, String memberResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.REMOVE_CHILD_RESOURCE.value());
-        ResourceEntity resourceEntity = this.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-        ResourceEntity resourceEntityChild = this.findResourceById(memberResourceId);
-        idmAuditLog.setTargetResource(memberResourceId, resourceEntityChild.getName());
-
-        idmAuditLog.setAuditDescription(
-                String.format("Remove child resource: %s from resource: %s", memberResourceId, resourceId));
-
-        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(memberResourceId)) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
-                    "Parent ResourceId or Child ResourceId is null");
-        }
-
-        this.deleteChildResource(resourceId, memberResourceId);
-    }
-
-    @Override
-    @CacheEvict(value = "resources", allEntries = true)
-    @Transactional
-    public void addGroupToResourceWeb(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
-        Group group = groupDataService.getGroupDTO(groupId);
-        idmAuditLog.setTargetGroup(groupId, group.getName());
-        Resource resource = this.findResourceDtoById(resourceId, null);
-        idmAuditLog.setTargetResource(resourceId, resource.getName());
-
-        idmAuditLog.setAuditDescription(String.format("Add group: %s to resource: %s", groupId, resourceId));
-        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
-        }
-
-        this.addResourceGroup(resourceId, groupId);
-    }
-
-    @Override
-    @CacheEvict(value = "resources", allEntries = true)
-    @Transactional
-    public void removeGroupToResource(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
-        GroupEntity groupEntity = groupDataService.getGroup(groupId);
-        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
-        ResourceEntity resourceEntity = this.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-        idmAuditLog.setAuditDescription(String.format("Remove group: %s from resource: %s", groupId, resourceId));
-
-        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
-        }
-
-        this.deleteResourceGroup(resourceId, groupId);
-    }*/
-
-/*    @Override
-    @CacheEvict(value = "resources", allEntries = true)
-    @Transactional
-    public void addRoleToResourceWeb(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
-        RoleEntity roleEntity = roleService.getRole(roleId);
-        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-        ResourceEntity resourceEntity = this.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-
-        idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
-
-        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
-        }
-
-        this.addResourceToRole(resourceId, roleId);
-    }*/
-
-    @Override
-    @CacheEvict(value = "resources", allEntries = true)
-    @Transactional
-    public void removeRoleToResource(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
+    public void removeRoleToResource(final String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);
@@ -1156,6 +1017,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
+    @Cacheable(value = "resourceEntities", key = "{ #searchBean,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
         return resourceDao.getByExample(searchBean, from, size);
     }

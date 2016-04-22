@@ -5,5 +5,5 @@ import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 
 
 public interface ResourcePropDAO  extends BaseDao<ResourcePropEntity, String> {
-    String findValueByName(String resourceId, String name);
+
 }

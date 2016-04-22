@@ -12,7 +12,6 @@ public interface PolicyService {
 
 	Policy getPolicy(final String policyId);
 	void save(final Policy policy);
-	List<Policy> findPolicyByName(final String policyDefId, final String policyName);
 	void delete(final String policyId)  throws BasicDataServiceException;
 	int count(PolicySearchBean searchBean);
 	List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size);

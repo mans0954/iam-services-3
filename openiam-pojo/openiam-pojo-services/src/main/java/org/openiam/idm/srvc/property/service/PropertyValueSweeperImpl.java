@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dozer.DozerBeanMapper;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.property.converter.PropertyValueConverter;
@@ -18,6 +19,7 @@ import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,7 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
     
     @Autowired
 	private PropertyValueConverter converter;
-    
+
     private Map<String, PropertyValue> valueCache = new HashMap<String, PropertyValue>();
 	
 	@Override

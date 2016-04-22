@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -80,14 +81,51 @@ public class EmailSearchBean extends AbstractSearchBean<EmailAddress, String> im
         this.metadataTypeId = metadataTypeId;
     }
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(name != null ? name : "")
-                .append(email != null ? email : "")
-                .append(parentId != null ? parentId : "")
-                .append(metadataTypeId != null ? metadataTypeId : "")
-                .append(emailMatchToken != null ? emailMatchToken : "")
-                .append(getKey() != null ? getKey() : "")
-                .toString();    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((emailMatchToken == null) ? 0 : emailMatchToken.hashCode());
+		result = prime * result
+				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((parentId == null) ? 0 : parentId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EmailSearchBean other = (EmailSearchBean) obj;
+		if (emailMatchToken == null) {
+			if (other.emailMatchToken != null)
+				return false;
+		} else if (!emailMatchToken.equals(other.emailMatchToken))
+			return false;
+		if (metadataTypeId == null) {
+			if (other.metadataTypeId != null)
+				return false;
+		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (parentId == null) {
+			if (other.parentId != null)
+				return false;
+		} else if (!parentId.equals(other.parentId))
+			return false;
+		return true;
+	}
+
+    
 }

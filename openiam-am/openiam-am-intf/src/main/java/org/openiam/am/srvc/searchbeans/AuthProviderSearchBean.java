@@ -9,6 +9,7 @@ import org.openiam.idm.searchbeans.SearchBean;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -109,12 +110,89 @@ public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvid
 		this.resourceId = resourceId;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime
+				* result
+				+ ((contentProviderIds == null) ? 0 : contentProviderIds
+						.hashCode());
+		result = prime
+				* result
+				+ ((defaultAuthProvider == null) ? 0 : defaultAuthProvider
+						.hashCode());
+		result = prime
+				* result
+				+ ((linkableToContentProvider == null) ? 0
+						: linkableToContentProvider.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime
+				* result
+				+ ((nextAuthProviderId == null) ? 0 : nextAuthProviderId
+						.hashCode());
+		result = prime * result
+				+ ((providerType == null) ? 0 : providerType.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result
+				+ ((uriPatternIds == null) ? 0 : uriPatternIds.hashCode());
+		return result;
+	}
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(managedSysId != null ? managedSysId : "")
-                .append(providerType != null ? providerType : "")
-                .append(getKey() != null ? getKey() : "")
-                .toString();    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AuthProviderSearchBean other = (AuthProviderSearchBean) obj;
+		if (contentProviderIds == null) {
+			if (other.contentProviderIds != null)
+				return false;
+		} else if (!contentProviderIds.equals(other.contentProviderIds))
+			return false;
+		if (defaultAuthProvider == null) {
+			if (other.defaultAuthProvider != null)
+				return false;
+		} else if (!defaultAuthProvider.equals(other.defaultAuthProvider))
+			return false;
+		if (linkableToContentProvider == null) {
+			if (other.linkableToContentProvider != null)
+				return false;
+		} else if (!linkableToContentProvider
+				.equals(other.linkableToContentProvider))
+			return false;
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		if (nextAuthProviderId == null) {
+			if (other.nextAuthProviderId != null)
+				return false;
+		} else if (!nextAuthProviderId.equals(other.nextAuthProviderId))
+			return false;
+		if (providerType == null) {
+			if (other.providerType != null)
+				return false;
+		} else if (!providerType.equals(other.providerType))
+			return false;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (uriPatternIds == null) {
+			if (other.uriPatternIds != null)
+				return false;
+		} else if (!uriPatternIds.equals(other.uriPatternIds))
+			return false;
+		return true;
+	}
+
+	
 }

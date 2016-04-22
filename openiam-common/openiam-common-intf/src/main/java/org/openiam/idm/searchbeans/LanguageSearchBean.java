@@ -25,15 +25,6 @@ public class LanguageSearchBean extends AbstractLanguageSearchBean<Language, Str
 		this.code = code;
 	}
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(code != null ? code : "")
-                .append(getKey() != null ? getKey() : "")
-				.append(getSortKeyForCache())
-                .toString();
-    }
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -59,11 +50,5 @@ public class LanguageSearchBean extends AbstractLanguageSearchBean<Language, Str
 		return true;
 	}
 
-	@Override
-	public String toString() {
-		return String.format("LanguageSearchBean [code=%s, toString()=%s]",
-				code, super.toString());
-	}
-	
-	
+    
 }

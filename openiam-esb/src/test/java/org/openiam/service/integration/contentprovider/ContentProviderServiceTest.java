@@ -167,7 +167,7 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 			refreshContentProviderManager();
 			refreshAuthorizationManager();
 			Assert.assertNotNull(wsResponse);
-			Assert.assertTrue(wsResponse.isSuccess());
+			Assert.assertTrue(wsResponse.isSuccess(), String.format("Response: %s", wsResponse));
 			provider = get((String)wsResponse.getResponseValue());
 			Assert.assertNotNull(provider);
 			

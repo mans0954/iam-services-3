@@ -12,10 +12,4 @@ import org.openiam.idm.searchbeans.SearchBean;
 })
 public class MailTemplateSearchBean extends AbstractKeyNameSearchBean<MailTemplateDto, String> implements SearchBean {
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(name != null ? name : "")
-                .append(getKey() != null ? getKey() : "")
-                .toString();    }
 }

@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -35,12 +36,38 @@ public class AttributeMapSearchBean extends AbstractSearchBean<AttributeMap, Str
         this.synchConfigId = synchConfigId;
     }
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(resourceId != null ? resourceId : "")
-                .append(synchConfigId != null ? synchConfigId : "")
-                .append(getKey() != null ? getKey() : "")
-                .toString();
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result
+				+ ((synchConfigId == null) ? 0 : synchConfigId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AttributeMapSearchBean other = (AttributeMapSearchBean) obj;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (synchConfigId == null) {
+			if (other.synchConfigId != null)
+				return false;
+		} else if (!synchConfigId.equals(other.synchConfigId))
+			return false;
+		return true;
+	}
+
+    
 }

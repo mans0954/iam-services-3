@@ -148,7 +148,7 @@ public interface ManagedSystemWebService {
      */
     @WebMethod
     AttributeMap getAttributeMap(
-            @WebParam(name = "attributeMapId", targetNamespace = "") String attributeMapId);
+            @WebParam(name = "id", targetNamespace = "") String id);
 
     /**
      * Adds the attribute map.
@@ -180,18 +180,8 @@ public interface ManagedSystemWebService {
      */
     @WebMethod
     void removeAttributeMap(
-            @WebParam(name = "attributeMapId", targetNamespace = "") String attributeMapId);
+            @WebParam(name = "id", targetNamespace = "") String id);
 
-    /**
-     * Removes the resource attribute maps.
-     * 
-     * @param resourceId
-     *            the resource id
-     * @return the int
-     */
-    @WebMethod
-    void removeResourceAttributeMaps(
-            @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
     /**
      * Return the AttributeMap for the specified resourceId.
@@ -261,14 +251,6 @@ public interface ManagedSystemWebService {
     void removeMngSysPolicy(
             final @WebParam(name = "mngSysPolicyId", targetNamespace = "") String mngSysPolicyId) throws Exception;
 
-
-    @WebMethod
-    List<AttributeMap> saveAttributesMap(
-            final @WebParam(name = "attrMap", targetNamespace = "") List<AttributeMap> attrMap,
-            final @WebParam(name = "mSysId", targetNamespace = "") String mSysId,
-            final @WebParam(name = "resId", targetNamespace = "") String resId,
-            final @WebParam(name = "synchConfigId", targetNamespace = "") String synchConfigId)
-            throws Exception;
 
     void deleteAttributesMapList(List<String> ids) throws Exception;
 

@@ -6,6 +6,7 @@ import org.openiam.base.KeyNameDTO;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
@@ -180,4 +181,79 @@ public abstract class EntitlementsSearchBean<T extends KeyNameDTO, KeyType exten
             this.organizationIdSet.addAll(organizationIdList);
         }
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((childIdSet == null) ? 0 : childIdSet.hashCode());
+		result = prime * result
+				+ ((groupIdSet == null) ? 0 : groupIdSet.hashCode());
+		result = prime * result + (includeAccessRights ? 1231 : 1237);
+		result = prime
+				* result
+				+ ((organizationIdSet == null) ? 0 : organizationIdSet
+						.hashCode());
+		result = prime * result
+				+ ((parentIdSet == null) ? 0 : parentIdSet.hashCode());
+		result = prime * result
+				+ ((resourceIdSet == null) ? 0 : resourceIdSet.hashCode());
+		result = prime * result
+				+ ((roleIdSet == null) ? 0 : roleIdSet.hashCode());
+		result = prime * result
+				+ ((userIdSet == null) ? 0 : userIdSet.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EntitlementsSearchBean other = (EntitlementsSearchBean) obj;
+		if (childIdSet == null) {
+			if (other.childIdSet != null)
+				return false;
+		} else if (!childIdSet.equals(other.childIdSet))
+			return false;
+		if (groupIdSet == null) {
+			if (other.groupIdSet != null)
+				return false;
+		} else if (!groupIdSet.equals(other.groupIdSet))
+			return false;
+		if (includeAccessRights != other.includeAccessRights)
+			return false;
+		if (organizationIdSet == null) {
+			if (other.organizationIdSet != null)
+				return false;
+		} else if (!organizationIdSet.equals(other.organizationIdSet))
+			return false;
+		if (parentIdSet == null) {
+			if (other.parentIdSet != null)
+				return false;
+		} else if (!parentIdSet.equals(other.parentIdSet))
+			return false;
+		if (resourceIdSet == null) {
+			if (other.resourceIdSet != null)
+				return false;
+		} else if (!resourceIdSet.equals(other.resourceIdSet))
+			return false;
+		if (roleIdSet == null) {
+			if (other.roleIdSet != null)
+				return false;
+		} else if (!roleIdSet.equals(other.roleIdSet))
+			return false;
+		if (userIdSet == null) {
+			if (other.userIdSet != null)
+				return false;
+		} else if (!userIdSet.equals(other.userIdSet))
+			return false;
+		return true;
+	}
+    
+    
 }

@@ -67,8 +67,6 @@ public interface ManagedSystemService {
 
     void removeAttributeMap(String attributeMapId);
 
-    void removeResourceAttributeMaps(String resourceId);
-
     List<AttributeMapEntity> getResourceAttributeMaps(String resourceId);
 
     void removeMngSysPolicy(String mngSysPolicyId) throws BasicDataServiceException ;

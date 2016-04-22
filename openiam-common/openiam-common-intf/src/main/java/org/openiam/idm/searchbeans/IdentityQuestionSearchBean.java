@@ -32,14 +32,36 @@ public class IdentityQuestionSearchBean extends AbstractSearchBean<IdentityQuest
 		this.active = active;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((active == null) ? 0 : active.hashCode());
+		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
+		return result;
+	}
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(groupId != null ? groupId : "")
-                .append(active != null ? active.booleanValue() : "")
-                .append(getKey() != null ? getKey() : "")
-				.append(getSortKeyForCache())
-                .toString();
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IdentityQuestionSearchBean other = (IdentityQuestionSearchBean) obj;
+		if (active == null) {
+			if (other.active != null)
+				return false;
+		} else if (!active.equals(other.active))
+			return false;
+		if (groupId == null) {
+			if (other.groupId != null)
+				return false;
+		} else if (!groupId.equals(other.groupId))
+			return false;
+		return true;
+	}
+
+	
 }

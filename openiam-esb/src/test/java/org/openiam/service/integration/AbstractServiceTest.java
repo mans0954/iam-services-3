@@ -25,12 +25,14 @@ import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.config.IntegrationTestConfig;
 import org.openiam.http.client.OpenIAMHttpClient;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.access.ws.AccessRightDataService;
+import org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
@@ -59,6 +61,7 @@ import org.openiam.idm.srvc.user.ws.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
@@ -66,8 +69,9 @@ import org.springframework.web.client.RestTemplate;
 import org.testng.Assert;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-//@Import(TestConfg.class)
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
+//@Import(TestConfg.class)
+//@SpringApplicationConfiguration(IntegrationTestConfig.class)
 public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTests {
 
 	protected ContentProvider cp = null;
@@ -76,6 +80,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	@Qualifier("languageServiceClient")
 	protected LanguageWebService languageServiceClient;
+	
+	@Autowired
+	@Qualifier("auditServiceClient")
+	protected IdmAuditLogWebDataService auditLogService;
 	
 	@Autowired
 	@Qualifier("managedSysServiceClient")
@@ -302,6 +310,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	
 	protected String getRandomName(final int count) {
 		return RandomStringUtils.randomAlphanumeric(count);
+	}
+	
+	protected static String getRandomNameStatic() {
+		return RandomStringUtils.randomAlphanumeric(5);
 	}
 	
 	protected String getRandomName() {

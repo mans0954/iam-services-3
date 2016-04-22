@@ -51,6 +51,9 @@ public enum AuditAttributeName {
     SMS_TOKEN,
     SERVICE_PROVIDER_ID,
     IDENTITY_PROVIDER_ID,
-    JUST_IN_TIME_AUTH
+    JUST_IN_TIME_AUTH,
+    CACHE_NAME,
+    CACHE_KEY,
+    NUM_OF_MULTIKEYS;
 
 }

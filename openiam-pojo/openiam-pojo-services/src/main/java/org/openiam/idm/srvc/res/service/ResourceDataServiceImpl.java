@@ -16,12 +16,14 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.cache.CacheKeyEvict;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
@@ -85,17 +87,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 
-
     @Override
-    //@Cacheable(value="resourcePropCache", key="{ #resourceId, #propName}")
-    public String getResourcePropValueByName(@WebParam(name = "resourceId", targetNamespace = "") String resourceId, @WebParam(name = "propName", targetNamespace = "") String propName) {
-        return resourceService.getResourcePropValueByNameWeb(resourceId, propName);
+    public List<ResourceProp> findResourceProps(final ResourcePropSearchBean sb, final int from, final int size) {
+    	return resourceService.findBeansDTO(sb, from, size);
     }
 
     @Override
-    //@LocalizedServiceGet
-    //@Transactional(readOnly=true)
-    //@Cacheable(value="resources", key="{ #resourceId,#language}")
     public Resource getResource(final String resourceId, final Language language) {
         Resource resource = resourceService.findResourceDtoById(resourceId, language);
         return resource;
@@ -136,9 +133,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-/*
-    @Cacheable(value="resources", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
-*/
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
         final List<ResourceEntity> entityList = resourceService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
         final List<Resource> dtoList = resourceConverter.convertToDTOList(entityList,searchBean.isDeepCopy());
@@ -191,8 +185,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }*/
 
     @Override
-    //@CacheEvict(value = "resources", allEntries=true)
-    public Response saveResource(Resource resource, final String requesterId) {
+    public Response saveResource(final Resource resource, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
           /*resourceService.validate(resource);
@@ -251,109 +244,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return resourceTypeList;
     }
 
-    //@CacheEvict(value = "resourcePropCache", allEntries=true)
-    public Response addResourceProp(final ResourceProp resourceProp, String requesterId) {
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setAction(AuditAction.ADD_RESOURCE_PROP.value());
-        idmAuditLog.setRequestorUserId(requesterId);
-        return saveOrUpdateResourceProperty(resourceProp, idmAuditLog);
-    }
-
-    //@CacheEvict(value = "resourcePropCache", allEntries=true)
-    public Response updateResourceProp(final ResourceProp resourceProp, String requesterId) {
-    	IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setAction(AuditAction.UPDATE_RESOURCE_PROP.value());
-        idmAuditLog.setRequestorUserId(requesterId);
-        return saveOrUpdateResourceProperty(resourceProp, idmAuditLog);
-    }
-
-    //@CacheEvict(value = "resourcePropCache", allEntries=true)
-    private Response saveOrUpdateResourceProperty(final ResourceProp prop, IdmAuditLogEntity idmAuditLog) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            /*if (prop == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Resource Property object is null");
-            }
-
-            final ResourcePropEntity entity = resourcePropConverter.convertToEntity(prop, false);
-            if (StringUtils.isNotBlank(prop.getId())) {
-                final ResourcePropEntity dbObject = resourceService.findResourcePropById(prop.getId());
-                if (dbObject == null) {
-                    throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND,
-                            "No Resource Property object is found");
-                }
-            }
-
-            if (StringUtils.isBlank(entity.getName())) {
-                throw new BasicDataServiceException(ResponseCode.NO_NAME, "Resource Property name is not set");
-            }
-
-            if (StringUtils.isBlank(entity.getValue())) {
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_VALUE_MISSING,
-                        "Resource Property value is not set");
-            }
-
-            if (entity == null || StringUtils.isBlank(entity.getResource().getId())) {
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_RESOURCE_ID_MISSING,
-                        "Resource ID is not set for Resource Property object");
-            }
-            resourceService.save(entity);*/
-            ResourcePropEntity entity = resourceService.saveOrUpdateResourceProperty(prop, idmAuditLog);
-            response.setResponseValue(entity.getId());
-            idmAuditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
-        } catch (Throwable e) {
-            log.error("Can't save or update resource property", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
-        return response;
-    }
-
-    /*@CacheEvict(value = "resourcePropCache", allEntries=true)*/
-    public Response removeResourceProp(String resourcePropId, String requesterId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.REMOVE_RESOURCE_PROP.value());
-        try {
-            /*if (StringUtils.isBlank(resourcePropId)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
-                        "Resource property ID is not specified");
-            }
-*/
-            /*resourceService.deleteResourceProp(resourcePropId);*/
-            resourceService.removeResourceProp(resourcePropId, requesterId);
-            idmAuditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
-        } catch (Throwable e) {
-            log.error("Can't delete resource property", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
-        return response;
-    }
-
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
     public Response removeUserFromResource(final String resourceId, final String userId, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
@@ -393,7 +284,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     //DO NOT PUT TRANSACTIONAL HERE!!  The underlying collections that get modified won't persist.
     @Override
     //@Transactional
-    @CacheEvict(value = "resources", allEntries=true)
     public Response addUserToResource(final String resourceId,
                                       final String userId,
                                       final String requesterId,
@@ -457,7 +347,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
     public Response deleteResource(final String resourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -550,7 +439,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
     public Response addChildResource(final String resourceId, 
     								 final String childResourceId, 
     								 final String requesterId, 
@@ -592,7 +480,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
     public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
@@ -633,7 +520,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
     public Response addGroupToResource(final String resourceId, 
     								   final String groupId, 
     								   final String requesterId, 
@@ -680,7 +566,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
     public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
@@ -723,7 +608,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
     public Response addRoleToResource(final String resourceId, 
     								  final String roleId, 
     								  final String requesterId, 
@@ -778,7 +662,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
     public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();

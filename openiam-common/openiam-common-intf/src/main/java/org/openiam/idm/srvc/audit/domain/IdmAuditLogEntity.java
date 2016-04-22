@@ -131,6 +131,7 @@ public class IdmAuditLogEntity extends KeyEntity {
 	private String uriPatternId;
 	
 	@Transient
+	@Field(type = FieldType.Nested)
 	private Map<String, String> attributes;
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
@@ -141,7 +142,7 @@ public class IdmAuditLogEntity extends KeyEntity {
     private Set<IdmAuditLogCustomEntity> customRecords = new LinkedHashSet<IdmAuditLogCustomEntity>();
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
-    @Field(type = FieldType.Nested, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.Nested, index = FieldIndex.not_analyzed, store= true, includeInParent=true)
     @NestedFieldType(AuditLogTargetEntity.class)
     private Set<AuditLogTargetEntity> targets = new LinkedHashSet<AuditLogTargetEntity>();
     

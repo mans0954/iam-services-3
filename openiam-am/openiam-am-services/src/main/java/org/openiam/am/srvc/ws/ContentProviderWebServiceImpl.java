@@ -277,10 +277,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             log.info(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
+            response.setStacktraceText(ExceptionUtils.getStackTrace(e));
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
+            response.setStacktraceText(ExceptionUtils.getStackTrace(e));
         }
         return response;
 	}

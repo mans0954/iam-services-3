@@ -93,19 +93,94 @@ public class ApproverAssocationSearchBean extends AbstractSearchBean<ApproverAss
 	public void setApproverLevel(String approverLevel) {
 		this.approverLevel = approverLevel;
 	}
-
-
 	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(associationType != null ? associationType : "")
-				.append(associationEntityId != null ? associationEntityId : "")
-				.append(approverEntityId != null ? approverEntityId : "")
-				.append(approverEntityType != null ? approverEntityType : "")
-				.append(onApproveEntityId != null ? onApproveEntityId : "")
-				.append(onApproveEntityType != null ? onApproveEntityType : "")
-				.append(onRejectEntityId != null ? onRejectEntityId : "")
-				.append(onRejectEntityType != null ? onRejectEntityType : "")
-				.append(getKey() != null ? getKey() : "")
-				.toString();	}
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime
+				* result
+				+ ((approverEntityId == null) ? 0 : approverEntityId.hashCode());
+		result = prime
+				* result
+				+ ((approverEntityType == null) ? 0 : approverEntityType
+						.hashCode());
+		result = prime * result
+				+ ((approverLevel == null) ? 0 : approverLevel.hashCode());
+		result = prime
+				* result
+				+ ((associationEntityId == null) ? 0 : associationEntityId
+						.hashCode());
+		result = prime * result
+				+ ((associationType == null) ? 0 : associationType.hashCode());
+		result = prime
+				* result
+				+ ((onApproveEntityId == null) ? 0 : onApproveEntityId
+						.hashCode());
+		result = prime
+				* result
+				+ ((onApproveEntityType == null) ? 0 : onApproveEntityType
+						.hashCode());
+		result = prime
+				* result
+				+ ((onRejectEntityId == null) ? 0 : onRejectEntityId.hashCode());
+		result = prime
+				* result
+				+ ((onRejectEntityType == null) ? 0 : onRejectEntityType
+						.hashCode());
+		result = prime * result
+				+ ((requestType == null) ? 0 : requestType.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ApproverAssocationSearchBean other = (ApproverAssocationSearchBean) obj;
+		if (approverEntityId == null) {
+			if (other.approverEntityId != null)
+				return false;
+		} else if (!approverEntityId.equals(other.approverEntityId))
+			return false;
+		if (approverEntityType != other.approverEntityType)
+			return false;
+		if (approverLevel == null) {
+			if (other.approverLevel != null)
+				return false;
+		} else if (!approverLevel.equals(other.approverLevel))
+			return false;
+		if (associationEntityId == null) {
+			if (other.associationEntityId != null)
+				return false;
+		} else if (!associationEntityId.equals(other.associationEntityId))
+			return false;
+		if (associationType != other.associationType)
+			return false;
+		if (onApproveEntityId == null) {
+			if (other.onApproveEntityId != null)
+				return false;
+		} else if (!onApproveEntityId.equals(other.onApproveEntityId))
+			return false;
+		if (onApproveEntityType != other.onApproveEntityType)
+			return false;
+		if (onRejectEntityId == null) {
+			if (other.onRejectEntityId != null)
+				return false;
+		} else if (!onRejectEntityId.equals(other.onRejectEntityId))
+			return false;
+		if (onRejectEntityType != other.onRejectEntityType)
+			return false;
+		if (requestType == null) {
+			if (other.requestType != null)
+				return false;
+		} else if (!requestType.equals(other.requestType))
+			return false;
+		return true;
+	}
+
+
+	
 }

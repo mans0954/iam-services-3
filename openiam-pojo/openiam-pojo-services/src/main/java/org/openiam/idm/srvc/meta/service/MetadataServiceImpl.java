@@ -11,6 +11,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.CacheKeyEviction;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -122,7 +124,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Override
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
-/*    @Cacheable(value="metadataElements", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")*/
+    @Cacheable(value="metadataElements",  key="{ #searchBean, #from, #size, #language}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataElementEntity> retVal = findEntityBeans(searchBean, from,size);
         return (retVal != null) ? metaDataElementDozerConverter.convertToDTOList(retVal,true) : null;
@@ -133,11 +135,11 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     /**
      * Without localization loop
      */
-    @Cacheable(value="metadataElements",  key="{ #searchBean.cacheUniqueBeanKey, #from, #size }")
+    @Cacheable(value="metadataElements",  key="{ #searchBean, #from, #size }", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<MetadataElement> findBeans(MetadataElementSearchBean searchBean, int from, int size) {
        return this.findBeans(searchBean, from, size, null);
     }
-	@Cacheable(value="metadataElementEntities",  key="{ #searchBean.cacheUniqueBeanKey, #from, #size }")
+	@Cacheable(value="metadataElementEntities",  key="{ #searchBean, #from, #size }", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size){
 		List<MetadataElementEntity> retVal = null;
 		if(searchBean != null  && searchBean.hasMultipleKeys()) {
@@ -152,9 +154,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Override
     @LocalizedServiceGet
 	@Transactional(readOnly=true)
-/*
-    @Cacheable(value="metadataTypes", key="{ #searchBean.cacheUniqueBeanKey, #from, #size,#language}")
-*/
+    @Cacheable(value="metadataTypes", key="{ #searchBean, #from, #size, #language}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean != null && searchBean.hasMultipleKeys()) {
@@ -168,7 +168,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@Override
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
-	@Cacheable(value="metadataTypeEntities", key="{ #searchBean.cacheUniqueBeanKey, #from, #size,#language}")
+	@Cacheable(value="metadataTypeEntities", key="{ #searchBean, #from, #size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language){
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
@@ -180,7 +180,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
     @Override
-    @Cacheable(value="metadataTypes", key="{ #searchBean.cacheUniqueBeanKey, #from, #size }")
+    @Cacheable(value="metadataTypes", key="{ #searchBean, #from, #size }", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<MetadataType> findBeansNoLocalize(MetadataTypeSearchBean searchBean, int from, int size) {
         return this.findBeans(searchBean, from, size, null);
     }
@@ -194,11 +194,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     @Override
 	@Transactional
-	@Caching(evict = {
-			@CacheEvict(value = "metadataElements", allEntries=true),
-			@CacheEvict(value = "metadataElementEntities", allEntries=true)
-	})
-	public void save(MetadataElement element) {
+    @CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("metadataElements"),
+            @CacheKeyEvict("metadataElementEntities")
+        }
+    )
+	public void save(final MetadataElement element) {
 		if(element != null) {
             MetadataElementEntity entity = metaDataElementDozerConverter.convertToEntity(element,true);
 			if(StringUtils.isBlank(entity.getId())) {
@@ -306,11 +308,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	
 	@Override
 	@Transactional
-	@Caching(evict = {
-			@CacheEvict(value = "metadataTypes", allEntries=true),
-			@CacheEvict(value = "metadataTypeEntities", allEntries=true)
-	})
-	public void save(MetadataType dto) throws BasicDataServiceException {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("metadataTypes"),
+            @CacheKeyEvict("metadataTypeEntities")
+        }
+    )
+	public void save(final MetadataType dto) throws BasicDataServiceException {
 		if(dto!=null) {
 			final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
 
@@ -343,11 +347,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	
 	@Override
 	@Transactional
-	@Caching(evict = {
-			@CacheEvict(value = "metadataElements", allEntries=true),
-			@CacheEvict(value = "metadataElementEntities", allEntries=true)
-	})
-	public void deleteMetdataElement(String id) {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("metadataElements"),
+            @CacheKeyEvict("metadataElementEntities")
+        }
+    )
+	public void deleteMetdataElement(final String id) {
 		final MetadataElementEntity entity = metadataElementDao.findById(id);
 		if(entity != null) {
 			/*
@@ -370,11 +376,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
 	@Override
 	@Transactional
-	@Caching(evict = {
-			@CacheEvict(value = "metadataTypes", allEntries=true),
-			@CacheEvict(value = "metadataTypeEntities", allEntries=true)
-	})
-	public void deleteMetdataType(String id) {
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("metadataTypes"),
+            @CacheKeyEvict("metadataTypeEntities")
+        }
+    )
+	public void deleteMetdataType(final String id) {
 		final MetadataTypeEntity entity = metadataTypeDao.findById(id);
 		if(entity != null) {
 			metadataTypeDao.delete(entity);

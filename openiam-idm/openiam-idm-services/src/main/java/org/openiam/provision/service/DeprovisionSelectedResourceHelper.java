@@ -6,12 +6,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
@@ -23,6 +25,7 @@ import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvOperationEnum;
@@ -151,7 +154,12 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         }
         bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, AbstractProvisioningService.IDENTITY_EXIST);
 
-        String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
+        final ResourcePropSearchBean sb = new ResourcePropSearchBean();
+        sb.setFindInCache(true);
+        sb.setResourceId(res.getId());
+        sb.setName("ON_DELETE");
+        final List<ResourceProp> props = resourceDataService.findResourceProps(sb, 0, Integer.MAX_VALUE);
+        String onDeleteProp = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
         if(StringUtils.isEmpty(onDeleteProp)) {
             onDeleteProp = "DELETE";
         }

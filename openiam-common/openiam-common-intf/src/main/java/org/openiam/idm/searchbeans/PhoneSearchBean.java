@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -75,14 +76,59 @@ public class PhoneSearchBean extends AbstractSearchBean<Phone, String> implement
         this.isDefault = isDefault;
     }
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(phoneNbr != null ? phoneNbr : "")
-                .append(phoneAreaCd != null ? phoneAreaCd : "")
-                .append(parentId != null ? parentId : "")
-                .append(metadataTypeId != null ? metadataTypeId : "")
-                .append(isDefault != null ? isDefault.booleanValue() : "")
-                .append(getKey() != null ? getKey() : "")
-                .toString();    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((isDefault == null) ? 0 : isDefault.hashCode());
+		result = prime * result
+				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime * result
+				+ ((parentId == null) ? 0 : parentId.hashCode());
+		result = prime * result
+				+ ((phoneAreaCd == null) ? 0 : phoneAreaCd.hashCode());
+		result = prime * result
+				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PhoneSearchBean other = (PhoneSearchBean) obj;
+		if (isDefault == null) {
+			if (other.isDefault != null)
+				return false;
+		} else if (!isDefault.equals(other.isDefault))
+			return false;
+		if (metadataTypeId == null) {
+			if (other.metadataTypeId != null)
+				return false;
+		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		if (parentId == null) {
+			if (other.parentId != null)
+				return false;
+		} else if (!parentId.equals(other.parentId))
+			return false;
+		if (phoneAreaCd == null) {
+			if (other.phoneAreaCd != null)
+				return false;
+		} else if (!phoneAreaCd.equals(other.phoneAreaCd))
+			return false;
+		if (phoneNbr == null) {
+			if (other.phoneNbr != null)
+				return false;
+		} else if (!phoneNbr.equals(other.phoneNbr))
+			return false;
+		return true;
+	}
+
+    
 }

@@ -60,14 +60,8 @@ public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<Content
 		this.resourceId = resourceId;
 	}
 
-	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(domainPattern != null ? domainPattern : "")
-				.append(isSSL != null ? isSSL : "")
-				.append(getKey() != null ? getKey() : "")
-				.toString();	}
-
+	
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -77,6 +71,8 @@ public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<Content
 		result = prime * result
 				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		return result;
 	}
 
@@ -103,6 +99,11 @@ public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<Content
 			if (other.isSSL != null)
 				return false;
 		} else if (!isSSL.equals(other.isSSL))
+			return false;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
 			return false;
 		return true;
 	}

@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.res.service;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -80,8 +81,8 @@ public interface ResourceDataService {
                                      final @WebParam(name = "language", targetNamespace = "") Language language);
 
     @WebMethod
-    String getResourcePropValueByName(@WebParam(name = "resourceId", targetNamespace = "") String resourceId, @WebParam(name = "propName", targetNamespace = "") String propName);
-
+    List<ResourceProp> findResourceProps(final ResourcePropSearchBean sb, final int from, final int size);
+    
     /**
      * Find all resource types.
      * 
@@ -93,37 +94,6 @@ public interface ResourceDataService {
     @WebMethod
     List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size, final Language language);
 
-    /**
-     * Add a resource property.
-     * 
-     * @param resourceProp
-     *            the resource prop
-     * @return the resource prop
-     */
-    @WebMethod
-    Response addResourceProp(@WebParam(name = "resourceProp", targetNamespace = "") ResourceProp resourceProp,
-                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-
-    /**
-     * Update a resource property.
-     * 
-     * @param resourceProp
-     *            the resource prop
-     * @return the resource prop
-     */
-    @WebMethod
-    Response updateResourceProp(@WebParam(name = "resourceProp", targetNamespace = "") ResourceProp resourceProp,
-                                final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-
-    /**
-     * Remove a resource property.
-     * 
-     * @param resourcePropId
-     *            the resource prop id
-     */
-    @WebMethod
-    Response removeResourceProp(@WebParam(name = "resourcePropId", targetNamespace = "") String resourcePropId,
-                                final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Entitles a User to a Resource

@@ -28,6 +28,7 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -44,6 +45,7 @@ import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceService;
@@ -542,9 +544,18 @@ public class ProvisionDispatcherTransactionHelper {
             if (objArr != null && objArr.length > 0) {
                 matchObj = objArr[0];
             }
-
-            String preProcessScript = resourceService.getResourcePropValueByName(data.getResourceId(),"PRE_PROCESS");
-            String postProcessScript = resourceService.getResourcePropValueByName(data.getResourceId(),"POST_PROCESS");
+            
+            final ResourcePropSearchBean sb = new ResourcePropSearchBean();
+            sb.setFindInCache(true);
+            sb.setResourceId(data.getResourceId());
+            
+            sb.setName("PRE_PROCESS");
+            List<ResourcePropEntity> props = resourceService.findBeans(sb, 0, Integer.MAX_VALUE);
+            String preProcessScript = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
+            
+            sb.setName("POST_PROCESS");
+            props = resourceService.findBeans(sb, 0, Integer.MAX_VALUE);
+            String postProcessScript = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
 
             // get the attributes at the target system
             // this lookup only for getting attributes from the

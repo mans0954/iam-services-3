@@ -13,12 +13,4 @@ import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
 })
 public class MetadataTemplateTypeSearchBean extends AbstractKeyNameSearchBean<MetadataTemplateType, String> implements SearchBean {
 
-
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(getKey() != null ? getKey() : "")
-                .toString();
-
-    }
 }

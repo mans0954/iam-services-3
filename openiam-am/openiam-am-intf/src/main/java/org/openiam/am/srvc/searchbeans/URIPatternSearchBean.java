@@ -63,12 +63,62 @@ public class URIPatternSearchBean extends AbstractSearchBean<URIPattern, String>
 		this.resourceId = resourceId;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((authProviderId == null) ? 0 : authProviderId.hashCode());
+		result = prime
+				* result
+				+ ((contentProviderId == null) ? 0 : contentProviderId
+						.hashCode());
+		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime
+				* result
+				+ ((showOnApplicationPage == null) ? 0 : showOnApplicationPage
+						.hashCode());
+		return result;
+	}
 
 	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(pattern != null ? pattern : "")
-				.append(contentProviderId != null ? contentProviderId : "")
-				.append(getKey() != null ? getKey() : "")
-				.toString();	}
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		URIPatternSearchBean other = (URIPatternSearchBean) obj;
+		if (authProviderId == null) {
+			if (other.authProviderId != null)
+				return false;
+		} else if (!authProviderId.equals(other.authProviderId))
+			return false;
+		if (contentProviderId == null) {
+			if (other.contentProviderId != null)
+				return false;
+		} else if (!contentProviderId.equals(other.contentProviderId))
+			return false;
+		if (pattern == null) {
+			if (other.pattern != null)
+				return false;
+		} else if (!pattern.equals(other.pattern))
+			return false;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (showOnApplicationPage == null) {
+			if (other.showOnApplicationPage != null)
+				return false;
+		} else if (!showOnApplicationPage.equals(other.showOnApplicationPage))
+			return false;
+		return true;
+	}
+
+	
 }

@@ -5,6 +5,8 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.CacheKeyEviction;
 import org.openiam.exception.BasicDataServiceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -82,9 +84,11 @@ public class PolicyServiceImpl implements PolicyService {
 
 	@Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "policies", allEntries = true)
-    })
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("policies")
+        }
+    )
 	public void save(final Policy policy) {
 		final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
 		if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
@@ -133,20 +137,13 @@ public class PolicyServiceImpl implements PolicyService {
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "policies", key = "{#policyDefId, #policyName}")
-    public List<Policy> findPolicyByName(String policyDefId, String policyName) {
-        List<PolicyEntity> policyEntities = policyDao.findPolicyByName(policyDefId, policyName);
-        return policyDozerConverter.convertToDTOList(policyEntities, false);
-	}
-
 	@Override
 	@Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "policies", allEntries = true),
-            @CacheEvict(value = "policyObjectAssoc", allEntries = true)
-    })
+	@CacheKeyEviction(
+    	evictions={
+            @CacheKeyEvict("policies")
+        }
+    )
 	public void delete(final String policyId) throws BasicDataServiceException {
 		final PolicyEntity entity = policyDao.findById(policyId);
 		if(entity != null) {
@@ -170,9 +167,8 @@ public class PolicyServiceImpl implements PolicyService {
 
 	@Override
 	@Transactional(readOnly=true)
-    @Cacheable(value = "policies", key = "{#searchBean, #from, #size}")
-	public List<Policy> findBeans(PolicySearchBean searchBean, int from,
-			int size) {
+    @Cacheable(value = "policies", key = "{#searchBean, #from, #size}", condition="{#searchBean != null and #searchBean.findInCache}")
+	public List<Policy> findBeans(final PolicySearchBean searchBean, final int from, final int size) {
         List<PolicyEntity> entities = policyDao.getByExampleNoLocalize(searchBean, from, size);
         return policyDozerConverter.convertToDTOList(entities, true);
 	}
@@ -199,43 +195,6 @@ public class PolicyServiceImpl implements PolicyService {
             itPolicyDao.delete(itPolicyEntity);
         }
     }
-
-/* @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "policyObjectAssoc", key = "{#policyId}")
-    public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
-        return policyAssocObjectDozerConverter
-                .convertToDTOList(policyObjectAssocDAO.findByPolicy(policyId),
-                        true);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "policyObjectAssoc", key = "{#level, #value}")
-    public PolicyObjectAssoc findAssociationByLevel(String level, String value) {
-        return policyAssocObjectDozerConverter
-                .convertToDTO(policyObjectAssocDAO.findAssociationByLevel(level, value), true);
-    }
-
-    @Override
-    @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "policyObjectAssoc", allEntries = true)
-    })
-    public String savePolicyAssoc(PolicyObjectAssoc poa) {
-        if (poa == null) {
-            return null;
-        }
-        PolicyObjectAssocEntity poaEntity = policyAssocObjectDozerConverter
-                .convertToEntity(poa, true);
-        if (poaEntity.getPolicyObjectId() == null) {
-            poaEntity.setObjectId(null);
-            poaEntity = policyObjectAssocDAO.add(poaEntity);
-        } else {
-            policyObjectAssocDAO.update(poaEntity);
-        }
-        return poaEntity.getPolicyObjectId();
-    }*/
 
     @Override
     @Transactional

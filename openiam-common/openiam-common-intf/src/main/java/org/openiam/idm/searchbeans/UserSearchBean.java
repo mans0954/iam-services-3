@@ -8,6 +8,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.xml.bind.annotation.*;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -587,12 +588,260 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
         this.userType = userType;
     }
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(firstName != null ? firstName : "")
-                .append(lastName != null ? lastName : "")
-                .append(hashCode())
-                .append(getKey() != null ? getKey() : "")
-                .toString();    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((accountStatus == null) ? 0 : accountStatus.hashCode());
+		result = prime * result
+				+ ((attributeList == null) ? 0 : attributeList.hashCode());
+		result = prime * result
+				+ ((claimDate == null) ? 0 : claimDate.hashCode());
+		result = prime * result
+				+ ((classification == null) ? 0 : classification.hashCode());
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((dateOfBirth == null) ? 0 : dateOfBirth.hashCode());
+		result = prime * result + (delAdmin ? 1231 : 1237);
+		result = prime
+				* result
+				+ ((emailAddressMatchToken == null) ? 0
+						: emailAddressMatchToken.hashCode());
+		result = prime
+				* result
+				+ ((employeeIdMatchToken == null) ? 0 : employeeIdMatchToken
+						.hashCode());
+		result = prime * result
+				+ ((employeeType == null) ? 0 : employeeType.hashCode());
+		result = prime
+				* result
+				+ ((firstNameMatchToken == null) ? 0 : firstNameMatchToken
+						.hashCode());
+		result = prime * result + (initDefaulLoginFlag ? 1231 : 1237);
+		result = prime * result + ((jobCode == null) ? 0 : jobCode.hashCode());
+		result = prime * result
+				+ ((lastDate == null) ? 0 : lastDate.hashCode());
+		result = prime
+				* result
+				+ ((lastNameMatchToken == null) ? 0 : lastNameMatchToken
+						.hashCode());
+		result = prime * result
+				+ ((locationCd == null) ? 0 : locationCd.hashCode());
+		result = prime * result
+				+ ((loggedIn == null) ? 0 : loggedIn.hashCode());
+		result = prime
+				* result
+				+ ((maidenNameMatchToken == null) ? 0 : maidenNameMatchToken
+						.hashCode());
+		result = prime * result
+				+ ((maxResultSize == null) ? 0 : maxResultSize.hashCode());
+		result = prime * result
+				+ ((nickName == null) ? 0 : nickName.hashCode());
+		result = prime
+				* result
+				+ ((nickNameMatchToken == null) ? 0 : nickNameMatchToken
+						.hashCode());
+		result = prime * result
+				+ ((phoneAreaCd == null) ? 0 : phoneAreaCd.hashCode());
+		result = prime * result
+				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
+		result = prime * result
+				+ ((principal == null) ? 0 : principal.hashCode());
+		result = prime * result
+				+ ((requesterId == null) ? 0 : requesterId.hashCode());
+		result = prime * result
+				+ ((searchMode == null) ? 0 : searchMode.hashCode());
+		result = prime * result
+				+ ((showInSearch == null) ? 0 : showInSearch.hashCode());
+		result = prime * result
+				+ ((startDate == null) ? 0 : startDate.hashCode());
+		result = prime * result
+				+ ((updatedSince == null) ? 0 : updatedSince.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result
+				+ ((userStatus == null) ? 0 : userStatus.hashCode());
+		result = prime * result
+				+ ((userType == null) ? 0 : userType.hashCode());
+		result = prime * result
+				+ ((userTypeInd == null) ? 0 : userTypeInd.hashCode());
+		result = prime * result + ((zipCode == null) ? 0 : zipCode.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserSearchBean other = (UserSearchBean) obj;
+		if (accountStatus == null) {
+			if (other.accountStatus != null)
+				return false;
+		} else if (!accountStatus.equals(other.accountStatus))
+			return false;
+		if (attributeList == null) {
+			if (other.attributeList != null)
+				return false;
+		} else if (!attributeList.equals(other.attributeList))
+			return false;
+		if (claimDate == null) {
+			if (other.claimDate != null)
+				return false;
+		} else if (!claimDate.equals(other.claimDate))
+			return false;
+		if (classification == null) {
+			if (other.classification != null)
+				return false;
+		} else if (!classification.equals(other.classification))
+			return false;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (dateOfBirth == null) {
+			if (other.dateOfBirth != null)
+				return false;
+		} else if (!dateOfBirth.equals(other.dateOfBirth))
+			return false;
+		if (delAdmin != other.delAdmin)
+			return false;
+		if (emailAddressMatchToken == null) {
+			if (other.emailAddressMatchToken != null)
+				return false;
+		} else if (!emailAddressMatchToken.equals(other.emailAddressMatchToken))
+			return false;
+		if (employeeIdMatchToken == null) {
+			if (other.employeeIdMatchToken != null)
+				return false;
+		} else if (!employeeIdMatchToken.equals(other.employeeIdMatchToken))
+			return false;
+		if (employeeType == null) {
+			if (other.employeeType != null)
+				return false;
+		} else if (!employeeType.equals(other.employeeType))
+			return false;
+		if (firstNameMatchToken == null) {
+			if (other.firstNameMatchToken != null)
+				return false;
+		} else if (!firstNameMatchToken.equals(other.firstNameMatchToken))
+			return false;
+		if (initDefaulLoginFlag != other.initDefaulLoginFlag)
+			return false;
+		if (jobCode == null) {
+			if (other.jobCode != null)
+				return false;
+		} else if (!jobCode.equals(other.jobCode))
+			return false;
+		if (lastDate == null) {
+			if (other.lastDate != null)
+				return false;
+		} else if (!lastDate.equals(other.lastDate))
+			return false;
+		if (lastNameMatchToken == null) {
+			if (other.lastNameMatchToken != null)
+				return false;
+		} else if (!lastNameMatchToken.equals(other.lastNameMatchToken))
+			return false;
+		if (locationCd == null) {
+			if (other.locationCd != null)
+				return false;
+		} else if (!locationCd.equals(other.locationCd))
+			return false;
+		if (loggedIn == null) {
+			if (other.loggedIn != null)
+				return false;
+		} else if (!loggedIn.equals(other.loggedIn))
+			return false;
+		if (maidenNameMatchToken == null) {
+			if (other.maidenNameMatchToken != null)
+				return false;
+		} else if (!maidenNameMatchToken.equals(other.maidenNameMatchToken))
+			return false;
+		if (maxResultSize == null) {
+			if (other.maxResultSize != null)
+				return false;
+		} else if (!maxResultSize.equals(other.maxResultSize))
+			return false;
+		if (nickName == null) {
+			if (other.nickName != null)
+				return false;
+		} else if (!nickName.equals(other.nickName))
+			return false;
+		if (nickNameMatchToken == null) {
+			if (other.nickNameMatchToken != null)
+				return false;
+		} else if (!nickNameMatchToken.equals(other.nickNameMatchToken))
+			return false;
+		if (phoneAreaCd == null) {
+			if (other.phoneAreaCd != null)
+				return false;
+		} else if (!phoneAreaCd.equals(other.phoneAreaCd))
+			return false;
+		if (phoneNbr == null) {
+			if (other.phoneNbr != null)
+				return false;
+		} else if (!phoneNbr.equals(other.phoneNbr))
+			return false;
+		if (principal == null) {
+			if (other.principal != null)
+				return false;
+		} else if (!principal.equals(other.principal))
+			return false;
+		if (requesterId == null) {
+			if (other.requesterId != null)
+				return false;
+		} else if (!requesterId.equals(other.requesterId))
+			return false;
+		if (searchMode != other.searchMode)
+			return false;
+		if (showInSearch == null) {
+			if (other.showInSearch != null)
+				return false;
+		} else if (!showInSearch.equals(other.showInSearch))
+			return false;
+		if (startDate == null) {
+			if (other.startDate != null)
+				return false;
+		} else if (!startDate.equals(other.startDate))
+			return false;
+		if (updatedSince == null) {
+			if (other.updatedSince != null)
+				return false;
+		} else if (!updatedSince.equals(other.updatedSince))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		if (userStatus == null) {
+			if (other.userStatus != null)
+				return false;
+		} else if (!userStatus.equals(other.userStatus))
+			return false;
+		if (userType == null) {
+			if (other.userType != null)
+				return false;
+		} else if (!userType.equals(other.userType))
+			return false;
+		if (userTypeInd == null) {
+			if (other.userTypeInd != null)
+				return false;
+		} else if (!userTypeInd.equals(other.userTypeInd))
+			return false;
+		if (zipCode == null) {
+			if (other.zipCode != null)
+				return false;
+		} else if (!zipCode.equals(other.zipCode))
+			return false;
+		return true;
+	}
+
+
 }

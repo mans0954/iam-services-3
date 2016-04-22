@@ -42,12 +42,40 @@ public class SynchConfigSearchBean extends AbstractSearchBean<SynchConfig, Strin
 		this.excludeBooleanProperties = excludeBooleanProperties;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + (excludeBooleanProperties ? 1231 : 1237);
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((synchType == null) ? 0 : synchType.hashCode());
+		return result;
+	}
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(name != null ? name : "")
-                .append(synchType != null ? synchType : "")
-                .append(getKey() != null ? getKey() : "")
-                .toString();    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SynchConfigSearchBean other = (SynchConfigSearchBean) obj;
+		if (excludeBooleanProperties != other.excludeBooleanProperties)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (synchType == null) {
+			if (other.synchType != null)
+				return false;
+		} else if (!synchType.equals(other.synchType))
+			return false;
+		return true;
+	}
+
+	
 }

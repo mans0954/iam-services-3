@@ -81,15 +81,70 @@ public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, Str
 		this.selectAll = selectAll;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((processName == null) ? 0 : processName.hashCode());
+		result = prime
+				* result
+				+ ((provisionResource == null) ? 0 : provisionResource
+						.hashCode());
+		result = prime * result
+				+ ((searchable == null) ? 0 : searchable.hashCode());
+		result = prime * result
+				+ ((selectAll == null) ? 0 : selectAll.hashCode());
+		result = prime
+				* result
+				+ ((supportsHierarchy == null) ? 0 : supportsHierarchy
+						.hashCode());
+		return result;
+	}
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-                .append(provisionResource != null ? provisionResource : "")
-                .append(processName != null ? processName : "")
-                .append(searchable != null ? searchable.booleanValue() : "")
-                .append(description != null ? description.hashCode() : "")
-                .append(getKey() != null ? getKey() : "")
-                .append(getSortKeyForCache())
-                .toString();    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceTypeSearchBean other = (ResourceTypeSearchBean) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (processName == null) {
+			if (other.processName != null)
+				return false;
+		} else if (!processName.equals(other.processName))
+			return false;
+		if (provisionResource == null) {
+			if (other.provisionResource != null)
+				return false;
+		} else if (!provisionResource.equals(other.provisionResource))
+			return false;
+		if (searchable == null) {
+			if (other.searchable != null)
+				return false;
+		} else if (!searchable.equals(other.searchable))
+			return false;
+		if (selectAll == null) {
+			if (other.selectAll != null)
+				return false;
+		} else if (!selectAll.equals(other.selectAll))
+			return false;
+		if (supportsHierarchy == null) {
+			if (other.supportsHierarchy != null)
+				return false;
+		} else if (!supportsHierarchy.equals(other.supportsHierarchy))
+			return false;
+		return true;
+	}
+
+	
 }

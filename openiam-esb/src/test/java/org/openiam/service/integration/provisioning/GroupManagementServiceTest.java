@@ -7,6 +7,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.connector.type.ObjectValue;
+import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.ws.IdentityWebService;
@@ -35,6 +36,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import javax.annotation.Resource;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,9 +51,9 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
     private static final String adMngSysId = "110";
     private static final String ldapMngSysId = "101";
-    private static final String groupSameName = "Group Unique Name";
-    private static final String groupSameName1 = "Group Unique Name 1";
-    private static final String groupSameName2 = "Group Unique Name 2";
+    private static final String groupSameName = getRandomNameStatic();
+    private static final String groupSameName1 = getRandomNameStatic();
+    private static final String groupSameName2 = getRandomNameStatic();
 
     @Resource(name="groupServiceClient")
     private GroupDataWebService groupServiceClient;
@@ -423,6 +425,9 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     @Test
     public void createGroupsWithSameName() throws Exception {
         //create groups with same name for different mngSys
+    	
+    	/* delete in case of previous run & fail */
+    	deleteGroupsByName(groupSameName);
 
         Group group = new Group();
         group.setName(groupSameName);
@@ -447,10 +452,23 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Assert.assertNotNull(newGroupId);
 
     }
+    
+    private void deleteGroupsByName(final String name) {
+    	final GroupSearchBean sb = new GroupSearchBean();
+    	sb.setName(name);
+    	final List<Group> groups = groupServiceClient.findBeansLocalize(sb, REQUESTER_ID, 0, Integer.MAX_VALUE, getDefaultLanguage());
+    	if(CollectionUtils.isNotEmpty(groups)) {
+    		groups.forEach(e -> {
+    			assertSuccess(groupServiceClient.deleteGroup(e.getId(), REQUESTER_ID));
+    		});
+    	}
+    }
 
     @Test
     public void createGroupsWithSameNameInSameMngSys() throws Exception {
-
+    	/* clean up data in case of previous fail */
+    	deleteGroupsByName(groupSameName1);
+    	
         Group group = new Group();
         group.setName(groupSameName1);
         group.setManagedSysId(adMngSysId);
@@ -476,6 +494,9 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
     @Test
     public void createGroupsWithoutMngSys () throws Exception {
+    	/* clean up data in case of previous fail */
+    	deleteGroupsByName(groupSameName2);
+    	
         Group group = new Group();
         group.setName(groupSameName2);
         group.setManagedSysId(null);
@@ -501,7 +522,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
     private void deleteGroupsWithSameName() {
         // for createGroupsWithSameName
-        if (sameGroupIds.get(0) != null) {
+        if (sameGroupIds.size() >= 1 && sameGroupIds.get(0) != null) {
             String firstGroupName = sameGroupIds.get(0);
             Response resFirst = groupServiceClient.validateDelete(firstGroupName);
             if (resFirst.isSuccess()) {
@@ -509,7 +530,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             }
         }
 
-        if (sameGroupIds.get(1) != null) {
+        if (sameGroupIds.size() >= 2 && sameGroupIds.get(1) != null) {
             String secondGroupName = sameGroupIds.get(1);
             Response resSecond = groupServiceClient.validateDelete(secondGroupName);
             if (resSecond.isSuccess()) {
@@ -518,7 +539,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         }
 
         //for createGroupsWithSameNameInSameMngSys
-        if (sameGroupIds.get(2) != null) {
+        if (sameGroupIds.size() >= 3 && sameGroupIds.get(2) != null) {
             String firstGroupName = sameGroupIds.get(2);
             Response resFirst = groupServiceClient.validateDelete(firstGroupName);
             if (resFirst.isSuccess()) {
@@ -526,7 +547,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             }
         }
 
-        if (sameGroupIds.get(3) != null) {
+        if (sameGroupIds.size() >= 4 && sameGroupIds.get(3) != null) {
             String secondGroupName = sameGroupIds.get(3);
             Response resSecond = groupServiceClient.validateDelete(secondGroupName);
             if (resSecond.isSuccess()) {
@@ -535,7 +556,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         }
 
         //for createGroupsWithoutMngSys
-        if (sameGroupIds.get(4) != null) {
+        if (sameGroupIds.size() >= 5 && sameGroupIds.get(4) != null) {
             String firstGroupName = sameGroupIds.get(4);
             Response resFirst = groupServiceClient.validateDelete(firstGroupName);
             if (resFirst.isSuccess()) {
@@ -543,7 +564,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             }
         }
 
-        if (sameGroupIds.get(5) != null) {
+        if (sameGroupIds.size() >= 6 && sameGroupIds.get(5) != null) {
             String secondGroupName = sameGroupIds.get(5);
             Response resSecond = groupServiceClient.validateDelete(secondGroupName);
             if (resSecond.isSuccess()) {

@@ -39,14 +39,44 @@ public class MetadataTemplateTypeFieldSearchBean extends AbstractSearchBean<Meta
 	public void setTemplateTypeId(String templateTypeId) {
 		this.templateTypeId = templateTypeId;
 	}
-
-
 	@Override
-	public String getCacheUniqueBeanKey() {
-		return new StringBuilder()
-				.append(templateId != null ? templateId : "")
-				.append(templateTypeId != null ? templateTypeId : "")
-				.append(name != null ? name : "")
-				.append(getKey() != null ? getKey() : "")
-				.toString();	}
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((templateId == null) ? 0 : templateId.hashCode());
+		result = prime * result
+				+ ((templateTypeId == null) ? 0 : templateTypeId.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MetadataTemplateTypeFieldSearchBean other = (MetadataTemplateTypeFieldSearchBean) obj;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (templateId == null) {
+			if (other.templateId != null)
+				return false;
+		} else if (!templateId.equals(other.templateId))
+			return false;
+		if (templateTypeId == null) {
+			if (other.templateTypeId != null)
+				return false;
+		} else if (!templateTypeId.equals(other.templateTypeId))
+			return false;
+		return true;
+	}
+
+
+	
 }

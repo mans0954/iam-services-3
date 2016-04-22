@@ -27,6 +27,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.CacheKeyEviction;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.LanguageLocaleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -42,6 +44,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +74,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value="languages", key="{#language}")
+    @Cacheable(value="localizedLanguages", key="{#language}")
     public List<Language> getUsedLanguages(Language language) {
         List<LanguageEntity> languageEntities = languageDao.getUsedLanguages();
         return languageEntities != null ? languageDozerConverter.convertToDTOList(languageEntities, true) : null;
@@ -88,8 +92,13 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     }
 
     @Transactional
-    @CacheEvict(value = "languages", allEntries=true)
-    public void removeLanguage(String languageId) {
+    @CacheKeyEviction(
+        	evictions={
+            	@CacheKeyEvict("resources"),
+            	@CacheKeyEvict("resourceEntities")
+            }
+        )
+    public void removeLanguage(final String languageId) {
         if (languageId == null) {
             throw new NullPointerException("languageCd is null");
         }
@@ -98,8 +107,13 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     }
 
     @Transactional
-    @CacheEvict(value = "languages", allEntries=true)
-    public void updateLanguage(LanguageEntity lg) {
+    @CacheKeyEviction(
+        	evictions={
+            	@CacheKeyEvict("resources"),
+            	@CacheKeyEvict("resourceEntities")
+            }
+        )
+    public void updateLanguage(final LanguageEntity lg) {
         if (lg == null) {
             throw new NullPointerException("lg is null");
         }
@@ -111,7 +125,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value="languages",key="{ #searchBean, #from, #size}")
+    @Cacheable(value="languages",key="{ #searchBean, #from, #size}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<Language> findBeans(final LanguageSearchBean searchBean, final int from, final int size) {
         List<LanguageEntity> languageEntities = languageDao.getByExample(searchBean, from, size);
         return languageEntities != null ? languageDozerConverter.convertToDTOList(languageEntities, true) : null;
@@ -120,7 +134,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value="languages", key="{ #searchBean, #from, #size,#language}")
+    @Cacheable(value="languages", key="{ #searchBean, #from, #size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size,
             final Language language) {
         return this.findBeans(searchBean, from, size);
@@ -160,8 +174,13 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "languages", allEntries=true)
-    public String save(Language language) throws BasicDataServiceException {
+    @CacheKeyEviction(
+        	evictions={
+            	@CacheKeyEvict("resources"),
+            	@CacheKeyEvict("resourceEntities")
+            }
+        )
+    public String save(final Language language) throws BasicDataServiceException {
         if (language == null) {
             throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR);
         }

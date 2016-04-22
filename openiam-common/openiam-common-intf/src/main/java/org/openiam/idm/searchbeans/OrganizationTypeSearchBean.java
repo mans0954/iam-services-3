@@ -6,6 +6,7 @@ import org.openiam.idm.srvc.org.dto.OrganizationType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -82,15 +83,51 @@ public class OrganizationTypeSearchBean extends AbstractKeyNameSearchBean<Organi
 		}
 	}
 
-    @Override
-    public String getCacheUniqueBeanKey() {
-        return new StringBuilder()
-		               .append(keySet != null ? keySet.toString().hashCode() : "")
-                .append(parentIds != null ? parentIds.toString().hashCode() : "")
-                .append(childIds != null ? childIds.toString().hashCode() : "")
-                .append(excludeIds != null ? excludeIds.toString().hashCode() : "")
-                .append(getKey() != null ? getKey() : "")
-				.append(getSortKeyForCache())
-                .toString();
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((childIds == null) ? 0 : childIds.hashCode());
+		result = prime * result
+				+ ((excludeIds == null) ? 0 : excludeIds.hashCode());
+		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
+		result = prime * result
+				+ ((parentIds == null) ? 0 : parentIds.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OrganizationTypeSearchBean other = (OrganizationTypeSearchBean) obj;
+		if (childIds == null) {
+			if (other.childIds != null)
+				return false;
+		} else if (!childIds.equals(other.childIds))
+			return false;
+		if (excludeIds == null) {
+			if (other.excludeIds != null)
+				return false;
+		} else if (!excludeIds.equals(other.excludeIds))
+			return false;
+		if (keySet == null) {
+			if (other.keySet != null)
+				return false;
+		} else if (!keySet.equals(other.keySet))
+			return false;
+		if (parentIds == null) {
+			if (other.parentIds != null)
+				return false;
+		} else if (!parentIds.equals(other.parentIds))
+			return false;
+		return true;
+	}
+
+    
 }

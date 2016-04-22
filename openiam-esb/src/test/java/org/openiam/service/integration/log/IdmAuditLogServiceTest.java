@@ -15,9 +15,6 @@ import org.testng.annotations.Test;
 
 public class IdmAuditLogServiceTest extends AbstractServiceTest {
 
-	@Autowired
-	@Qualifier("auditServiceClient")
-	private IdmAuditLogWebDataService service;
 	
 	private IdmAuditLogEntity newInstance() {
 		final IdmAuditLogEntity entity = new IdmAuditLogEntity();
@@ -40,7 +37,7 @@ public class IdmAuditLogServiceTest extends AbstractServiceTest {
 		for(int i = 0; i < 200; i++) {
 			logs.add(newInstance());
 		}
-		service.addLogs(logs);
+		auditLogService.addLogs(logs);
 		Thread.sleep(1000L);
 	}
 }

@@ -30,6 +30,9 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.*;
+import org.openiam.cache.CacheKeyEvict;
+import org.openiam.cache.CacheKeyEviction;
+import org.openiam.cache.ProvisionUserResourceKeyGenerator;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.LookupAttributeResponse;
@@ -38,6 +41,7 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
+import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -88,6 +92,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -287,17 +292,35 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
      * .provision.dto.ProvisionUser)
      */
     @Override
-    @CacheEvict(value = "resources", allEntries = true)
+    @CacheKeyEviction(
+    	evictions={
+    		@CacheKeyEvict(value="resources",keyGenerator=ProvisionUserResourceKeyGenerator.class),
+    		@CacheKeyEvict(value="resourceEntities",keyGenerator=ProvisionUserResourceKeyGenerator.class)
+    	},
+    	parameterIndex=0
+    )
     public ProvisionUserResponse modifyUser(final ProvisionUser pUser) {
         return modifyUser(pUser, null);
     }
 
-    @CacheEvict(value = "resources", allEntries = true)
+    @CacheKeyEviction(
+    	evictions={
+    		@CacheKeyEvict(value="resources",keyGenerator=ProvisionUserResourceKeyGenerator.class),
+    		@CacheKeyEvict(value="resourceEntities",keyGenerator=ProvisionUserResourceKeyGenerator.class)
+    	},
+    	parameterIndex=0
+    )
     private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLogEntity auditLog) {
         return modifyUser(pUser, auditLog, null);
     }
 
-    @CacheEvict(value = "resources", allEntries = true)
+    @CacheKeyEviction(
+    	evictions={
+    		@CacheKeyEvict(value="resources",keyGenerator=ProvisionUserResourceKeyGenerator.class),
+    		@CacheKeyEvict(value="resourceEntities",keyGenerator=ProvisionUserResourceKeyGenerator.class)
+    	},
+    	parameterIndex=0
+    )
     private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLogEntity auditLog, final AuditAction auditAction) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
@@ -1396,7 +1419,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         }
 
                         // Additional operation is required for managed system with property ON_DELETE = DISABLE
-                        String onDeleteProp = resourceService.getResourcePropValueByName(res.getId(), "ON_DELETE");
+                        final ResourcePropSearchBean sb = new ResourcePropSearchBean();
+                        sb.setResourceId(res.getId());
+                        sb.setName("ON_DELETE");
+                        sb.setFindInCache(true);
+                        final List<ResourcePropEntity> props = resourceService.findBeans(sb, 0, Integer.MAX_VALUE);
+                        String onDeleteProp = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
                         if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
                             ProvisionDataContainer enableData = provisionSelectedResourceHelper.provisionResource(res, userEntity, pUser, bindingMap,
                                     primaryIdentity, requestId);
