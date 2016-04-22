@@ -97,8 +97,15 @@ public class ConnectorAdapter {
             }
             log.info("ConnectorAdapter:addRequest called. Managed sys ="
                     + managedSys.getId());
+
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
+
+            if (connector == null) {
+                resp.setStatus(StatusCodeType.SUCCESS);
+                return resp;
+            }
+
             log.info("Connector found for " + connector.getConnectorId());
 
             if (managedSys.isSimulationMode()) {
@@ -143,6 +150,11 @@ public class ConnectorAdapter {
 
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
+
+            if (connector == null) {
+                resp.setStatus(StatusCodeType.SUCCESS);
+                return resp;
+            }
             log.info("Connector found for " + connector.getConnectorId());
 
             if (managedSys.isSimulationMode()) {
@@ -188,6 +200,12 @@ public class ConnectorAdapter {
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
+
+            if (connector == null) {
+                resp.setStatus(StatusCodeType.SUCCESS);
+                return resp;
+            }
+
             log.info("Connector found for " + connector.getConnectorId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -315,7 +333,13 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(connectorId);
 
+            if (connector == null) {
+                type.setStatus(StatusCodeType.SUCCESS);
+                return type;
+            }
+
             log.debug("Connector found for " + connector.getConnectorId());
+
 
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -355,6 +379,12 @@ public class ConnectorAdapter {
 
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
+
+            if (connector == null) {
+                resp.setStatus(StatusCodeType.SUCCESS);
+                return resp;
+            }
+
             log.info("Connector found for " + connector.getConnectorId());
 
             if (managedSys.isSimulationMode()) {
@@ -400,6 +430,12 @@ public class ConnectorAdapter {
 
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
+
+            if (connector == null) {
+                resp.setStatus(StatusCodeType.SUCCESS);
+                return resp;
+            }
+
             log.info("Connector found for " + connector.getConnectorId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -442,6 +478,12 @@ public class ConnectorAdapter {
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
+
+            if (connector == null) {
+                resp.setStatus(StatusCodeType.SUCCESS);
+                return resp;
+            }
+
             log.debug("Connector found for " + connector.getConnectorId());
 
             if (managedSys.isSimulationMode()) {
@@ -487,6 +529,12 @@ public class ConnectorAdapter {
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
+
+            if (connector == null) {
+                resp.setStatus(StatusCodeType.SUCCESS);
+                return resp;
+            }
+
             log.debug("Connector found for " + connector.getConnectorId());
 
             if (managedSys.isSimulationMode()) {
@@ -529,6 +577,12 @@ public class ConnectorAdapter {
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
+
+            if (connector == null) {
+                type.setStatus(StatusCodeType.SUCCESS);
+                return type;
+            }
+
             log.debug("Connector found for " + connector.getConnectorId());
 
             if (managedSys.isSimulationMode()) {
@@ -575,6 +629,12 @@ public class ConnectorAdapter {
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
+
+            if (connector == null) {
+                resp.setStatus(StatusCodeType.SUCCESS);
+                return resp;
+            }
+
             if (log.isDebugEnabled()) {
                 log.debug("Connector found for " + connector.getConnectorId());
             }
@@ -619,6 +679,11 @@ public class ConnectorAdapter {
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
+
+            if (connector == null) {
+                type.setStatus(StatusCodeType.SUCCESS);
+                return type;
+            }
 
             log.debug("Connector found for " + connector.getConnectorId());
 
