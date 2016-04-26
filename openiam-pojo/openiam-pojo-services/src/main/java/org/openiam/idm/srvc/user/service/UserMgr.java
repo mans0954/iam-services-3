@@ -2814,4 +2814,10 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return supervisorDozerConverter.convertToDTOList(supers, true);
     }
 
+    @Override
+    public List<User> getUserWithoutAnswerDto(){
+        List<UserEntity> userEntityList = userIdentityAnswerDAO.findUsersWithoutAnswers();
+        return userDozerConverter.convertToDTOList(userEntityList, false);
+    }
+
 }
