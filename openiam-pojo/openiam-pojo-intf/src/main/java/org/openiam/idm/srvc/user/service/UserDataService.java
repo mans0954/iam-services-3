@@ -349,4 +349,6 @@ public interface UserDataService {
     public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate);
 
     public List<Supervisor> findSupervisors(SupervisorSearchBean sb);
+
+    public List<User> getUserWithoutAnswerDto();
 }

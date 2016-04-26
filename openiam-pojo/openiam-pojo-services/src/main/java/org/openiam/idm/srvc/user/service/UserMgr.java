@@ -632,7 +632,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), -1, -1));
         }
 
-        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet()) && searchBean.getRoleIdSet().size()<2100) {
+        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
             nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), -1, -1));
         }
 
@@ -2812,6 +2812,12 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     public List<Supervisor> findSupervisors(SupervisorSearchBean sb) {
         List<SupervisorEntity> supers = supervisorDao.getByExample(sb);
         return supervisorDozerConverter.convertToDTOList(supers, true);
+    }
+
+    @Override
+    public List<User> getUserWithoutAnswerDto(){
+        List<UserEntity> userEntityList = userIdentityAnswerDAO.findUsersWithoutAnswers();
+        return userDozerConverter.convertToDTOList(userEntityList, false);
     }
 
 }

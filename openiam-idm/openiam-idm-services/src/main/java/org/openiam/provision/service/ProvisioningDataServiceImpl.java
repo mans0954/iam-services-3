@@ -1298,17 +1298,18 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             for (LoginEntity l : userEntity.getPrincipalList()) {
                 boolean resFound = false;
                 String resId = managedSystemService.getResourceIdByManagedSysId(l.getManagedSysId());
-                for (Resource r : resourceSet) {
-                    if (r.getId().equals(resId)) {
-                        resFound = true;
-                        break;
+                if(resId!=null){
+                    for (Resource r : resourceSet) {
+                        if (r.getId().equals(resId)) {
+                            resFound = true;
+                            break;
+                        }
+                    }
+                    if (!resFound) {
+                        deleteResourceSet.add(resourceService.getResourceDTO(resId, false));
                     }
                 }
-                if (!resFound) {
-                    deleteResourceSet.add(resourceService.getResourceDTO(resId, false));
-                }
             }
-
         }
 
         if (CollectionUtils.isNotEmpty(deleteResourceSet) && CollectionUtils.isNotEmpty(resourceSet)) {
