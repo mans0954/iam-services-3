@@ -2,6 +2,7 @@ package org.openiam.config;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.cache.CacheBeanPostProcessor;
 import org.openiam.cache.OpeniamAnnotationCacheOperationSource;
 import org.openiam.cache.OpeniamCacheInterceptor;
 import org.openiam.hazelcast.HazelcastConfiguration;
@@ -119,6 +120,12 @@ public class OpeniamCacheConfiguration extends ProxyCachingConfiguration impleme
 	public void setApplicationContext(ApplicationContext ctx)
 			throws BeansException {
 		this.ctx = ctx;
+	}
+	
+	/* AM-851 - Custom @Cacheable annotations should *never* cache Entity objects */
+	@Bean
+	public CacheBeanPostProcessor cacheBeanPostProcessor() {
+		return new CacheBeanPostProcessor();
 	}
 	
 	/**

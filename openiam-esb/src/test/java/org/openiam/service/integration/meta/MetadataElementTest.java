@@ -95,44 +95,12 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 	}
 	
 	@Test
-	public void testSearchBeanCache() throws Exception {
-		for(int j = 0; j < 2; j++) {
-			final MetadataElement entity = createAndSave();
-			final MetadataElementSearchBean sb = getCacheableSearchBean(entity);
-			try {
-				searchAndAssertCacheHit(sb, entity, "metadataElements");
-			} finally {
-				deleteAndAssert(entity);
-				sleep(1);
-				Assert.assertTrue(CollectionUtils.isEmpty(find(sb, 0, Integer.MAX_VALUE)));
-			}
-		}
-	}
-	
-	@Test
 	public void testCreateAndDelete() throws Exception {
 		for(int j = 0; j < 2; j++) {
 			final MetadataElement entity = createAndSave();
 			Assert.assertNotNull(get(entity.getId()));
 			deleteAndAssert(entity);
 			Assert.assertNull(get(entity.getId()));
-		}
-	}
-	
-	@Test
-	public void testSearchBeanCacheAfterSave() {
-		final MetadataElement entity = createAndSave();
-		final MetadataElementSearchBean sb = getCacheableSearchBean(entity);
-		try {
-			/* trigger and assert cache hit */
-			searchAndAssertCacheHit(sb, entity, "metadataElements");
-			
-			saveAndAssertCachePurge(sb, entity, new String[] {"metadataElements"}, 1, 1);
-			
-			/* trigger and assert cache hit */
-			searchAndAssertCacheHit(sb, entity, "metadataElements");
-		} finally {
-			deleteAndAssert(entity);
 		}
 	}
 }
