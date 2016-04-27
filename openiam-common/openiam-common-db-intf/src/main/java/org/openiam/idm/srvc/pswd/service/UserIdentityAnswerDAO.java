@@ -25,10 +25,13 @@ import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface UserIdentityAnswerDAO extends BaseDao<UserIdentityAnswerEntity, String> {
    public void deleteAnswersByQuestionId(final String questionId);
    public void deleteByUser(String userId);
    public List<UserEntity> findUsersWithoutAnswers();
+   public List<Map<String,Object>> findUsersWithoutAnswersOnDate(Date fromDate, Date toDate, boolean hasAnswer);
 }
