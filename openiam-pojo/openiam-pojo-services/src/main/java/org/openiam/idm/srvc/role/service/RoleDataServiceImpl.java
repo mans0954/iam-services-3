@@ -535,16 +535,18 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "roleEntities", key = "{ #userId, #requesterId, #from, #size}")
+    //AM-852 - @Cacheable should *NEVER* cache Entity Objects
+    //@Cacheable(value = "roleEntities", key = "{ #userId, #requesterId, #from, #size}")
     public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
         return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "roleEntities", key = "{ #userId, #requesterId, #from, #size}")
     public List<Role> getRolesDtoForUser(String userId, String requesterId, int from, int size) {
         //final List<RoleEntity> entityList = getRolesForUser(userId, requesterId, from, size);
-        final List<RoleEntity> entityList = this.getProxyService().getRolesForUser(userId, requesterId, from, size);
+        final List<RoleEntity> entityList = getRolesForUser(userId, requesterId, from, size);
         return roleDozerConverter.convertToDTOList(entityList, false);
     }
 
@@ -568,7 +570,8 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "roleEntities", key = "{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
+    //AM-852 - @Cacheable should *NEVER* cache Entity Objects
+    //@Cacheable(value = "roleEntities", key = "{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
     public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId);
         if (StringUtils.isBlank(searchBean.getKey()))
@@ -581,6 +584,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "roleEntities", key = "{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
     public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size) {
 /*		Set<String> filter = getDelegationFilter(requesterId);
         if(StringUtils.isBlank(searchBean.getKey()))
@@ -591,7 +595,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 		List<RoleEntity> roleEntityList = roleDao.getByExample(searchBean, from, size);*/
 
         //RoleDataService bean = (RoleDataService)ac.getBean("roleDataService");
-        List<RoleEntity> roleEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size);
+        List<RoleEntity> roleEntityList = findBeans(searchBean, requesterId, from, size);
 
         return roleDozerConverter.convertToDTOList(roleEntityList, false);
     }
@@ -718,7 +722,8 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "roleEntities", key = "{ #userId, #requesterId, #from, #size}")
+    //@Cacheable(value = "roleEntities", key = "{ #userId, #requesterId, #from, #size}")
+    //AM-852 - @Cacheable should *NEVER* cache Entity Objects
     public List<RoleEntity> getRolesForUser(final String userId, final String requesterId, final int from, final int size) {
         return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
     }
@@ -881,13 +886,16 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
         roleDao.rolesHierarchyRebuild();
         log.info("Role Hierarchy Cache preparation done.");
     }
+    
     @Override
-    @Cacheable(value = "roleEntities", key = "{#ids}")
+    //AM-852 - @Cacheable should *NEVER* cache Entity Objects
+    //@Cacheable(value = "roleEntities", key = "{#ids}")
     public List<RoleEntity> getRolesByIdSet(Set<String> ids) {
         return roleDao.getRolesByIdSet(ids);
     }
 
     @Override
+    @Cacheable(value = "roleEntities", key = "{#ids, #deepCopy}")
     public List<Role> getRolesDtoByIdSet(Set<String> ids, boolean deepCopy) {
         return roleDozerConverter.convertToDTOList(this.getRolesByIdSet(ids), deepCopy);
     }
