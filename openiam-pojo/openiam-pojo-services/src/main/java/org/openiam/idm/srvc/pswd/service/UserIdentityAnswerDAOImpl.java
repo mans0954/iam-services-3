@@ -79,6 +79,21 @@ public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEnt
 	}
 
 	@Override
+	public List<String> findUsersIdWithoutAnswers(){
+		String sql = new String("select u.id from org.openiam.idm.srvc.user.domain.UserEntity u "
+				+ "where u.id not in (select uia.userId from org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity uia)");
+		Session session = getSession();
+		Query qry = session.createQuery(sql);
+
+		List<String> results = (List<String>) qry.setCacheable(this.cachable()).list();
+		if (results == null) {
+			return (new ArrayList<String>());
+		}
+		return results;
+
+	}
+
+    @Override
 	public List<Map<String,Object>> findUsersWithoutAnswersOnDate(Date fromDate, Date toDate, boolean hasAnswer){
 
 		String dateFilter = "";
@@ -112,4 +127,5 @@ public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEnt
 		}
 		return results;
 	}
+
 }

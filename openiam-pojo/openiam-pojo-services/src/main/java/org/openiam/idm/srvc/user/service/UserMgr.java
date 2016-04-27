@@ -2821,6 +2821,12 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     }
 
     @Override
+    public List<String> getUsersIdsWithoutAnswers(){
+        List<String> idList = userIdentityAnswerDAO.findUsersIdWithoutAnswers();
+        return idList;
+    }
+
+    @Override
     public List<Map<String,Object>> findUsersWithoutAnswersOnDate(Date fromDate, Date toDate, boolean hasAnswer){
         return userIdentityAnswerDAO.findUsersWithoutAnswersOnDate(fromDate, toDate, hasAnswer);
     }

@@ -351,5 +351,6 @@ public interface UserDataService {
     public List<Supervisor> findSupervisors(SupervisorSearchBean sb);
 
     public List<User> getUserWithoutAnswerDto();
+    public List<String> getUsersIdsWithoutAnswers();
     public List<Map<String,Object>> findUsersWithoutAnswersOnDate(Date fromDate, Date toDate, boolean hasAnswer);
 }
