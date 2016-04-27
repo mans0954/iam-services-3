@@ -2820,4 +2820,10 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return userDozerConverter.convertToDTOList(userEntityList, false);
     }
 
+    @Override
+    public List<String> getUsersIdsWithoutAnswers(){
+        List<String> idList = userIdentityAnswerDAO.findUsersIdWithoutAnswers();
+        return idList;
+    }
+
 }

@@ -31,4 +31,5 @@ public interface UserIdentityAnswerDAO extends BaseDao<UserIdentityAnswerEntity,
    public void deleteAnswersByQuestionId(final String questionId);
    public void deleteByUser(String userId);
    public List<UserEntity> findUsersWithoutAnswers();
+   public List<String> findUsersIdWithoutAnswers();
 }
