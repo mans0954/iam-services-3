@@ -139,7 +139,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
         return this.findBeans(searchBean, from, size, null);
     }
 
-    @Cacheable(value = "metadataElementEntities", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size }")
+    //AM-852 @Cacheable should *NEVER* cache Entity Objects
+    //@Cacheable(value = "metadataElementEntities", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size }")
     public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size) {
         List<MetadataElementEntity> retVal = null;
         if (searchBean.hasMultipleKeys()) {
@@ -167,7 +168,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value = "metadataTypeEntities", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size,#language}")
+    //AM-852 @Cacheable should *NEVER* cache Entity Objects
+    //@Cacheable(value = "metadataTypeEntities", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size,#language}")
     public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
         List<MetadataTypeEntity> retVal = null;
         if (searchBean.hasMultipleKeys()) {
@@ -187,13 +189,15 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "metadataTypes", key = "{#id}")
+    //AM-852 @Cacheable should *NEVER* cache Entity Objects
+    //@Cacheable(value = "metadataTypes", key = "{#id}")
     public MetadataTypeEntity getById(String id) {
         return metadataTypeDao.findById(id);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "metadataTypes", key = "{#id}") /* this used to be on getById */
     public MetadataType findById(String id) {
         MetadataTypeEntity metadataTypeEntity = this.getById(id);
         return metadataTypeEntity != null ? metaDataTypeDozerConverter.convertToDTO(metadataTypeEntity, true) : null;

@@ -111,6 +111,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     public Integer getManagedSystemsCountByExample(ManagedSysSearchBean searchBean) {
         return managedSysDAO.count(searchBean);
     }
+  
 
     @Override
     @Transactional(readOnly = true)
@@ -125,10 +126,24 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         }
         return null;
     }
-
+    
+    /**
+     * This method should be called by anybody who want's a potentially <b>cached</b>
+     * Managed Sys DTO object.
+     * 
+     * fixes AM-852
+     */
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "managedSysRegion", key = "{#managedSysId}")
+    public ManagedSysDto getManagedSysDTO(final String id) {
+    	final ManagedSysEntity entity = getManagedSysById(id);
+    	return managedSysDozerConverter.convertToDTO(entity, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    //@Cacheable(value = "managedSysRegion", key = "{#managedSysId}")
     public ManagedSysEntity getManagedSysById(String managedSysId) {
         return managedSysDAO.findById(managedSysId);
     }
@@ -280,10 +295,24 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         ManagedSystemObjectMatchEntity entity = matchDAO.findById(objectMatchId);
         matchDAO.delete(entity);
     }
-
+    
+    /**
+     * This method should be called by anybody who want's a potentially <b>cached</b>
+     * Managed Sys DTO object.
+     * 
+     * fixes AM-852
+     */
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "resource-managedSys", key = "{#id, #status}")
+    public ManagedSysDto getManagedSysDTOByResource(String id, String status) {
+    	final ManagedSysEntity entity = getManagedSysByResource(id, status);
+    	return managedSysDozerConverter.convertToDTO(entity, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    //@Cacheable(value = "resource-managedSys", key = "{#id, #status}")
     public ManagedSysEntity getManagedSysByResource(String id, String status) {
         return managedSysDAO.findByResource(id, status);
     }
@@ -454,12 +483,25 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 //            return;
 //        managedSysRuleDAO.delete(entity);
 //    }
-
+    
+    /**
+     * This method should be called by anybody who want's a potentially <b>cached</b>
+     * Managed Sys DTO object.
+     * 
+     * fixes AM-852
+     */
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "managedSysObjectParam", key = "{ #managedSystemId, #objectType}")
-    public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
-            String managedSystemId, String objectType) {
+    public List<ManagedSystemObjectMatch> managedSysObjectParamDTO(final String managedSystemId, final String objectType) {
+    	final List<ManagedSystemObjectMatchEntity> list = managedSysObjectParam(managedSystemId, objectType);
+    	return managedSystemObjectMatchDozerConverter.convertToDTOList(list, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    //@Cacheable(value = "managedSysObjectParam", key = "{ #managedSystemId, #objectType}")
+    public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(final String managedSystemId, final String objectType) {
         return matchDAO.findBySystemId(managedSystemId, objectType);
     }
 
