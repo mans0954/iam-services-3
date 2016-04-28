@@ -128,6 +128,28 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 			
 		}
 		
+		void add(final CacheKeyEviction[] evictions) {
+			if(evictions != null) {
+				if(annotations == null) {
+					annotations = new LinkedList<CacheKeyEviction>();
+				}
+				for(CacheKeyEviction e : evictions) {
+					if(e != null) {
+						annotations.add(e);
+					}
+				}
+			}
+		}
+		
+		void add(final CacheKeyEviction eviction) {
+			if(eviction != null) {
+				add(new CacheKeyEviction[] {eviction});
+			}
+		}
+		
+		public List<CacheKeyEviction> getAnnotations() {
+			return annotations;
+		}
 	}
 	
 	private Map<Parameter, CacheKeyEvictAnnotationVisit> cacheKeyEvictMap = new HashMap<Parameter, CacheKeyEvictAnnotationVisit>();
@@ -145,13 +167,13 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 			
 			if(method.isAnnotationPresent(CacheKeyEviction.class)) {
 				final CacheKeyEviction annotation =  method.getAnnotation(CacheKeyEviction.class);
-				visit.annotations = Arrays.asList(new CacheKeyEviction[] {annotation});
+				visit.add(annotation);
 			} else if(method.isAnnotationPresent(CacheKeyEvictions.class)) {
-				visit.annotations = Arrays.asList(method.getAnnotation(CacheKeyEvictions.class).value());
+				visit.add(method.getAnnotation(CacheKeyEvictions.class).value());
 			}
 			cacheKeyEvictionMap.put(method, visit);
 		}
-		return visit.annotations;
+		return visit.getAnnotations();
 	}
 	
 	private List<CacheKeyEvictToken> getEvictionMetadata(final Object target, 
