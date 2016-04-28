@@ -299,7 +299,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         final StopWatch sw = new StopWatch();
         sw.start();
         //List<OrganizationEntity> organizationEntityList = orgDao.getByExample(searchBean, from, size);
-        List<OrganizationEntity> organizationEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size, language);
+        List<OrganizationEntity> organizationEntityList = findBeans(searchBean, requesterId, from, size, language);
         if (CollectionUtils.isNotEmpty(organizationEntityList) && searchBean.isDeepCopy() && searchBean.isForCurrentUsersOnly() && CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
             OrganizationUserEntity organizationUserEntity = null;
             Iterator<OrganizationUserEntity> organizationUserEntityIterator = null;
