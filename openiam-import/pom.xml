@@ -14,7 +14,6 @@
 
     <build>
 
-        <pluginManagement>
         	<plugins>
         		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         		<plugin>
@@ -47,8 +46,32 @@
         				</lifecycleMappingMetadata>
         			</configuration>
         		</plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <configuration>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                        <archive>
+                            <manifest>
+                                <mainClass>org.openiam.imprt.Import</mainClass>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                        <finalName>${pom.artifactId}</finalName>
+                        <appendAssemblyId>false</appendAssemblyId>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>with-dependencies</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
         	</plugins>
-        </pluginManagement>
     </build>
 
     <dependencies>
@@ -105,6 +128,10 @@
             <groupId>commons-pool</groupId>
             <artifactId>commons-pool</artifactId>
         </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
 
         <!-- saml libraries and dependancies -->
         <dependency>
@@ -117,7 +144,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <scope>provided</scope>
+            <version>6.0.2</version>
         </dependency>
         <!-- mssql dependencies -->
         <dependency>
@@ -137,8 +164,7 @@
 
         <dependency>
             <groupId>org.openiam</groupId>
-            <artifactId>openiam-common-db-intf</artifactId>
-            <scope>compile</scope>
+            <artifactId>openiam-common-intf</artifactId>
         </dependency>
 
     </dependencies>

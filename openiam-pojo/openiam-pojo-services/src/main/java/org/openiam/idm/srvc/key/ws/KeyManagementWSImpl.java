@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
+import java.util.List;
 
 /**
  * Created by: Alexander Duckardt
@@ -58,6 +59,17 @@ public class KeyManagementWSImpl implements KeyManagementWS {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorText(e.getMessage());
         }
+        return resp;
+    }
+
+    public Response generateKeysForUser(String userId){
+        Response resp = new Response(ResponseStatus.SUCCESS);
+        //TODO:
+        return resp;
+    }
+    public Response generateKeysForUserList(List<String> userIds){
+        Response resp = new Response(ResponseStatus.SUCCESS);
+        //TODO:
         return resp;
     }
 
