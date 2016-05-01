@@ -494,7 +494,11 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
 
     @Override
     public List<LoginEntity> findByUserIds(List<String> userIds, String managedSysId) {
-        return getCriteria().setCacheable(this.cachable()).add(Restrictions.in("userId", userIds)).add(Restrictions.eq("managedSysId", managedSysId))
-                .list();
+        Criteria criteria = getCriteria().setCacheable(this.cachable()).add(Restrictions.in("userId", userIds));
+        if(StringUtils.isNotBlank(managedSysId)){
+            criteria.add(Restrictions.eq("managedSysId", managedSysId));
+        }
+
+        return criteria.list();
     }
 }

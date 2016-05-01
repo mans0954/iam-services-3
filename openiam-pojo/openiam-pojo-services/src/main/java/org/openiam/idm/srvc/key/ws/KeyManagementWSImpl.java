@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -63,13 +64,18 @@ public class KeyManagementWSImpl implements KeyManagementWS {
     }
 
     public Response generateKeysForUser(String userId){
-        Response resp = new Response(ResponseStatus.SUCCESS);
-        //TODO:
-        return resp;
+        List<String> userList = new ArrayList<>();
+        return generateKeysForUserList(userList);
     }
     public Response generateKeysForUserList(List<String> userIds){
         Response resp = new Response(ResponseStatus.SUCCESS);
-        //TODO:
+        try {
+            keyManagementService.generateKeysForUserList(userIds);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorText(e.getMessage());
+        }
         return resp;
     }
 
