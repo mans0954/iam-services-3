@@ -7,12 +7,15 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.jdbc.DataSource;
 import org.openiam.imprt.jdbc.parser.impl.SyncConfigEntityParser;
+import org.openiam.imprt.jdbc.parser.impl.UserEntityParser;
 import org.openiam.imprt.key.KeyManagementWSClient;
 import org.openiam.imprt.model.Attribute;
 import org.openiam.imprt.model.LineObject;
+import org.openiam.imprt.query.SelectQueryBuilder;
 import org.openiam.imprt.util.DataHolder;
 
 import javax.naming.Context;
@@ -36,7 +39,7 @@ public class ImportProcessor {
     private final static int SIZE_LIMIT = 10000;
     private final static int TIME_LIMIT = 0;
 
-    public ImportProcessor(){
+    public ImportProcessor() {
         init();
     }
 
@@ -44,18 +47,18 @@ public class ImportProcessor {
         try {
             String confPath = DataHolder.getInstance().getProperty(ImportPropertiesKey.CONF_PATH);
             // load database props
-            InputStream in = new FileInputStream(confPath+"/conf/datasource.properties");
+            InputStream in = new FileInputStream(confPath + "/conf/datasource.properties");
             DataHolder.getInstance().loadProperties(in);
             // load default properties
             in = Import.class.getClassLoader().getResourceAsStream("default.properties");
             DataHolder.getInstance().loadProperties(in);
 
             String esbLocation = DataHolder.getInstance().getProperty(ImportPropertiesKey.WEB_SERVER_URL);
-            if(!esbLocation.contains("openiam-esb/idmsrvc")){
-                esbLocation+="/openiam-esb/idmsrvc/";
+            if (!esbLocation.contains("openiam-esb/idmsrvc")) {
+                esbLocation += "/openiam-esb/idmsrvc/";
             }
-            DataHolder.getInstance().setProperty(ImportPropertiesKey.KEY_SERVICE_WSDL, esbLocation+"KeyManagementWS?wsdl");
-            DataHolder.getInstance().setProperty(ImportPropertiesKey.KEYSTORE, confPath+"/conf/cacerts");
+            DataHolder.getInstance().setProperty(ImportPropertiesKey.KEY_SERVICE_WSDL, esbLocation + "KeyManagementWS?wsdl");
+            DataHolder.getInstance().setProperty(ImportPropertiesKey.KEYSTORE, confPath + "/conf/cacerts");
             // init data source.
             DataSource.getInstance().initialize();
 
@@ -111,30 +114,30 @@ public class ImportProcessor {
                     break;
                 }
                 while (results != null && results.hasMoreElements()) {
-                        pageRowCount++;
-                        totalRecords++;
-                        recordsInOUCounter++;
-                        SearchResult sr = (SearchResult) results.nextElement();
-                        LineObject rowObj = new LineObject();
-                        Attributes attrs = sr.getAttributes();
+                    pageRowCount++;
+                    totalRecords++;
+                    recordsInOUCounter++;
+                    SearchResult sr = (SearchResult) results.nextElement();
+                    LineObject rowObj = new LineObject();
+                    Attributes attrs = sr.getAttributes();
 
-                        if (attrs != null) {
-                            for (NamingEnumeration ae = attrs.getAll(); ae.hasMore(); ) {
-                                javax.naming.directory.Attribute attr = (javax.naming.directory.Attribute) ae.next();
-                                List<String> valueList = new ArrayList<String>();
-                                String key = attr.getID();
-                                for (NamingEnumeration e = attr.getAll(); e.hasMore(); ) {
-                                    Object o = e.next();
-                                    if (o instanceof byte[]) {
-                                        valueList.add(Hex.encodeHexString((byte[]) o));
-                                    } else if (o.toString() != null) {
-                                        valueList.add(o.toString());
-                                    }
+                    if (attrs != null) {
+                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore(); ) {
+                            javax.naming.directory.Attribute attr = (javax.naming.directory.Attribute) ae.next();
+                            List<String> valueList = new ArrayList<String>();
+                            String key = attr.getID();
+                            for (NamingEnumeration e = attr.getAll(); e.hasMore(); ) {
+                                Object o = e.next();
+                                if (o instanceof byte[]) {
+                                    valueList.add(Hex.encodeHexString((byte[]) o));
+                                } else if (o.toString() != null) {
+                                    valueList.add(o.toString());
                                 }
-                                if (valueList.size() > 0) {
-                                    Attribute rowAttr = new Attribute();
-                                    rowAttr.populateAttribute(key, valueList);
-                                    rowObj.put(key, rowAttr);
+                            }
+                            if (valueList.size() > 0) {
+                                Attribute rowAttr = new Attribute();
+                                rowAttr.populateAttribute(key, valueList);
+                                rowObj.put(key, rowAttr);
                             }
                         }
 

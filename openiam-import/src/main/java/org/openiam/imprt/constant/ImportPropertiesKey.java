@@ -2,7 +2,7 @@ package org.openiam.imprt.constant;
 
 /**
  * Class contains constant for all PropertiesKey<br>
- * 
+ *
  * @author Alexander Duckardt
  */
 public enum ImportPropertiesKey {
@@ -24,6 +24,9 @@ public enum ImportPropertiesKey {
 
 
     // database tables mappings
+    //Very important!! Each columnName should starts with <TABLE NAME>_.
+    // For exampe if Table Name = USERS,
+    //each column name for USERS should start with USERS_
     //USERS
     USERS("openiam.table.user"),
     USERS_USER_ID("openiam.table.user.id"),

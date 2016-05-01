@@ -16,12 +16,12 @@ import java.util.*;
 
 /**
  * AbstractJDBCAgent is abstract class for JDBC connection implementation
- * 
+ *
  * @author D.Zaporozhec
- * 
  * @param <E>
- *            - E extends BaseEntity
- * 
+ * - E extends BaseEntity
+ * @param <E>
+ * @param <E>
  */
 /**
  *
@@ -30,7 +30,7 @@ import java.util.*;
 
 /**
  * @author legebokov
- * 
+ *
  * @param <E>
  */
 public abstract class AbstractJDBCAgent<E> {
@@ -46,35 +46,45 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Get field name with primary key
-     * 
+     *
      * @return
      */
     abstract protected ImportPropertiesKey getPrimaryKeyName();
 
     /**
      * Get table name
-     * 
+     *
      * @return
      */
     abstract protected ImportPropertiesKey getTableName();
 
     /**
      * Get columns list for table
-     * 
+     *
      * @return
      */
-    abstract protected ImportPropertiesKey[] getColumnsName();
+    protected ImportPropertiesKey[] getColumnsName() {
+        final String prefix = this.getTableName().name() + "_";
+        List<ImportPropertiesKey> result = new ArrayList<ImportPropertiesKey>();
+        for (ImportPropertiesKey key : ImportPropertiesKey.values()) {
+            if (key.name().startsWith(prefix)) {
+                result.add(key);
+            }
+        }
+
+        return result.toArray(new ImportPropertiesKey[result.size()]);
+    }
 
     /**
      * Get Entity class object
-     * 
+     *
      * @return
      */
     abstract protected Class<E> getClazz();
 
     /**
      * Parsing entity to entry object
-     * 
+     *
      * @param e
      * @param key
      * @param value
@@ -84,7 +94,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Parsing entity list to entry objects list
-     * 
+     *
      * @param list
      * @param column
      * @param entity
@@ -116,7 +126,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Close connect to database
-     * 
+     *
      * @throws SQLException
      */
     protected void disconnect() throws SQLException {
@@ -126,7 +136,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Execute SQL query
-     * 
+     *
      * @param sel
      * @return
      * @throws Exception
@@ -156,7 +166,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Execute SQL query with return count
-     * 
+     *
      * @param select
      * @return
      * @throws SQLException
@@ -176,7 +186,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Execute SQL query with specify columns
-     * 
+     *
      * @param select
      * @param columns
      * @return
@@ -206,7 +216,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Execute SQL query for delete record
-     * 
+     *
      * @param tableName
      * @param keyName
      * @param keyValue
@@ -224,7 +234,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Execute SQL query
-     * 
+     *
      * @param valuesAll
      * @param isMySql
      * @return
@@ -271,7 +281,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Execute SQL query with update statement
-     * 
+     *
      * @param isMysql
      * @throws Exception
      */
@@ -288,7 +298,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Initialize new batch
-     * 
+     *
      * @param add
      * @throws Exception
      */
@@ -299,7 +309,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Execute SQL query for add new records
-     * 
+     *
      * @param addQuery
      * @param lists
      * @throws Exception
@@ -315,7 +325,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Execute SQL query for get count
-     * 
+     *
      * @param e
      * @param tableName
      * @return
@@ -341,7 +351,7 @@ public abstract class AbstractJDBCAgent<E> {
 
     /**
      * Execute SQL query for get result count
-     * 
+     *
      * @param e
      * @param tableName
      * @param resultIndexColumn
@@ -365,7 +375,6 @@ public abstract class AbstractJDBCAgent<E> {
         }
         return result;
     }
-
 
 
 }

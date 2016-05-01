@@ -35,59 +35,6 @@ public class SyncConfigEntityParser extends BaseParser<SynchConfigEntity>  {
     }
 
     @Override
-    protected ImportPropertiesKey[] getColumnsName() {
-        List<ImportPropertiesKey> keysss = new ArrayList<ImportPropertiesKey>();
-        keysss.addAll(Arrays.asList(
-                ImportPropertiesKey.SYNCH_CONFIG_ID,
-                ImportPropertiesKey.SYNCH_CONFIG_NAME,
-                ImportPropertiesKey.SYNCH_CONFIG_STATUS,
-                ImportPropertiesKey.SYNCH_CONFIG_SYNCH_SRC,
-                ImportPropertiesKey.SYNCH_CONFIG_FILE_NAME,
-                ImportPropertiesKey.SYNCH_CONFIG_SRC_LOGIN_ID,
-                ImportPropertiesKey.SYNCH_CONFIG_SRC_PASSWORD,
-                ImportPropertiesKey.SYNCH_CONFIG_SRC_HOST,
-                ImportPropertiesKey.SYNCH_CONFIG_DRIVER,
-                ImportPropertiesKey.SYNCH_CONFIG_CONNECTION_URL,
-                ImportPropertiesKey.SYNCH_CONFIG_QUERY,
-                ImportPropertiesKey.SYNCH_CONFIG_QUERY_TIME_FIELD,
-                ImportPropertiesKey.SYNCH_CONFIG_BASE_DN,
-                ImportPropertiesKey.SYNCH_CONFIG_LAST_EXEC_TIME,
-                ImportPropertiesKey.SYNCH_CONFIG_LAST_REC_PROCESSED,
-                ImportPropertiesKey.SYNCH_CONFIG_MANAGED_SYS_ID,
-                ImportPropertiesKey.SYNCH_CONFIG_LOAD_MATCH_ONLY,
-                ImportPropertiesKey.SYNCH_CONFIG_UPDATE_ATTRIBUTE,
-                ImportPropertiesKey.SYNCH_CONFIG_SYNCH_FREQUENCY,
-                ImportPropertiesKey.SYNCH_CONFIG_SYNCH_TYPE,
-                ImportPropertiesKey.SYNCH_CONFIG_DELETE_RULE,
-                ImportPropertiesKey.SYNCH_CONFIG_PROCESS_RULE,
-                ImportPropertiesKey.SYNCH_CONFIG_VALIDATION_RULE,
-                ImportPropertiesKey.SYNCH_CONFIG_TRANSFORMATION_RULE,
-                ImportPropertiesKey.SYNCH_CONFIG_MATCH_FIELD_NAME,
-                ImportPropertiesKey.SYNCH_CONFIG_MATCH_MANAGED_SYS_ID,
-                ImportPropertiesKey.SYNCH_CONFIG_MATCH_SRC_FIELD_NAME,
-                ImportPropertiesKey.SYNCH_CONFIG_CUSTOM_MATCH_RULE,
-                ImportPropertiesKey.SYNCH_CONFIG_CUSTOM_ADAPTER_SCRIPT,
-                ImportPropertiesKey.SYNCH_CONFIG_CUSTOM_MATCH_ATTR,
-                ImportPropertiesKey.SYNCH_CONFIG_WS_URL,
-                ImportPropertiesKey.SYNCH_CONFIG_USE_POLICY_MAP,
-                ImportPropertiesKey.SYNCH_CONFIG_USE_TRANSFORM_SCRIPT,
-                ImportPropertiesKey.SYNCH_CONFIG_POLICY_MAP_BEFORE_TRANSFORM,
-                ImportPropertiesKey.SYNCH_CONFIG_USE_SYSTEM_PATH,
-                ImportPropertiesKey.SYNCH_CONFIG_PRE_SYNC_SCRIPT,
-                ImportPropertiesKey.SYNCH_CONFIG_POST_SYNC_SCRIPT,
-                ImportPropertiesKey.SYNCH_CONFIG_COMPANY_ID,
-                ImportPropertiesKey.SYNCH_CONFIG_ATTRIBUTE_NAMES_LOOKUP,
-                ImportPropertiesKey.SYNCH_CONFIG_SEARCH_SCOPE,
-                ImportPropertiesKey.SYNCH_CONFIG_WS_URI,
-                ImportPropertiesKey.SYNCH_CONFIG_WS_NAME_SPACE,
-                ImportPropertiesKey.SYNCH_CONFIG_WS_OPERATION,
-                ImportPropertiesKey.SYNCH_CONFIG_WS_TARGET_ENTITY_PATH,
-                ImportPropertiesKey.SYNCH_CONFIG_WS_ATTRIBUTES_STRING));
-
-        return keysss.toArray(new ImportPropertiesKey[0]);
-    }
-
-    @Override
     protected Class<SynchConfigEntity> getClazz() {
         return SynchConfigEntity.class;
     }
