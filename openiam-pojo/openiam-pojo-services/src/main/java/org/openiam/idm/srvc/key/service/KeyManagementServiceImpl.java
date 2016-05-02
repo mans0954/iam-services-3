@@ -890,4 +890,73 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
         KeyManagementService service = (KeyManagementService)ac.getBean("keyManagementService");
         return service;
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void generateKeysForUserList(List<String> userIds)throws Exception{
+        byte[] masterKey = getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
+        if (masterKey == null || masterKey.length == 0) {
+            throw new NullPointerException("Cannot get master key to encrypt user keys");
+        }
+
+        HashMap<String, List<LoginEntity>> loginMap = getLoginMap(userIds);
+        HashMap<String, List<UserKey>> userKeyMap = getUserKeyMap(userIds);
+
+
+        HashMap<String, UserSecurityWrapper> userSecurityMap = new HashMap<String, UserSecurityWrapper>();
+        HashMap<String, UserSecurityWrapper> userSecurityMapToDecript = new HashMap<String, UserSecurityWrapper>();
+
+        for (String userId : userIds) {
+            UserSecurityWrapper usw = new UserSecurityWrapper();
+            usw.setUserId(userId);
+            usw.setLoginList(loginMap.get(userId));
+            usw.setUserKeyList(userKeyMap.get(userId));
+            userSecurityMap.put(userId, usw);
+        }
+
+        List<UserKey> newUserKeyList = new ArrayList<>();
+
+        for (String userId : userSecurityMap.keySet()) {
+            List<UserKey> userKeyList = userSecurityMap.get(userId).getUserKeyList();
+            if(CollectionUtils.isNotEmpty(userKeyList)) {
+                decryptUserData(masterKey, userSecurityMap.get(userId));
+            }
+        }
+
+        encryptData(masterKey, userSecurityMap, newUserKeyList);
+        for (String userId : userSecurityMap.keySet()) {
+            userKeyDao.deleteByUserId(userId);
+        }
+        addUserKeys(newUserKeyList);
+    }
+
+
+    private HashMap<String, List<LoginEntity>> getLoginMap(List<String> userIds) {
+        HashMap<String, List<LoginEntity>> lgMap = new HashMap<String, List<LoginEntity>>();
+
+        List<LoginEntity> loginList = loginDAO.findByUserIds(userIds, null);
+        if (CollectionUtils.isNotEmpty(loginList)) {
+            for (LoginEntity lg : loginList) {
+                if (!lgMap.containsKey(lg.getUserId())) {
+                    lgMap.put(lg.getUserId(), new ArrayList<LoginEntity>());
+                }
+                lgMap.get(lg.getUserId()).add(lg);
+            }
+        }
+        return lgMap;
+    }
+    private HashMap<String, List<UserKey>> getUserKeyMap(List<String> userIds) throws Exception {
+        HashMap<String, List<UserKey>> keyMap = new HashMap<String, List<UserKey>>();
+
+        List<UserKey> userKeyList= userKeyDao.getByUserIdsKeyName(userIds, null);
+        if (CollectionUtils.isNotEmpty(userKeyList)) {
+
+            for (UserKey key : userKeyList) {
+                if (!keyMap.containsKey(key.getUserId())) {
+                    keyMap.put(key.getUserId(), new ArrayList<UserKey>());
+                }
+                keyMap.get(key.getUserId()).add(key);
+            }
+        }
+        return keyMap;
+    }
 }

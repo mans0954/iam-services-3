@@ -41,4 +41,6 @@ public interface KeyManagementService {
     public String decrypt(String userId, KeyName keyName, String encryptedData)throws Exception;
     public String decrypt(byte[] key, String encryptedData)throws Exception;
 
+    public void generateKeysForUserList(List<String> userIds)throws Exception;
+
 }
