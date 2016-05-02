@@ -60,52 +60,9 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 	}
 
 	@Override
-	public SSOLoginResponse getCookieFromProxyURIAndPrincipal(final String proxyURI, final String principal, final String method) {
-		final SSOLoginResponse wsResponse = new SSOLoginResponse(ResponseStatus.SUCCESS);
-		try {
-			final AuthenticationRequest loginRequest = uriFederationService.createAuthenticationRequest(principal, proxyURI, getMethod(method));
-			loginRequest.setLanguageId("1"); //set default
-			loginRequest.setKerberosAuth(true);
-			final AuthenticationResponse loginResponse = authenticationService.login(loginRequest);
-			if(ResponseStatus.SUCCESS.equals(loginResponse.getStatus())) {
-				final Subject subject = loginResponse.getSubject();
-				if(subject == null) {
-					throw new BasicDataServiceException(ResponseCode.NO_SUBJECT);
-				}
-				final SSOToken ssoToken = subject.getSsoToken();
-				if(ssoToken == null) {
-					throw new BasicDataServiceException(ResponseCode.NO_SSO_TOKEN);
-				}
-				wsResponse.setSsoToken(ssoToken);
-			} else {
-				wsResponse.fail();
-				wsResponse.setLoginError(loginResponse.getErrorCode());
-				LOG.warn(String.format("Login attempt unsuccessful for principal '%s', proxyURI '%s', loginRequest: '%s', loginResponse: '%s'", 
-										principal, proxyURI, loginRequest, loginResponse));
-			}
-			wsResponse.setOpeniamPrincipal(loginRequest.getPrincipal());
-		} catch(BasicDataServiceException e) {
-			wsResponse.fail();
-			wsResponse.setErrorText(e.getMessage());
-			wsResponse.setErrorCode(e.getCode());
-			LOG.warn("Cannot getCookieFromProxyURIAndPrincipal()", e);
-		} catch(Throwable e) {
-			wsResponse.fail();
-			wsResponse.setErrorText(e.getMessage());
-			LOG.error("Cannot getCookieFromProxyURIAndPrincipal()", e);
-		}
-		return wsResponse;
-	}
-
-	@Override
 	public URIFederationResponse getMetadata(String proxyURI, final String method) {
 		return uriFederationService.getMetadata(proxyURI, getMethod(method));
     }
-
-	@Override
-	public void sweep() {
-		((Sweepable)uriFederationService).sweep();
-	}
 
 	@Override
 	public ContentProvider getCachedContentProvider(String providerId) {

@@ -24,27 +24,11 @@ public interface URIFederationWebService {
 										   @WebParam(name = "proxyURI", targetNamespace = "") final String proxyURI,
 										   @WebParam(name = "method", targetNamespace = "") final String method);
 	
-	/**
-	 * Method called by Reverse Proxy via SOAP Request
-	 * Calculates a user's cookie based on the principal and the proxyURI.  If the proxyURI matches an existing Content Provider, the system will look up the user's information based on the given
-	 * principal and the Managed System of the Content Provider.
-	 * @param proxyURI - the FULL <b>PROXY</b> URI being accessed.  i.e. http://www.openiam.com/appContext/index.html
-	 * @param principal - the principal for this request.  Must correspond to the managed system of the Content Provider found from the <b>proxyURI</b> parameter
-	 * @return a Response that contains the SSOToken
-	 */
-	SSOLoginResponse getCookieFromProxyURIAndPrincipal(@WebParam(name = "proxyURI", targetNamespace = "") final String proxyURI,
-													   @WebParam(name = "principal", targetNamespace = "") final String principal,
-													   @WebParam(name = "method", targetNamespace = "") final String method);
-	
 	URIFederationResponse getMetadata(@WebParam(name = "proxyURI", targetNamespace = "") final String proxyURI,
 									  @WebParam(name = "method", targetNamespace = "") final String method);
 	
 	ContentProvider getCachedContentProvider(@WebParam(name = "providerId", targetNamespace = "") final String providerId);
 	
 	URIPattern getCachedURIPattern(@WebParam(name = "patternId", targetNamespace = "") final String patternId);
-	
-	/**
-	 * Refreshes the internal cache.  Should NOT be called externally.  Used for Unit testing purposes only
-	 */
-	void sweep();
+
 }
