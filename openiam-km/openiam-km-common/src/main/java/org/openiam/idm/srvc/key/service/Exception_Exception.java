@@ -10,7 +10,7 @@ import javax.xml.ws.WebFault;
  * Generated source version: 2.2
  * 
  */
-@WebFault(name = "Exception", targetNamespace = "urn:idm.openiam.org/srvc/res/service")
+@WebFault(name = "Exception", targetNamespace = "urn:idm.openiam.org/srvc/key/service")
 public class Exception_Exception
     extends java.lang.Exception
 {

@@ -8,12 +8,12 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for initKeyManagementResponse complex type.
+ * <p>Java class for generateKeysForUserListResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="initKeyManagementResponse">
+ * &lt;complexType name="generateKeysForUserListResponse">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
@@ -27,10 +27,10 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "initKeyManagementResponse", propOrder = {
+@XmlType(name = "generateKeysForUserListResponse", propOrder = {
     "_return"
 })
-public class InitKeyManagementResponse {
+public class GenerateKeysForUserListResponse {
 
     @XmlElement(name = "return")
     protected Response _return;
