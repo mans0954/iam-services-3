@@ -45,6 +45,7 @@ public class AuthenticationContext extends AuthenticationRequest {
 		super.setRequestSource(request.getRequestSource());
 		super.setSocialUserProfile(request.getSocialUserProfile());
 		super.setKerberosAuth(request.isKerberosAuth());
+		super.setCertAuth(request.isCertAuth());
 	}
 
 	public String getAuthProviderId() {
@@ -62,14 +63,4 @@ public class AuthenticationContext extends AuthenticationRequest {
 	public void setEvent(IdmAuditLogEntity event) {
 		this.event = event;
 	}
-
-
-	public void setSkipPasswordCheck(boolean skipPasswordCheck) {
-
-	}
-
-	public boolean isSkipPasswordCheck() {
-		return false;
-	}
-
 }

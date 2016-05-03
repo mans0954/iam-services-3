@@ -68,6 +68,12 @@ public enum ResponseCode {
     @XmlEnumValue("membershipExists")
     MEMBERSHIP_EXISTS("membershipExists"),
 
+    @XmlEnumValue("METADATA_INVALID")
+    METADATA_INVALID("METADATA_INVALID"),
+    
+    @XmlEnumValue("CERT_CONFIG_INVALID")
+    CERT_CONFIG_INVALID("CERT_CONFIG_INVALID"),
+    
     @XmlEnumValue("resourceTypesNotEqual")
     RESOURCE_TYPES_NOT_EQUAL("resourceTypesNotEqual"),
 

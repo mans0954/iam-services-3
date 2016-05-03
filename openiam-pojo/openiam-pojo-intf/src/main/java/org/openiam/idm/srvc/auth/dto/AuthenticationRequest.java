@@ -19,7 +19,8 @@ import javax.xml.bind.annotation.XmlType;
         "methodId",
         "socialUserProfile",
         "authPolicyId",
-        "kerberosAuth"
+        "kerberosAuth",
+        "certAuth"
 })
 public class AuthenticationRequest {
 	private String languageId;
@@ -34,6 +35,7 @@ public class AuthenticationRequest {
     private String socialUserProfile; // user profile in socials networks
     
     private boolean kerberosAuth; //IDMAPPS-3590 - kerberos auth means no password checking
+    private boolean certAuth; //IDMAPPS-3686 - Skip Password Checking for Certificate-based authentication
 
     public AuthenticationRequest() {
     }
@@ -125,5 +127,14 @@ public class AuthenticationRequest {
     public void setAuthPolicyId(String authPolicyId) {
         this.authPolicyId = authPolicyId;
     }
+
+	public boolean isCertAuth() {
+		return certAuth;
+	}
+
+	public void setCertAuth(boolean certAuth) {
+		this.certAuth = certAuth;
+	}
+    
     
 }

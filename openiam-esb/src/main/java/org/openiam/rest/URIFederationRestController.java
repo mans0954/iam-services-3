@@ -1,33 +1,43 @@
 package org.openiam.rest;
 
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.security.cert.X509Certificate;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.am.srvc.dto.ContentProvider;
-import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.am.cert.groovy.DefaultCertToIdentityConverter;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
+import org.openiam.am.srvc.uriauth.dto.URIAuthLevelAttribute;
+import org.openiam.am.srvc.uriauth.dto.URIAuthLevelToken;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Used by the OpenIAM proxy for just about every single HTTP Request.
@@ -40,6 +50,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RestController
 @RequestMapping("/auth/proxy/")
 public class URIFederationRestController {
+	
+	@Value("${org.openiam.auth.level.cert.id}")
+	private String certAuthLevelId;
+	
+	@Value("${org.openiam.metadata.type.cert.auth.regex}")
+	private String authLevelRegex;
+	
+	@Value("${org.openiam.metadata.type.cert.auth.regex.script}")
+	private String authLevelRegexScript;
 
 	private static final Log LOG = LogFactory.getLog(URIFederationRestController.class);
 
@@ -48,6 +67,10 @@ public class URIFederationRestController {
 	
 	@Autowired
 	private AuthenticationService authenticationService;
+	
+	@Autowired
+	@Qualifier("configurableGroovyScriptEngine")
+	private ScriptIntegration scriptIntegration;
 	
 	private Map<String, HttpMethod> httpMethodMap = new HashMap<String, HttpMethod>();
 	
@@ -119,7 +142,81 @@ public class URIFederationRestController {
 
 	@RequestMapping(value="/metadata", method=RequestMethod.GET)
 	public @ResponseBody URIFederationResponse getMetadata(final @RequestParam(required=true, value="proxyURI") String proxyURI, 
-											 final @RequestParam(required=true, value="method") String method) {
+											 			   final @RequestParam(required=true, value="method") String method) {
 		return uriFederationService.getMetadata(proxyURI, getMethod(method));
     }
+	
+	@RequestMapping(value="/cert/identity", method=RequestMethod.POST)
+	public @ResponseBody LoginResponse getIdentityFromCert(final @RequestParam(value="proxyURI", required=true) String proxyURI,
+															  final @RequestParam(required=true, value="method") String method,
+															  final @RequestParam(value="cert", required=true) MultipartFile certContents) {
+		final LoginResponse wsResponse = new LoginResponse();
+		try {
+			final URIFederationResponse metadata = uriFederationService.getMetadata(proxyURI, getMethod(method));
+			if(metadata.isFailure()) {
+				throw new BasicDataServiceException(ResponseCode.METADATA_INVALID);
+			}
+			
+			if(CollectionUtils.isEmpty(metadata.getAuthLevelTokenList())) {
+				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+			}
+			
+			final URIAuthLevelToken authLevel = metadata.getAuthLevelTokenList().stream().filter(e -> e.getAuthLevelId().equals(certAuthLevelId)).findAny().orElse(null);
+			if(authLevel == null) {
+				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+			}
+			
+			if(CollectionUtils.isEmpty(authLevel.getAttributes())) {
+				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+			}
+			
+			final URIAuthLevelAttribute authLevelRegexAttribute = authLevel.getAttributes().stream().filter(e -> e.getTypeId().equals(authLevelRegex)).findFirst().orElse(null);
+			final URIAuthLevelAttribute authLevelRegexScriptAttribute = authLevel.getAttributes().stream().filter(e -> e.getTypeId().equals(authLevelRegexScript)).findFirst().orElse(null);
+			
+			if(authLevelRegexAttribute == null && authLevelRegexScriptAttribute == null) {
+				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+			}
+			
+			final String regex = (authLevelRegexAttribute != null) ? StringUtils.trimToNull(authLevelRegexAttribute.getValueAsString()) : null;
+			final String regexScript = (authLevelRegexScriptAttribute != null) ? StringUtils.trimToNull(authLevelRegexScriptAttribute.getValueAsString()) : null;
+			if(StringUtils.isBlank(regex) && StringUtils.isBlank(regexScript)) {
+				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+			}
+			
+			final X509Certificate clientCert = X509Certificate.getInstance(new ByteArrayInputStream(certContents.getBytes()));
+			DefaultCertToIdentityConverter certToIdentityConverter;
+			if(regex != null) {
+				certToIdentityConverter = new DefaultCertToIdentityConverter();
+				certToIdentityConverter.setClientDNRegex(regex);
+			} else {
+				if(!scriptIntegration.scriptExists(regexScript)) {
+					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+				}
+				certToIdentityConverter = (DefaultCertToIdentityConverter)scriptIntegration.instantiateClass(null, regexScript);
+				if(certToIdentityConverter == null) {
+					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+				}
+			}
+			
+			certToIdentityConverter.setCertficiate(clientCert);
+			certToIdentityConverter.init();
+			final Login login = certToIdentityConverter.resolve();
+			if(login == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN);
+			}
+			wsResponse.setPrincipal(login);
+			wsResponse.succeed();
+		} catch(BasicDataServiceException e) {
+			wsResponse.fail();
+			wsResponse.setErrorText(e.getMessage());
+			wsResponse.setErrorCode(e.getCode());
+			LOG.info("Cannot cert identity", e);
+		} catch(Throwable e) {
+			wsResponse.fail();
+			wsResponse.setErrorText(e.getMessage());
+			LOG.warn("Cannot cert identity", e);
+		}
+		
+		return wsResponse;
+	}
 }
