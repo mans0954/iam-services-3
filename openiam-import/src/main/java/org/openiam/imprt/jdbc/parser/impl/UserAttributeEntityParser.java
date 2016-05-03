@@ -94,7 +94,7 @@ public class UserAttributeEntityParser extends BaseParser<UserAttributeEntity> {
                 break;
             }
             case USER_ATTRIBUTES_IS_MULTIVALUED: {
-                list.add(entity.getIsMultivalued());
+                list.add((entity.getIsMultivalued()?"Y":"N");
                 break;
             }
             default:
