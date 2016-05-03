@@ -87,10 +87,10 @@ public class CompanyEntityParser extends BaseParser<OrganizationEntity> {
                     entity.setSymbol(value);
                     break;
                 case COMPANY_ORG_TYPE_ID:
-                    entity.setOrganizationTypeId(value);
+                    entity.setOrganizationType(value);
                     break;
                 case COMPANY_ADMIN_RESOURCE_ID:
-                    entity.setAdminResourceId(value);
+                    entity.setAdminResource(new ResourceEntityParser().getById(value));
                     break;
                 case COMPANY_IS_SELECTABLE:
                     entity.setSelectable(value.equals("Y")?true:false);

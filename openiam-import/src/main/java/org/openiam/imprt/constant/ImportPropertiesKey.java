@@ -299,6 +299,12 @@ public enum ImportPropertiesKey {
     USER_AFFILIATION_CREATE_DATE("openiam.table.userAffiliation.createDate"),
     USER_AFFILIATION_METADATA_TYPE_ID("openiam.table.userAffiliation.metadateTypeId"),
 
+    //ORGANIZATION_TYPE
+    ORGANIZATION_TYPE("openiam.table.organizationType"),
+    ORGANIZATION_TYPE_ORG_TYPE_ID("openiam.table.organizationType.id"),
+    ORGANIZATION_TYPE_NAME("openiam.table.organizationType.name"),
+    ORGANIZATION_TYPE_DESCRIPTION("openiam.table.organizationType.description"),
+
     //SYNC_CONFIG
     SYNCH_CONFIG("openiam.table.syncConfig"),
     SYNCH_CONFIG_ID("openiam.table.syncConfig.id"),

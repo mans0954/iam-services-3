@@ -66,7 +66,7 @@ public class GroupEntityParser extends BaseParser<GroupEntity> {
                     entity.setManagedSystemId(value);
                     break;
                 case GRP_ADMIN_RESOURCE_ID:
-                    entity.setAdminResourceId(value);
+                    entity.setAdminResource(new ResourceEntityParser().getById(value));
                     break;
                 case GRP_TYPE_ID:
                     entity.setType(new MetadataTypeEntityParser().getById(value));
