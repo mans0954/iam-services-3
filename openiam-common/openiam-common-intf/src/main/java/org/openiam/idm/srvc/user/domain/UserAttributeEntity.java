@@ -42,6 +42,11 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
     public UserAttributeEntity() {
     }
 
+	public UserAttributeEntity(String name, String value) {
+		this.value = value;
+		this.name = name;
+	}
+
 	public List<String> getValues() {
 		return values;
 	}

@@ -3,11 +3,19 @@ package org.openiam.imprt;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.jdbc.DataSource;
 import org.openiam.imprt.jdbc.parser.impl.SyncConfigEntityParser;
@@ -17,6 +25,7 @@ import org.openiam.imprt.model.Attribute;
 import org.openiam.imprt.model.LineObject;
 import org.openiam.imprt.query.SelectQueryBuilder;
 import org.openiam.imprt.util.DataHolder;
+import org.openiam.imprt.util.Transformation;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -29,6 +38,8 @@ import javax.naming.ldap.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -161,8 +172,20 @@ public class ImportProcessor {
                 }
             } while (cookie != null);
         }
+        //**************************************************************************************************************
         // do transform and insert/update and commit
         // TODO: transform logic here
+        UserEntity user = null;
+        Transformation tr = new Transformation();
+
+
+        for (LineObject lo: processingData) {
+            user = new UserEntity();
+            tr.execute(lo, user);
+
+        }
+        //**************************************************************************************************************
+
         // do generate user keys
         KeyManagementWSClient keyManagementWSClient = new KeyManagementWSClient(DataHolder.getInstance().getProperty(ImportPropertiesKey.KEY_SERVICE_WSDL));
         // TODO: need to pass collected user ids on the previos step.
@@ -170,7 +193,6 @@ public class ImportProcessor {
         // do reindex
         // for now need to restart jboss ))) not enough time to integrate lucene
     }
-
 
     private LdapContext connect(SynchConfigEntity syncConfig) throws NamingException {
 
