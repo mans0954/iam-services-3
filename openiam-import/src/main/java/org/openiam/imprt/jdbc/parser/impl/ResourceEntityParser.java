@@ -41,9 +41,9 @@ public class ResourceEntityParser extends BaseParser<ResourceEntity> {
                 case RES_RESOURCE_ID:
                     entity.setId(value);
                     break;
-                case RES_RESOURCE_TYPE_ID:
-                    entity.setResourceTypeId(value);
-                    break;
+//                case RES_RESOURCE_TYPE_ID:
+//                    entity.setResourceTypeId(value);
+//                    break;
                 case RES_DESCRIPTION:
                     entity.setDescription(value);
                     break;
@@ -62,15 +62,15 @@ public class ResourceEntityParser extends BaseParser<ResourceEntity> {
                 case RES_IS_PUBLIC:
                     entity.setIsPublic(value.equals("Y") ? true : false);
                     break;
-                case RES_ADMIN_RESOURCE_ID:
-                    entity.setAdminResourceId(value);
-                    break;
-                case RES_RISK:
-                    entity.setRisk(value);
-                    break;
-                case RES_TYPE_ID:
-                    entity.setTypeId(value);
-                    break;
+//                case RES_ADMIN_RESOURCE_ID:
+//                    entity.setAdminResourceId(value);
+//                    break;
+//                case RES_RISK:
+//                    entity.setRisk(value);
+//                    break;
+//                case RES_TYPE_ID:
+//                    entity.setTypeId(value);
+//                    break;
                 case RES_COORELATED_NAME:
                     entity.setCoorelatedName(value);
                     break;

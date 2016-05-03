@@ -44,9 +44,9 @@ public class OrganizationUserEntityParser extends BaseParser<OrganizationUserEnt
                 case USER_AFFILIATION_USER_ID:
                     entity.setUser(new UserEntityParser().getById(value));
                     break;
-                case USER_AFFILIATION_CREATE_DATE:
-                    entity.setCreateDate(Utils.getDate(value));
-                    break;
+//                case USER_AFFILIATION_CREATE_DATE:
+//                    entity.setCreateDate(Utils.getDate(value));
+//                    break;
                 case USER_AFFILIATION_METADATA_TYPE_ID:
                     entity.setMetadataTypeEntity(new MetadataTypeEntityParser().getById(value));
                     break;
@@ -67,10 +67,10 @@ public class OrganizationUserEntityParser extends BaseParser<OrganizationUserEnt
                 list.add(entity.getUser().getId());
                 break;
             }
-            case USER_AFFILIATION_CREATE_DATE: {
-                list.add(entity.getCreateDate());
-                break;
-            }
+//            case USER_AFFILIATION_CREATE_DATE: {
+//                list.add(entity.getCreateDate());
+//                break;
+//            }
             case USER_AFFILIATION_METADATA_TYPE_ID: {
                 list.add(entity.getMetadataTypeEntity().getId());
                 break;

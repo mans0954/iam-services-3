@@ -62,9 +62,9 @@ public class GroupEntityParser extends BaseParser<GroupEntity> {
                 case GRP_LAST_UPDATED_BY:
                     entity.setLastUpdatedBy(value);
                     break;
-                case GRP_MANAGED_SYS_ID:
-                    entity.setManagedSystemId(value);
-                    break;
+//                case GRP_MANAGED_SYS_ID:
+//                    entity.setManagedSystemId(value);
+//                    break;
                 case GRP_ADMIN_RESOURCE_ID:
                     entity.setAdminResource(new ResourceEntityParser().getById(value));
                     break;

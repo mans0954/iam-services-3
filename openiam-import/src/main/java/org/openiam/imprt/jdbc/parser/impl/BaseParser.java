@@ -20,9 +20,8 @@ import java.util.List;
 
 /**
  * Base class for implement IBaseParser
- * 
+ *
  * @author D.Zaporozhec
- * 
  */
 abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBaseParser<E> {
 
@@ -32,14 +31,14 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * 123qweasdzxc Prepare parser
-     * 
+     *
      * @throws Exception
      */
     protected abstract void init() throws Exception;
 
     /**
      * Parsing entity to list of column with values
-     * 
+     *
      * @param entity
      * @return list of records
      */
@@ -55,7 +54,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * Create new object of SelectQueryBuilder
-     * 
+     *
      * @return
      */
     private SelectQueryBuilder getSelectQuery() {
@@ -64,7 +63,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * Get column list for entity
-     * 
+     *
      * @param isWithPK
      * @return
      */
@@ -85,7 +84,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * Get SelectQuery for column list
-     * 
+     *
      * @param columns
      * @return
      */
@@ -98,7 +97,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * Generate query for Add new record
-     * 
+     *
      * @return
      */
     private AddQueryBuilder getAddQuery() {
@@ -107,7 +106,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * Generate query for Add new record
-     * 
+     *
      * @param size
      * @return
      */
@@ -139,7 +138,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * Get primary key name
-     * 
+     *
      * @return
      */
     private String getPkName() {
@@ -200,6 +199,17 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
         return sqlResult;
     }
 
+    @Override
+    public List<E> get(String query) throws Exception {
+        init();
+        List<E> sqlResult = this.executeQuery(query, Arrays.asList(this.getAllColumns(false)));
+        if (sqlResult == null || sqlResult.isEmpty()) {
+            return null;
+        }
+        finish();
+        return sqlResult;
+    }
+
     /*
      * @inheritDoc
      * 
@@ -225,7 +235,6 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
     }
 
     /**
-     * 
      * @param e1
      * @param e2
      * @return
@@ -253,7 +262,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
     private ImportPropertiesKey[] union(ImportPropertiesKey[] e1, ImportPropertiesKey e2) {
         ImportPropertiesKey[] e = null;
         if (e2 != null) {
-            e = new ImportPropertiesKey[] { e2 };
+            e = new ImportPropertiesKey[]{e2};
         }
         return union(e1, e);
     }

@@ -47,4 +47,12 @@ public class Column {
         this.attribute = attribute;
     }
 
+    public Column(ImportPropertiesKey columnkey) {
+        super();
+        this.columnKey = columnkey;
+        this.column = DataHolder.getInstance().getProperty(columnkey);
+        this.attribute = null;
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package org.openiam.imprt.jdbc.parser.impl;
 
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.util.Utils;
@@ -55,12 +56,12 @@ public class RoleEntityParser extends BaseParser<RoleEntity> {
                 case ROLE_ROLE_ID:
                     entity.setId(value);
                     break;
-                case ROLE_MANAGED_SYS_ID:
-                    entity.setManagedSystemId(value);
-                    break;
-                case ROLE_ADMIN_RESOURCE_ID:
-                    entity.setAdminResourceId(value);
-                    break;
+//                case ROLE_MANAGED_SYS_ID:
+//                    entity.setManagedSystem(new ManagedSysEntity());
+//                    break;
+//                case ROLE_ADMIN_RESOURCE_ID:
+//                    entity.setAdminResourceId(value);
+//                    break;
                 case ROLE_TYPE_ID:
                     entity.setType(new MetadataTypeEntityParser().getById(value));
                     break;

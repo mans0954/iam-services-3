@@ -191,6 +191,14 @@ public enum ImportPropertiesKey {
     COMPANY_IS_SELECTABLE("openiam.table.company.isSelectable"),
     COMPANY_TYPE_ID("openiam.table.company.typeId"),
 
+    //COMPANY_ATTRIBUTE
+    COMPANY_ATTRIBUTE("openiam.table.company.attribute"),
+    COMPANY_ATTRIBUTE_ID("openiam.table.company.attribute.id"),
+    COMPANY_ATTRIBUTE_COMPANY_ID("openiam.table.company.attribute.companyId"),
+    COMPANY_ATTRIBUTE_NAME("openiam.table.company.attribute.name"),
+    COMPANY_ATTRIBUTE_VALUE("openiam.table.company.attribute.value"),
+
+
     //METADATA_TYPE
     METADATA_TYPE("openiam.table.metadataType"),
     METADATA_TYPE_TYPE_ID("openiam.table.metadataType.typeId"),

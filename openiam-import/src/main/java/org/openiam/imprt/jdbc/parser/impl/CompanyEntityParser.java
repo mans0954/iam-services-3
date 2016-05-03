@@ -1,6 +1,7 @@
 package org.openiam.imprt.jdbc.parser.impl;
 
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.util.Utils;
@@ -50,9 +51,9 @@ public class CompanyEntityParser extends BaseParser<OrganizationEntity> {
                 case COMPANY_LST_UPDATED_BY:
                     entity.setLstUpdatedBy(value);
                     break;
-                case COMPANY_PARENT_ID:
-                    entity.setParentOrganizationsId(value);
-                    break;
+//                case COMPANY_PARENT_ID:
+//                    entity.setParentOrganizationsId(value);
+//                    break;
                 case COMPANY_STATUS:
                     entity.setStatus(value);
                     break;
@@ -87,13 +88,15 @@ public class CompanyEntityParser extends BaseParser<OrganizationEntity> {
                     entity.setSymbol(value);
                     break;
                 case COMPANY_ORG_TYPE_ID:
-                    entity.setOrganizationType(value);
+                    OrganizationTypeEntity organizationTypeEntity = new OrganizationTypeEntity();
+                    organizationTypeEntity.setId(value);
+                    entity.setOrganizationType(organizationTypeEntity);
                     break;
                 case COMPANY_ADMIN_RESOURCE_ID:
                     entity.setAdminResource(new ResourceEntityParser().getById(value));
                     break;
                 case COMPANY_IS_SELECTABLE:
-                    entity.setSelectable(value.equals("Y")?true:false);
+                    entity.setSelectable(value.equals("Y") ? true : false);
                     break;
                 case COMPANY_TYPE_ID:
                     entity.setType(new MetadataTypeEntityParser().getById(value));
@@ -123,10 +126,10 @@ public class CompanyEntityParser extends BaseParser<OrganizationEntity> {
                 list.add(entity.getLstUpdatedBy());
                 break;
             }
-            case COMPANY_PARENT_ID: {
-                list.add(entity.getParentOrganizationsId());
-                break;
-            }
+//            case COMPANY_PARENT_ID: {
+//                list.add(entity.getParentOrganizationsId());
+//                break;
+//            }
             case COMPANY_STATUS: {
                 list.add(entity.getStatus());
                 break;

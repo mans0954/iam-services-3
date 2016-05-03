@@ -11,16 +11,15 @@ import java.util.List;
 
 /**
  * Class IBaseParser is public interface for all parsers implementation
- * 
- * @author D.Zaporozhec
- * 
+ *
  * @param <E>
+ * @author D.Zaporozhec
  */
 public interface IBaseParser<E> {
 
     /**
      * Get entity record by primary key for current table
-     * 
+     *
      * @param id
      * @return entity by primary key for current table
      * @throws Exception
@@ -29,7 +28,7 @@ public interface IBaseParser<E> {
 
     /**
      * Get record count for current table
-     * 
+     *
      * @return record count for current table
      * @throws Exception
      */
@@ -37,7 +36,7 @@ public interface IBaseParser<E> {
 
     /**
      * Get record list for current table by SQL Expression
-     * 
+     *
      * @param res
      * @return record list for current table by SQL Expression
      * @throws Exception
@@ -46,7 +45,7 @@ public interface IBaseParser<E> {
 
     /**
      * Get all record list for current table
-     * 
+     *
      * @return all record list for current table
      * @throws Exception
      */
@@ -54,7 +53,7 @@ public interface IBaseParser<E> {
 
     /**
      * Add new record for current table
-     * 
+     *
      * @param e
      * @return new added record for current table
      */
@@ -62,7 +61,7 @@ public interface IBaseParser<E> {
 
     /**
      * Delete record by ID for current table
-     * 
+     *
      * @param id
      * @throws Exception
      */
@@ -70,7 +69,7 @@ public interface IBaseParser<E> {
 
     /**
      * Delete record by some field for current table
-     * 
+     *
      * @param name
      * @param value
      * @throws Exception
@@ -79,18 +78,18 @@ public interface IBaseParser<E> {
 
     /**
      * Get record list for current table by SQL Expression and apply Sort Order
-     * 
+     *
      * @param expression
      * @param orderBy
      * @return record list for current table by SQL Expression and apply Sort
-     *         Order
+     * Order
      * @throws Exception
      */
     List<E> get(Expression expression, OrderByList orderBy) throws Exception;
 
     /**
      * Get record list for current table with specify columns
-     * 
+     *
      * @param columns
      * @return record list for current table with specify columns
      * @throws Exception
@@ -99,11 +98,11 @@ public interface IBaseParser<E> {
 
     /**
      * Get record list for current table by some SQL query with specify columns
-     * 
+     *
      * @param query
      * @param columns
      * @return record list for current table by some SQL query with specify
-     *         columns
+     * columns
      * @throws Exception
      */
     List<E> get(String query, List<Column> columns) throws Exception;
@@ -111,20 +110,20 @@ public interface IBaseParser<E> {
     /**
      * Get record list for current table with sorting and grouping for specify
      * columns
-     * 
+     *
      * @param expression
      * @param orderBy
      * @param groupBy
      * @param columns
      * @return record list for current table with sorting and grouping for
-     *         specify columns
+     * specify columns
      * @throws Exception
      */
     List<E> get(Expression expression, OrderByList orderBy, GroupBy groupBy, Column[] columns) throws Exception;
 
     /**
      * Get record list for current table with Expression apply sorting
-     * 
+     *
      * @param expression
      * @param orderBy
      * @param columns
@@ -135,9 +134,16 @@ public interface IBaseParser<E> {
 
     /**
      * Add list records for current table
-     * 
+     *
      * @param e
      * @throws Exception
      */
     void addAll(List<E> e) throws Exception;
+
+    /**
+     * @param query
+     * @return
+     * @throws Exception
+     */
+    public List<E> get(String query) throws Exception;
 }
