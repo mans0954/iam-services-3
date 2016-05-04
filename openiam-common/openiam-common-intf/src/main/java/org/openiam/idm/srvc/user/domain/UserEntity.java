@@ -279,8 +279,15 @@ public class UserEntity extends KeyEntity {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
+    /*
+     * Lev Bornovalov - 25/4/2016 - removed the @Cache annotation
+     * because updates using the phoneDAO directly did not propagate
+     * to this collection
+     * We *should* update everything via this collection only, and let cascade take
+     * care of it, but it's too complicated of a task at this point.
+     */
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
@@ -744,6 +751,15 @@ public class UserEntity extends KeyEntity {
 
     public Set<PhoneEntity> getPhones() {
         return phones;
+    }
+    
+    public void addPhone(final PhoneEntity phone) {
+    	if(phone != null) {
+    		if(this.phones == null) {
+    			this.phones = new HashSet<PhoneEntity>();
+    		}
+    		this.phones.add(phone);
+    	}
     }
 
     public void setPhones(Set<PhoneEntity> phones) {

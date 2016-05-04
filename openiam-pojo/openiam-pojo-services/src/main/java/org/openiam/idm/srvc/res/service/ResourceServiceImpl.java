@@ -177,7 +177,8 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "resourcePropEntityCache", key = "{ #sb, #from, #size}")
+    /* AM-851 */
+    //@Cacheable(value = "resourcePropEntityCache", key = "{ #sb, #from, #size}")
     public List<ResourcePropEntity> findBeans(final ResourcePropSearchBean sb, final int from, final int size) {
     	final List<ResourcePropEntity> props = resourcePropDao.getByExample(sb, from, size);
     	return props;
@@ -1017,7 +1018,8 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    @Cacheable(value = "resourceEntities", key = "{ #searchBean,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
+    /* AM-851 */
+    //@Cacheable(value = "resourceEntities", key = "{ #searchBean,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
         return resourceDao.getByExample(searchBean, from, size);
     }

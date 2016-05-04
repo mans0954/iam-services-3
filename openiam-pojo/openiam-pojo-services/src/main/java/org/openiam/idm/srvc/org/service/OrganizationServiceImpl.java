@@ -299,7 +299,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value = "organizationEntities", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
+    /*AM-851 */
+    //@Cacheable(value = "organizationEntities", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
         Set<String> filter = getDelegationFilter(requesterId, false);
         if(searchBean != null) {

@@ -6,6 +6,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 /**
  * Base object for all POJOs that represent domain objects.
@@ -45,6 +47,7 @@ public class BaseObject implements Serializable {
      * if true, means that the request is called as a 'test' - not as a real-world call 
      * the service code should (or should not) perform an action based on this flag 
      */
+    @JsonIgnore
     private boolean testRequest;
 
     public BaseObject() {

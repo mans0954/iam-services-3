@@ -9,7 +9,7 @@ import org.springframework.http.HttpMethod;
 
 public interface URIFederationService {
 
-	AuthenticationRequest createAuthenticationRequest(final String principal, final String proxyUR, final HttpMethod methodI) throws BasicDataServiceException;
+	AuthenticationRequest createAuthenticationRequest(final String principal, final String proxyURI, final HttpMethod method) throws BasicDataServiceException;
 	
 	URIFederationResponse federateProxyURI(final String userId, final String proxyURI, final HttpMethod method);
 	

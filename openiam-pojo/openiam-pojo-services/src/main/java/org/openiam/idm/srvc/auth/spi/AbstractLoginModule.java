@@ -200,7 +200,8 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
             throw new BasicDataServiceException(ResponseCode.INVALID_PRINCIPAL);
         }
 
-        if (StringUtils.isBlank(password) && !context.isKerberosAuth()) {
+        final boolean skipPasswordAuth = context.isKerberosAuth() || context.isCertAuth();
+        if (StringUtils.isBlank(password) && !skipPasswordAuth) {
             newLoginEvent.setFailureReason("Invalid Password");
             throw new BasicDataServiceException(ResponseCode.INVALID_PASSWORD);
         }

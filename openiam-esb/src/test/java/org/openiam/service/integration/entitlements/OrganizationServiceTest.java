@@ -153,57 +153,5 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 		return sb;
 	}
 
-	@Test
-	public void testSearchBeanCache() throws Exception {
-		for(int j = 0; j < 2; j++) {
-			final Organization organization = createOrganization();
-			final OrganizationSearchBean sb = getCacheableSearchBean(organization);
-			try {
-				searchAndAssertCacheHit(sb, organization, "organizationEntities");
-			} finally {
-				deleteAndAssert(organization);
-				sleep(1);
-				Assert.assertTrue(CollectionUtils.isEmpty(find(sb, 0, Integer.MAX_VALUE)));
-			}
-		}
-	}	
-	
-	@Test
-	public void testSearchBeanCacheAfterSave() {
-		final Organization organization = createOrganization();
-		List<Organization> orgs = null;
-		final OrganizationSearchBean sb = getCacheableSearchBean(organization);
-		try {
-			/* trigger and assert cache hit */
-			searchAndAssertCacheHit(sb, organization, "organizationEntities");
-		} finally {
-			deleteAndAssert(organization);
-		}
-	}
-	
-	@Test
-	public void testAddAndRemoveChildCachePurge() {
-		final Organization organization1 = createOrganization();
-		final Organization organization2 = createOrganization();
-		
-		try {
-			for(final Organization organization : new Organization[] {organization1, organization2}) {
-				final OrganizationSearchBean sb = getCacheableSearchBean(organization);
-				
-				/* trigger and assert cache hit */
-				searchAndAssertCacheHit(sb, organization, "organizationEntities");
-			}
-			
-			final Date now = new Date();
-			organizationServiceClient.addChildOrganization(organization1.getId(), organization2.getId(), getRequestorId(), null, null, null);
-			assertCachePurge(now, "organizationEntities", 2, 2);
-			
-		} finally {
-			for(final Organization organization : new Organization[] {organization1, organization2}) {
-				final OrganizationSearchBean sb = getCacheableSearchBean(organization);
-				deleteAndAssert(organization);
-			}
-		}
-	}
 }
 

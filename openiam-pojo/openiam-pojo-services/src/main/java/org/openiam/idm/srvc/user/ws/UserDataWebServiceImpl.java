@@ -554,7 +554,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
     //@Transactional(readOnly = true)
     public User getUserWithDependent(String id, String requestorId, boolean dependants) {
-        return userManager.getUserDto(id, requestorId, dependants);
+        final User user = userManager.getUserDto(id, requestorId, dependants);
+        return user;
     }
 
     @Override

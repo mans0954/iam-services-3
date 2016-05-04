@@ -94,29 +94,10 @@ public class DefaultLoginModule extends AbstractLoginModule {
     			}
     			AuthenticationResponse resp = ServiceLookupHelper.getAuthenticationService().login(authenticatedRequest);
 
-    			int resultCode = resp.getAuthErrorCode();
-    			
-    			switch (resultCode) {
-	                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
-	                    throw new FailedLoginException("RESULT_INVALID_DOMAIN");
-	                case AuthenticationConstants.RESULT_INVALID_LOGIN:
-	                    throw new FailedLoginException("RESULT_INVALID_LOGIN");
-	                case AuthenticationConstants.RESULT_INVALID_PASSWORD:
-	                    throw new FailedLoginException("RESULT_INVALID_PASSWORD");
-	                case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
-	                    throw new FailedLoginException("RESULT_INVALID_USER_STATUS");
-	                case AuthenticationConstants.RESULT_LOGIN_DISABLED:
-	                    throw new FailedLoginException("RESULT_LOGIN_DISABLED");
-	                case AuthenticationConstants.RESULT_LOGIN_LOCKED:
-	                    throw new FailedLoginException("RESULT_LOGIN_LOCKED");
-	                case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
-	                    throw new FailedLoginException("RESULT_PASSWORD_EXPIRED");
-	                case AuthenticationConstants.RESULT_INVALID_TOKEN:
-	                    throw new FailedLoginException("RESULT_INVALID_TOKEN");
-	                case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
-	                    throw new FailedLoginException("INVALID");
-	            }
-    			
+    			if(resp.getErrorCode() != null) {
+    				throw new FailedLoginException(resp.getErrorCode().name());
+    			}
+
     			ssoToken = resp.getSubject().getSsoToken();
     			username = ssoToken.getPrincipal();
     			

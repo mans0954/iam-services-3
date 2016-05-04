@@ -118,7 +118,8 @@ public class DefaultLoginModule extends AbstractLoginModule {
         tokenParam.put("PRINCIPAL", principal);
 
         // check the password
-        if(!context.isKerberosAuth()) {
+        final boolean skipPasswordCheck = (context.isKerberosAuth() || context.isCertAuth());
+        if(!skipPasswordCheck) {
 	        final String decryptPswd = this.decryptPassword(login.getUserId(), login.getPassword());
 	        if (decryptPswd != null && !decryptPswd.equals(password)) {
 	

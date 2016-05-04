@@ -234,7 +234,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "managedSysAttributeMaps", key = "{#managedSysId}")
+    /* AM-851 */
+    //@Cacheable(value = "managedSysAttributeMaps", key = "{#managedSysId}")
     public List<AttributeMapEntity> getAttributeMapsByManagedSysId(final String managedSysId) {
         List<AttributeMapEntity> attributeMaps = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
         return attributeMaps;

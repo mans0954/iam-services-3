@@ -410,9 +410,11 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			final ContentProviderNode cpNode = contentProviderTree.find(uri);
 			if(cpNode == null) {
 				response.setConfigured(false);
+				response.setCacheable(false); /* tell the proxy NOT to cache this */
 				//throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
 			} else {
 				response.setConfigured(true);
+				response.setCacheable(true);
 				cp = cpNode.getContentProvider();
 				final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
 				uriPattern = patternNode.getPattern();
