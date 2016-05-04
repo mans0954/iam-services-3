@@ -2,6 +2,8 @@ package org.openiam.imprt.jdbc.parser.impl;
 
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.util.Utils;
 
@@ -51,13 +53,15 @@ public class EmailAddressEntityParser extends BaseParser<EmailAddressEntity> {
                     entity.setEmailAddress(value);
                     break;
                 case EMAIL_ADDRESS_IS_DEFAULT:
-                    entity.setIsDefault(value.equals("Y")?true:false);
+                    entity.setIsDefault(value.equals("Y") ? true : false);
                     break;
                 case EMAIL_ADDRESS_ACTIVE:
-                    entity.setIsActive(value.equals("Y")?true:false);
+                    entity.setIsActive(value.equals("Y") ? true : false);
                     break;
                 case EMAIL_ADDRESS_PARENT_ID:
-                    entity.setParent(new UserEntityParser().getById(value));
+                    UserEntity user = new UserEntity();
+                    user.setId(value);
+                    entity.setParent(user);
                     break;
                 case EMAIL_ADDRESS_LAST_UPDATE:
                     entity.setLastUpdate(Utils.getDate(value));
@@ -66,7 +70,9 @@ public class EmailAddressEntityParser extends BaseParser<EmailAddressEntity> {
                     entity.setCreateDate(Utils.getDate(value));
                     break;
                 case EMAIL_ADDRESS_TYPE_ID:
-                    entity.setMetadataType(new MetadataTypeEntityParser().getById(value));
+                    MetadataTypeEntity m = new MetadataTypeEntity();
+                    m.setId(value);
+                    entity.setMetadataType(m);
                     break;
                 default:
                     break;
@@ -94,15 +100,19 @@ public class EmailAddressEntityParser extends BaseParser<EmailAddressEntity> {
                 break;
             }
             case EMAIL_ADDRESS_IS_DEFAULT: {
-                list.add(entity.getIsDefault()?"Y":"N");
+                list.add(entity.getIsDefault() ? "Y" : "N");
                 break;
             }
             case EMAIL_ADDRESS_ACTIVE: {
-                list.add(entity.getIsActive()?"Y":"N");
+                list.add(entity.getIsActive() ? "Y" : "N");
                 break;
             }
             case EMAIL_ADDRESS_PARENT_ID: {
-                list.add(entity.getParent().getId());
+                if (entity.getParent() == null) {
+                    list.add(null);
+                } else {
+                    list.add(entity.getParent().getId());
+                }
                 break;
             }
             case EMAIL_ADDRESS_LAST_UPDATE: {
@@ -114,7 +124,11 @@ public class EmailAddressEntityParser extends BaseParser<EmailAddressEntity> {
                 break;
             }
             case EMAIL_ADDRESS_TYPE_ID: {
-                list.add(entity.getMetadataType().getId());
+                if (entity.getMetadataType() == null) {
+                    list.add(null);
+                } else {
+                    list.add(entity.getMetadataType().getId());
+                }
                 break;
             }
             default:

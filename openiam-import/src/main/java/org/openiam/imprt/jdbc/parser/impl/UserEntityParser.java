@@ -178,6 +178,8 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 default:
                     break;
             }
+        } else {
+            System.out.println("Empty KEy");
         }
     }
 
@@ -201,7 +203,10 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_TYPE_ID: {
-                list.add(entity.getType());
+                if (entity.getType() != null)
+                    list.add(entity.getType().getId());
+                else
+                    list.add(null);
                 break;
             }
             case USERS_CLASSIFICATION: {
@@ -221,15 +226,25 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_STATUS: {
-                list.add(entity.getStatus());
+                if (entity.getStatus() != null)
+                    list.add(entity.getStatus().getValue());
+                else
+                    list.add(null);
                 break;
             }
             case USERS_SECONDARY_STATUS: {
-                list.add(entity.getSecondaryStatus());
+                if (entity.getSecondaryStatus() != null)
+                    list.add(entity.getSecondaryStatus().getValue());
+                else
+                    list.add(null);
                 break;
             }
             case USERS_BIRTHDATE: {
-                list.add(entity.getBirthdate());
+                if (entity.getBirthdate() != null) {
+                    list.add(entity.getBirthdate());
+                } else {
+                    list.add(null);
+                }
                 break;
             }
             case USERS_SEX: {
@@ -269,7 +284,9 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_EMPLOYEE_TYPE: {
-                list.add(entity.getEmployeeType());
+                if (entity.getEmployeeType() != null)
+                    list.add(entity.getEmployeeType().getId());
+                else list.add(null);
                 break;
             }
             case USERS_LOCATION_CD: {
@@ -285,7 +302,11 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_JOB_CODE: {
-                list.add(entity.getJobCode());
+                if (entity.getJobCode() != null) {
+                    list.add(entity.getJobCode().getId());
+                } else {
+                    list.add(null);
+                }
                 break;
             }
             case USERS_ALTERNATE_ID: {
@@ -341,7 +362,11 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_RESET_PASSWORD_TYPE: {
-                list.add(entity.getResetPasswordType());
+                if (entity.getResetPasswordType() != null) {
+                    list.add(entity.getResetPasswordType().name());
+                } else {
+                    list.add(null);
+                }
                 break;
             }
             case USERS_LASTNAME_PREFIX: {
@@ -349,7 +374,10 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_SUB_TYPE_ID: {
-                list.add(entity.getSubType().getId());
+                if (entity.getSubType() != null)
+                    list.add(entity.getSubType().getId());
+                else
+                    list.add(null);
                 break;
             }
             case USERS_PARTNER_NAME: {
@@ -360,7 +388,6 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 list.add(entity.getPrefixPartnerName());
                 break;
             }
-
             default:
                 break;
         }

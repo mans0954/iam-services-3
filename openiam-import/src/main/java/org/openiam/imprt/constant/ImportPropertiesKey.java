@@ -78,7 +78,7 @@ public enum ImportPropertiesKey {
     LOGIN("openiam.table.login"),
     LOGIN_LOGIN("openiam.table.login.login"),
     LOGIN_MANAGED_SYS_ID("openiam.table.login.managedSysId"),
-    LOGIN_IDENTITY_TYPE("openiam.table.login.identityType"),
+//    LOGIN_IDENTITY_TYPE("openiam.table.login.identityType"),
     LOGIN_CANONICAL_NAME("openiam.table.login.canonicalName"),
     LOGIN_USER_ID("openiam.table.login.userId"),
     LOGIN_PASSWORD("openiam.table.login.password"),
@@ -108,8 +108,9 @@ public enum ImportPropertiesKey {
     LOGIN_LOWERCASE_LOGIN("openiam.table.login.lowercaseLogin"),
     LOGIN_PROV_STATUS("openiam.table.login.provStatus"),
     LOGIN_CHALLENGE_RESPONSE_FAIL_COUNT("openiam.table.login.challengeResponseFailCount"),
-    LOGIN_SMS_RESET_TOKEN("openiam.table.login.smsResetToken"),
-    LOGIN_SMS_RESET_TOKEN_EXP("openiam.table.login.smsResetTokenExp"),
+    //Not now
+//    LOGIN_SMS_RESET_TOKEN("openiam.table.login.smsResetToken"),
+//    LOGIN_SMS_RESET_TOKEN_EXP("openiam.table.login.smsResetTokenExp"),
 
     //USER_ATTRIBUTES
     USER_ATTRIBUTES("openiam.table.userAttributes"),
@@ -118,7 +119,7 @@ public enum ImportPropertiesKey {
     USER_ATTRIBUTES_METADATA_ID("openiam.table.userAttributes.metaDataId"),
     USER_ATTRIBUTES_NAME("openiam.table.userAttributes.name"),
     USER_ATTRIBUTES_VALUE("openiam.table.userAttributes.value"),
-    USER_ATTRIBUTES_VALUE_AS_BYTE_ARRAY("openiam.table.userAttributes.valueAsByteArray"),
+//    USER_ATTRIBUTES_VALUE_AS_BYTE_ARRAY("openiam.table.userAttributes.valueAsByteArray"),
     USER_ATTRIBUTES_IS_MULTIVALUED("openiam.table.userAttributes.isMultivalued"),
 
     //ROLE
@@ -191,12 +192,12 @@ public enum ImportPropertiesKey {
     COMPANY_IS_SELECTABLE("openiam.table.company.isSelectable"),
     COMPANY_TYPE_ID("openiam.table.company.typeId"),
 
-    //COMPANY_ATTRIBUTE
-    COMPANY_ATTRIBUTE("openiam.table.company.attribute"),
-    COMPANY_ATTRIBUTE_ID("openiam.table.company.attribute.id"),
-    COMPANY_ATTRIBUTE_COMPANY_ID("openiam.table.company.attribute.companyId"),
-    COMPANY_ATTRIBUTE_NAME("openiam.table.company.attribute.name"),
-    COMPANY_ATTRIBUTE_VALUE("openiam.table.company.attribute.value"),
+    //T_COMPANY_ATTRIBUTE
+    T_COMPANY_ATTRIBUTE("openiam.table.company.attribute"),
+    T_COMPANY_ATTRIBUTE_ID("openiam.table.company.attribute.id"),
+    T_COMPANY_ATTRIBUTE_COMPANY_ID("openiam.table.company.attribute.companyId"),
+    T_COMPANY_ATTRIBUTE_NAME("openiam.table.company.attribute.name"),
+    T_COMPANY_ATTRIBUTE_VALUE("openiam.table.company.attribute.value"),
 
 
     //METADATA_TYPE

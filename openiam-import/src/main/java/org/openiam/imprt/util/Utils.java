@@ -3,8 +3,12 @@ package org.openiam.imprt.util;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.query.expression.Column;
 
+import javax.management.*;
+import java.io.*;
+import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.LogManager;
 
 public class Utils {
     public static boolean isEmpty(Collection<?> collection) {
@@ -56,6 +60,40 @@ public class Utils {
         return columns;
     }
 
+    public static List<Column> getColumnsForTable(String tableName) {
+        List<Column> columns = new ArrayList<Column>();
+        String prefix = tableName + "_";
+
+        for (ImportPropertiesKey key : ImportPropertiesKey.values()) {
+            if (key.name().startsWith(prefix)) {
+                columns.add(new Column(key));
+            }
+        }
+        return columns;
+    }
+
+    public static List<Column> getColumnsForTable(ImportPropertiesKey tableName) {
+        return getColumnsForTable(tableName.name());
+    }
+
+    public static String columnsToSelectFields(ImportPropertiesKey tableName, String alias) {
+        return columnsToSelectFields(tableName.name(), alias);
+    }
+
+    public static String columnsToSelectFields(String tableName, String alias) {
+        StringBuilder sb = new StringBuilder();
+        for (Column column : getColumnsForTable(tableName)) {
+            sb.append(alias);
+            sb.append(".");
+            sb.append(column.getColumn());
+            sb.append(", ");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.deleteCharAt(sb.length() - 1);
+
+        return sb.toString();
+    }
+
     public static String columnsToSelectFields(List<Column> columns, String alias) {
         StringBuilder sb = new StringBuilder();
         for (Column column : columns) {
@@ -65,8 +103,8 @@ public class Utils {
             sb.append(", ");
         }
 
-        sb.deleteCharAt(sb.length()-1);
-        sb.deleteCharAt(sb.length()-1);
+        sb.deleteCharAt(sb.length() - 1);
+        sb.deleteCharAt(sb.length() - 1);
 
         return sb.toString();
     }

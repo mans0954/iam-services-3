@@ -2,10 +2,7 @@ package org.openiam.imprt.jdbc.parser.impl;
 
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
-import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.imprt.constant.ImportPropertiesKey;
-import org.openiam.imprt.util.Utils;
 
 import java.util.List;
 
@@ -23,12 +20,12 @@ public class CompanyAttributeEntityParser extends BaseParser<OrganizationAttribu
 
     @Override
     protected ImportPropertiesKey getPrimaryKeyName() {
-        return ImportPropertiesKey.COMPANY_COMPANY_ID;
+        return ImportPropertiesKey.T_COMPANY_ATTRIBUTE_ID;
     }
 
     @Override
     protected ImportPropertiesKey getTableName() {
-        return ImportPropertiesKey.COMPANY;
+        return ImportPropertiesKey.T_COMPANY_ATTRIBUTE;
     }
 
     @Override
@@ -40,18 +37,18 @@ public class CompanyAttributeEntityParser extends BaseParser<OrganizationAttribu
     protected void parseToEntry(OrganizationAttributeEntity entity, ImportPropertiesKey key, String value) throws Exception {
         if (key != null) {
             switch (key) {
-                case COMPANY_ATTRIBUTE_COMPANY_ID:
+                case T_COMPANY_ATTRIBUTE_COMPANY_ID:
                     OrganizationEntity organizationEntity = new OrganizationEntity();
                     organizationEntity.setId(value);
                     entity.setOrganization(organizationEntity);
                     break;
-                case COMPANY_ATTRIBUTE_NAME:
+                case T_COMPANY_ATTRIBUTE_NAME:
                     entity.setName(value);
                     break;
-                case COMPANY_ATTRIBUTE_VALUE:
+                case T_COMPANY_ATTRIBUTE_VALUE:
                     entity.setValue(value);
                     break;
-                case COMPANY_ATTRIBUTE_ID:
+                case T_COMPANY_ATTRIBUTE_ID:
                     entity.setId(value);
                     break;
                 default:
@@ -67,18 +64,18 @@ public class CompanyAttributeEntityParser extends BaseParser<OrganizationAttribu
                 list.add(entity.getId());
                 break;
             }
-            case COMPANY_ATTRIBUTE_COMPANY_ID:
+            case T_COMPANY_ATTRIBUTE_COMPANY_ID:
                 if (entity.getOrganization() != null) {
                     list.add(entity.getOrganization().getId());
                 }
                 break;
-            case COMPANY_ATTRIBUTE_NAME:
+            case T_COMPANY_ATTRIBUTE_NAME:
                 list.add(entity.getName());
                 break;
-            case COMPANY_ATTRIBUTE_VALUE:
+            case T_COMPANY_ATTRIBUTE_VALUE:
                 list.add(entity.getValue());
                 break;
-            case COMPANY_ATTRIBUTE_ID:
+            case T_COMPANY_ATTRIBUTE_ID:
                 list.add(entity.getId());
                 break;
             default:

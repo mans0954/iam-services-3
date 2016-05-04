@@ -7,6 +7,7 @@ import org.openiam.imprt.jdbc.parser.IBaseParser;
 import org.openiam.imprt.query.AddQueryBuilder;
 import org.openiam.imprt.query.Restriction;
 import org.openiam.imprt.query.SelectQueryBuilder;
+import org.openiam.imprt.query.UpdateQueryBuilder;
 import org.openiam.imprt.query.expression.Column;
 import org.openiam.imprt.query.expression.Expression;
 import org.openiam.imprt.query.expression.GroupBy;
@@ -14,9 +15,7 @@ import org.openiam.imprt.query.expression.OrderByList;
 import org.openiam.imprt.util.DataHolder;
 import org.openiam.imprt.util.Utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Base class for implement IBaseParser
@@ -46,8 +45,12 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
         if (entity == null)
             return null;
         List<Object> list = new ArrayList<Object>();
-        for (ImportPropertiesKey column : this.getColumnsName()) {
-            parseToList(list, column, entity);
+        try {
+            for (ImportPropertiesKey column : this.getColumnsName()) {
+                parseToList(list, column, entity);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
         }
         return list;
     }
@@ -112,6 +115,10 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
      */
     private AddQueryBuilder getAddQuery(int size) {
         return new AddQueryBuilder(this.getTableName(), size, this.getAllColumns(false));
+    }
+
+    private UpdateQueryBuilder getUpdateQuery() {
+        return new UpdateQueryBuilder(this.getTableName(), this.getPkName(), this.getAllColumns(false));
     }
 
     /*
@@ -326,9 +333,37 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
         try {
             this.addAll(addQuery, Arrays.asList(this.parsing(e)));
         } catch (Exception e1) {
+            System.out.println(String.valueOf(e1));
+        }
+        return null;
+    }
+
+    @Override
+    public E update(E e, String pk) {
+        UpdateQueryBuilder updateQuery = this.getUpdateQuery();
+        try {
+            Map<String, List<Object>> map = new HashMap<>();
+            map.put(pk, this.parsing(e));
+            this.updateAll(updateQuery, map);
+        } catch (Exception e1) {
             logger.error(String.valueOf(e1.getStackTrace()));
         }
         return null;
+    }
+
+    @Override
+    public void update(Map<String, E> map) {
+        UpdateQueryBuilder updateQuery = this.getUpdateQuery();
+        try {
+
+            Map<String, List<Object>> mapO = new HashMap<>();
+            for (String m : map.keySet()) {
+                mapO.put(m, this.parsing(map.get(m)));
+            }
+            this.updateAll(updateQuery, mapO);
+        } catch (Exception e1) {
+            logger.error(String.valueOf(e1.getStackTrace()));
+        }
     }
 
     /*

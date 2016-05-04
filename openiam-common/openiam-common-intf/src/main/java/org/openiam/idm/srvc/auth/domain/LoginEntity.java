@@ -150,6 +150,7 @@ public class LoginEntity implements java.io.Serializable {
 
     @Column(name = "LAST_UPDATE", length = 19)
     @LuceneLastUpdate
+    @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdate;
 
     @OneToMany(orphanRemoval = true, mappedBy = "login", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

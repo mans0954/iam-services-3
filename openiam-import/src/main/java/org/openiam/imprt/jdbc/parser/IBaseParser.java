@@ -8,6 +8,7 @@ import org.openiam.imprt.query.expression.GroupBy;
 import org.openiam.imprt.query.expression.OrderByList;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class IBaseParser is public interface for all parsers implementation
@@ -146,4 +147,11 @@ public interface IBaseParser<E> {
      * @throws Exception
      */
     public List<E> get(String query) throws Exception;
+
+    /**
+     * @param e
+     * @return
+     */
+    public E update(E e, String pk);
+    public void update(Map<String, E> map);
 }
