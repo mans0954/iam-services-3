@@ -45,6 +45,11 @@ import java.util.*;
  * @param <E>
  * @param <E>
  * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
  */
 /**
  *
@@ -299,8 +304,10 @@ public abstract class AbstractJDBCAgent<E> {
                     }
                     Timestamp sqlTime = new Timestamp(i.getTime());
                     ps.setTimestamp(internalCount++, sqlTime, Calendar.getInstance());
+                } else if (o.getClass().equals(java.lang.Boolean.class)) {
+                    ps.setBoolean(internalCount++, (Boolean) o);
                 } else {
-                    System.out.println(o.getClass() + "not supported");
+                    System.out.println(o.getClass() + " not supported");
                 }
             }
             if (!isMySql) {
@@ -344,13 +351,15 @@ public abstract class AbstractJDBCAgent<E> {
                         }
                         Timestamp sqlTime = new Timestamp(i.getTime());
                         ps.setTimestamp(internalCount++, sqlTime, Calendar.getInstance());
+                    } else if (o.getClass().equals(java.lang.Boolean.class)) {
+                        ps.setBoolean(internalCount++, (Boolean) o);
                     } else {
-                        System.out.println(o.getClass() + "not supported");
+                        System.out.println(o.getClass() + " not supported");
                     }
                 }
                 ps.executeUpdate();
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             this.disconnect();
@@ -396,8 +405,10 @@ public abstract class AbstractJDBCAgent<E> {
                     Timestamp sqlTime = new Timestamp(i.getTime());
                     ps.setTimestamp(internalCount++, sqlTime);
 
+                } else if (o.getClass().equals(java.lang.Boolean.class)) {
+                    ps.setBoolean(internalCount++, (Boolean) o);
                 } else {
-                    System.out.println(o.getClass() + "not supported");
+                    System.out.println(o.getClass() + " not supported");
                 }
             }
             ps.setString(internalCount++, key);

@@ -3,6 +3,7 @@ package org.openiam.imprt.jdbc.parser.impl;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.util.Utils;
 
@@ -88,16 +89,18 @@ public class AddressEntityParser extends BaseParser<AddressEntity> {
                     entity.setPostalCd(value);
                     break;
                 case ADDRESS_IS_DEFAULT:
-                    entity.setIsDefault(value.equals("Y")?true:false);
+                    entity.setIsDefault(value.equals("Y") ? true : false);
                     break;
                 case ADDRESS_DESCRIPTION:
                     entity.setDescription(value);
                     break;
                 case ADDRESS_ACTIVE:
-                    entity.setIsActive(value.equals("Y")?true:false);
+                    entity.setIsActive(value.equals("Y") ? true : false);
                     break;
                 case ADDRESS_PARENT_ID:
-                    entity.setParent(new UserEntityParser().getById(value));
+                    UserEntity user = new UserEntity();
+                    user.setId(value);
+                    entity.setParent(user);
                     break;
                 case ADDRESS_LAST_UPDATE:
                     entity.setLastUpdate(Utils.getDate(value));
@@ -106,7 +109,7 @@ public class AddressEntityParser extends BaseParser<AddressEntity> {
                     entity.setCreateDate(Utils.getDate(value));
                     break;
                 case ADDRESS_TYPE_ID:
-                    entity.setMetadataType(new MetadataTypeEntityParser().getById(value));
+                    entity.setMetadataType(this.getMetadataType(value));
                     break;
                 case ADDRESS_COPY_FROM_LOCATION_ID:
                     entity.setLocationId(value);
@@ -185,7 +188,7 @@ public class AddressEntityParser extends BaseParser<AddressEntity> {
                 break;
             }
             case ADDRESS_IS_DEFAULT: {
-                list.add(entity.getIsDefault()?"Y":"N");
+                list.add(entity.getIsDefault() ? "Y" : "N");
                 break;
             }
             case ADDRESS_DESCRIPTION: {
@@ -193,7 +196,7 @@ public class AddressEntityParser extends BaseParser<AddressEntity> {
                 break;
             }
             case ADDRESS_ACTIVE: {
-                list.add(entity.getIsActive()?"Y":"N");
+                list.add(entity.getIsActive() ? "Y" : "N");
                 break;
             }
             case ADDRESS_PARENT_ID: {

@@ -1,23 +1,33 @@
 package org.openiam.imprt.util;
 
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.loc.domain.LocationEntity;
+import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.custom.MailboxHelper;
+import org.openiam.imprt.jdbc.parser.impl.UserAttributeEntityParser;
 import org.openiam.imprt.model.Attribute;
 import org.openiam.imprt.model.LineObject;
+import org.openiam.imprt.query.expression.Column;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -50,6 +60,7 @@ public class Transformation {
         try {
             populateObject(rowObj, user, bindingMap);
         } catch (Exception ex) {
+            System.out.println(ex);
             return -1;
         }
         user.setStatus(UserStatusEnum.ACTIVE);
@@ -64,6 +75,7 @@ public class Transformation {
         List<GroupEntity> groups = (List<GroupEntity>) bindingMap.get("GROUPS");
         Map<String, String> groupsMap = (Map<String, String>) bindingMap.get("GROUPS_MAP");
         Map<String, GroupEntity> groupsMapEntities = (Map<String, GroupEntity>) bindingMap.get("GROUPS_MAP_ENTITY");
+        List<LocationEntity> locations = (List<LocationEntity>) bindingMap.get("LOCATIONS");
 
         boolean changeDisplayName = false;
         boolean isNewUser = (user.getId() == null);
@@ -107,7 +119,8 @@ public class Transformation {
         this.updateLogins(user, samAccountName, expDate);
         //employeeId
         String emplId = this.getValue(lo.get("employeeNumber"));
-        if (!emplId.contains("@")) {
+
+        if (emplId != null && !emplId.contains("@")) {
             while (emplId.length() < 8) emplId = "0" + emplId;
         }
         user.setEmployeeId(emplId);
@@ -449,7 +462,88 @@ public class Transformation {
         //TODO Reveal what is and how to define Classifications: 'RAA', 'LowFrequencyUser'
         addUserAttribute(user, new UserAttributeEntity("classification", classification));
 
+        //Manager
+        addSuper(user, this.getValue(lo.get("manager")));
+        //For AD
+        addRoleId(user, "8a8da02e51a28fd20151a291ce360002");
 
+        String accessRoleId = (mdTypeId == "AKZONOBEL_USER_MBX" || mdTypeId == "AKZONOBEL_USER_NO_MBX") ? "1" : mdTypeId == "AKZONOBEL_ADM_ACCOUNT" ? "SUPPORT_ADMIN_ROLE_ID" : "SERVICE_ROLE_ID";
+        if (StringUtils.isNotBlank(accessRoleId)) {
+            addRoleId(user, accessRoleId);
+        }
+
+        // Add HP Admin role
+        boolean isHpAdmin = StringUtils.isNotBlank(distinguishedName) && distinguishedName.matches("/.*,OU=Administrators,.*OU=HP,.*/");
+        if (isHpAdmin) {
+            for (RoleEntity re : user.getRoles()) {
+                if (re.getId() == "HP_ADMIN_ROLE_ID") {
+                    addRoleId(user, "HP_ADMIN_ROLE_ID");
+                }
+//                if (re.getId() == UNITY_ROLE_ID) {
+//                    addRoleId(user, UNITY_ROLE_ID);
+//                }
+            }
+        }
+
+        // Exchange
+        String userPrincipalName = this.getValue(lo.get("userPrincipalName"));
+        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
+
+        // lync
+        String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
+        sipAddress = StringUtils.isNotBlank(sipAddress) && sipAddress.startsWith("sip:") ? sipAddress.substring(4) : null;
+        updateLoginAndRole(sipAddress, LYNC_MNG_SYS_ID, user, "LYNC_ROLE_ID");
+        addUserAttribute(user, new UserAttributeEntity("lync", StringUtils.isNotBlank(sipAddress) ? "On" : null));
+
+        //Update mdType for user
+        if (StringUtils.isNotBlank(mdTypeId)) {
+            MetadataTypeEntity metadataTypeEntity = new MetadataTypeEntity();
+            metadataTypeEntity.setId(mdTypeId);
+            user.setType(metadataTypeEntity);
+        }
+
+        getLinkedOrganization(distinguishedName, siteCode, extensionAttribute15, organizationEntityList, locations, user);
+    }
+
+    private void updateLoginAndRole(String login, String managedSystemId, UserEntity user, String roleId) {
+
+        LoginEntity lg = null;
+        for (LoginEntity le : user.getPrincipalList()) {
+            if (le.getManagedSysId() == managedSystemId) {
+                lg = le;
+                break;
+            }
+        }
+
+        RoleEntity userRole = null;
+        if (StringUtils.isNotBlank(roleId)) {
+            for (RoleEntity re : user.getRoles()) {
+                if (re.getId() == roleId) {
+                    userRole = re;
+                }
+            }
+        }
+
+        if (StringUtils.isNotBlank(login)) {
+            if (lg != null) {
+                lg = new LoginEntity();
+                lg.setManagedSysId(managedSystemId);
+                lg.setCreateDate(new Date());
+                lg.setStatus(LoginStatusEnum.ACTIVE);
+                lg.setUserId(user.getId());
+                lg.setLogin(login);
+                user.getPrincipalList().add(lg);
+            } else if (lg.getLogin() != login) {
+                lg.setLogin(login);
+            }
+            addRoleId(user, roleId);
+        } else {
+            if (lg != null) {
+                lg.setLogin("DELETE_FROM_DB");
+            }
+            if (userRole != null)
+                removeRoleId(user, userRole.getId());
+        }
     }
 
     public boolean containsNameGroup(String[] userADNames, Map<String, String> groupsMap, String toFind) {
@@ -687,6 +781,140 @@ public class Transformation {
             }
         }
         user.getAddresses().add(addr);
+    }
+
+    private void addSuper(UserEntity user, String dn) {
+        if (StringUtils.isBlank(dn)) {
+            return;
+        }
+
+        final List<Column> userAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_ATTRIBUTES_ID, ImportPropertiesKey.USER_ATTRIBUTES_USER_ID,
+                ImportPropertiesKey.USER_ATTRIBUTES_NAME,
+                ImportPropertiesKey.USER_ATTRIBUTES_VALUE});
+
+        final String getUserAttributeByUserDN = "SELECT %s FROM USER_ATTRIBUTES ua WHERE ua.NAME='distinguishedName' AND ua.VALUE='%s'";
+        UserAttributeEntityParser attributeEntityParser = new UserAttributeEntityParser();
+        String userId = null;
+        try {
+            List<UserAttributeEntity> userAttributeEntityList = attributeEntityParser.get(
+                    String.format(getUserAttributeByUserDN, Utils.columnsToSelectFields(userAttributeColumnList, "ua"),
+                            dn), userAttributeColumnList);
+            if (CollectionUtils.isNotEmpty(userAttributeColumnList)) {
+                userId = userAttributeEntityList.get(0).getUserId();
+            }
+        } catch (Exception e) {
+        }
+
+        if (userId != null) {
+            if (user.getSupervisors() == null) {
+                user.setSupervisors(new HashSet<SupervisorEntity>());
+            }
+            boolean isFind = false;
+            for (SupervisorEntity se : user.getSupervisors()) {
+                if (se.getSupervisor() != null) {
+                    if (userId.equals(se.getSupervisor().getId())) {
+                        isFind = true;
+                    } else {
+                        se.getSupervisor().setFirstName("DELETE_FROM_DB");
+                    }
+                }
+            }
+            if (!isFind) {
+                SupervisorEntity supervisorEntity = new SupervisorEntity();
+                supervisorEntity.setSupervisor(new UserEntity());
+                supervisorEntity.getSupervisor().setId(userId);
+                supervisorEntity.setIsPrimarySuper(true);
+                supervisorEntity.getSupervisor().setFirstName("ADD_TO_DB");
+                user.getSupervisors().add(supervisorEntity);
+            }
+        }
+    }
+
+    private void getLinkedOrganization(String distinguishedName, String site, String bu, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
+        String adPath = null;
+        if (distinguishedName.contains("OU=UserTransfer,DC=d30,DC=intra")) {
+            adPath = "OU=UserTransfer,DC=d30,DC=intra";
+        } else {
+            Pattern pattern = Pattern.compile(".*OU=(Users|Administrators|ResourceMailbox|Service Accounts|Services Accounts|External Accounts|Resources|Remote Access Users|Expired),(.*)".toLowerCase());
+            Matcher matcher = pattern.matcher(distinguishedName.toLowerCase());
+            if (matcher.matches()) {
+                adPath = matcher.group(2);
+            }
+        }
+        if (StringUtils.isBlank(adPath)) {
+            addUserAttribute(user, new UserAttributeEntity("FAIL_ROLE_EXTRACT_PATH_FROM_DN", distinguishedName));
+            return;
+        } else {
+            addUserAttribute(user, new UserAttributeEntity("AD_PATH", adPath));
+        }
+        if (bu == null) {
+            return;
+        }
+
+        OrganizationEntity organizationEntity = null;
+        for (OrganizationEntity o : orgs) {
+            if (bu.equalsIgnoreCase(o.getInternalOrgId())) {
+                organizationEntity = o;
+                break;
+            }
+        }
+        addOrganization(user, organizationEntity);
+
+        if (site == null) {
+            return;
+        }
+
+
+        OrganizationEntity siteEntity = null;
+        for (OrganizationEntity o : organizationEntity.getChildOrganizations()) {
+            if (site.equalsIgnoreCase(o.getInternalOrgId())) {
+                siteEntity = o;
+                break;
+            }
+        }
+
+        if (siteEntity != null) {
+            for (LocationEntity l : locations) {
+                if (siteEntity.getId().equals(l.getOrganizationId())) {
+                    addUserAttribute(user, new UserAttributeEntity("LOCATION_ID", l.getLocationId()));
+                }
+            }
+        }
+
+    }
+
+    private void addOrganization(UserEntity user, OrganizationEntity org) {
+        if (org == null) {
+            return;
+        }
+        if (CollectionUtils.isEmpty(user.getOrganizationUser())) {
+            user.setOrganizationUser(new HashSet<OrganizationUserEntity>());
+            OrganizationUserEntity organizationUserEntity = new OrganizationUserEntity(user.getId(), org.getId(), "DEFAULT_AFFILIATION");
+            organizationUserEntity.getMetadataTypeEntity().setDescription("ADD_TO_DB");
+            user.getOrganizationUser().add(organizationUserEntity);
+            return;
+        } else {
+            boolean isFind = false;
+            for (OrganizationUserEntity oue : user.getOrganizationUser()) {
+                if (oue.getOrganization() != null) {
+                    if (oue.getOrganization().getId().equals(org.getId())) {
+                        isFind = true;
+                    } else {
+                        if (oue.getMetadataTypeEntity() == null) {
+                            oue.setMetadataTypeEntity(new MetadataTypeEntity());
+                        }
+                        oue.getMetadataTypeEntity().setDescription("DELETE_FROM_DB");
+                    }
+                }
+            }
+            if (!isFind) {
+                user.setOrganizationUser(new HashSet<OrganizationUserEntity>());
+                OrganizationUserEntity organizationUserEntity = new OrganizationUserEntity(user.getId(), org.getId(), "DEFAULT_AFFILIATION");
+                organizationUserEntity.getMetadataTypeEntity().setDescription("ADD_TO_DB");
+                user.getOrganizationUser().add(organizationUserEntity);
+            }
+        }
+
     }
 
 }

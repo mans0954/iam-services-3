@@ -4,17 +4,21 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.loc.domain.LocationEntity;
+import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -182,7 +186,7 @@ public class ImportProcessor {
             }
             return;
         }
-
+        System.out.println("All users=" + processingData.size());
         if (debugMode) {
             System.out.print("Prefill linked data ");
         }
@@ -203,7 +207,8 @@ public class ImportProcessor {
         LoginEntityParser loginEntityParser = new LoginEntityParser();
         EmailAddressEntityParser emailAddressEntityParser = new EmailAddressEntityParser();
         GroupAttributeEntityParser groupAttributeEntityParser = new GroupAttributeEntityParser();
-
+        PhoneEntityParser phoneEntityParser = new PhoneEntityParser();
+        AddressEntityParser addressEntityParser = new AddressEntityParser();
         //FIXME - PRE IMPORT BLOCK. NEED TO MOVE IT TO SINGLE PLACE
         //FIXME SINGLE BLOKC VVVVVVVVV
         //Init required fields for dependencies
@@ -259,6 +264,8 @@ public class ImportProcessor {
 
         bindingMap.put("GROUPS", groups);
 
+        List<LocationEntity> locations = new LocationEntityParser().getAll();
+        bindingMap.put("LOCATIONS", locations);
 
         Map<String, GroupEntity> groupsEntitiesMap = new HashMap<String, GroupEntity>();
         //Build map <groupName,DistrguishedName>
@@ -283,8 +290,6 @@ public class ImportProcessor {
 
 
         //FIXME SINGLE BLOCK ^^^^^^^^^^^
-
-
         if (debugMode) {
             System.out.println("Time=" + (System.currentTimeMillis() - time1) + "ms");
         }
@@ -295,65 +300,46 @@ public class ImportProcessor {
         Transformation tr = new Transformation();
         UserEntityParser userEntityParser = new UserEntityParser();
         Attribute sAMAccountNameAttribute = null;
+        List<String> newUserIds = new ArrayList<String>();
+        int res = 0;
+
         for (LineObject lo : processingData) {
             sAMAccountNameAttribute = lo.get("sAMAccountName");
             if (sAMAccountNameAttribute != null && sAMAccountNameAttribute.getValue() != null) {
-                if (debugMode) {
-                    System.out.print("get User by Login. ");
-                }
                 time1 = System.currentTimeMillis();
                 //FIXME should be common search in OpenIAM
                 users = userEntityParser.get(String.format(getUserByLoginSQL, sAMAccountNameAttribute.getValue()));
-                if (debugMode) {
-                    System.out.println("Time=" + (System.currentTimeMillis() - time1) + "ms");
-                }
                 if (CollectionUtils.isEmpty(users)) {
                     user = new UserEntity();
                     user.setOrganizationUser(new HashSet<OrganizationUserEntity>());
-                    if (debugMode) {
-                        System.out.println("New User=" + sAMAccountNameAttribute.getValue());
-                    }
                 } else {
                     user = users.get(0);
-                    time1 = System.currentTimeMillis();
-                    if (debugMode) {
-                        System.out.print("fillUserWithDependenies ");
-                    }
                     //fill user with data
                     fillUserWithDependenies(user,
+                            userEntityParser,
                             loginEntityParser,
                             organizationUserEntityParser,
                             roleEntityParser,
                             groupEntityParser,
                             userAttributeEntityParser,
-                            emailAddressEntityParser);
+                            emailAddressEntityParser,
+                            phoneEntityParser,
+                            addressEntityParser);
+                }
+                res = tr.execute(lo, user, bindingMap);
+                if (res == -1) {
+                    System.out.println("Fail Transform for " + sAMAccountNameAttribute);
+                }
 
-                    if (debugMode) {
-                        System.out.println("Time=" + (System.currentTimeMillis() - time1) + "ms");
-                    }
-                }
-                time1 = System.currentTimeMillis();
-                if (debugMode) {
-                    System.out.print("Transformation time=");
-                }
-                tr.execute(lo, user, bindingMap);
-                if (debugMode) {
-                    System.out.println((System.currentTimeMillis() - time1) + "ms");
-                }
-                time1 = System.currentTimeMillis();
-                if (debugMode) {
-                    System.out.print("Save User time=");
-                }
-                saveChanges(user,
+                saveChanges(newUserIds, user,
                         userEntityParser,
                         loginEntityParser,
-                        organizationUserEntityParser,
-                        roleEntityParser,
-                        groupEntityParser,
                         userAttributeEntityParser,
-                        emailAddressEntityParser);
+                        emailAddressEntityParser,
+                        phoneEntityParser,
+                        addressEntityParser);
                 if (debugMode) {
-                    System.out.println((System.currentTimeMillis() - time1) + "ms");
+                    System.out.println("User processing time=" + (System.currentTimeMillis() - time1) + "ms");
                 }
             }
         }
@@ -361,26 +347,29 @@ public class ImportProcessor {
 
         // do generate user keys
         KeyManagementWSClient keyManagementWSClient = new KeyManagementWSClient(DataHolder.getInstance().getProperty(ImportPropertiesKey.KEY_SERVICE_WSDL));
-        // TODO: need to pass collected user ids on the previos step.
-        keyManagementWSClient.generateKeysForUserList(new ArrayList<String>());
+        keyManagementWSClient.generateKeysForUserList(newUserIds);
         // do reindex
         // for now need to restart jboss ))) not enough time to integrate lucene
     }
 
     private void fillUserWithDependenies(UserEntity user,
+                                         UserEntityParser userEntityParser,
                                          LoginEntityParser loginEntityParser,
                                          OrganizationUserEntityParser organizationUserEntityParser,
                                          RoleEntityParser roleEntityParser,
                                          GroupEntityParser groupEntityParser,
                                          UserAttributeEntityParser userAttributeEntityParser,
-                                         EmailAddressEntityParser emailAddressEntityParser) throws Exception {
+                                         EmailAddressEntityParser emailAddressEntityParser,
+                                         PhoneEntityParser phoneEntityParser,
+                                         AddressEntityParser addressEntityParser) throws Exception {
         final String getUserOrganizationsSQL = "SELECT %s FROM USER_AFFILIATION c WHERE c.USER_ID='%s'";
         final String getUserAttributesSQL = "SELECT %s FROM USER_ATTRIBUTES c WHERE c.USER_ID='%s'";
         final String getUserRoleSQL = "SELECT %s FROM ROLE c JOIN USER_ROLE j on j.ROLE_ID=c.ROLE_ID WHERE j.USER_ID='%s'";
         final String getUserGroupSQL = "SELECT %s FROM GRP c JOIN USER_GRP j on j.GRP_ID=c.GRP_ID WHERE j.USER_ID='%s'";
-//        final String getLoginsSQL = "SELECT %s FROM LOGIN c WHERE c.USER_ID='%s'";
         final String getEmailsSQL = "SELECT %s FROM EMAIL_ADDRESS c WHERE  c.PARENT_ID='%s'";
-
+        final String getPhonesSQL = "SELECT %s FROM PHONE c WHERE  c.PARENT_ID='%s'";
+        final String getAddressesSQL = "SELECT %s FROM ADDRESS c WHERE  c.PARENT_ID='%s'";
+        final String getSupervisorsSQL = "SELECT %s FROM USERS u JOIN ORG_STRUCTURE os ON os.SUPERVISOR_ID = u.USER_ID  WHERE os.STAFF_ID='%s'";
 
         final List<Column> organizationUserColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_AFFILIATION_COMPANY_ID,
                 ImportPropertiesKey.USER_AFFILIATION_METADATA_TYPE_ID});
@@ -398,6 +387,10 @@ public class ImportProcessor {
         final List<Column> groupColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.GRP_GRP_ID,
                 ImportPropertiesKey.GRP_GRP_NAME,
                 ImportPropertiesKey.GRP_GROUP_DESC
+        });
+
+        final List<Column> supervisorsColumns = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USERS_USER_ID,
+                ImportPropertiesKey.USERS_EMPLOYEE_ID
         });
 
         //add  Organizations
@@ -443,6 +436,30 @@ public class ImportProcessor {
                 user.getId()), Utils.getColumnsForTable(ImportPropertiesKey.EMAIL_ADDRESS));
         if (emailAddressEntities != null) {
             user.setEmailAddresses(new HashSet<EmailAddressEntity>(emailAddressEntities));
+        }
+
+        List<PhoneEntity> phoneEntities = phoneEntityParser.get(String.format(getPhonesSQL, Utils.columnsToSelectFields(ImportPropertiesKey.PHONE, "c"),
+                user.getId()), Utils.getColumnsForTable(ImportPropertiesKey.PHONE));
+        if (phoneEntities != null) {
+            user.setPhones(new HashSet<PhoneEntity>(phoneEntities));
+        }
+
+        List<AddressEntity> address = addressEntityParser.get(String.format(getAddressesSQL, Utils.columnsToSelectFields(ImportPropertiesKey.ADDRESS, "c"),
+                user.getId()), Utils.getColumnsForTable(ImportPropertiesKey.ADDRESS));
+        if (address != null) {
+            user.setAddresses(new HashSet<AddressEntity>(address));
+        }
+
+        List<UserEntity> supervisors = userEntityParser.get(String.format(getSupervisorsSQL, Utils.columnsToSelectFields(supervisorsColumns, "u"),
+                user.getId()), supervisorsColumns);
+        if (supervisors != null) {
+            Set<SupervisorEntity> supervisorEntities = new HashSet<SupervisorEntity>();
+            for (UserEntity ue : supervisors) {
+                SupervisorEntity se = new SupervisorEntity();
+                se.setSupervisor(ue);
+                supervisorEntities.add(se);
+            }
+            user.setSupervisors(supervisorEntities);
         }
 
     }
@@ -497,21 +514,18 @@ public class ImportProcessor {
         return input;
     }
 
-    private void saveChanges(UserEntity user, UserEntityParser userEntityParser,
+    private void saveChanges(List<String> newUserIds, UserEntity user, UserEntityParser userEntityParser,
                              LoginEntityParser loginEntityParser,
-                             OrganizationUserEntityParser organizationUserEntityParser,
-                             RoleEntityParser roleEntityParser,
-                             GroupEntityParser groupEntityParser,
                              UserAttributeEntityParser userAttributeEntityParser,
-                             EmailAddressEntityParser emailAddressEntityParser) {
+                             EmailAddressEntityParser emailAddressEntityParser,
+                             PhoneEntityParser phoneEntityParser,
+                             AddressEntityParser addressEntityParser) {
 
-        if (user.getGroups() != null) {
-            System.out.println("GROUPS=" + user.getGroups().size());
-        }
 
         String userId = null;
         if (user.getId() == null) {
             userId = UUIDGen.getUUID();
+            newUserIds.add(userId);
             user.setId(userId);
             userEntityParser.add(user);
         } else {
@@ -535,9 +549,21 @@ public class ImportProcessor {
         } catch (Exception e) {
             System.out.println("Can't save emailAddress!");
         }
+        try {
+            savePhones(user, phoneEntityParser);
+        } catch (Exception e) {
+            System.out.println("Can't save phoneEntity!");
+        }
+
+        try {
+            saveAddressEntity(user, addressEntityParser);
+        } catch (Exception e) {
+            System.out.println("Can't save AddressEntity!");
+        }
         saveUserGroups(user, userEntityParser);
         saveUserRoles(user, userEntityParser);
         saveUserOrganizations(user, userEntityParser);
+        saveUserSupervisors(user, userEntityParser);
 
     }
 
@@ -551,6 +577,8 @@ public class ImportProcessor {
                 if (loginEntity.getLoginId() == null) {
                     loginEntity.setLoginId(UUIDGen.getUUID());
                     forADD.add(loginEntity);
+                } else if ("DELETE_FROM_DB".equals(loginEntity.getLogin())) {
+                    loginEntityParser.delete(loginEntity.getLoginId());
                 } else {
                     forUpdate.put(loginEntity.getLoginId(), loginEntity);
                 }
@@ -604,9 +632,9 @@ public class ImportProcessor {
                     vals.add(groupEntity.getId());
                     forDelete.add(vals);
                 }
-                parser.executeNativeCRUD(sqlADD, forAdd);
-                parser.executeNativeCRUD(sqlDELETE, forDelete);
             }
+            parser.executeNativeCRUD(sqlADD, forAdd);
+            parser.executeNativeCRUD(sqlDELETE, forDelete);
         }
 
     }
@@ -630,9 +658,9 @@ public class ImportProcessor {
                     vals.add(roleEntity.getId());
                     forDelete.add(vals);
                 }
-                parser.executeNativeCRUD(sqlADD, forAdd);
-                parser.executeNativeCRUD(sqlDELETE, forDelete);
             }
+            parser.executeNativeCRUD(sqlADD, forAdd);
+            parser.executeNativeCRUD(sqlDELETE, forDelete);
         }
 
     }
@@ -662,9 +690,41 @@ public class ImportProcessor {
                         }
                     }
                 }
-                parser.executeNativeCRUD(sqlADD, forAdd);
-                parser.executeNativeCRUD(sqlDELETE, forDelete);
             }
+            parser.executeNativeCRUD(sqlADD, forAdd);
+            parser.executeNativeCRUD(sqlDELETE, forDelete);
+        }
+
+    }
+
+    private void saveUserSupervisors(UserEntity user, UserEntityParser parser) {
+        if (CollectionUtils.isNotEmpty(user.getSupervisors())) {
+            String sqlADD = "INSERT INTO ORG_STRUCTURE (SUPERVISOR_ID,STAFF_ID,IS_PRIMARY_SUPER) VALUES (?,?,?) ";
+            String sqlDELETE = "DELETE FROM ORG_STRUCTURE WHERE SUPERVISOR_ID=? AND STAFF_ID=?";
+            List<List<Object>> forAdd = new ArrayList<List<Object>>();
+            List<List<Object>> forDelete = new ArrayList<List<Object>>();
+            for (SupervisorEntity supervisorEntity : user.getSupervisors()) {
+                if (supervisorEntity.getSupervisor() != null && supervisorEntity.getSupervisor().getFirstName() != null) {
+                    String action = supervisorEntity.getSupervisor().getFirstName();
+                    if (action != null) {
+                        if ("ADD_TO_DB".equals(action)) {
+                            List<Object> vals = new ArrayList<>();
+                            vals.add(supervisorEntity.getSupervisor().getId());
+                            vals.add(user.getId());
+                            vals.add(supervisorEntity.getIsPrimarySuper() ? "Y" : "N");
+                            forAdd.add(vals);
+                        }
+                        if ("DELETE_FROM_DB".equals(action)) {
+                            List<Object> vals = new ArrayList<>();
+                            vals.add(supervisorEntity.getSupervisor().getId());
+                            vals.add(user.getId());
+                            forDelete.add(vals);
+                        }
+                    }
+                }
+            }
+            parser.executeNativeCRUD(sqlADD, forAdd);
+            parser.executeNativeCRUD(sqlDELETE, forDelete);
         }
 
     }
@@ -702,6 +762,26 @@ public class ImportProcessor {
                     forADD.add(entry);
                 } else {
                     forUpdate.put(entry.getPhoneId(), entry);
+                }
+            }
+        }
+        parser.addAll(forADD);
+        parser.update(forUpdate);
+    }
+
+    private void saveAddressEntity(UserEntity user, AddressEntityParser parser) throws Exception {
+        List<AddressEntity> forADD = new ArrayList<AddressEntity>();
+        Map<String, AddressEntity> forUpdate = new HashMap<String, AddressEntity>();
+
+        if (user.getAddresses() != null) {
+            for (AddressEntity entry : user.getAddresses()) {
+                if (entry == null) continue;
+                if (entry.getAddressId() == null) {
+                    entry.setParent(user);
+                    entry.setAddressId(UUIDGen.getUUID());
+                    forADD.add(entry);
+                } else {
+                    forUpdate.put(entry.getAddressId(), entry);
                 }
             }
         }

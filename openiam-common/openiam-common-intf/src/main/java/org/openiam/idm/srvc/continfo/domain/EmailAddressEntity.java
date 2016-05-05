@@ -96,7 +96,7 @@ public class EmailAddressEntity implements Serializable {
         this.emailId = emailId;
     }
 
-    public Boolean getIsActive() {
+    public boolean getIsActive() {
         return isActive;
     }
 

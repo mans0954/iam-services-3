@@ -1,6 +1,7 @@
 package org.openiam.imprt.jdbc.parser.impl;
 
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.util.Utils;
 
@@ -59,13 +60,15 @@ public class PhoneEntityParser extends BaseParser<PhoneEntity> {
                     entity.setPhoneExt(value);
                     break;
                 case PHONE_IS_DEFAULT:
-                    entity.setIsDefault(value.equals("Y")?true:false);
+                    entity.setIsDefault(value.equals("Y") ? true : false);
                     break;
                 case PHONE_ACTIVE:
-                    entity.setIsActive(value.equals("Y")?true:false);
+                    entity.setIsActive(value.equals("Y") ? true : false);
                     break;
                 case PHONE_PARENT_ID:
-                    entity.setParent(new UserEntityParser().getById(value));
+                    UserEntity user = new UserEntity();
+                    user.setId(value);
+                    entity.setParent(user);
                     break;
                 case PHONE_LAST_UPDATE:
                     entity.setLastUpdate(Utils.getDate(value));
@@ -74,7 +77,7 @@ public class PhoneEntityParser extends BaseParser<PhoneEntity> {
                     entity.setCreateDate(Utils.getDate(value));
                     break;
                 case PHONE_TYPE_ID:
-                    entity.setMetadataType(new MetadataTypeEntityParser().getById(value));
+                    entity.setMetadataType(this.getMetadataType(value));
                     break;
                 default:
                     break;
