@@ -409,11 +409,14 @@ public class Transformation {
         //TODO implement add supervisor to user
         //
         // Set mailbox
-        String mailboxSize = mailboxHelper.getBoxSize(homeMDB);
-        if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
-            addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
+        try {
+            String mailboxSize = mailboxHelper.getBoxSize(homeMDB);
+            if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
+                addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
+            }
+        } catch (Exception e) {
+            System.out.println("Problem with mailbox Definitions");
         }
-
 
         // MemberOf
         Attribute mOfAttr = lo.get("memberOf");
