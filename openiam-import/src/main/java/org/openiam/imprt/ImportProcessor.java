@@ -5,6 +5,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -526,16 +527,17 @@ public class ImportProcessor {
         try {
             saveUserAttributes(user, userAttributeEntityParser);
         } catch (Exception e) {
-            System.out.println("Can't save logins!");
+            System.out.println("Can't save UserAttributes!");
         }
 
         try {
             saveEmails(user, emailAddressEntityParser);
         } catch (Exception e) {
-            System.out.println("Can't save logins!");
+            System.out.println("Can't save emailAddress!");
         }
         saveUserGroups(user, userEntityParser);
         saveUserRoles(user, userEntityParser);
+        saveUserOrganizations(user, userEntityParser);
 
     }
 
@@ -637,7 +639,7 @@ public class ImportProcessor {
 
     private void saveUserOrganizations(UserEntity user, UserEntityParser parser) {
         if (CollectionUtils.isNotEmpty(user.getOrganizationUser())) {
-            String sqlADD = "INSERT INTO USER_AFFILIATION (USER_ID,COMPANY_ID,METADATA_TYPE_ID) VALUES (?,?,'DEFAULT_AFFILIATION') ";
+            String sqlADD = "INSERT INTO USER_AFFILIATION (USER_ID,COMPANY_ID,METADATA_TYPE_ID) VALUES (?,?,?) ";
             String sqlDELETE = "DELETE FROM USER_AFFILIATION WHERE USER_ID=? AND COMPANY_ID=?";
             List<List<Object>> forAdd = new ArrayList<List<Object>>();
             List<List<Object>> forDelete = new ArrayList<List<Object>>();
@@ -649,12 +651,13 @@ public class ImportProcessor {
                             List<Object> vals = new ArrayList<>();
                             vals.add(user.getId());
                             vals.add(roleEntity.getOrganization().getId());
+                            vals.add(roleEntity.getMetadataTypeEntity().getId());
                             forAdd.add(vals);
                         }
-                        if ("DELETE_FROM_DB".equals(roleEntity.getName())) {
+                        if ("DELETE_FROM_DB".equals(action)) {
                             List<Object> vals = new ArrayList<>();
                             vals.add(user.getId());
-                            vals.add(roleEntity.getId());
+                            vals.add(roleEntity.getOrganization().getId());
                             forDelete.add(vals);
                         }
                     }
@@ -684,7 +687,26 @@ public class ImportProcessor {
         }
         parser.addAll(forADD);
         parser.update(forUpdate);
+    }
 
+    private void savePhones(UserEntity user, PhoneEntityParser parser) throws Exception {
+        List<PhoneEntity> forADD = new ArrayList<PhoneEntity>();
+        Map<String, PhoneEntity> forUpdate = new HashMap<String, PhoneEntity>();
+
+        if (user.getPhones() != null) {
+            for (PhoneEntity entry : user.getPhones()) {
+                if (entry == null) continue;
+                if (entry.getPhoneId() == null) {
+                    entry.setParent(user);
+                    entry.setPhoneId(UUIDGen.getUUID());
+                    forADD.add(entry);
+                } else {
+                    forUpdate.put(entry.getPhoneId(), entry);
+                }
+            }
+        }
+        parser.addAll(forADD);
+        parser.update(forUpdate);
     }
 
 }
