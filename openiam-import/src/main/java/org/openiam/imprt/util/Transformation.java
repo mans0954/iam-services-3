@@ -60,6 +60,8 @@ public class Transformation {
         try {
             populateObject(rowObj, user, bindingMap);
         } catch (Exception ex) {
+            System.out.println(ex.getCause());
+            System.out.println(ex.getStackTrace());
             System.out.println(ex);
             return -1;
         }

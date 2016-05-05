@@ -332,7 +332,7 @@ public class ImportProcessor {
                 }
                 res = tr.execute(lo, user, bindingMap);
                 if (res == -1) {
-                    System.out.println("Fail Transform for " + sAMAccountNameAttribute);
+                    System.out.println("Fail Transform for " + sAMAccountNameAttribute.getValue());
                 }
 
                 saveChanges(newUserIds, user,
@@ -343,7 +343,7 @@ public class ImportProcessor {
                         phoneEntityParser,
                         addressEntityParser);
                 if (debugMode) {
-                    System.out.println("User processing time=" + (System.currentTimeMillis() - time1) + "ms");
+                    System.out.println("User " + sAMAccountNameAttribute.getValue() + " processing time=" + (System.currentTimeMillis() - time1) + "ms");
                 }
             }
         }
