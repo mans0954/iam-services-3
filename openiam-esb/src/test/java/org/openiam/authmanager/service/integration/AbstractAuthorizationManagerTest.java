@@ -54,9 +54,20 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	protected Role role = null;
 	protected Organization organization = null;
 	protected Resource resource = null;
+	protected Resource publicResource = null;
 	
 	@BeforeClass
 	public void _init() {
+		/* setup the public resource, and ensure that it's actually public after saving */
+		publicResource = super.createResource();
+		publicResource.setIsPublic(true);
+		assertSuccess(resourceDataService.saveResource(publicResource, null));
+		publicResource = resourceDataService.getResource(publicResource.getId(), getDefaultLanguage());
+		Assert.assertNotNull(publicResource);
+		Assert.assertTrue(publicResource.getIsPublic());
+		refreshAuthorizationManager(); /* new reosurce created - make sure it's cached */
+		
+		
 		user = super.createUser();
 		group = super.createGroup();
 		role = super.createRole();
@@ -92,11 +103,27 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	
 	@AfterClass
 	public void _destroy() {
-		userServiceClient.removeUser(user.getId());
-		groupServiceClient.deleteGroup(group.getId(), null);
-		roleServiceClient.removeRole(role.getId(), null);
-		organizationServiceClient.deleteOrganization(organization.getId(), null);
-		resourceDataService.deleteResource(resource.getId(), null);
+		resourceDataService.deleteResource(publicResource.getId(), null);
+		if(user != null) {
+			userServiceClient.removeUser(user.getId());
+		}
+		if(group != null) {
+			groupServiceClient.deleteGroup(group.getId(), null);
+		}
+		if(role != null) {
+			roleServiceClient.removeRole(role.getId(), null);
+		}
+		if(organization != null) {
+			organizationServiceClient.deleteOrganization(organization.getId(), null);
+		}
+		if(resource != null) {
+			resourceDataService.deleteResource(resource.getId(), null);
+		}
+	}
+	
+	@Test
+	public void assertUserEntitledToPublicResource() {
+		checkUser2ResourceEntitlement(user.getId(), publicResource.getId(), new HashSet<String>(), true);
 	}
 	
 	@Test
