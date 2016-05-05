@@ -16,8 +16,8 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="userId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="data" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -28,60 +28,60 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "encryptUserData", propOrder = {
-    "arg0",
-    "arg1"
+    "userId",
+    "data"
 })
 public class EncryptUserData {
 
-    protected String arg0;
-    protected String arg1;
+    protected String userId;
+    protected String data;
 
     /**
-     * Gets the value of the arg0 property.
+     * Gets the value of the userId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getArg0() {
-        return arg0;
+    public String getUserId() {
+        return userId;
     }
 
     /**
-     * Sets the value of the arg0 property.
+     * Sets the value of the userId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setArg0(String value) {
-        this.arg0 = value;
+    public void setUserId(String value) {
+        this.userId = value;
     }
 
     /**
-     * Gets the value of the arg1 property.
+     * Gets the value of the data property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getArg1() {
-        return arg1;
+    public String getData() {
+        return data;
     }
 
     /**
-     * Sets the value of the arg1 property.
+     * Sets the value of the data property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setArg1(String value) {
-        this.arg1 = value;
+    public void setData(String value) {
+        this.data = value;
     }
 
 }

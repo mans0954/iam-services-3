@@ -20,12 +20,12 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="errorCode" type="{urn:idm.openiam.org/srvc/res/service}ResponseErrorCode" minOccurs="0"/>
+ *         &lt;element name="errorCode" type="{urn:idm.openiam.org/srvc/key/service}ResponseErrorCode" minOccurs="0"/>
  *         &lt;element name="responseValue" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/>
  *         &lt;element name="errorText" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="errorTokenList" type="{urn:idm.openiam.org/srvc/res/service}EsbErrorToken" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="errorTokenList" type="{urn:idm.openiam.org/srvc/key/service}EsbErrorToken" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute name="status" use="required" type="{urn:idm.openiam.org/srvc/res/service}ResponseStatus" />
+ *       &lt;attribute name="status" use="required" type="{urn:idm.openiam.org/srvc/key/service}ResponseStatus" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class Response {
 
-    protected ResponseErrorCode errorCode;
+    protected String errorCode;
     protected Object responseValue;
     protected String errorText;
     @XmlElement(nillable = true)
@@ -55,10 +55,10 @@ public class Response {
      * 
      * @return
      *     possible object is
-     *     {@link ResponseErrorCode }
+     *     {@link String }
      *     
      */
-    public ResponseErrorCode getErrorCode() {
+    public String getErrorCode() {
         return errorCode;
     }
 
@@ -67,10 +67,10 @@ public class Response {
      * 
      * @param value
      *     allowed object is
-     *     {@link ResponseErrorCode }
+     *     {@link String }
      *     
      */
-    public void setErrorCode(ResponseErrorCode value) {
+    public void setErrorCode(String value) {
         this.errorCode = value;
     }
 
