@@ -109,6 +109,9 @@ public class ImportProcessor {
         }
         for (String baseou : ouByParent) {
             int recordsInOUCounter = 0;
+            //TimeOut Error String attrIds[] = {"objectClass",""1.1,"+","*"};
+            //  TimeOut Error String attrIds[] = {"objectClass", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
+
 
             SearchControls searchCtls = new SearchControls();
 
@@ -117,6 +120,7 @@ public class ImportProcessor {
             searchCtls.setTimeLimit(TIME_LIMIT);
             searchCtls.setCountLimit(SIZE_LIMIT);
             searchCtls.setSearchScope(syncConfig.getSearchScope().ordinal());
+//            searchCtls.setReturningAttributes(attrIds);
             byte[] cookie = null;
             int pageCounter = 0;
             int pageRowCount = 0;
@@ -154,30 +158,30 @@ public class ImportProcessor {
                                 Attribute rowAttr = new Attribute();
                                 rowAttr.populateAttribute(key, valueList);
                                 rowObj.put(key, rowAttr);
-                            }
-                        }
-
-                        if (lineHeader == null) {
-                            lineHeader = rowObj; // get first row
-                        }
-                        processingData.add(rowObj);
-
-                    }
-                    Control[] controls = ctx.getResponseControls();
-                    if (controls != null) {
-                        for (Control c : controls) {
-                            if (c instanceof PagedResultsResponseControl) {
-                                PagedResultsResponseControl prrc = (PagedResultsResponseControl) c;
-                                cookie = prrc.getCookie();
-                                break;
+                            } else {
                             }
                         }
                     }
-                    ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
+                    if (lineHeader == null) {
+                        lineHeader = rowObj; // get first row
+                    }
+                    processingData.add(rowObj);
+
                 }
+                Control[] controls = ctx.getResponseControls();
+                if (controls != null) {
+                    for (Control c : controls) {
+                        if (c instanceof PagedResultsResponseControl) {
+                            PagedResultsResponseControl prrc = (PagedResultsResponseControl) c;
+                            cookie = prrc.getCookie();
+                            break;
+                        }
+                    }
+                }
+                ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
             } while (cookie != null);
-        }
 
+        }
         //**************************************************************************************************************
 
         if (CollectionUtils.isEmpty(processingData)) {

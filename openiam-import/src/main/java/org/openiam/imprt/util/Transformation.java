@@ -877,6 +877,7 @@ public class Transformation {
             for (LocationEntity l : locations) {
                 if (siteEntity.getId().equals(l.getOrganizationId())) {
                     addUserAttribute(user, new UserAttributeEntity("LOCATION_ID", l.getLocationId()));
+                    addUserAttribute(user, new UserAttributeEntity("COUNTRY", l.getCountry()));
                 }
             }
         }
