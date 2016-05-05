@@ -44,6 +44,7 @@ import java.util.*;
  * @param <E>
  * @param <E>
  * @param <E>
+ * @param <E>
  */
 /**
  *
@@ -309,6 +310,54 @@ public abstract class AbstractJDBCAgent<E> {
         return internalCount;
     }
 
+    protected int executeNativeQuery(String sql, List<List<Object>> valuesAll) throws SQLException {
+        int internalCount = 1;
+        try {
+            this.connect();
+            for (List<Object> values : valuesAll) {
+                PreparedStatement ps = conn.prepareStatement(String.format(sql));
+                if (!isMySQL()) {
+                    internalCount = 1;
+                }
+                for (Object o : values) {
+                    if (o == null) {
+                        ps.setString(internalCount++, null);
+                    } else if (o.getClass().equals(Integer.class)) {
+                        Integer i = (Integer) o;
+                        ps.setInt(internalCount++, i);
+                    } else if (o.getClass().equals(Long.class)) {
+                        Long i = (Long) o;
+                        ps.setLong(internalCount++, i);
+                    } else if (o.getClass().equals(Float.class)) {
+                        Float i = (Float) o;
+                        ps.setFloat(internalCount++, i);
+                    } else if (o.getClass().equals(String.class)) {
+                        String i = (String) o;
+                        ps.setString(internalCount++, i);
+                    } else if (o.getClass().equals(Double.class)) {
+                        Double i = (Double) o;
+                        ps.setDouble(internalCount++, i);
+                    } else if (o.getClass().equals(java.util.Date.class)) {
+                        java.util.Date i = (java.util.Date) o;
+                        if (i.after(calendar.getTime())) {
+                            i = calendar.getTime();
+                        }
+                        Timestamp sqlTime = new Timestamp(i.getTime());
+                        ps.setTimestamp(internalCount++, sqlTime, Calendar.getInstance());
+                    } else {
+                        System.out.println(o.getClass() + "not supported");
+                    }
+                }
+                ps.executeUpdate();
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            this.disconnect();
+        }
+        return internalCount;
+    }
+
     /**
      * Execute SQL query
      *
@@ -400,11 +449,13 @@ public abstract class AbstractJDBCAgent<E> {
      * @throws Exception
      */
     protected void addAll(AddQueryBuilder addQuery, List<List<Object>> lists) throws Exception {
-        final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-        boolean isMySql = JDBC_DRIVER.equals(DataHolder.getInstance().getProperty(ImportPropertiesKey.JDBC_DRIVER));
         this.initBatch(addQuery);
-        this.executeQuery(lists, isMySql);
-        this.run(isMySql);
+        this.executeQuery(lists, isMySQL());
+        this.run(isMySQL());
+    }
+
+    private boolean isMySQL() {
+        return "com.mysql.jdbc.Driver".equals(DataHolder.getInstance().getProperty(ImportPropertiesKey.JDBC_DRIVER));
     }
 
     /**

@@ -78,7 +78,7 @@ public enum ImportPropertiesKey {
     LOGIN("openiam.table.login"),
     LOGIN_LOGIN("openiam.table.login.login"),
     LOGIN_MANAGED_SYS_ID("openiam.table.login.managedSysId"),
-//    LOGIN_IDENTITY_TYPE("openiam.table.login.identityType"),
+    //    LOGIN_IDENTITY_TYPE("openiam.table.login.identityType"),
     LOGIN_CANONICAL_NAME("openiam.table.login.canonicalName"),
     LOGIN_USER_ID("openiam.table.login.userId"),
     LOGIN_PASSWORD("openiam.table.login.password"),
@@ -119,7 +119,7 @@ public enum ImportPropertiesKey {
     USER_ATTRIBUTES_METADATA_ID("openiam.table.userAttributes.metaDataId"),
     USER_ATTRIBUTES_NAME("openiam.table.userAttributes.name"),
     USER_ATTRIBUTES_VALUE("openiam.table.userAttributes.value"),
-//    USER_ATTRIBUTES_VALUE_AS_BYTE_ARRAY("openiam.table.userAttributes.valueAsByteArray"),
+    //    USER_ATTRIBUTES_VALUE_AS_BYTE_ARRAY("openiam.table.userAttributes.valueAsByteArray"),
     USER_ATTRIBUTES_IS_MULTIVALUED("openiam.table.userAttributes.isMultivalued"),
 
     //ROLE
@@ -153,6 +153,14 @@ public enum ImportPropertiesKey {
     GRP_GRP_RISK("openiam.table.grp.grpRisk"),
     GRP_MAX_USER_NUMBER("openiam.table.grp.maxUserNumber"),
     GRP_MEMBERSHIP_DURATION_SECONDS("openiam.table.grp.membershipDurationSeconds"),
+
+    //GRP ATTRIBUTES
+    T_GRP_ATTRIBUTES("openiam.table.grp.attributes"),
+    T_GRP_ATTRIBUTES_ID("openiam.table.grp.attributes.id"),
+    T_GRP_ATTRIBUTES_GRP_ID("openiam.table.grp.attributes.grpId"),
+    T_GRP_ATTRIBUTES_NAME("openiam.table.grp.attributes.name"),
+    T_GRP_ATTRIBUTES_ATTR_VALUE("openiam.table.grp.attributes.attrVal"),
+    T_GRP_ATTRIBUTES_METADATA_ID("openiam.table.grp.attributes.mdTypeId"),
 
     //RES
     RES("openiam.table.res"),

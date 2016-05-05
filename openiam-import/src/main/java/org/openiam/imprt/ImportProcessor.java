@@ -5,7 +5,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
@@ -101,9 +104,6 @@ public class ImportProcessor {
         }
         for (String baseou : ouByParent) {
             int recordsInOUCounter = 0;
-            //TimeOut Error String attrIds[] = {"objectClass",""1.1,"+","*"};
-            //  TimeOut Error String attrIds[] = {"objectClass", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
-
 
             SearchControls searchCtls = new SearchControls();
 
@@ -201,6 +201,7 @@ public class ImportProcessor {
         GroupEntityParser groupEntityParser = new GroupEntityParser();
         LoginEntityParser loginEntityParser = new LoginEntityParser();
         EmailAddressEntityParser emailAddressEntityParser = new EmailAddressEntityParser();
+        GroupAttributeEntityParser groupAttributeEntityParser = new GroupAttributeEntityParser();
 
         //FIXME - PRE IMPORT BLOCK. NEED TO MOVE IT TO SINGLE PLACE
         //FIXME SINGLE BLOKC VVVVVVVVV
@@ -214,30 +215,71 @@ public class ImportProcessor {
                 ImportPropertiesKey.T_COMPANY_ATTRIBUTE_NAME,
                 ImportPropertiesKey.T_COMPANY_ATTRIBUTE_VALUE});
 
+        List<Column> groupAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.T_GRP_ATTRIBUTES_GRP_ID,
+                ImportPropertiesKey.T_GRP_ATTRIBUTES_ID,
+                ImportPropertiesKey.T_GRP_ATTRIBUTES_NAME,
+                ImportPropertiesKey.T_GRP_ATTRIBUTES_ATTR_VALUE});
+
         // Define SQL query for dependency select
         final String getUserByLoginSQL = "SELECT u.* FROM LOGIN l JOIN USERS u ON l.USER_ID=u.USER_ID WHERE l.MANAGED_SYS_ID='0' AND l.LOWERCASE_LOGIN='%s'";
         final String getAllOrganizationsSQL = "SELECT %s FROM COMPANY c WHERE c.ORG_TYPE_ID='ORGANIZATION'";
         final String getChildOrganizationsSQL = "SELECT %s FROM COMPANY c JOIN COMPANY_TO_COMPANY_MEMBERSHIP ccm ON c.COMPANY_ID=ccm.MEMBER_COMPANY_ID WHERE ccm.COMPANY_ID='%s' AND c.ORG_TYPE_ID='SUBSIDIARY'";
         final String getAttributesOrganizationsSQL = "SELECT %s FROM COMPANY_ATTRIBUTE ca WHERE ca.COMPANY_ID='%s'";
+        final String getAttributesGroupsSQL = "SELECT %s FROM GRP_ATTRIBUTES ca WHERE ca.GRP_ID='%s'";
 
         List<OrganizationEntity> organizationEntityList = companyEntityParser.get(String.format(getAllOrganizationsSQL, Utils.columnsToSelectFields(companyColumnList, "c")), companyColumnList);
-//        if (CollectionUtils.isNotEmpty(organizationEntityList)) {
-//            for (OrganizationEntity organizationEntity : organizationEntityList) {
-//                List<OrganizationEntity> childs = companyEntityParser.get(String.format(getChildOrganizationsSQL, Utils.columnsToSelectFields(companyColumnList, "c"), organizationEntity.getId()), companyColumnList);
-//                if (CollectionUtils.isNotEmpty(childs)) {
-//                    for (OrganizationEntity child : childs) {
-//                        List<OrganizationAttributeEntity> organizationAttributeEntityList = companyAttributeEntityParser.get(String.format(getAttributesOrganizationsSQL, Utils.columnsToSelectFields(companyAttributeColumnList, "ca"), child.getId()), companyAttributeColumnList);
-//                        if (CollectionUtils.isNotEmpty(organizationAttributeEntityList)) {
-//                            child.setAttributes(new HashSet<OrganizationAttributeEntity>(organizationAttributeEntityList));
-//                        }
-//                    }
-//                    organizationEntity.setChildOrganizations(new HashSet<OrganizationEntity>(childs));
-//                }
-//            }
-//        }
+        if (CollectionUtils.isNotEmpty(organizationEntityList)) {
+            for (OrganizationEntity organizationEntity : organizationEntityList) {
+                List<OrganizationEntity> childs = companyEntityParser.get(String.format(getChildOrganizationsSQL, Utils.columnsToSelectFields(companyColumnList, "c"), organizationEntity.getId()), companyColumnList);
+                if (CollectionUtils.isNotEmpty(childs)) {
+                    for (OrganizationEntity child : childs) {
+                        List<OrganizationAttributeEntity> organizationAttributeEntityList = companyAttributeEntityParser.get(String.format(getAttributesOrganizationsSQL, Utils.columnsToSelectFields(companyAttributeColumnList, "ca"), child.getId()), companyAttributeColumnList);
+                        if (CollectionUtils.isNotEmpty(organizationAttributeEntityList)) {
+                            child.setAttributes(new HashSet<OrganizationAttributeEntity>(organizationAttributeEntityList));
+                        }
+                    }
+                    organizationEntity.setChildOrganizations(new HashSet<OrganizationEntity>(childs));
+                }
+            }
+        }
         bindingMap.put("ORGANIZATIONS", organizationEntityList);
         MailboxHelper mailboxHelper = new MailboxHelper(skipUTF8BOM("/home/OpenIAM/data/openiam/upload/sync/AN_Exchange_DBs.csv"));
         bindingMap.put("MAILBOX_HELPER", mailboxHelper);
+
+        List<GroupEntity> groups = groupEntityParser.getAll();
+        if (CollectionUtils.isNotEmpty(groups)) {
+            for (GroupEntity group : groups) {
+                List<GroupAttributeEntity> groupAttributeEntities = groupAttributeEntityParser.get(String.format(getAttributesGroupsSQL, Utils.columnsToSelectFields(groupAttributeColumnList, "ca"), group.getId()), groupAttributeColumnList);
+                if (CollectionUtils.isNotEmpty(groupAttributeEntities)) {
+                    group.setAttributes(new HashSet<GroupAttributeEntity>(groupAttributeEntities));
+                }
+            }
+        }
+
+        bindingMap.put("GROUPS", groups);
+
+
+        Map<String, GroupEntity> groupsEntitiesMap = new HashMap<String, GroupEntity>();
+        //Build map <groupName,DistrguishedName>
+        Map<String, String> groupsMap = new HashMap<String, String>();
+        if (CollectionUtils.isNotEmpty(groups)) {
+            for (GroupEntity g : groups) {
+                if (CollectionUtils.isNotEmpty(g.getAttributes())) {
+                    for (GroupAttributeEntity gae : g.getAttributes()) {
+                        if ("DistinguishedName".equals(gae.getName())) {
+                            groupsMap.put(g.getName().toLowerCase(), gae.getValue());
+                            groupsEntitiesMap.put(gae.getValue().toLowerCase(), g);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        bindingMap.put("GROUPS_MAP", groupsMap);
+        bindingMap.put("GROUPS_MAP_ENTITY", groupsEntitiesMap);
+        //Build map <groupName,Group>
+
 
         //FIXME SINGLE BLOCK ^^^^^^^^^^^
 
@@ -342,7 +384,7 @@ public class ImportProcessor {
         final List<Column> organizationUserColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_AFFILIATION_COMPANY_ID,
                 ImportPropertiesKey.USER_AFFILIATION_METADATA_TYPE_ID});
 
-        final List<Column> userAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_ATTRIBUTES_ID,ImportPropertiesKey.USER_ATTRIBUTES_USER_ID,
+        final List<Column> userAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_ATTRIBUTES_ID, ImportPropertiesKey.USER_ATTRIBUTES_USER_ID,
                 ImportPropertiesKey.USER_ATTRIBUTES_NAME,
                 ImportPropertiesKey.USER_ATTRIBUTES_VALUE});
 
@@ -461,6 +503,11 @@ public class ImportProcessor {
                              GroupEntityParser groupEntityParser,
                              UserAttributeEntityParser userAttributeEntityParser,
                              EmailAddressEntityParser emailAddressEntityParser) {
+
+        if (user.getGroups() != null) {
+            System.out.println("GROUPS=" + user.getGroups().size());
+        }
+
         String userId = null;
         if (user.getId() == null) {
             userId = UUIDGen.getUUID();
@@ -487,6 +534,9 @@ public class ImportProcessor {
         } catch (Exception e) {
             System.out.println("Can't save logins!");
         }
+        saveUserGroups(user, userEntityParser);
+        saveUserRoles(user, userEntityParser);
+
     }
 
     private void saveLogins(UserEntity user, LoginEntityParser loginEntityParser) throws Exception {
@@ -499,9 +549,7 @@ public class ImportProcessor {
                 if (loginEntity.getLoginId() == null) {
                     loginEntity.setLoginId(UUIDGen.getUUID());
                     forADD.add(loginEntity);
-//                    loginEntityParser.add(loginEntity);
                 } else {
-//                    loginEntityParser.update(loginEntity, loginEntity.getLoginId());
                     forUpdate.put(loginEntity.getLoginId(), loginEntity);
                 }
             }
@@ -532,6 +580,89 @@ public class ImportProcessor {
         }
         userAttributeEntityParser.addAll(forADD);
         userAttributeEntityParser.update(forUpdate);
+
+    }
+
+    private void saveUserGroups(UserEntity user, UserEntityParser parser) {
+        if (CollectionUtils.isNotEmpty(user.getGroups())) {
+            String sqlADD = "INSERT INTO USER_GRP (USER_ID,GRP_ID) VALUES (?,?) ";
+            String sqlDELETE = "DELETE FROM USER_GRP WHERE USER_ID=? AND GRP_ID=?";
+            List<List<Object>> forAdd = new ArrayList<List<Object>>();
+            List<List<Object>> forDelete = new ArrayList<List<Object>>();
+            for (GroupEntity groupEntity : user.getGroups()) {
+                if ("ADD_TO_DB".equals(groupEntity.getName())) {
+                    List<Object> vals = new ArrayList<>();
+                    vals.add(user.getId());
+                    vals.add(groupEntity.getId());
+                    forAdd.add(vals);
+                }
+                if ("DELETE_FROM_DB".equals(groupEntity.getName())) {
+                    List<Object> vals = new ArrayList<>();
+                    vals.add(user.getId());
+                    vals.add(groupEntity.getId());
+                    forDelete.add(vals);
+                }
+                parser.executeNativeCRUD(sqlADD, forAdd);
+                parser.executeNativeCRUD(sqlDELETE, forDelete);
+            }
+        }
+
+    }
+
+    private void saveUserRoles(UserEntity user, UserEntityParser parser) {
+        if (CollectionUtils.isNotEmpty(user.getRoles())) {
+            String sqlADD = "INSERT INTO USER_ROLE (USER_ID,ROLE_ID) VALUES (?,?) ";
+            String sqlDELETE = "DELETE FROM USER_ROLE WHERE USER_ID=? AND ROLE_ID=?";
+            List<List<Object>> forAdd = new ArrayList<List<Object>>();
+            List<List<Object>> forDelete = new ArrayList<List<Object>>();
+            for (RoleEntity roleEntity : user.getRoles()) {
+                if ("ADD_TO_DB".equals(roleEntity.getName())) {
+                    List<Object> vals = new ArrayList<>();
+                    vals.add(user.getId());
+                    vals.add(roleEntity.getId());
+                    forAdd.add(vals);
+                }
+                if ("DELETE_FROM_DB".equals(roleEntity.getName())) {
+                    List<Object> vals = new ArrayList<>();
+                    vals.add(user.getId());
+                    vals.add(roleEntity.getId());
+                    forDelete.add(vals);
+                }
+                parser.executeNativeCRUD(sqlADD, forAdd);
+                parser.executeNativeCRUD(sqlDELETE, forDelete);
+            }
+        }
+
+    }
+
+    private void saveUserOrganizations(UserEntity user, UserEntityParser parser) {
+        if (CollectionUtils.isNotEmpty(user.getOrganizationUser())) {
+            String sqlADD = "INSERT INTO USER_AFFILIATION (USER_ID,COMPANY_ID,METADATA_TYPE_ID) VALUES (?,?,'DEFAULT_AFFILIATION') ";
+            String sqlDELETE = "DELETE FROM USER_AFFILIATION WHERE USER_ID=? AND COMPANY_ID=?";
+            List<List<Object>> forAdd = new ArrayList<List<Object>>();
+            List<List<Object>> forDelete = new ArrayList<List<Object>>();
+            for (OrganizationUserEntity roleEntity : user.getOrganizationUser()) {
+                if (roleEntity.getMetadataTypeEntity() != null) {
+                    String action = roleEntity.getMetadataTypeEntity().getDescription();
+                    if (action != null) {
+                        if ("ADD_TO_DB".equals(action)) {
+                            List<Object> vals = new ArrayList<>();
+                            vals.add(user.getId());
+                            vals.add(roleEntity.getOrganization().getId());
+                            forAdd.add(vals);
+                        }
+                        if ("DELETE_FROM_DB".equals(roleEntity.getName())) {
+                            List<Object> vals = new ArrayList<>();
+                            vals.add(user.getId());
+                            vals.add(roleEntity.getId());
+                            forDelete.add(vals);
+                        }
+                    }
+                }
+                parser.executeNativeCRUD(sqlADD, forAdd);
+                parser.executeNativeCRUD(sqlDELETE, forDelete);
+            }
+        }
 
     }
 

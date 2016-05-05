@@ -1,6 +1,8 @@
 package org.openiam.imprt.jdbc.parser.impl;
 
 
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.jdbc.AbstractJDBCAgent;
 import org.openiam.imprt.jdbc.parser.IBaseParser;
@@ -83,6 +85,16 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
         }
 
         return cols;
+    }
+
+    @Override
+    public void executeNativeCRUD(String sql, List<List<Object>> values) {
+        try {
+            this.executeNativeQuery(sql, values);
+        } catch (Exception e) {
+            System.out.println("Can't process '" + sql + "' " + e);
+        }
+
     }
 
     /**
@@ -407,4 +419,18 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
     public void delete(ImportPropertiesKey name, String value) throws Exception {
         this.deleteCommon(name, value);
     }
+
+    protected MetadataTypeEntity getMetadataType(String value) {
+        MetadataTypeEntity mt = new MetadataTypeEntity();
+        mt.setId(value);
+        return mt;
+    }
+
+
+    protected MetadataElementEntity getMetadataElementEntity(String value) {
+        MetadataElementEntity mt = new MetadataElementEntity();
+        mt.setId(value);
+        return mt;
+    }
+
 }

@@ -22,6 +22,8 @@ import org.openiam.imprt.model.LineObject;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Transformation {
 
@@ -29,8 +31,8 @@ public class Transformation {
     private final String AD_MNG_SYS_ID = "DD6CA4CC8BBC4D78A5879D93CEBC8A29";
     private final String PDD_EMAIL = "PDDUser@cog.akzonobel.com";
 
-    final String[] ARCHIVE_CACHE_ENABLED = {"g_gss_eus_maas_vaultcache_enabled - vv"};
-    final String[] ARCHIVE_CACHE_DISABLED = {"g_gss_eus_maas_vaultcache_disabled - vv"};
+    final String ARCHIVE_CACHE_ENABLED = "g_gss_eus_maas_vaultcache_enabled - vv";
+    final String ARCHIVE_CACHE_DISABLED = "g_gss_eus_maas_vaultcache_disabled - vv";
     final String INTERNET_GROUP_MASK = "a_.*_internetaccess";
 
     final String UNITY_ROLE_ID = "2c94b2574be50e06014be569449302ed";
@@ -59,6 +61,9 @@ public class Transformation {
     public void populateObject(LineObject lo, UserEntity user, Map<String, Object> bindingMap) throws Exception {
         List<OrganizationEntity> organizationEntityList = (List<OrganizationEntity>) bindingMap.get("ORGANIZATIONS");
         MailboxHelper mailboxHelper = (MailboxHelper) bindingMap.get("MAILBOX_HELPER");
+        List<GroupEntity> groups = (List<GroupEntity>) bindingMap.get("GROUPS");
+        Map<String, String> groupsMap = (Map<String, String>) bindingMap.get("GROUPS_MAP");
+        Map<String, GroupEntity> groupsMapEntities = (Map<String, GroupEntity>) bindingMap.get("GROUPS_MAP_ENTITY");
 
         boolean changeDisplayName = false;
         boolean isNewUser = (user.getId() == null);
@@ -328,8 +333,11 @@ public class Transformation {
             e.printStackTrace();
         }
         //Primary Email
+
         attr = this.getValue(lo.get("mail"));
+        String emailAddressValue = "";
         if (StringUtils.isNotBlank(attr)) {
+            emailAddressValue = attr;
             this.addEmail(user, attr);
         }
 
@@ -374,6 +382,7 @@ public class Transformation {
         addUserAttribute(user, new UserAttributeEntity("siteCode", attr));
 
         attr = this.getValue(lo.get("extensionAttribute14"));
+        boolean isMDM = "MDM".equalsIgnoreCase(attr);
         addUserAttribute(user, new UserAttributeEntity("classification", attr));
 
         attr = this.getValue(lo.get("company"));
@@ -390,6 +399,112 @@ public class Transformation {
         String mailboxSize = mailboxHelper.getBoxSize(homeMDB);
         if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
             addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
+        }
+
+
+        // MemberOf
+        Attribute mOfAttr = lo.get("memberOf");
+        String[] memberOf = null;
+        if (mOfAttr != null) {
+            if (mOfAttr.isMultiValued()) {
+                memberOf = mOfAttr.getValueList().toArray(new String[mOfAttr.getValueList().size()]);
+            } else {
+                memberOf = mOfAttr.getValue() == null ? null : mOfAttr.getValue().split("/\\,/");
+            }
+        }
+        boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
+        boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
+        boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
+
+        boolean isPDD = (mdTypeId == "AKZONOBEL_USER_NO_MBX" && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
+        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
+        addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
+
+        if (isCacheEnabled) {
+            addUserAttribute(user, new UserAttributeEntity("archive", "Cached - Laptop"));
+        } else if (isCacheDisabled) {
+            addUserAttribute(user, new UserAttributeEntity("archive", "Non-Cached - Desktop"));
+        } else {
+            addUserAttribute(user, new UserAttributeEntity("archive", null));
+        }
+        if (isMDM) {
+            classification = "MDM";
+        } else if (isPDD) {
+            classification = "PDD";
+        }
+        if (isMDM) {
+            addRoleId(user, "MDM_ROLE_ID");
+        } else {
+            removeRoleId(user, "MDM_ROLE_ID");
+        }
+        mergeGroups(memberOf, groupsMapEntities, user);
+
+        //TODO Reveal what is and how to define option: 'longTermAbsence'
+        //TODO get Citrix attributes: terminalServiceHomeD...
+
+        // Classification
+        //TODO Reveal what is and how to define Classifications: 'RAA', 'LowFrequencyUser'
+        addUserAttribute(user, new UserAttributeEntity("classification", classification));
+
+
+    }
+
+    public boolean containsNameGroup(String[] userADNames, Map<String, String> groupsMap, String toFind) {
+        if (userADNames == null)
+            return false;
+        String dn = groupsMap.get(toFind);
+        boolean retVal = false;
+        if (dn != null) {
+            return Arrays.asList(userADNames).contains(dn);
+        }
+        return retVal;
+    }
+
+    public boolean containsMaskGroup(String[] userADNames, Map<String, String> groupsMap, String mask) {
+        if (userADNames == null)
+            return false;
+        List<String> userADNamesList = Arrays.asList(userADNames);
+        Pattern pattern = Pattern.compile(mask);
+        Matcher matcher = null;
+        for (String key : groupsMap.keySet()) {
+            matcher = pattern.matcher(key);
+            if (matcher.matches()) {
+                String dn = groupsMap.get(key);
+                if (userADNamesList.contains(dn)) {
+                    return true;
+                }
+            }
+        }
+
+
+        return false;
+    }
+
+    private void mergeGroups(String[] membersOf, Map<String, GroupEntity> groupsEntities, UserEntity user) {
+        if (membersOf == null)
+            return;
+        for (String member : membersOf) {
+            GroupEntity groupEntity = groupsEntities.get(member.toLowerCase());
+            if (groupEntity != null) {
+                if (user.getGroups() == null) {
+                    user.setGroups(new HashSet<GroupEntity>());
+                }
+                boolean isFind = false;
+                for (GroupEntity gr : user.getGroups()) {
+                    if (gr.getId().equals(groupEntity.getId())) {
+                        isFind = true;
+                        break;
+                    }
+                }
+                if (!isFind) {
+                    //ADD MARKER THAT SHOULD BE ADDED
+                    groupEntity.setName("ADD_TO_DB");
+                    user.getGroups().add(groupEntity);
+                }
+            }
         }
     }
 
@@ -449,6 +564,7 @@ public class Transformation {
         if (!foundRole) {
             RoleEntity role = new RoleEntity();
             role.setId(roleId);
+            role.setName("ADD_TO_DB");
             user.getRoles().add(role);
         }
     }
@@ -456,7 +572,7 @@ public class Transformation {
     private void removeRoleId(UserEntity user, String roleId) {
         for (RoleEntity re : user.getRoles()) {
             if (re.getId().equalsIgnoreCase(roleId)) {
-                user.getRoles().remove(re);
+                re.setName("DELETE_FROM_DB");
                 break;
             }
         }

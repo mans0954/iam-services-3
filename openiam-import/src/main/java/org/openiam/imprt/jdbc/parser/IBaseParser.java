@@ -153,5 +153,8 @@ public interface IBaseParser<E> {
      * @return
      */
     public E update(E e, String pk);
+
     public void update(Map<String, E> map);
+
+    public void executeNativeCRUD(String sql, List<List<Object>> values);
 }
