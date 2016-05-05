@@ -50,6 +50,8 @@ import java.util.*;
  * @param <E>
  * @param <E>
  * @param <E>
+ * @param <E>
+ * @param <E>
  */
 /**
  *
@@ -148,7 +150,8 @@ public abstract class AbstractJDBCAgent<E> {
      */
     protected void connect() {
         try {
-            conn = DataSource.getInstance().getConnection();
+//            conn = DataSource.getInstance().getConnection();
+            conn = DataSource.getConnectionClear();
             stmt = conn.createStatement();
         } catch (SQLException se) {
             se.printStackTrace();
@@ -362,6 +365,7 @@ public abstract class AbstractJDBCAgent<E> {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            ps.close();
             this.disconnect();
         }
         return internalCount;

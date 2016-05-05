@@ -100,7 +100,7 @@ public class Transformation {
         } else {
             addUserAttribute(user, new UserAttributeEntity("accountExpires", null));
         }
-        if ((str == "9223372036854775807") || (str == "0")) {
+        if (("9223372036854775807".equals(str)) || ("0".equals(str))) {
             expDate = null;
         } else {
             try {
@@ -434,7 +434,7 @@ public class Transformation {
         boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
         boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
 
-        boolean isPDD = (mdTypeId == "AKZONOBEL_USER_NO_MBX" && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
+        boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
         addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
@@ -472,7 +472,8 @@ public class Transformation {
         //For AD
         addRoleId(user, "8a8da02e51a28fd20151a291ce360002");
 
-        String accessRoleId = (mdTypeId == "AKZONOBEL_USER_MBX" || mdTypeId == "AKZONOBEL_USER_NO_MBX") ? "1" : mdTypeId == "AKZONOBEL_ADM_ACCOUNT" ? "SUPPORT_ADMIN_ROLE_ID" : "SERVICE_ROLE_ID";
+        String accessRoleId = ("AKZONOBEL_USER_MBX".equals(mdTypeId) ||
+                "AKZONOBEL_USER_NO_MBX".equals(mdTypeId)) ? "1" : "AKZONOBEL_ADM_ACCOUNT".equals(mdTypeId) ? "SUPPORT_ADMIN_ROLE_ID" : "SERVICE_ROLE_ID";
         if (StringUtils.isNotBlank(accessRoleId)) {
             addRoleId(user, accessRoleId);
         }
@@ -481,7 +482,7 @@ public class Transformation {
         boolean isHpAdmin = StringUtils.isNotBlank(distinguishedName) && distinguishedName.matches("/.*,OU=Administrators,.*OU=HP,.*/");
         if (isHpAdmin) {
             for (RoleEntity re : user.getRoles()) {
-                if (re.getId() == "HP_ADMIN_ROLE_ID") {
+                if ("HP_ADMIN_ROLE_ID".equals(re.getId())) {
                     addRoleId(user, "HP_ADMIN_ROLE_ID");
                 }
 //                if (re.getId() == UNITY_ROLE_ID) {
@@ -514,7 +515,7 @@ public class Transformation {
 
         LoginEntity lg = null;
         for (LoginEntity le : user.getPrincipalList()) {
-            if (le.getManagedSysId() == managedSystemId) {
+            if (le.getManagedSysId().equals(managedSystemId)) {
                 lg = le;
                 break;
             }
@@ -523,7 +524,7 @@ public class Transformation {
         RoleEntity userRole = null;
         if (StringUtils.isNotBlank(roleId)) {
             for (RoleEntity re : user.getRoles()) {
-                if (re.getId() == roleId) {
+                if (re.getId().equals(roleId)) {
                     userRole = re;
                 }
             }
