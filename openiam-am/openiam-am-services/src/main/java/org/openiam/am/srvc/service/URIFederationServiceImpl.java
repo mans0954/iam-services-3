@@ -563,13 +563,14 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			} else {
 				response.setConfigured(true);
 				cp = cpNode.getContentProvider();
-				if(!cp.getIsPublic() && !isEntitled(userId, cp.getResourceId())) {
-					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
-				}
 				
 				final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
 				uriPattern = patternNode.getPattern();
 				uriMethod = patternNode.getMethod();
+				
+				if(!cp.getIsPublic() && !isEntitled(userId, cp.getResourceId())) {
+					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
+				}
 				
 				/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
 				if(uriPattern != null) {

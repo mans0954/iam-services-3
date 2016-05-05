@@ -1,6 +1,8 @@
 package org.openiam.service.integration;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -13,6 +15,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.junit.runner.RunWith;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
@@ -148,7 +152,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	protected AuthenticationService authServiceClient;
 	
 	@Autowired
-	private RestTemplate restTemplate;
+	protected RestTemplate restTemplate;
 	
 	@Value("${openiam.service_host}")
 	private String serviceHost;
@@ -320,8 +324,24 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		return getRandomName(5);
 	}
 	
+	protected String encode(final String param) {
+		if(StringUtils.isNotBlank(param)) {
+			try {
+				return URLEncoder.encode(param, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			return "";
+		}
+	}
+	
+	protected String getESBRestfulURL(final String path) {
+		return new StringBuilder(serviceHost).append(path).toString();
+	}
+	
 	protected void refreshAuthorizationManager() {
-		final String endpoint = String.format("%s/openiam-esb/authmanager/refresh", serviceHost);
+		final String endpoint = getESBRestfulURL("/openiam-esb/authmanager/refresh");
 		try {
 			httpClient.getResponse(new URL(endpoint));
 			Thread.sleep(500L);
@@ -332,7 +352,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected void refreshContentProviderManager() {
-		final String endpoint = String.format("%s/openiam-esb/contentprovider/refresh", serviceHost);
+		final String endpoint = getESBRestfulURL("/openiam-esb/contentprovider/refresh");
 		try {
 			httpClient.getResponse(new URL(endpoint));
 			Thread.sleep(3000L);
