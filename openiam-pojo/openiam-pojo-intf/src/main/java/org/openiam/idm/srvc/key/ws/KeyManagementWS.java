@@ -5,17 +5,23 @@ import org.openiam.base.ws.Response;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import java.util.List;
 
 /**
  * Created by: Alexander Duckardt
  * Date: 19.10.12
  */
-@WebService(targetNamespace = "urn:idm.openiam.org/srvc/res/service", name = "KeyManagementWS")
+@WebService(targetNamespace = "urn:idm.openiam.org/srvc/key/service", name = "KeyManagementWS")
 public interface KeyManagementWS {
     @WebMethod
     public Response initKeyManagement();
     @WebMethod
     public Response generateMasterKey();
+    @WebMethod
+    public Response generateKeysForUser(@WebParam(name = "userId") String userId);
+    @WebMethod
+    public Response generateKeysForUserList(@WebParam(name = "userIds")  List<String> userIds);
+
     @WebMethod
     public Response migrateData(@WebParam(name = "secretKey")String secretKey);
     @WebMethod

@@ -116,6 +116,7 @@
 		<module>openiam-common</module>
 		<module>openiam-security</module>
 		<module>openiam-auth-manager</module>
+		<module>openiam-import</module>
 		<!--<module>openiam-subscription</module>-->
 	</modules>
 	<properties>
@@ -473,7 +474,6 @@
 				<groupId>mysql</groupId>
 				<artifactId>mysql-connector-java</artifactId>
 				<version>${mysql.version}</version>
-				<scope>provided</scope>
 			</dependency>
             <!-- mssql dependencies -->
             <dependency>

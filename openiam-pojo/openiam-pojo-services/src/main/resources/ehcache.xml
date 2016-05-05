@@ -529,8 +529,8 @@
            eternal="false"
            overflowToDisk="false"
            memoryStoreEvictionPolicy="LRU"
-           timeToLiveSeconds="86400"
-           timeToIdleSeconds="86400"
+           timeToLiveSeconds="0"
+           timeToIdleSeconds="0"
     />
     <cache name="roleEntities"
            maxElementsInMemory="100000"

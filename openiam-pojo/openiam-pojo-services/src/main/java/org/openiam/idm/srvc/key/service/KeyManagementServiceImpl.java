@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.key.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.core.dao.UserKeyDao;
@@ -21,9 +22,11 @@ import org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -62,6 +65,11 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
 
+    @Value("${org.openiam.userkeys.cache.enabled.on.init}")
+    private Boolean initCacheOnInit;
+
+
+
     @Autowired
     private Cryptor cryptor;
     @Autowired
@@ -76,6 +84,10 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
     private ManagedSysDAO managedSysDAO;
     @Autowired
     private UserIdentityAnswerDAO userIdentityAnswerDAO;
+    @Autowired
+    @Qualifier("userManager")
+    private UserDataService userManager;
+
 
     private ApplicationContext ac;
 
@@ -102,15 +114,58 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
         } else {
             jksManager = new JksManager(this.jksFile, this.iterationCount);
         }
+        if(initCacheOnInit){
+            cacheUserKeys();
+        }
+
+    }
+
+
+    private void cacheUserKeys() {
+        long userCount = userManager.getTotalNumberOfUsers();
+        int from = 0;
+        int maxSize = 1000;
+        KeyManagementService proxyService = getProxyService();
+        try {
+            while (from < userCount){
+                log.info(String.format("CacheUserKeys: Fetching from %s, size: %s", from, maxSize));
+                List<String> userIds = userManager.getUserIDs(from, maxSize);
+                log.info(String.format("CacheUserKeys: Fetched from %s, size: %s.  Caching keys...", from, maxSize));
+                if(CollectionUtils.isNotEmpty(userIds)){
+                    List<UserKey> userKeys = proxyService.getByUserIdsKeyName(userIds, KeyName.password.name());
+                    if(CollectionUtils.isNotEmpty(userKeys)){
+                        for(UserKey userKey: userKeys){
+                            proxyService.getUserKey(userKey);
+                        }
+                    }
+
+
+
+                }
+                from += maxSize;
+            }
+        } catch (EncryptionException e) {
+            log.error(e.getMessage(), e);
+        }
+
     }
 
     @Override
+    @Transactional(readOnly = true)
     public byte[] getSystemUserKey(String keyName) throws EncryptionException {
         return getProxyService().getUserKey(systemUserId, keyName);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<UserKey> getByUserIdsKeyName(List<String> userIds, String keyName) {
+        return userKeyDao.getByUserIdsKeyName(userIds, keyName);
+    }
+
+
+    @Override
     @Cacheable(value = "userkeys", key = "{ #userId, #keyName}")
+    @Transactional(readOnly = true)
     public byte[] getUserKey(String userId, String keyName) throws EncryptionException {
         System.out.println(String.format("==== GET USER KEY FOR PWD: {userID:%s, keyName:%s} ", userId, keyName));
         try {
@@ -125,6 +180,7 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
     @Override
     @Cacheable(value = "userkeys", key = "{ #uk.userId, #uk.name}")
     public byte[] getUserKey(UserKey uk) throws EncryptionException {
+        System.out.println(String.format("==== GET USER KEY FOR PWD: {userID:%s, keyName:%s} ", uk.getUserId(), uk.getName()));
         if (uk == null) {
             return null;
         }
@@ -833,5 +889,74 @@ public class KeyManagementServiceImpl implements KeyManagementService, Applicati
     private KeyManagementService getProxyService() {
         KeyManagementService service = (KeyManagementService)ac.getBean("keyManagementService");
         return service;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void generateKeysForUserList(List<String> userIds)throws Exception{
+        byte[] masterKey = getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
+        if (masterKey == null || masterKey.length == 0) {
+            throw new NullPointerException("Cannot get master key to encrypt user keys");
+        }
+
+        HashMap<String, List<LoginEntity>> loginMap = getLoginMap(userIds);
+        HashMap<String, List<UserKey>> userKeyMap = getUserKeyMap(userIds);
+
+
+        HashMap<String, UserSecurityWrapper> userSecurityMap = new HashMap<String, UserSecurityWrapper>();
+        HashMap<String, UserSecurityWrapper> userSecurityMapToDecript = new HashMap<String, UserSecurityWrapper>();
+
+        for (String userId : userIds) {
+            UserSecurityWrapper usw = new UserSecurityWrapper();
+            usw.setUserId(userId);
+            usw.setLoginList(loginMap.get(userId));
+            usw.setUserKeyList(userKeyMap.get(userId));
+            userSecurityMap.put(userId, usw);
+        }
+
+        List<UserKey> newUserKeyList = new ArrayList<>();
+
+        for (String userId : userSecurityMap.keySet()) {
+            List<UserKey> userKeyList = userSecurityMap.get(userId).getUserKeyList();
+            if(CollectionUtils.isNotEmpty(userKeyList)) {
+                decryptUserData(masterKey, userSecurityMap.get(userId));
+            }
+        }
+
+        encryptData(masterKey, userSecurityMap, newUserKeyList);
+        for (String userId : userSecurityMap.keySet()) {
+            userKeyDao.deleteByUserId(userId);
+        }
+        addUserKeys(newUserKeyList);
+    }
+
+
+    private HashMap<String, List<LoginEntity>> getLoginMap(List<String> userIds) {
+        HashMap<String, List<LoginEntity>> lgMap = new HashMap<String, List<LoginEntity>>();
+
+        List<LoginEntity> loginList = loginDAO.findByUserIds(userIds, null);
+        if (CollectionUtils.isNotEmpty(loginList)) {
+            for (LoginEntity lg : loginList) {
+                if (!lgMap.containsKey(lg.getUserId())) {
+                    lgMap.put(lg.getUserId(), new ArrayList<LoginEntity>());
+                }
+                lgMap.get(lg.getUserId()).add(lg);
+            }
+        }
+        return lgMap;
+    }
+    private HashMap<String, List<UserKey>> getUserKeyMap(List<String> userIds) throws Exception {
+        HashMap<String, List<UserKey>> keyMap = new HashMap<String, List<UserKey>>();
+
+        List<UserKey> userKeyList= userKeyDao.getByUserIdsKeyName(userIds, null);
+        if (CollectionUtils.isNotEmpty(userKeyList)) {
+
+            for (UserKey key : userKeyList) {
+                if (!keyMap.containsKey(key.getUserId())) {
+                    keyMap.put(key.getUserId(), new ArrayList<UserKey>());
+                }
+                keyMap.get(key.getUserId()).add(key);
+            }
+        }
+        return keyMap;
     }
 }

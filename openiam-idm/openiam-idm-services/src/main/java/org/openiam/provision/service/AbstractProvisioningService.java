@@ -1990,9 +1990,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         IdmAuditLog idmAuditLogChild1 = new IdmAuditLog();
         idmAuditLogChild1.setAction(isAdd ? AuditAction.ADD_USER_TO_RESOURCE.value() : AuditAction.UPDATE_USER_TO_RESOURCE.value());
-        LoginEntity lRequestor = loginManager.getPrimaryIdentity(systemUserId);
-        idmAuditLogChild1.setRequestorUserId(lRequestor.getUserId());
-        idmAuditLogChild1.setRequestorPrincipal(lRequestor.getLogin());
+//        LoginEntity lRequestor = loginManager.getPrimaryIdentity(systemUserId);
+        idmAuditLogChild1.setRequestorUserId(systemUserId);
+        //// TODO: 4/15/16 we can put it to properies too, but not needed to call DB each time 
+        idmAuditLogChild1.setRequestorPrincipal("system");
         idmAuditLogChild1.setTargetUser(mLg.getUserId(), mLg.getLogin());
         idmAuditLogChild1.setTargetResource(mSys.getResourceId(), mSys.getName());
         idmAuditLogChild1.setManagedSysId(mSys.getId());

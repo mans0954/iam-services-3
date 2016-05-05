@@ -1,10 +1,13 @@
 package org.openiam.core.dao;
 
+import org.apache.commons.lang.StringUtils;
+import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.domain.UserKey;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -16,6 +19,15 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
     @Override
     protected String getPKfieldName() {
         return "userKeyId";
+    }
+
+    @Override
+    public List<UserKey> getByUserIdsKeyName(List<String> userIds, String keyName){
+        Criteria criteria = getCriteria().add(Restrictions.in("userId", userIds));
+        if(StringUtils.isNotBlank(keyName)){
+            criteria.add(Restrictions.eq("name", keyName));
+        }
+        return criteria.list();
     }
 
     @Override

@@ -110,7 +110,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
 
         if(StringUtils.isNotBlank(filter.getAttestationTaskId())){
             TaskWrapper attestationTask = activitiService.getTask(filter.getAttestationTaskId());
-            if(attestationTask!=null){
+            if(attestationTask!=null && CollectionUtils.isNotEmpty(attestationTask.getAttestationManagedSysFilter())){
                 filter.setAttestationManagedSysFilter(new HashSet<String>(attestationTask.getAttestationManagedSysFilter()));
             }
         }

@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by: Alexander Duckardt
@@ -54,6 +56,22 @@ public class KeyManagementWSImpl implements KeyManagementWS {
             log.warn("GenerateMasterKey request successfully handled ");
         } catch(Exception e) {
             log.warn("ERROR: " + e.getMessage());
+            log.error(e.getMessage(), e);
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorText(e.getMessage());
+        }
+        return resp;
+    }
+
+    public Response generateKeysForUser(String userId){
+        List<String> userList = new ArrayList<>();
+        return generateKeysForUserList(userList);
+    }
+    public Response generateKeysForUserList(List<String> userIds){
+        Response resp = new Response(ResponseStatus.SUCCESS);
+        try {
+            keyManagementService.generateKeysForUserList(userIds);
+        } catch(Exception e) {
             log.error(e.getMessage(), e);
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorText(e.getMessage());

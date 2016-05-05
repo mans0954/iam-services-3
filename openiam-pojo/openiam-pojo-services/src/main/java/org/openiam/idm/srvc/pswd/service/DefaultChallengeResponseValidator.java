@@ -30,8 +30,12 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.data.IdentityAnswerNotFoundException;
 import org.openiam.exception.data.PrincipalNotFoundException;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -44,7 +48,9 @@ import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.searchbean.converter.IdentityAnswerSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.IdentityQuestionSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,6 +93,12 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     private PasswordService passwordService;
     @Autowired
     private KeyManagementService keyManagementService;
+
+    @Autowired
+    protected AuditLogService auditLogService;
+
+    @Autowired
+    protected UserDataService userMgr;
 
     private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 
@@ -315,6 +327,25 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     @Transactional
     public void saveAnswers(final List<UserIdentityAnswerEntity> answerList) throws Exception {
         if (answerList != null) {
+
+            final IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.succeed();
+            auditLog.setUserId(answerList.get(0).getUserId());
+
+            AuditLogSearchBean logSearchBean = new AuditLogSearchBean();
+            logSearchBean.setUserId(answerList.get(0).getUserId());
+            logSearchBean.setAction(AuditAction.SAVE_CHALLENGE_ANSWERS.value());
+
+            Integer countLogs = auditLogService.count(logSearchBean);
+            if (countLogs >= 1) {
+                auditLog.setAction(AuditAction.CHANGE_CHALLENGE_ANSWERS.value());
+            } else {
+                auditLog.setAction(AuditAction.SAVE_CHALLENGE_ANSWERS.value());
+            }
+
+            LoginEntity loginEntity = loginManager.getPrimaryIdentity(answerList.get(0).getUserId());
+            auditLog.setPrincipal(loginEntity.getLogin());
+
             for (final UserIdentityAnswerEntity entity : answerList) {
 
                 if (validateAnswerLength(entity.getQuestionAnswer())) {
@@ -329,10 +360,14 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
                     }
                     entity.setIsEncrypted(true);
                 } else {
+                    auditLog.fail();
+                    auditLog.setFailureReason(ResponseCode.ANSWER_IS_TOO_LONG);
                     throw new BasicDataServiceException(ResponseCode.ANSWER_IS_TOO_LONG);
                 }
             }
             answerDAO.save(answerList);
+            auditLogService.save(auditLog);
+
         }
     }
 
