@@ -49,12 +49,7 @@ public class Transformation {
     final String LYNC_MNG_SYS_ID = "2c94b25748eaf9ef01492d5507100273";
     final String EXCH_MNG_SYS_ID = "2c94b25748eaf9ef01492d5312d3026d";
 
-    final String META_DATA_TYPE_ID_FOR_SERVICE_TYPE_ROLE = "2c94b2574bc5f9d0014bdf2976ac0a70";
-    final String META_DATA_TYPE_ID_FOR_BUSINESS_UNIT_ROLE = "2c94b2574bc5f9d0014bdf24d9dc0a61";
-    final String META_DATA_TYPE_ID_FOR_ORGANIZATIONAL_ROLE = "2c94b2574a7c3454014a9608add231df";
     final String DEFAULT_DATE = "01/01/2020 12:00:00";
-
-    final String badRoleId = "2";
 
     public int execute(LineObject rowObj, UserEntity user, Map<String, Object> bindingMap) {
         try {
@@ -74,7 +69,6 @@ public class Transformation {
     public void populateObject(LineObject lo, UserEntity user, Map<String, Object> bindingMap) throws Exception {
         List<OrganizationEntity> organizationEntityList = (List<OrganizationEntity>) bindingMap.get("ORGANIZATIONS");
         MailboxHelper mailboxHelper = (MailboxHelper) bindingMap.get("MAILBOX_HELPER");
-        List<GroupEntity> groups = (List<GroupEntity>) bindingMap.get("GROUPS");
         Map<String, String> groupsMap = (Map<String, String>) bindingMap.get("GROUPS_MAP");
         Map<String, GroupEntity> groupsMapEntities = (Map<String, GroupEntity>) bindingMap.get("GROUPS_MAP_ENTITY");
         List<LocationEntity> locations = (List<LocationEntity>) bindingMap.get("LOCATIONS");
@@ -268,6 +262,13 @@ public class Transformation {
         attr = this.getValue(lo.get("l"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("CITY", attr));
+        }
+        //Location (Addess)
+        attr = this.getValue(lo.get("c"));
+        String country = null;
+        if (StringUtils.isNotBlank(attr)) {
+            country = attr;
+            addUserAttribute(user, new UserAttributeEntity("COUNTRY", attr));
         }
         attr = this.getValue(lo.get("co"));
         if (StringUtils.isNotBlank(attr)) {
@@ -510,7 +511,7 @@ public class Transformation {
             user.setType(metadataTypeEntity);
         }
 
-        getLinkedOrganization(distinguishedName, siteCode, extensionAttribute15, organizationEntityList, locations, user);
+        getLinkedOrganization(distinguishedName, siteCode, extensionAttribute15, country, organizationEntityList, locations, user);
     }
 
     private void updateLoginAndRole(String login, String managedSystemId, UserEntity user, String roleId) {
@@ -847,7 +848,7 @@ public class Transformation {
         }
     }
 
-    private void getLinkedOrganization(String distinguishedName, String site, String bu, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
+    private void getLinkedOrganization(String distinguishedName, String site, String bu, String country, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
         try {
             String adPath = null;
             if (distinguishedName.contains("OU=UserTransfer,DC=d30,DC=intra")) {
@@ -895,7 +896,8 @@ public class Transformation {
                 for (LocationEntity l : locations) {
                     if (siteEntity.getId().equals(l.getOrganizationId())) {
                         addUserAttribute(user, new UserAttributeEntity("LOCATION_ID", l.getLocationId()));
-                        addUserAttribute(user, new UserAttributeEntity("COUNTRY", l.getCountry()));
+                        if (country == null)
+                            addUserAttribute(user, new UserAttributeEntity("COUNTRY", l.getCountry()));
                     }
                 }
             }

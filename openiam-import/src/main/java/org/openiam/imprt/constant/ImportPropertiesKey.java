@@ -344,7 +344,6 @@ public enum ImportPropertiesKey {
     SYNCH_CONFIG_UPDATE_ATTRIBUTE("openiam.table.syncConfig.update.attribute"),
     SYNCH_CONFIG_SYNCH_FREQUENCY("openiam.table.syncConfig.sync.frequency"),
     SYNCH_CONFIG_SYNCH_TYPE("openiam.table.syncConfig.sync.type"),
-    SYNCH_CONFIG_DELETE_RULE("openiam.table.syncConfig.delete.rule"),
     SYNCH_CONFIG_PROCESS_RULE("openiam.table.syncConfig.process.rule"),
     SYNCH_CONFIG_VALIDATION_RULE("openiam.table.syncConfig.validation.rule"),
     SYNCH_CONFIG_TRANSFORMATION_RULE("openiam.table.syncConfig.transformation.rule"),

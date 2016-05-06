@@ -2,6 +2,7 @@ package org.openiam.imprt;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
@@ -28,6 +29,7 @@ import org.openiam.imprt.jdbc.DataSource;
 import org.openiam.imprt.jdbc.parser.impl.*;
 import org.openiam.imprt.key.KeyManagementWSClient;
 import org.openiam.imprt.model.Attribute;
+import org.openiam.imprt.model.LastRecordTime;
 import org.openiam.imprt.model.LineObject;
 import org.openiam.imprt.query.Restriction;
 import org.openiam.imprt.query.SelectQueryBuilder;
@@ -57,6 +59,8 @@ public class ImportProcessor {
     private final static int SIZE_LIMIT = 10000;
     private final static int TIME_LIMIT = 0;
     private final static boolean debugMode = true;
+    double mostRecentRecord = 0L;
+    String lastRecProcessed = null;
 
     public ImportProcessor() {
         init();
@@ -98,6 +102,17 @@ public class ImportProcessor {
         LdapContext ctx = null;
         ctx = connect(syncConfig);
         int totalRecords = 0;
+        String query = syncConfig.getQuery();
+        // get the last execution time
+        if ("INCREMENTAL".equalsIgnoreCase(syncConfig.getSynchType())) {
+            lastRecProcessed = syncConfig.getLastRecProcessed();
+            if (StringUtils.isBlank(lastRecProcessed)) {
+                lastRecProcessed = getNullDate();
+            }
+            //looking for filter like (&(objectclass=user)(modifyTimeStamp>=?))
+            query = query.replace("?", lastRecProcessed);
+        }
+
         List<LineObject> processingData = new LinkedList<LineObject>();
         List<String> ouByParent = new LinkedList<String>();
         if (syncConfig.getBaseDn().contains(";")) {
@@ -110,7 +125,7 @@ public class ImportProcessor {
         for (String baseou : ouByParent) {
             int recordsInOUCounter = 0;
             //TimeOut Error String attrIds[] = {"objectClass",""1.1,"+","*"};
-            //  TimeOut Error String attrIds[] = {"objectClass", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
+            //  TimeOut Error String attrIds[] = {"objectClass", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimeStamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
 
 
             SearchControls searchCtls = new SearchControls();
@@ -120,7 +135,7 @@ public class ImportProcessor {
             searchCtls.setTimeLimit(TIME_LIMIT);
             searchCtls.setCountLimit(SIZE_LIMIT);
             searchCtls.setSearchScope(syncConfig.getSearchScope().ordinal());
-//            searchCtls.setReturningAttributes(attrIds);
+            searchCtls.setReturningAttributes(this.getDirAttrIds());
             byte[] cookie = null;
             int pageCounter = 0;
             int pageRowCount = 0;
@@ -129,7 +144,7 @@ public class ImportProcessor {
                 pageCounter++;
                 pageRowCount = 0;
                 try {
-                    results = ctx.search(baseou, syncConfig.getQuery(), searchCtls);
+                    results = ctx.search(baseou, query, searchCtls);
                 } catch (ServiceUnavailableException sux) {
                     break;
                 }
@@ -266,7 +281,6 @@ public class ImportProcessor {
             }
         }
 
-        bindingMap.put("GROUPS", groups);
 
         List<LocationEntity> locations = new LocationEntityParser().getAll();
         bindingMap.put("LOCATIONS", locations);
@@ -330,6 +344,11 @@ public class ImportProcessor {
                             phoneEntityParser,
                             addressEntityParser);
                 }
+                LastRecordTime lrt = getRowTime(lo);
+                if (mostRecentRecord < lrt.getMostRecentRecord()) {
+                    mostRecentRecord = lrt.getMostRecentRecord();
+                    lastRecProcessed = lrt.getGeneralizedTime();
+                }
                 res = tr.execute(lo, user, bindingMap);
                 if (res == -1) {
                     System.out.println("Fail Transform for " + sAMAccountNameAttribute.getValue());
@@ -348,7 +367,8 @@ public class ImportProcessor {
             }
         }
         //**************************************************************************************************************
-
+        syncConfig.setLastRecProcessed(lastRecProcessed);
+        new SyncConfigEntityParser().update(syncConfig, syncConfig.getSynchConfigId());
         // do generate user keys
         KeyManagementWSClient keyManagementWSClient = new KeyManagementWSClient(DataHolder.getInstance().getProperty(ImportPropertiesKey.KEY_SERVICE_WSDL));
         keyManagementWSClient.generateKeysForUserList(newUserIds);
@@ -791,6 +811,46 @@ public class ImportProcessor {
         }
         parser.addAll(forADD);
         parser.update(forUpdate);
+    }
+
+    private LastRecordTime getRowTime(LineObject rowObj) {
+        Attribute atr = rowObj.get("modifyTimeStamp");
+        if (atr != null && StringUtils.isNotBlank(atr.getValue())) {
+            return getTime(atr);
+        }
+        atr = rowObj.get("createTimestamp");
+        if (atr != null && StringUtils.isNotBlank(atr.getValue())) {
+            return getTime(atr);
+        }
+        return new LastRecordTime();
+    }
+
+    private LastRecordTime getTime(Attribute atr) {
+        LastRecordTime lrt = new LastRecordTime();
+
+        String s = atr.getValue();
+        int i = s.indexOf("Z");
+        if (i == -1) {
+            i = s.indexOf("-");
+        }
+        if (i > 0) {
+            lrt.setMostRecentRecord(Double.parseDouble(s.substring(0, i)));
+            lrt.setGeneralizedTime(atr.getValue());
+            return lrt;
+
+        }
+        lrt.setMostRecentRecord(Double.parseDouble(s));
+        lrt.setGeneralizedTime(atr.getValue());
+
+        return lrt;
+    }
+
+    protected String[] getDirAttrIds() {
+        return new String[]{"*", "modifyTimeStamp", "createTimestamp"};
+    }
+
+    protected String getNullDate() {
+        return "19700101000000Z"; //Jan, 1, 1970
     }
 
 }
