@@ -412,6 +412,7 @@ public class Transformation {
         // Set mailbox
         try {
             String mailboxSize = mailboxHelper.getBoxSize(homeMDB);
+            System.out.println("MailboxSize=" + mailboxSize);
             if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
                 addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
             }

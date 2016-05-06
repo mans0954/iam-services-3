@@ -214,6 +214,8 @@ public class ImportProcessor {
         //Prepare Data
         Map<String, Object> bindingMap = new HashMap<String, Object>();
 
+        MailboxHelper mailboxHelper = new MailboxHelper(skipUTF8BOM("/home/OpenIAM/data/openiam/upload/sync/AN_Exchange_DBs.csv"));
+        bindingMap.put("MAILBOX_HELPER", mailboxHelper);
 
         long time1 = System.currentTimeMillis();
 // Init Parser for Entitires
@@ -246,7 +248,7 @@ public class ImportProcessor {
                 ImportPropertiesKey.T_GRP_ATTRIBUTES_ATTR_VALUE});
 
         // Define SQL query for dependency select
-        final String getUserByLoginSQL = "SELECT u.* FROM LOGIN l JOIN USERS u ON l.USER_ID=u.USER_ID WHERE l.MANAGED_SYS_ID='0' AND l.LOWERCASE_LOGIN='%s'";
+        final String getUserByLoginSQL = "SELECT %s FROM LOGIN l JOIN USERS u ON l.USER_ID=u.USER_ID WHERE l.MANAGED_SYS_ID='0' AND l.LOWERCASE_LOGIN='%s'";
         final String getAllOrganizationsSQL = "SELECT %s FROM COMPANY c WHERE c.ORG_TYPE_ID='ORGANIZATION'";
         final String getChildOrganizationsSQL = "SELECT %s FROM COMPANY c JOIN COMPANY_TO_COMPANY_MEMBERSHIP ccm ON c.COMPANY_ID=ccm.MEMBER_COMPANY_ID WHERE ccm.COMPANY_ID='%s' AND c.ORG_TYPE_ID='SUBSIDIARY'";
         final String getAttributesOrganizationsSQL = "SELECT %s FROM COMPANY_ATTRIBUTE ca WHERE ca.COMPANY_ID='%s'";
@@ -268,8 +270,6 @@ public class ImportProcessor {
             }
         }
         bindingMap.put("ORGANIZATIONS", organizationEntityList);
-        MailboxHelper mailboxHelper = new MailboxHelper(skipUTF8BOM("/home/OpenIAM/data/openiam/upload/sync/AN_Exchange_DBs.csv"));
-        bindingMap.put("MAILBOX_HELPER", mailboxHelper);
 
         List<GroupEntity> groups = groupEntityParser.getAll();
         if (CollectionUtils.isNotEmpty(groups)) {
@@ -320,13 +320,16 @@ public class ImportProcessor {
         Attribute sAMAccountNameAttribute = null;
         List<String> newUserIds = new ArrayList<String>();
         int res = 0;
-
+        List<Column> userColumns = Utils.getColumnsForTable(ImportPropertiesKey.USERS);
         for (LineObject lo : processingData) {
             sAMAccountNameAttribute = lo.get("sAMAccountName");
             if (sAMAccountNameAttribute != null && sAMAccountNameAttribute.getValue() != null) {
                 time1 = System.currentTimeMillis();
                 //FIXME should be common search in OpenIAM
-                users = userEntityParser.get(String.format(getUserByLoginSQL, sAMAccountNameAttribute.getValue()));
+                users = userEntityParser.get(
+                        String.format(getUserByLoginSQL,
+                                Utils.columnsToSelectFields(ImportPropertiesKey.USERS, "u"),
+                                sAMAccountNameAttribute.getValue()), userColumns);
                 if (CollectionUtils.isEmpty(users)) {
                     user = new UserEntity();
                     user.setOrganizationUser(new HashSet<OrganizationUserEntity>());

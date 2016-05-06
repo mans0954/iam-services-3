@@ -56,7 +56,7 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                     userEntity.setMiddleInit(value);
                     break;
                 case USERS_TYPE_ID:
-                    userEntity.setType(new MetadataTypeEntityParser().getById(value));
+                    userEntity.setType(this.getMetadataType(value));
                     break;
                 case USERS_CLASSIFICATION:
                     userEntity.setClassification(value);
@@ -107,7 +107,7 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                     userEntity.setEmployeeId(value);
                     break;
                 case USERS_EMPLOYEE_TYPE:
-                    userEntity.setEmployeeType(new MetadataTypeEntityParser().getById(value));
+                    userEntity.setEmployeeType(this.getMetadataType(value));
                     break;
                 case USERS_LOCATION_CD:
                     userEntity.setLocationCd(value);
@@ -119,7 +119,7 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                     userEntity.setCompanyOwnerId(value);
                     break;
                 case USERS_JOB_CODE:
-                    userEntity.setJobCode(new MetadataTypeEntityParser().getById(value));
+                    userEntity.setJobCode(this.getMetadataType(value));
                     break;
                 case USERS_ALTERNATE_ID:
                     userEntity.setAlternateContactId(value);
@@ -156,9 +156,6 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                     break;
                 case USERS_CLAIM_DATE:
                     userEntity.setClaimDate(Utils.getDate(value));
-                    break;
-                case USERS_RESET_PASSWORD_TYPE:
-                    userEntity.setResetPasswordType(ResetPasswordTypeEnum.valueOf(value));
                     break;
                 case USERS_LASTNAME_PREFIX:
                     userEntity.setPrefixLastName(value);
@@ -352,14 +349,6 @@ public class UserEntityParser extends BaseParser<UserEntity> {
             }
             case USERS_CLAIM_DATE: {
                 list.add(entity.getClaimDate());
-                break;
-            }
-            case USERS_RESET_PASSWORD_TYPE: {
-                if (entity.getResetPasswordType() != null) {
-                    list.add(entity.getResetPasswordType().name());
-                } else {
-                    list.add(null);
-                }
                 break;
             }
             case USERS_LASTNAME_PREFIX: {
