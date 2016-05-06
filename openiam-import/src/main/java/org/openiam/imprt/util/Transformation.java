@@ -213,47 +213,7 @@ public class Transformation {
 
         //MD_TYPE, Classification, Service
         String mdTypeId = null;
-        String classification = "None";
-        boolean isService = false;
-
-        if (samAccountName.length() > 4) {
-            switch (samAccountName.substring(0, 4).toLowerCase()) {
-                case "adm_":
-                    mdTypeId = "AKZONOBEL_ADM_ACCOUNT";
-                    classification = "ADM";
-                    break;
-                case "srv_":
-                    mdTypeId = "AKZONOBEL_SRV_ACCOUNT";
-                    classification = "SVC";
-                    isService = true;
-                    break;
-                case "tst_":
-                    mdTypeId = "AKZONOBEL_TST_ACCOUNT";
-                    classification = "TST";
-                    isService = true;
-                    break;
-                case "rsc_":
-                    mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
-                    classification = "RSC";
-                    isService = true;
-                    break;
-                case "pos_":
-                    mdTypeId = "AKZONOBEL_POS_ACCOUNT";
-                    classification = "POS";
-                    isService = true;
-                    break;
-            }
-        }
-        //serviceAccountName
-        addUserAttribute(user, new UserAttributeEntity("serviceAccountName", isService ? samAccountName : null));
-
-        //Home MDB
-        String homeMDB = this.getValue(lo.get("homeMDB"));
-        if (!isService) {
-            boolean isNoMBX = StringUtils.isBlank(homeMDB) || PDD_EMAIL.equalsIgnoreCase(this.getValue(lo.get("mail")));
-            mdTypeId = isNoMBX ? "AKZONOBEL_USER_NO_MBX" : "AKZONOBEL_USER_MBX";
-        }
-
+        ;
         String attr = this.getValue(lo.get("userPrincipalName"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("userPrincipalName", attr));
@@ -396,10 +356,48 @@ public class Transformation {
         String siteCode = attr;
         addUserAttribute(user, new UserAttributeEntity("siteCode", attr));
 
+        boolean isService = false;
+
         attr = this.getValue(lo.get("extensionAttribute14"));
         boolean isMDM = "MDM".equalsIgnoreCase(attr);
+        String classification = attr == null ? "None" : attr;
         addUserAttribute(user, new UserAttributeEntity("classification", attr));
-
+        if (samAccountName.length() > 4) {
+            switch (samAccountName.substring(0, 4).toLowerCase()) {
+                case "adm_":
+                    mdTypeId = "AKZONOBEL_ADM_ACCOUNT";
+                    classification = "ADM";
+                    break;
+                case "srv_":
+                    mdTypeId = "AKZONOBEL_SRV_ACCOUNT";
+                    classification = "SVC";
+                    isService = true;
+                    break;
+                case "tst_":
+                    mdTypeId = "AKZONOBEL_TST_ACCOUNT";
+                    classification = "TST";
+                    isService = true;
+                    break;
+                case "rsc_":
+                    mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+                    classification = "RSC";
+                    isService = true;
+                    break;
+                case "pos_":
+                    mdTypeId = "AKZONOBEL_POS_ACCOUNT";
+                    classification = "POS";
+                    isService = true;
+                    break;
+            }
+        }
+        //Home MDB
+        String homeMDB = this.getValue(lo.get("homeMDB"));
+        if (!isService) {
+            boolean isNoMBX = StringUtils.isBlank(homeMDB) || PDD_EMAIL.equalsIgnoreCase(this.getValue(lo.get("mail")));
+            mdTypeId = isNoMBX ? "AKZONOBEL_USER_NO_MBX" : "AKZONOBEL_USER_MBX";
+        }
+        //serviceAccountName
+        addUserAttribute(user, new UserAttributeEntity("serviceAccountName", isService ? samAccountName : null));
         attr = this.getValue(lo.get("company"));
         addUserAttribute(user, new UserAttributeEntity("ORG_NAME", attr));
 
@@ -458,8 +456,11 @@ public class Transformation {
         } else {
             removeRoleId(user, "MDM_ROLE_ID");
         }
-        mergeGroups(memberOf, groupsMapEntities, user);
-
+        try {
+            mergeGroups(memberOf, groupsMapEntities, user);
+        } catch (Exception e) {
+            System.out.println("Problems with merge groups");
+        }
         //TODO Reveal what is and how to define option: 'longTermAbsence'
         //TODO get Citrix attributes: terminalServiceHomeD...
 
@@ -493,6 +494,7 @@ public class Transformation {
 
         // Exchange
         String userPrincipalName = this.getValue(lo.get("userPrincipalName"));
+
         updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
 
         // lync
@@ -512,53 +514,65 @@ public class Transformation {
     }
 
     private void updateLoginAndRole(String login, String managedSystemId, UserEntity user, String roleId) {
-
-        LoginEntity lg = null;
-        for (LoginEntity le : user.getPrincipalList()) {
-            if (le.getManagedSysId().equals(managedSystemId)) {
-                lg = le;
-                break;
-            }
-        }
-
-        RoleEntity userRole = null;
-        if (StringUtils.isNotBlank(roleId)) {
-            for (RoleEntity re : user.getRoles()) {
-                if (re.getId().equals(roleId)) {
-                    userRole = re;
+        try {
+            System.out.println("updateLoginAndRole Step 1");
+            LoginEntity lg = null;
+            for (LoginEntity le : user.getPrincipalList()) {
+                if (le.getManagedSysId().equals(managedSystemId)) {
+                    lg = le;
+                    break;
                 }
             }
-        }
-
-        if (StringUtils.isNotBlank(login)) {
-            if (lg != null) {
-                lg = new LoginEntity();
-                lg.setManagedSysId(managedSystemId);
-                lg.setCreateDate(new Date());
-                lg.setStatus(LoginStatusEnum.ACTIVE);
-                lg.setUserId(user.getId());
-                lg.setLogin(login);
-                user.getPrincipalList().add(lg);
-            } else if (lg.getLogin() != login) {
-                lg.setLogin(login);
+            System.out.println("updateLoginAndRole Step 2");
+            RoleEntity userRole = null;
+            if (StringUtils.isNotBlank(roleId)) {
+                for (RoleEntity re : user.getRoles()) {
+                    if (re.getId().equals(roleId)) {
+                        userRole = re;
+                    }
+                }
             }
-            addRoleId(user, roleId);
-        } else {
-            if (lg != null) {
-                lg.setLogin("DELETE_FROM_DB");
+            System.out.println("updateLoginAndRole Step 3");
+            if (StringUtils.isNotBlank(login)) {
+                if (lg == null) {
+                    lg = new LoginEntity();
+                    lg.setManagedSysId(managedSystemId);
+                    lg.setCreateDate(new Date());
+                    lg.setStatus(LoginStatusEnum.ACTIVE);
+                    lg.setUserId(user.getId());
+                    lg.setLogin(login);
+                    user.getPrincipalList().add(lg);
+                    System.out.println("updateLoginAndRole Step 3.1");
+                } else if (lg.getLogin() != login) {
+                    lg.setLogin(login);
+                    System.out.println("updateLoginAndRole Step 3.2");
+                }
+                addRoleId(user, roleId);
+                System.out.println("updateLoginAndRole Step 3.3");
+            } else {
+                if (lg != null) {
+                    lg.setLogin("DELETE_FROM_DB");
+                }
+                if (userRole != null)
+                    removeRoleId(user, userRole.getId());
             }
-            if (userRole != null)
-                removeRoleId(user, userRole.getId());
+        } catch (Exception e) {
+            System.out.println("Problems inside of updateLoginAndRole ");
         }
     }
 
     public boolean containsNameGroup(String[] userADNames, Map<String, String> groupsMap, String toFind) {
+        boolean retVal = false;
         if (userADNames == null)
             return false;
-        String dn = groupsMap.get(toFind);
-        boolean retVal = false;
-        if (dn != null) {
-            return Arrays.asList(userADNames).contains(dn);
+        try {
+            String dn = groupsMap.get(toFind);
+
+            if (dn != null) {
+                return Arrays.asList(userADNames).contains(dn);
+            }
+        } catch (Exception e) {
+            System.out.println("Error with Groups Contains. ToFind=" + toFind);
         }
         return retVal;
     }
@@ -566,19 +580,22 @@ public class Transformation {
     public boolean containsMaskGroup(String[] userADNames, Map<String, String> groupsMap, String mask) {
         if (userADNames == null)
             return false;
-        List<String> userADNamesList = Arrays.asList(userADNames);
-        Pattern pattern = Pattern.compile(mask);
-        Matcher matcher = null;
-        for (String key : groupsMap.keySet()) {
-            matcher = pattern.matcher(key);
-            if (matcher.matches()) {
-                String dn = groupsMap.get(key);
-                if (userADNamesList.contains(dn)) {
-                    return true;
+        try {
+            List<String> userADNamesList = Arrays.asList(userADNames);
+            Pattern pattern = Pattern.compile(mask);
+            Matcher matcher = null;
+            for (String key : groupsMap.keySet()) {
+                matcher = pattern.matcher(key);
+                if (matcher.matches()) {
+                    String dn = groupsMap.get(key);
+                    if (userADNamesList.contains(dn)) {
+                        return true;
+                    }
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Problems with groups again! MASK");
         }
-
 
         return false;
     }
@@ -837,57 +854,61 @@ public class Transformation {
     }
 
     private void getLinkedOrganization(String distinguishedName, String site, String bu, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
-        String adPath = null;
-        if (distinguishedName.contains("OU=UserTransfer,DC=d30,DC=intra")) {
-            adPath = "OU=UserTransfer,DC=d30,DC=intra";
-        } else {
-            Pattern pattern = Pattern.compile(".*OU=(Users|Administrators|ResourceMailbox|Service Accounts|Services Accounts|External Accounts|Resources|Remote Access Users|Expired),(.*)".toLowerCase());
-            Matcher matcher = pattern.matcher(distinguishedName.toLowerCase());
-            if (matcher.matches()) {
-                adPath = matcher.group(2);
-            }
-        }
-        if (StringUtils.isBlank(adPath)) {
-            addUserAttribute(user, new UserAttributeEntity("FAIL_ROLE_EXTRACT_PATH_FROM_DN", distinguishedName));
-            return;
-        } else {
-            addUserAttribute(user, new UserAttributeEntity("AD_PATH", adPath));
-        }
-        if (bu == null) {
-            return;
-        }
-
-        OrganizationEntity organizationEntity = null;
-        for (OrganizationEntity o : orgs) {
-            if (bu.equalsIgnoreCase(o.getInternalOrgId())) {
-                organizationEntity = o;
-                break;
-            }
-        }
-        addOrganization(user, organizationEntity);
-
-        if (site == null) {
-            return;
-        }
-
-
-        OrganizationEntity siteEntity = null;
-        for (OrganizationEntity o : organizationEntity.getChildOrganizations()) {
-            if (site.equalsIgnoreCase(o.getInternalOrgId())) {
-                siteEntity = o;
-                break;
-            }
-        }
-
-        if (siteEntity != null) {
-            for (LocationEntity l : locations) {
-                if (siteEntity.getId().equals(l.getOrganizationId())) {
-                    addUserAttribute(user, new UserAttributeEntity("LOCATION_ID", l.getLocationId()));
-                    addUserAttribute(user, new UserAttributeEntity("COUNTRY", l.getCountry()));
+        try {
+            String adPath = null;
+            if (distinguishedName.contains("OU=UserTransfer,DC=d30,DC=intra")) {
+                adPath = "OU=UserTransfer,DC=d30,DC=intra";
+            } else {
+                Pattern pattern = Pattern.compile(".*OU=(Users|Administrators|ResourceMailbox|Service Accounts|Services Accounts|External Accounts|Resources|Remote Access Users|Expired),(.*)".toLowerCase());
+                Matcher matcher = pattern.matcher(distinguishedName.toLowerCase());
+                if (matcher.matches()) {
+                    adPath = matcher.group(2);
                 }
             }
-        }
+            if (StringUtils.isBlank(adPath)) {
+                addUserAttribute(user, new UserAttributeEntity("FAIL_ROLE_EXTRACT_PATH_FROM_DN", distinguishedName));
+                return;
+            } else {
+                addUserAttribute(user, new UserAttributeEntity("AD_PATH", adPath));
+            }
+            if (bu == null) {
+                return;
+            }
 
+            OrganizationEntity organizationEntity = null;
+            for (OrganizationEntity o : orgs) {
+                if (bu.equalsIgnoreCase(o.getInternalOrgId())) {
+                    organizationEntity = o;
+                    break;
+                }
+            }
+            addOrganization(user, organizationEntity);
+
+            if (site == null) {
+                return;
+            }
+
+
+            OrganizationEntity siteEntity = null;
+            for (OrganizationEntity o : organizationEntity.getChildOrganizations()) {
+                if (site.equalsIgnoreCase(o.getInternalOrgId())) {
+                    siteEntity = o;
+                    break;
+                }
+            }
+
+            if (siteEntity != null) {
+                for (LocationEntity l : locations) {
+                    if (siteEntity.getId().equals(l.getOrganizationId())) {
+                        addUserAttribute(user, new UserAttributeEntity("LOCATION_ID", l.getLocationId()));
+                        addUserAttribute(user, new UserAttributeEntity("COUNTRY", l.getCountry()));
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Problem in Orgs definition");
+        }
     }
 
     private void addOrganization(UserEntity user, OrganizationEntity org) {
