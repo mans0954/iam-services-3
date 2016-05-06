@@ -38,7 +38,9 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
         if (str.length() > length) {
             System.out.println("For " + key.name() + " length of " + str + " more than " + length);
             System.out.println("Truncate to " + str.substring(0, length - 1));
-            list.add(str.substring(0, length - 1));
+            list.add(str.substring(0, length));
+        } else {
+            list.add(str);
         }
     }
 

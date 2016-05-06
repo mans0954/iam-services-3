@@ -151,9 +151,6 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 case USERS_DATE_CHALLENGE_RESP_CHANGED:
                     userEntity.setDateChallengeRespChanged(Utils.getDate(value));
                     break;
-                case USERS_SYSTEM_FLAG:
-                    userEntity.setSystemFlag(value);
-                    break;
                 case USERS_DATE_IT_POLICY_APPROVED:
                     userEntity.setDateITPolicyApproved(Utils.getDate(value));
                     break;
@@ -347,10 +344,6 @@ public class UserEntityParser extends BaseParser<UserEntity> {
             }
             case USERS_DATE_CHALLENGE_RESP_CHANGED: {
                 list.add(entity.getDateChallengeRespChanged());
-                break;
-            }
-            case USERS_SYSTEM_FLAG: {
-                this.putStringToList(list, column, entity.getSystemFlag(), 1);
                 break;
             }
             case USERS_DATE_IT_POLICY_APPROVED: {

@@ -65,7 +65,6 @@ public enum ImportPropertiesKey {
     USERS_USER_OWNER_ID("openiam.table.user.userOwnerId"),
     USERS_DATE_PASSWORD_CHANGED("openiam.table.user.datePasswordChanged"),
     USERS_DATE_CHALLENGE_RESP_CHANGED("openiam.table.user.dateChallengeRespChanged"),
-    USERS_SYSTEM_FLAG("openiam.table.user.systemFlag"),
     USERS_DATE_IT_POLICY_APPROVED("openiam.table.user.dateidPolicyApproved"),
     USERS_CLAIM_DATE("openiam.table.user.claimDate"),
     USERS_RESET_PASSWORD_TYPE("openiam.table.user.resetPasswordType"),
