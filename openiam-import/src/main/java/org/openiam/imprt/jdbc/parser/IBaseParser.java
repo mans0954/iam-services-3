@@ -58,7 +58,7 @@ public interface IBaseParser<E> {
      * @param e
      * @return new added record for current table
      */
-    E add(E e);
+    int add(E e);
 
     /**
      * Delete record by ID for current table
@@ -139,7 +139,7 @@ public interface IBaseParser<E> {
      * @param e
      * @throws Exception
      */
-    void addAll(List<E> e) throws Exception;
+    int addAll(List<E> e) throws Exception;
 
     /**
      * @param query
@@ -152,9 +152,9 @@ public interface IBaseParser<E> {
      * @param e
      * @return
      */
-    public E update(E e, String pk);
+    public int update(E e, String pk);
 
-    public void update(Map<String, E> map);
+    public int update(Map<String, E> map);
 
     public void executeNativeCRUD(String sql, List<List<Object>> values);
 }

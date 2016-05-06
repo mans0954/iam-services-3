@@ -547,48 +547,52 @@ public class ImportProcessor {
 
 
         String userId = null;
+        int retVal = 0;
         if (user.getId() == null) {
             userId = UUIDGen.getUUID();
             newUserIds.add(userId);
             user.setId(userId);
-            userEntityParser.add(user);
+            retVal = userEntityParser.add(user);
         } else {
             userId = user.getId();
-            userEntityParser.update(user, userId);
+            retVal = userEntityParser.update(user, userId);
         }
-        try {
-            saveLogins(user, loginEntityParser);
-        } catch (Exception e) {
-            System.out.println("Can't save logins!");
-        }
+        if (retVal == 0) {
+            try {
+                saveLogins(user, loginEntityParser);
+            } catch (Exception e) {
+                System.out.println("Can't save logins!");
+            }
 
-        try {
-            saveUserAttributes(user, userAttributeEntityParser);
-        } catch (Exception e) {
-            System.out.println("Can't save UserAttributes!");
-        }
+            try {
+                saveUserAttributes(user, userAttributeEntityParser);
+            } catch (Exception e) {
+                System.out.println("Can't save UserAttributes!");
+            }
 
-        try {
-            saveEmails(user, emailAddressEntityParser);
-        } catch (Exception e) {
-            System.out.println("Can't save emailAddress!");
-        }
-        try {
-            savePhones(user, phoneEntityParser);
-        } catch (Exception e) {
-            System.out.println("Can't save phoneEntity!");
-        }
+            try {
+                saveEmails(user, emailAddressEntityParser);
+            } catch (Exception e) {
+                System.out.println("Can't save emailAddress!");
+            }
+            try {
+                savePhones(user, phoneEntityParser);
+            } catch (Exception e) {
+                System.out.println("Can't save phoneEntity!");
+            }
 
-        try {
-            saveAddressEntity(user, addressEntityParser);
-        } catch (Exception e) {
-            System.out.println("Can't save AddressEntity!");
+            try {
+                saveAddressEntity(user, addressEntityParser);
+            } catch (Exception e) {
+                System.out.println("Can't save AddressEntity!");
+            }
+            saveUserGroups(user, userEntityParser);
+            saveUserRoles(user, userEntityParser);
+            saveUserOrganizations(user, userEntityParser);
+            saveUserSupervisors(user, userEntityParser);
+        } else {
+            System.out.println("Break save. See problem above ^");
         }
-        saveUserGroups(user, userEntityParser);
-        saveUserRoles(user, userEntityParser);
-        saveUserOrganizations(user, userEntityParser);
-        saveUserSupervisors(user, userEntityParser);
-
     }
 
     private void saveLogins(UserEntity user, LoginEntityParser loginEntityParser) throws Exception {

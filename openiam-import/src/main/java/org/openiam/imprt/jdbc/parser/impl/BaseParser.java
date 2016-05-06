@@ -30,6 +30,18 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
         this.initDB();
     }
 
+    protected void putStringToList(List<Object> list, ImportPropertiesKey key, String str, int length) {
+        if (str == null) {
+            list.add(null);
+            return;
+        }
+        if (str.length() > length) {
+            System.out.println("For " + key.name() + " length of " + str + " more than " + length);
+            System.out.println("Truncate to " + str.substring(0, length - 1));
+            list.add(str.substring(0, length - 1));
+        }
+    }
+
     /**
      * 123qweasdzxc Prepare parser
      *
@@ -340,31 +352,34 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
      * .entity.BaseEntity)
      */
     @Override
-    public E add(E e) {
+    public int add(E e) {
         AddQueryBuilder addQuery = this.getAddQuery();
         try {
             this.addAll(addQuery, Arrays.asList(this.parsing(e)));
         } catch (Exception e1) {
-            System.out.println(String.valueOf(e1));
+            System.out.println("Error during add. " + e1);
+            return -1;
         }
-        return null;
+
+        return 0;
     }
 
     @Override
-    public E update(E e, String pk) {
+    public int update(E e, String pk) {
         UpdateQueryBuilder updateQuery = this.getUpdateQuery();
         try {
             Map<String, List<Object>> map = new HashMap<>();
             map.put(pk, this.parsing(e));
             this.updateAll(updateQuery, map);
         } catch (Exception e1) {
-            System.out.println("Error during update. " + e1 );
+            System.out.println("Error during update. " + e1);
+            return -1;
         }
-        return null;
+        return 0;
     }
 
     @Override
-    public void update(Map<String, E> map) {
+    public int update(Map<String, E> map) {
         UpdateQueryBuilder updateQuery = this.getUpdateQuery();
         try {
 
@@ -375,7 +390,9 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
             this.updateAll(updateQuery, mapO);
         } catch (Exception e1) {
             System.out.println("Error during update all. " + e1);
+            return -1;
         }
+        return 0;
     }
 
     /*
@@ -384,13 +401,19 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
      * @see org.sfedu.cad.graph.jdbc.parser.IBaseParser#addAll(java.util.List)
      */
     @Override
-    public void addAll(List<E> e) throws Exception {
-        AddQueryBuilder addQuery = this.getAddQuery(e.size());
-        List<List<Object>> lists = new ArrayList<List<Object>>();
-        for (E e1 : e) {
-            lists.add(this.parsing(e1));
+    public int addAll(List<E> e) throws Exception {
+        try {
+            AddQueryBuilder addQuery = this.getAddQuery(e.size());
+            List<List<Object>> lists = new ArrayList<List<Object>>();
+            for (E e1 : e) {
+                lists.add(this.parsing(e1));
+            }
+            this.addAll(addQuery, lists);
+        } catch (Exception e1) {
+            System.out.println("Error during addAll. " + e1);
+            return -1;
         }
-        this.addAll(addQuery, lists);
+        return 0;
     }
 
     /**
