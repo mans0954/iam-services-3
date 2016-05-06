@@ -589,7 +589,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 		final AuthorizationUser user = fetchUser(userId);
 		final int numOfRights = accessRightIdCache.size();
 		if(user != null && resource != null) {
-			return user.isEntitledTo(resource, numOfRights);
+			return resource.isPublic() || user.isEntitledTo(resource, numOfRights);
 		} else {
 			return false;
 		}
@@ -602,7 +602,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 		final AuthorizationAccessRight right = accessRightIdCache.get(rightId);
 		final int numOfRights = accessRightIdCache.size();
 		if(user != null && resource != null && right != null) {
-			return user.isEntitledTo(resource, right, numOfRights);
+			return resource.isPublic() || user.isEntitledTo(resource, right, numOfRights);
 		} else {
 			return false;
 		}

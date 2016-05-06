@@ -523,7 +523,6 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
     @Override
     @Transactional
     public Response renewToken(final String principal, final String token, final String tokenType, final String patternId) {
-        log.info(String.format("renewToken.patternId=%s", patternId));
         final Response resp = new Response(ResponseStatus.SUCCESS);
         PolicyEntity policy = null;
         ManagedSysEntity managedSystem = null;
@@ -568,8 +567,9 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         tokenParam.put("PRINCIPAL", principal);
 
         if (!isUserStatusValid(lg.getUserId())) {
-
-            log.debug(String.format("RenewToken: user status failed for userId = %s", lg.getUserId()));
+        	if(log.isDebugEnabled()) {
+        		log.debug(String.format("RenewToken: user status failed for userId = %s", lg.getUserId()));
+        	}
 
             resp.fail();
             return resp;

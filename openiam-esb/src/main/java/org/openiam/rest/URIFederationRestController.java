@@ -88,7 +88,7 @@ public class URIFederationRestController {
 	@RequestMapping(value="/federateUser", method=RequestMethod.GET)
 	public @ResponseBody URIFederationResponse federateProxyURI(final @RequestParam(required=true, value="userId") String userId, 
 																final @RequestParam(required=true, value="proxyURI") String proxyURI, 
-																final @RequestParam(required=true, value="method") String method) {
+																final @RequestParam(required=false, value="method") String method) {
 		return uriFederationService.federateProxyURI(userId, proxyURI, getMethod(method));
 	}
 	

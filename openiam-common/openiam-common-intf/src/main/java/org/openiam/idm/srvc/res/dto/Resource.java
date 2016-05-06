@@ -75,7 +75,7 @@ public class Resource extends AbstractEntitlementsDTO {
     @Deprecated
     private Set<Group> groups = new HashSet<Group>(0);
     private String minAuthLevel;
-    private boolean isPublic = true;
+    private boolean isPublic = false;
     private ResourceRisk risk;
     private String groovyScript;
     

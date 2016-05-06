@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationOrganization;
 import org.openiam.authmanager.common.model.AuthorizationResource;
@@ -121,7 +122,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 	private String GET_USER_IDS_FOR_GROUP = "SELECT USER_ID FROM %s.USER_GRP WHERE GRP_ID=?";
 	
 	private String GET_USERS = "SELECT USER_ID AS ID FROM %s.LOGIN WHERE LAST_LOGIN >= ?";
-	private String GET_RESOURCES = "SELECT RESOURCE_ID AS ID, NAME AS NAME, DESCRIPTION AS DESCRIPTION, RESOURCE_TYPE_ID AS RESOURCE_TYPE_ID, RISK AS RISK, COORELATED_NAME AS COORELATED_NAME FROM %s.RES";
+	private String GET_RESOURCES = "SELECT RESOURCE_ID AS ID, NAME AS NAME, DESCRIPTION AS DESCRIPTION, RESOURCE_TYPE_ID AS RESOURCE_TYPE_ID, RISK AS RISK, COORELATED_NAME AS COORELATED_NAME, IS_PUBLIC AS IS_PUBLIC FROM %s.RES";
 	private String GET_GROUPS;
 	private String GET_ROLES;
 	private String GET_ORGS="SELECT COMPANY_ID AS ID, COMPANY_NAME AS NAME, DESCRIPTION AS DESCRIPTION, STATUS AS STATUS FROM %s.COMPANY";
@@ -614,6 +615,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 			dto.setResourceTypeId(rs.getString("RESOURCE_TYPE_ID"));
 			dto.setRisk(rs.getString("RISK"));
 			dto.setCoorelatedName(rs.getString("COORELATED_NAME"));
+			dto.setPublic(StringUtils.equalsIgnoreCase("y", rs.getString("IS_PUBLIC")));
 			return dto;
 		}
 		

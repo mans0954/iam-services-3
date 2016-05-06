@@ -1,5 +1,8 @@
 package org.openiam.service.integration.contentprovider;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,6 +13,7 @@ import org.openiam.am.srvc.dto.PatternMatchMode;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternParameter;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
+import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.Response;
@@ -24,6 +28,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -142,13 +151,72 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
     	Assert.assertTrue(response.getStatus().equals(ResponseStatus.FAILURE));
     	Assert.assertEquals(response.getAuthErrorCode(), AuthenticationConstants.RESULT_INVALID_PASSWORD);*/
     }
+    
+
+    private URIFederationResponse federateProxyURI(final String userId, final String proxyURI, final String method) {
+    	final String baseURL = String.format("%s?userId=%s&proxyURI=%s&method=%s", getESBRestfulURL("/openiam-esb/auth/proxy/federateUser"),
+    			encode(userId), encode(proxyURI), encode(method));
+    	try {
+			return restTemplate.getForEntity(new URI(baseURL) , URIFederationResponse.class).getBody();
+		} catch (RestClientException e) {
+			throw new RuntimeException(e);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+    }
+    
+    private URIFederationResponse getMetadata(final String proxyURI, final String method) {
+    	final String baseURL = String.format("%s?proxyURI=%s&method=%s", getESBRestfulURL("/openiam-esb/auth/proxy/metadata"),
+    			encode(proxyURI), encode(method));
+    	try {
+			return restTemplate.getForEntity(new URI(baseURL) , URIFederationResponse.class).getBody();
+		} catch (RestClientException e) {
+			throw new RuntimeException(e);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+    }
+    
+    private Response renewToken(final String principal, final String patternId, final String token, final String tokenType) {
+    	final String baseURL = String.format("%s?principal=%s&token=%s&tokenType=%s&patternId=%s", getESBRestfulURL("/openiam-esb/auth/renewToken"),
+    							encode(principal), encode(token), encode(tokenType), encode(patternId));
+    	try {
+			return restTemplate.getForEntity(new URI(baseURL) , Response.class).getBody();
+		} catch (RestClientException e) {
+			throw new RuntimeException(e);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+    }
+    
+    private void assertMetadataEquals(final String proxyURI, final String method, final URIFederationResponse response) {
+    	URIFederationResponse metadataResponse = getMetadata(proxyURI, method);
+    	Assert.assertEquals(response.getCpId(), metadataResponse.getCpId());
+    	Assert.assertEquals(response.getPatternId(), metadataResponse.getPatternId());
+    }
+    
+    private SSOLoginResponse getCookieFromProxyURIAndPrincipal(final String proxyURI, final String principal, final String method) {
+    	final String baseURL = String.format("%s?proxyURI=%s&method=%s&principal=%s", getESBRestfulURL("/openiam-esb/auth/proxy/getCookieFromProxyURIAndPrincipal"),
+    			encode(proxyURI), encode(method), encode(principal));
+    	try {
+			return restTemplate.getForEntity(new URI(baseURL) , SSOLoginResponse.class).getBody();
+		} catch (RestClientException e) {
+			throw new RuntimeException(e);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+    }
 	
 	@Test
 	public void testPatternFederation() {
 		final String userId = user.getId();
+		final String principal = user.getPrincipalList().get(0).getLogin();
 		
-		URIFederationResponse response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com", null);
+		String url = "http://www.example.com";
+		String method = null;
+		URIFederationResponse response = federateProxyURI(userId, url, method);
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
+		assertMetadataEquals(url, method, response);
 		
 		Response entitlementsResponse = resourceDataService.addUserToResource(cp.getResourceId(), userId, null, null, null, null);
 		Assert.assertTrue(entitlementsResponse.isSuccess());
@@ -156,37 +224,60 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		authorizationManagerServiceClient.refreshCache();
 		authorizationManagerServiceClient.refreshCache();
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.foo.com", null);
+		url = "http://www.foo.com";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertFalse(response.isConfigured());
-		//assertResponseCode(response, ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com", null);
+		url = "http://www.example.com";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/", null);
+		url = "http://www.example.com/";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/ignore/foobar", null);
+		url = "http://www.example.com/ignore/foobar";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar", null);
+		url = "http://www.example.com/paramsWithNoMethod/foobar";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_PATTERN_NOT_FOUND);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar", null);
+		url = "http://www.example.com/paramsWithMethod/foobar";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_PATTERN_NOT_FOUND);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", null);
+		url = "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", null);
+		url = "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
+		assertMetadataEquals(url, method, response);
 		
 		cp.getPatternSet().forEach(pattern -> {
 			final Response entResponse = resourceDataService.addUserToResource(pattern.getResourceId(), userId, null, null, null, null);
@@ -195,51 +286,80 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		
 		refreshAuthorizationManager();
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com", null);
+		url = "http://www.example.com";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/", null);
+		url = "http://www.example.com/";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/ignore/foobar", null);
+		url = "http://www.example.com/ignore/foobar";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", null);
+		url = "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", null);
+		url = "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5";
+		method = null;
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
+		assertMetadataEquals(url, method, response);
 		
-		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com", "GET");
+		url = "http://www.example.com";
+		method = "GET";
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/", "GET");
+		url = "http://www.example.com/";
+		method = "GET";
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/ignore/foobar", "GET");
+		url = "http://www.example.com/ignore/foobar";
+		method = "GET";
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", "TRACE");
+		url = "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5";
+		method = "TRACE";
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_METHOD);
+		assertMetadataEquals(url, method, response);
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", "TRACE");
+		url = "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5";
+		method = "TRACE";
+		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_METHOD);
+		assertMetadataEquals(url, method, response);
 		
 		cp.getPatternSet().forEach(pattern -> {
 			if(pattern.getMethods() != null) {
-				pattern.getMethods().forEach(method -> {
-					final Response entResponse = resourceDataService.addUserToResource(method.getResourceId(), userId, null, null, null, null);
+				pattern.getMethods().forEach(uriMethod -> {
+					final Response entResponse = resourceDataService.addUserToResource(uriMethod.getResourceId(), userId, null, null, null, null);
 					Assert.assertTrue(entResponse.isSuccess());
 				});
 			}
@@ -247,16 +367,27 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		
 		refreshAuthorizationManager();
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", "TRACE");
+		url = "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5";
+		method = "TRACE";
+		response = federateProxyURI(userId, url, method);
 		assertSuccess(response, true);
 		Assert.assertTrue(response.isConfigured());
 		Assert.assertNotNull(response.getCacheTTL());
+		assertMetadataEquals(url, method, response);
+		SSOLoginResponse loginResponse = getCookieFromProxyURIAndPrincipal(url, principal, method);
+		Assert.assertNotNull(loginResponse);
+		Assert.assertTrue(renewToken(loginResponse.getOpeniamPrincipal(), response.getPatternId(), loginResponse.getSsoToken().getToken(), loginResponse.getSsoToken().getTokenType()).isSuccess());
 		
-		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", "TRACE");
+		url = "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5";
+		method = "TRACE";
+		response = federateProxyURI(userId, url, method);
 		assertSuccess(response, true);
 		Assert.assertTrue(response.isConfigured());
 		Assert.assertNotNull(response.getCacheTTL());
-		
+		assertMetadataEquals(url, method, response);
+		loginResponse = getCookieFromProxyURIAndPrincipal(url, principal, method);
+		Assert.assertNotNull(loginResponse);
+		Assert.assertTrue(renewToken(loginResponse.getOpeniamPrincipal(), response.getPatternId(), loginResponse.getSsoToken().getToken(), loginResponse.getSsoToken().getTokenType()).isSuccess());
 
 /* all auth level groupings should have been added by the code that created the cp */
 

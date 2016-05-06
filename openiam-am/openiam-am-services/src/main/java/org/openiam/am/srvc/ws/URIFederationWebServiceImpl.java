@@ -54,11 +54,6 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 		return StringUtils.isNotBlank(method) ? httpMethodMap.get(method.toLowerCase()) : null;
 	}
 
-    @Override
-	public URIFederationResponse federateProxyURI(final String userId, final String proxyURI, final String method) {
-		return uriFederationService.federateProxyURI(userId, proxyURI, getMethod(method));
-	}
-
 	@Override
 	public URIFederationResponse getMetadata(String proxyURI, final String method) {
 		return uriFederationService.getMetadata(proxyURI, getMethod(method));
