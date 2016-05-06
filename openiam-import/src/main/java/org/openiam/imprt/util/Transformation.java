@@ -172,7 +172,7 @@ public class Transformation {
         //Initials
         String initials = this.getValue(lo.get("initials"));
         if (StringUtils.isBlank(initials) || "null".equalsIgnoreCase(initials)) {
-            initials = "";
+            initials = user.getFirstName().substring(0, 1);
         }
         user.setMiddleInit(initials);
 
