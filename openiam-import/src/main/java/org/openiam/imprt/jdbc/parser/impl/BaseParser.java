@@ -358,7 +358,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
             map.put(pk, this.parsing(e));
             this.updateAll(updateQuery, map);
         } catch (Exception e1) {
-            System.out.println("Error during update. " + e);
+            System.out.println("Error during update. " + e1 );
         }
         return null;
     }
@@ -374,7 +374,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
             }
             this.updateAll(updateQuery, mapO);
         } catch (Exception e1) {
-            System.out.println("Error during update. " + e1);
+            System.out.println("Error during update all. " + e1);
         }
     }
 
