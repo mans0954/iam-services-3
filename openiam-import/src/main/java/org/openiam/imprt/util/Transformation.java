@@ -515,7 +515,6 @@ public class Transformation {
 
     private void updateLoginAndRole(String login, String managedSystemId, UserEntity user, String roleId) {
         try {
-            System.out.println("updateLoginAndRole Step 1");
             LoginEntity lg = null;
             for (LoginEntity le : user.getPrincipalList()) {
                 if (le.getManagedSysId().equals(managedSystemId)) {
@@ -523,7 +522,6 @@ public class Transformation {
                     break;
                 }
             }
-            System.out.println("updateLoginAndRole Step 2");
             RoleEntity userRole = null;
             if (StringUtils.isNotBlank(roleId)) {
                 for (RoleEntity re : user.getRoles()) {
@@ -532,7 +530,6 @@ public class Transformation {
                     }
                 }
             }
-            System.out.println("updateLoginAndRole Step 3");
             if (StringUtils.isNotBlank(login)) {
                 if (lg == null) {
                     lg = new LoginEntity();
@@ -542,13 +539,10 @@ public class Transformation {
                     lg.setUserId(user.getId());
                     lg.setLogin(login);
                     user.getPrincipalList().add(lg);
-                    System.out.println("updateLoginAndRole Step 3.1");
-                } else if (lg.getLogin() != login) {
+                } else if (!lg.getLogin().equals(login)) {
                     lg.setLogin(login);
-                    System.out.println("updateLoginAndRole Step 3.2");
                 }
                 addRoleId(user, roleId);
-                System.out.println("updateLoginAndRole Step 3.3");
             } else {
                 if (lg != null) {
                     lg.setLogin("DELETE_FROM_DB");

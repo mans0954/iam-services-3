@@ -150,8 +150,8 @@ public abstract class AbstractJDBCAgent<E> {
      */
     protected void connect() {
         try {
-//            conn = DataSource.getInstance().getConnection();
-            conn = DataSource.getConnectionClear();
+            conn = DataSource.getInstance().getConnection();
+//            conn = DataSource.getConnectionClear();
             stmt = conn.createStatement();
         } catch (SQLException se) {
             se.printStackTrace();
