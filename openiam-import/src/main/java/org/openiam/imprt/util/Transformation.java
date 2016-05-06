@@ -769,7 +769,17 @@ public class Transformation {
         ph.setName(metatype.getId().replaceAll("_", " "));
         ph.setMetadataType(metatype);
         ph.setIsDefault(false);
-        ph.setPhoneNbr(phoneValue);
+        String[] parts = phoneValue.split(" ");
+        if (parts != null && parts.length > 1) {
+            String newP = "";
+            for (int i = 1; i < parts.length; i++) {
+                newP += parts[i];
+            }
+            ph.setPhoneNbr(newP);
+            ph.setCountryCd(parts[0]);
+        } else {
+            ph.setPhoneNbr(phoneValue);
+        }
         addPhone(user, ph);
     }
 
@@ -780,6 +790,7 @@ public class Transformation {
                 e.setIsDefault(phone.getIsDefault());
                 e.setPhoneNbr(phone.getPhoneNbr());
                 e.setPhoneExt(phone.getPhoneExt());
+                e.setCountryCd(phone.getCountryCd());
                 return;
             }
         }
