@@ -110,7 +110,7 @@ public class ImportProcessor {
             //looking for filter like (&(objectclass=user)(modifyTimeStamp>=?))
             query = query.replace("?", lastRecProcessed);
         }
-
+        int filesAmount = 0;
         List<LineObject> processingData = new LinkedList<LineObject>();
         List<String> ouByParent = new LinkedList<String>();
         if (syncConfig.getBaseDn().contains(";")) {
@@ -179,7 +179,12 @@ public class ImportProcessor {
                         lineHeader = rowObj; // get first row
                     }
                     processingData.add(rowObj);
-
+                    if (processingData.size() > 1000) {
+                        this.saveToCacheObject(processingData, "DATA" + filesAmount);
+                        System.out.println("Cached users to" + ("DATA" + filesAmount));
+                        processingData = new ArrayList<LineObject>();
+                        filesAmount++;
+                    }
                 }
                 Control[] controls = ctx.getResponseControls();
                 if (controls != null) {
@@ -196,8 +201,9 @@ public class ImportProcessor {
 
         }
         //**************************************************************************************************************
+        this.saveToCacheObject(processingData, "DATA" + filesAmount);
 
-        if (CollectionUtils.isEmpty(processingData)) {
+        if (CollectionUtils.isEmpty(processingData) || filesAmount == 0) {
             if (debugMode) {
                 System.out.println("Nothing FOund in AD!");
             }
@@ -333,57 +339,68 @@ public class ImportProcessor {
         List<String> newUserIds = new ArrayList<String>();
         int res = 0;
         List<Column> userColumns = Utils.getColumnsForTable(ImportPropertiesKey.USERS);
-        for (LineObject lo : processingData) {
-            sAMAccountNameAttribute = lo.get("sAMAccountName");
-            if (sAMAccountNameAttribute != null && sAMAccountNameAttribute.getValue() != null) {
-                time1 = System.currentTimeMillis();
-                //FIXME should be common search in OpenIAM
-                users = userEntityParser.get(
-                        String.format(getUserByLoginSQL,
-                                Utils.columnsToSelectFields(ImportPropertiesKey.USERS, "u"),
-                                sAMAccountNameAttribute.getValue()), userColumns);
-                if (CollectionUtils.isEmpty(users)) {
-                    user = new UserEntity();
-                    user.setOrganizationUser(new HashSet<OrganizationUserEntity>());
-                } else {
-                    user = users.get(0);
-                    //fill user with data
-                    fillUserWithDependenies(user,
+        for (int i = 0; i <= filesAmount; i++) {
+            processingData = this.readFromCacheObjects("DATA" + i);
+            for (LineObject lo : processingData) {
+                sAMAccountNameAttribute = lo.get("sAMAccountName");
+                if (sAMAccountNameAttribute != null && sAMAccountNameAttribute.getValue() != null) {
+                    time1 = System.currentTimeMillis();
+                    //FIXME should be common search in OpenIAM
+                    users = userEntityParser.get(
+                            String.format(getUserByLoginSQL,
+                                    Utils.columnsToSelectFields(ImportPropertiesKey.USERS, "u"),
+                                    sAMAccountNameAttribute.getValue()), userColumns);
+                    if (CollectionUtils.isEmpty(users)) {
+                        user = new UserEntity();
+                        user.setOrganizationUser(new HashSet<OrganizationUserEntity>());
+                    } else {
+                        user = users.get(0);
+                        //fill user with data
+                        fillUserWithDependenies(user,
+                                userEntityParser,
+                                loginEntityParser,
+                                organizationUserEntityParser,
+                                roleEntityParser,
+                                groupEntityParser,
+                                userAttributeEntityParser,
+                                emailAddressEntityParser,
+                                phoneEntityParser,
+                                addressEntityParser);
+                    }
+                    LastRecordTime lrt = getRowTime(lo);
+                    if (mostRecentRecord < lrt.getMostRecentRecord()) {
+                        mostRecentRecord = lrt.getMostRecentRecord();
+                        lastRecProcessed = lrt.getGeneralizedTime();
+                    }
+                    res = tr.execute(lo, user, bindingMap);
+                    if (res == -1) {
+                        System.out.println("Fail Transform for " + sAMAccountNameAttribute.getValue());
+                    }
+
+                    saveChanges(newUserIds, user,
                             userEntityParser,
                             loginEntityParser,
-                            organizationUserEntityParser,
-                            roleEntityParser,
-                            groupEntityParser,
                             userAttributeEntityParser,
                             emailAddressEntityParser,
                             phoneEntityParser,
                             addressEntityParser);
-                }
-                LastRecordTime lrt = getRowTime(lo);
-                if (mostRecentRecord < lrt.getMostRecentRecord()) {
-                    mostRecentRecord = lrt.getMostRecentRecord();
-                    lastRecProcessed = lrt.getGeneralizedTime();
-                }
-                res = tr.execute(lo, user, bindingMap);
-                if (res == -1) {
-                    System.out.println("Fail Transform for " + sAMAccountNameAttribute.getValue());
-                }
-
-                saveChanges(newUserIds, user,
-                        userEntityParser,
-                        loginEntityParser,
-                        userAttributeEntityParser,
-                        emailAddressEntityParser,
-                        phoneEntityParser,
-                        addressEntityParser);
-                if (debugMode) {
-                    System.out.println("User " + sAMAccountNameAttribute.getValue() + " processing time=" + (System.currentTimeMillis() - time1) + "ms");
+                    if (debugMode) {
+                        System.out.println("User " + sAMAccountNameAttribute.getValue() + " processing time=" + (System.currentTimeMillis() - time1) + "ms");
+                    }
                 }
             }
         }
         //**************************************************************************************************************
         syncConfig.setLastRecProcessed(lastRecProcessed);
-        new SyncConfigEntityParser().update(syncConfig, syncConfig.getSynchConfigId());
+        new
+
+                SyncConfigEntityParser()
+
+                .
+
+                        update(syncConfig, syncConfig.getSynchConfigId()
+
+                        );
         // do generate user keys
         KeyManagementWSClient keyManagementWSClient = new KeyManagementWSClient(DataHolder.getInstance().getProperty(ImportPropertiesKey.KEY_SERVICE_WSDL));
         keyManagementWSClient.generateKeysForUserList(newUserIds);
@@ -872,9 +889,19 @@ public class ImportProcessor {
         return "19700101000000Z"; //Jan, 1, 1970
     }
 
-    private void saveToCache(Map<String, Object> bindingMap) {
+    private void saveToCache(Object bindingMap) {
         try {
             FileOutputStream fileOut = new FileOutputStream("cache.openiam");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(bindingMap);
+        } catch (Exception e) {
+            System.out.println("Can't save in cache");
+        }
+    }
+
+    private void saveToCacheObject(Object bindingMap, String fileName) {
+        try {
+            FileOutputStream fileOut = new FileOutputStream(fileName);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(bindingMap);
         } catch (Exception e) {
@@ -888,6 +915,18 @@ public class ImportProcessor {
             FileInputStream fileOut = new FileInputStream("cache.openiam");
             ObjectInputStream in = new ObjectInputStream(fileOut);
             bindingMap = (Map<String, Object>) in.readObject();
+        } catch (Exception e) {
+            System.out.println("Can't read from cache");
+        }
+        return bindingMap;
+    }
+
+    private List<LineObject> readFromCacheObjects(String fileName) {
+        List<LineObject> bindingMap = null;
+        try {
+            FileInputStream fileOut = new FileInputStream(fileName);
+            ObjectInputStream in = new ObjectInputStream(fileOut);
+            bindingMap = (List<LineObject>) in.readObject();
         } catch (Exception e) {
             System.out.println("Can't read from cache");
         }

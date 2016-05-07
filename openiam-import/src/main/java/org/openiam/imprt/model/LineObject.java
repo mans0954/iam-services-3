@@ -21,6 +21,7 @@
  */
 package org.openiam.imprt.model;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ import java.util.Set;
  * @author suneet
  *
  */
-public class LineObject implements Cloneable {
+public class LineObject implements Cloneable, Serializable {
     private Map<String,Attribute> columnMap = new LinkedHashMap<String, Attribute>();
     private Timestamp lastUpdate = null;
 
