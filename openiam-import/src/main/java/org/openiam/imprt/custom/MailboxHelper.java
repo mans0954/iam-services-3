@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.imprt.util.CSVHelper;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,7 +16,7 @@ import java.util.regex.Pattern;
 /**
  * Created by zaporozhec on 5/4/16.
  */
-public class MailboxHelper {
+public class MailboxHelper implements Serializable{
 
     private static final Map<String, Set<String>> sortedSets;
 

@@ -15,6 +15,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 
 
 @Entity
@@ -22,7 +23,7 @@ import javax.validation.constraints.Size;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "LocationEntity")
 @DozerDTOCorrespondence(Location.class)
 @Indexed
-public class LocationEntity {
+public class LocationEntity implements Serializable {
 
 
     @Id
@@ -33,7 +34,7 @@ public class LocationEntity {
     @DocumentId
     private String locationId;
 
-        @Column(name = "NAME", length = 100)
+    @Column(name = "NAME", length = 100)
     @Size(max = 100, message = "validator.location.name.toolong")
     private String name;
 
@@ -77,10 +78,10 @@ public class LocationEntity {
     @Size(max = 100, message = "validator.location.postal.code.toolong")
     private String postalCd;
 
-    @Column(name="ORGANIZATION_ID")
+    @Column(name = "ORGANIZATION_ID")
     private String organizationId;
 
-    @Column(name="INTERNAL_LOCATION_ID")
+    @Column(name = "INTERNAL_LOCATION_ID")
     private String internalLocationId;
 
     @Column(name = "ACTIVE")
@@ -90,10 +91,9 @@ public class LocationEntity {
     @Column(name = "SENSITIVE_LOCATION")
     private Integer sensitiveLocation;
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "ORGANIZATION_ID", insertable=false, updatable=false)
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "ORGANIZATION_ID", insertable = false, updatable = false)
     private OrganizationEntity organization;
-
 
 
     public LocationEntity() {

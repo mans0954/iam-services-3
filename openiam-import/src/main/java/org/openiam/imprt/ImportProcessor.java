@@ -46,9 +46,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.*;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -212,10 +210,10 @@ public class ImportProcessor {
 
         // do transform and insert/update and commit
         //Prepare Data
-        Map<String, Object> bindingMap = new HashMap<String, Object>();
-
-        MailboxHelper mailboxHelper = new MailboxHelper(skipUTF8BOM("/home/OpenIAM/data/openiam/upload/sync/AN_Exchange_DBs.csv"));
-        bindingMap.put("MAILBOX_HELPER", mailboxHelper);
+        Map<String, Object> bindingMap = this.readFromCache();
+        if (!"On".equals(syncConfig.getCustomAdatperScript()) || bindingMap == null) {
+            bindingMap = new HashMap<String, Object>();
+        }
 
         long time1 = System.currentTimeMillis();
 // Init Parser for Entitires
@@ -254,57 +252,71 @@ public class ImportProcessor {
         final String getAttributesOrganizationsSQL = "SELECT %s FROM COMPANY_ATTRIBUTE ca WHERE ca.COMPANY_ID='%s'";
         final String getAttributesGroupsSQL = "SELECT %s FROM GRP_ATTRIBUTES ca WHERE ca.GRP_ID='%s'";
 
-        List<OrganizationEntity> organizationEntityList = companyEntityParser.get(String.format(getAllOrganizationsSQL, Utils.columnsToSelectFields(companyColumnList, "c")), companyColumnList);
-        if (CollectionUtils.isNotEmpty(organizationEntityList)) {
-            for (OrganizationEntity organizationEntity : organizationEntityList) {
-                List<OrganizationEntity> childs = companyEntityParser.get(String.format(getChildOrganizationsSQL, Utils.columnsToSelectFields(companyColumnList, "c"), organizationEntity.getId()), companyColumnList);
-                if (CollectionUtils.isNotEmpty(childs)) {
-                    for (OrganizationEntity child : childs) {
-                        List<OrganizationAttributeEntity> organizationAttributeEntityList = companyAttributeEntityParser.get(String.format(getAttributesOrganizationsSQL, Utils.columnsToSelectFields(companyAttributeColumnList, "ca"), child.getId()), companyAttributeColumnList);
-                        if (CollectionUtils.isNotEmpty(organizationAttributeEntityList)) {
-                            child.setAttributes(new HashSet<OrganizationAttributeEntity>(organizationAttributeEntityList));
+        if (bindingMap.get("ORGANIZATIONS") == null) {
+            List<OrganizationEntity> organizationEntityList = companyEntityParser.get(String.format(getAllOrganizationsSQL, Utils.columnsToSelectFields(companyColumnList, "c")), companyColumnList);
+            if (CollectionUtils.isNotEmpty(organizationEntityList)) {
+                for (OrganizationEntity organizationEntity : organizationEntityList) {
+                    List<OrganizationEntity> childs = companyEntityParser.get(String.format(getChildOrganizationsSQL, Utils.columnsToSelectFields(companyColumnList, "c"), organizationEntity.getId()), companyColumnList);
+                    if (CollectionUtils.isNotEmpty(childs)) {
+                        for (OrganizationEntity child : childs) {
+                            List<OrganizationAttributeEntity> organizationAttributeEntityList = companyAttributeEntityParser.get(String.format(getAttributesOrganizationsSQL, Utils.columnsToSelectFields(companyAttributeColumnList, "ca"), child.getId()), companyAttributeColumnList);
+                            if (CollectionUtils.isNotEmpty(organizationAttributeEntityList)) {
+                                child.setAttributes(new HashSet<OrganizationAttributeEntity>(organizationAttributeEntityList));
+                            }
                         }
+                        organizationEntity.setChildOrganizations(new HashSet<OrganizationEntity>(childs));
                     }
-                    organizationEntity.setChildOrganizations(new HashSet<OrganizationEntity>(childs));
+                    System.out.println("Organization processed=" + organizationEntity.getName());
                 }
             }
-        }
-        bindingMap.put("ORGANIZATIONS", organizationEntityList);
-
-        List<GroupEntity> groups = groupEntityParser.getAll();
-        if (CollectionUtils.isNotEmpty(groups)) {
-            for (GroupEntity group : groups) {
-                List<GroupAttributeEntity> groupAttributeEntities = groupAttributeEntityParser.get(String.format(getAttributesGroupsSQL, Utils.columnsToSelectFields(groupAttributeColumnList, "ca"), group.getId()), groupAttributeColumnList);
-                if (CollectionUtils.isNotEmpty(groupAttributeEntities)) {
-                    group.setAttributes(new HashSet<GroupAttributeEntity>(groupAttributeEntities));
-                }
-            }
+            bindingMap.put("ORGANIZATIONS", organizationEntityList);
+            System.out.println("All Organizations processed");
         }
 
-
-        List<LocationEntity> locations = new LocationEntityParser().getAll();
-        bindingMap.put("LOCATIONS", locations);
-
-        Map<String, GroupEntity> groupsEntitiesMap = new HashMap<String, GroupEntity>();
-        //Build map <groupName,DistrguishedName>
-        Map<String, String> groupsMap = new HashMap<String, String>();
-        if (CollectionUtils.isNotEmpty(groups)) {
-            for (GroupEntity g : groups) {
-                if (CollectionUtils.isNotEmpty(g.getAttributes())) {
-                    for (GroupAttributeEntity gae : g.getAttributes()) {
-                        if ("DistinguishedName".equals(gae.getName())) {
-                            groupsMap.put(g.getName().toLowerCase(), gae.getValue());
-                            groupsEntitiesMap.put(gae.getValue().toLowerCase(), g);
-                            break;
-                        }
+        if (bindingMap.get("GROUPS_MAP") == null || bindingMap.get("GROUPS_MAP_ENTITY") == null) {
+            List<GroupEntity> groups = groupEntityParser.getAll();
+            if (CollectionUtils.isNotEmpty(groups)) {
+                for (GroupEntity group : groups) {
+                    List<GroupAttributeEntity> groupAttributeEntities = groupAttributeEntityParser.get(String.format(getAttributesGroupsSQL, Utils.columnsToSelectFields(groupAttributeColumnList, "ca"), group.getId()), groupAttributeColumnList);
+                    if (CollectionUtils.isNotEmpty(groupAttributeEntities)) {
+                        group.setAttributes(new HashSet<GroupAttributeEntity>(groupAttributeEntities));
                     }
                 }
             }
+
+            System.out.println("All Groups processed");
+
+            Map<String, GroupEntity> groupsEntitiesMap = new HashMap<String, GroupEntity>();
+            //Build map <groupName,DistrguishedName>
+            Map<String, String> groupsMap = new HashMap<String, String>();
+            if (CollectionUtils.isNotEmpty(groups)) {
+                for (GroupEntity g : groups) {
+                    if (CollectionUtils.isNotEmpty(g.getAttributes())) {
+                        for (GroupAttributeEntity gae : g.getAttributes()) {
+                            if ("DistinguishedName".equals(gae.getName())) {
+                                groupsMap.put(g.getName().toLowerCase(), gae.getValue());
+                                groupsEntitiesMap.put(gae.getValue().toLowerCase(), g);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            bindingMap.put("GROUPS_MAP", groupsMap);
+            bindingMap.put("GROUPS_MAP_ENTITY", groupsEntitiesMap);
+            System.out.println("All Groups map processed");
+            //Build map <groupName,Group>
         }
 
-        bindingMap.put("GROUPS_MAP", groupsMap);
-        bindingMap.put("GROUPS_MAP_ENTITY", groupsEntitiesMap);
-        //Build map <groupName,Group>
+        if (bindingMap.get("LOCATIONS") == null) {
+            List<LocationEntity> locations = new LocationEntityParser().getAll();
+            bindingMap.put("LOCATIONS", locations);
+            System.out.println("All Locations processed");
+        }
+        this.saveToCache(bindingMap);
+        MailboxHelper mailboxHelper = new MailboxHelper(skipUTF8BOM("/home/OpenIAM/data/openiam/upload/sync/AN_Exchange_DBs.csv"));
+        bindingMap.put("MAILBOX_HELPER", mailboxHelper);
 
 
         //FIXME SINGLE BLOCK ^^^^^^^^^^^
@@ -858,6 +870,28 @@ public class ImportProcessor {
 
     protected String getNullDate() {
         return "19700101000000Z"; //Jan, 1, 1970
+    }
+
+    private void saveToCache(Map<String, Object> bindingMap) {
+        try {
+            FileOutputStream fileOut = new FileOutputStream("cache.openiam");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(bindingMap);
+        } catch (Exception e) {
+            System.out.println("Can't save in cache");
+        }
+    }
+
+    private Map<String, Object> readFromCache() {
+        Map<String, Object> bindingMap = null;
+        try {
+            FileInputStream fileOut = new FileInputStream("cache.openiam");
+            ObjectInputStream in = new ObjectInputStream(fileOut);
+            bindingMap = (Map<String, Object>) in.readObject();
+        } catch (Exception e) {
+            System.out.println("Can't read from cache");
+        }
+        return bindingMap;
     }
 
 }
