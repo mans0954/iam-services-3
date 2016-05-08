@@ -46,16 +46,15 @@ public class UserAttributeEntityParser extends BaseParser<UserAttributeEntity> {
                     entity.setUserId(value);
                     break;
                 case USER_ATTRIBUTES_METADATA_ID:
-                    entity.setElement(new MetadataElementEntityParser().getById(value));
+                    MetadataElementEntity e = new MetadataElementEntity();
+                    e.setId(value);
+                    entity.setElement(e);
                     break;
                 case USER_ATTRIBUTES_NAME:
                     entity.setName(value);
                     break;
                 case USER_ATTRIBUTES_VALUE:
                     entity.setValue(value);
-                    break;
-                case USER_ATTRIBUTES_VALUE_AS_BYTE_ARRAY:
-                    entity.setValueAsByteArray(value);
                     break;
                 case USER_ATTRIBUTES_IS_MULTIVALUED:
                     entity.setIsMultivalued((value.equals("Y") ? true : false));
@@ -78,7 +77,11 @@ public class UserAttributeEntityParser extends BaseParser<UserAttributeEntity> {
                 break;
             }
             case USER_ATTRIBUTES_METADATA_ID: {
-                list.add(entity.getElement().getId());
+                if (entity.getElement() == null) {
+                    list.add(null);
+                } else {
+                    list.add(entity.getElement().getId());
+                }
                 break;
             }
             case USER_ATTRIBUTES_NAME: {
@@ -89,12 +92,8 @@ public class UserAttributeEntityParser extends BaseParser<UserAttributeEntity> {
                 list.add(entity.getValue());
                 break;
             }
-            case USER_ATTRIBUTES_VALUE_AS_BYTE_ARRAY: {
-                list.add(entity.getValueAsByteArray());
-                break;
-            }
             case USER_ATTRIBUTES_IS_MULTIVALUED: {
-                list.add((entity.getIsMultivalued()?"Y":"N");
+                list.add((entity.getIsMultivalued() ? "Y" : "N"));
                 break;
             }
             default:

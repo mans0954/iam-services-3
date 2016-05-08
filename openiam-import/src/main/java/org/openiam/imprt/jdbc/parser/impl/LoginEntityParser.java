@@ -45,9 +45,6 @@ public class LoginEntityParser extends BaseParser<LoginEntity> {
                 case LOGIN_MANAGED_SYS_ID:
                     entity.setManagedSysId(value);
                     break;
-                case LOGIN_IDENTITY_TYPE:
-                    entity.setIdentityType(value);
-                    break;
                 case LOGIN_CANONICAL_NAME:
                     entity.setCanonicalName(value);
                     break;
@@ -135,12 +132,6 @@ public class LoginEntityParser extends BaseParser<LoginEntity> {
                 case LOGIN_CHALLENGE_RESPONSE_FAIL_COUNT:
                     entity.setChallengeResponseFailCount(Integer.valueOf(value));
                     break;
-                case LOGIN_SMS_RESET_TOKEN:
-                    entity.setSmsResetToken(value);
-                    break;
-                case LOGIN_SMS_RESET_TOKEN_EXP:
-                    entity.setSmsResetTokenExp(value);
-                    break;
                 default:
                     break;
             }
@@ -155,9 +146,6 @@ public class LoginEntityParser extends BaseParser<LoginEntity> {
                 break;
             case LOGIN_MANAGED_SYS_ID:
                 list.add(entity.getManagedSysId());
-                break;
-            case LOGIN_IDENTITY_TYPE:
-                list.add(entity.getIdentityType());
                 break;
             case LOGIN_CANONICAL_NAME:
                 list.add(entity.getCanonicalName());
@@ -187,7 +175,11 @@ public class LoginEntityParser extends BaseParser<LoginEntity> {
                 list.add(entity.getIsLocked());
                 break;
             case LOGIN_STATUS:
-                list.add(entity.getStatus());
+                if (entity.getStatus() != null)
+                    list.add(entity.getStatus().getValue());
+                else {
+                    list.add(null);
+                }
                 break;
             case LOGIN_GRACE_PERIOD:
                 list.add(entity.getGracePeriod());
@@ -241,16 +233,12 @@ public class LoginEntityParser extends BaseParser<LoginEntity> {
                 list.add(entity.getLowerCaseLogin());
                 break;
             case LOGIN_PROV_STATUS:
-                list.add(entity.getProvStatus());
+                if (entity.getProvStatus() != null)
+                    list.add(entity.getProvStatus().getValue());
+                else list.add(null);
                 break;
             case LOGIN_CHALLENGE_RESPONSE_FAIL_COUNT:
                 list.add(entity.getChallengeResponseFailCount());
-                break;
-            case LOGIN_SMS_RESET_TOKEN:
-                list.add(entity.getSmsResetToken());
-                break;
-            case LOGIN_SMS_RESET_TOKEN_EXP:
-                list.add(entity.getSmsResetTokenExp());
                 break;
             default:
                 break;

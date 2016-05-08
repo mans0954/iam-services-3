@@ -6,6 +6,7 @@ import org.openiam.imprt.util.DataHolder;
 
 import java.beans.PropertyVetoException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
@@ -28,11 +29,11 @@ public class DataSource {
         return instance;
     }
 
-    private DataSource(){
+    private DataSource() {
     }
 
-    public void initialize(){
-        if(!isInited) {
+    public void initialize() {
+        if (!isInited) {
             try {
                 this.dataSource = new ComboPooledDataSource();
                 this.dataSource.setJdbcUrl(DataHolder.getInstance().getProperty(ImportPropertiesKey.DATABASE_URL));
@@ -51,10 +52,19 @@ public class DataSource {
     public Connection getConnection() throws SQLException {
         return this.dataSource.getConnection();
     }
+
+    public static Connection getConnectionClear() throws Exception {
+        Class.forName(DataHolder.getInstance().getProperty(ImportPropertiesKey.JDBC_DRIVER));
+        return DriverManager.getConnection(DataHolder.getInstance().getProperty(ImportPropertiesKey.DATABASE_URL),
+                DataHolder.getInstance().getProperty(ImportPropertiesKey.DATABASE_USER),
+                DataHolder.getInstance().getProperty(ImportPropertiesKey.DATABASE_PASSWORD));
+    }
+
     public Connection getConnection(String user, String password) throws SQLException {
         return this.dataSource.getConnection(user, password);
     }
-    public void close(){
+
+    public void close() {
         this.dataSource.close();
     }
 }

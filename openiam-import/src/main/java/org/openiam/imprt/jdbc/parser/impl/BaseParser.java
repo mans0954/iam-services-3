@@ -1,12 +1,15 @@
 package org.openiam.imprt.jdbc.parser.impl;
 
 
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.jdbc.AbstractJDBCAgent;
 import org.openiam.imprt.jdbc.parser.IBaseParser;
 import org.openiam.imprt.query.AddQueryBuilder;
 import org.openiam.imprt.query.Restriction;
 import org.openiam.imprt.query.SelectQueryBuilder;
+import org.openiam.imprt.query.UpdateQueryBuilder;
 import org.openiam.imprt.query.expression.Column;
 import org.openiam.imprt.query.expression.Expression;
 import org.openiam.imprt.query.expression.GroupBy;
@@ -14,15 +17,12 @@ import org.openiam.imprt.query.expression.OrderByList;
 import org.openiam.imprt.util.DataHolder;
 import org.openiam.imprt.util.Utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Base class for implement IBaseParser
- * 
+ *
  * @author D.Zaporozhec
- * 
  */
 abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBaseParser<E> {
 
@@ -30,16 +30,30 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
         this.initDB();
     }
 
+    protected void putStringToList(List<Object> list, ImportPropertiesKey key, String str, int length) {
+        if (str == null) {
+            list.add(null);
+            return;
+        }
+        if (str.length() > length) {
+            System.out.println("For " + key.name() + " length of " + str + " more than " + length);
+            System.out.println("Truncate to " + str.substring(0, length - 1));
+            list.add(str.substring(0, length));
+        } else {
+            list.add(str);
+        }
+    }
+
     /**
      * 123qweasdzxc Prepare parser
-     * 
+     *
      * @throws Exception
      */
     protected abstract void init() throws Exception;
 
     /**
      * Parsing entity to list of column with values
-     * 
+     *
      * @param entity
      * @return list of records
      */
@@ -47,15 +61,19 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
         if (entity == null)
             return null;
         List<Object> list = new ArrayList<Object>();
-        for (ImportPropertiesKey column : this.getColumnsName()) {
-            parseToList(list, column, entity);
+        try {
+            for (ImportPropertiesKey column : this.getColumnsName()) {
+                parseToList(list, column, entity);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
         }
         return list;
     }
 
     /**
      * Create new object of SelectQueryBuilder
-     * 
+     *
      * @return
      */
     private SelectQueryBuilder getSelectQuery() {
@@ -64,7 +82,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * Get column list for entity
-     * 
+     *
      * @param isWithPK
      * @return
      */
@@ -83,9 +101,19 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
         return cols;
     }
 
+    @Override
+    public void executeNativeCRUD(String sql, List<List<Object>> values) {
+        try {
+            this.executeNativeQuery(sql, values);
+        } catch (Exception e) {
+            System.out.println("Can't process '" + sql + "' " + e);
+        }
+
+    }
+
     /**
      * Get SelectQuery for column list
-     * 
+     *
      * @param columns
      * @return
      */
@@ -98,7 +126,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * Generate query for Add new record
-     * 
+     *
      * @return
      */
     private AddQueryBuilder getAddQuery() {
@@ -107,12 +135,16 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * Generate query for Add new record
-     * 
+     *
      * @param size
      * @return
      */
     private AddQueryBuilder getAddQuery(int size) {
         return new AddQueryBuilder(this.getTableName(), size, this.getAllColumns(false));
+    }
+
+    private UpdateQueryBuilder getUpdateQuery() {
+        return new UpdateQueryBuilder(this.getTableName(), this.getPkName(), this.getAllColumns(false));
     }
 
     /*
@@ -139,7 +171,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
 
     /**
      * Get primary key name
-     * 
+     *
      * @return
      */
     private String getPkName() {
@@ -200,6 +232,17 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
         return sqlResult;
     }
 
+    @Override
+    public List<E> get(String query) throws Exception {
+        init();
+        List<E> sqlResult = this.executeQuery(query, Arrays.asList(this.getAllColumns(false)));
+        if (sqlResult == null || sqlResult.isEmpty()) {
+            return null;
+        }
+        finish();
+        return sqlResult;
+    }
+
     /*
      * @inheritDoc
      * 
@@ -225,7 +268,6 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
     }
 
     /**
-     * 
      * @param e1
      * @param e2
      * @return
@@ -253,7 +295,7 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
     private ImportPropertiesKey[] union(ImportPropertiesKey[] e1, ImportPropertiesKey e2) {
         ImportPropertiesKey[] e = null;
         if (e2 != null) {
-            e = new ImportPropertiesKey[] { e2 };
+            e = new ImportPropertiesKey[]{e2};
         }
         return union(e1, e);
     }
@@ -312,14 +354,47 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
      * .entity.BaseEntity)
      */
     @Override
-    public E add(E e) {
+    public int add(E e) {
         AddQueryBuilder addQuery = this.getAddQuery();
         try {
             this.addAll(addQuery, Arrays.asList(this.parsing(e)));
         } catch (Exception e1) {
-            logger.error(String.valueOf(e1.getStackTrace()));
+            System.out.println("Error during add. " + e1);
+            return -1;
         }
-        return null;
+
+        return 0;
+    }
+
+    @Override
+    public int update(E e, String pk) {
+        UpdateQueryBuilder updateQuery = this.getUpdateQuery();
+        try {
+            Map<String, List<Object>> map = new HashMap<>();
+            map.put(pk, this.parsing(e));
+            this.updateAll(updateQuery, map);
+        } catch (Exception e1) {
+            System.out.println("Error during update. " + e1);
+            return -1;
+        }
+        return 0;
+    }
+
+    @Override
+    public int update(Map<String, E> map) {
+        UpdateQueryBuilder updateQuery = this.getUpdateQuery();
+        try {
+
+            Map<String, List<Object>> mapO = new HashMap<>();
+            for (String m : map.keySet()) {
+                mapO.put(m, this.parsing(map.get(m)));
+            }
+            this.updateAll(updateQuery, mapO);
+        } catch (Exception e1) {
+            System.out.println("Error during update all. " + e1);
+            return -1;
+        }
+        return 0;
     }
 
     /*
@@ -328,13 +403,19 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
      * @see org.sfedu.cad.graph.jdbc.parser.IBaseParser#addAll(java.util.List)
      */
     @Override
-    public void addAll(List<E> e) throws Exception {
-        AddQueryBuilder addQuery = this.getAddQuery(e.size());
-        List<List<Object>> lists = new ArrayList<List<Object>>();
-        for (E e1 : e) {
-            lists.add(this.parsing(e1));
+    public int addAll(List<E> e) throws Exception {
+        try {
+            AddQueryBuilder addQuery = this.getAddQuery(e.size());
+            List<List<Object>> lists = new ArrayList<List<Object>>();
+            for (E e1 : e) {
+                lists.add(this.parsing(e1));
+            }
+            this.addAll(addQuery, lists);
+        } catch (Exception e1) {
+            System.out.println("Error during addAll. " + e1);
+            return -1;
         }
-        this.addAll(addQuery, lists);
+        return 0;
     }
 
     /**
@@ -363,4 +444,18 @@ abstract public class BaseParser<E> extends AbstractJDBCAgent<E> implements IBas
     public void delete(ImportPropertiesKey name, String value) throws Exception {
         this.deleteCommon(name, value);
     }
+
+    protected MetadataTypeEntity getMetadataType(String value) {
+        MetadataTypeEntity mt = new MetadataTypeEntity();
+        mt.setId(value);
+        return mt;
+    }
+
+
+    protected MetadataElementEntity getMetadataElementEntity(String value) {
+        MetadataElementEntity mt = new MetadataElementEntity();
+        mt.setId(value);
+        return mt;
+    }
+
 }

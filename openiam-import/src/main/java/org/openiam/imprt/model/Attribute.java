@@ -17,105 +17,107 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.imprt.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * <Attribute> represents the individual attributes from a synchronization source that is being passed for synchronization
- * @author suneet
  *
+ * @author suneet
  */
-public class Attribute implements Cloneable {
-	protected String name;
+public class Attribute implements Cloneable, Serializable {
+    protected String name;
 
     protected String value;
     protected List<String> valueList;
     boolean multiValued = false;
 
 
-	private String type;
-	private int columnNbr;
-	
-	public Attribute() {
+    private String type;
+    private int columnNbr;
+
+    public Attribute() {
 
     }
 
     public Attribute(String name, String value) {
-		super();
-		this.name = name;
-		this.value = value;
-	}
+        super();
+        this.name = name;
+        this.value = value;
+    }
 
 
-	public Attribute(String name) {
-		super();
-		this.name = name;
-	}
+    public Attribute(String name) {
+        super();
+        this.name = name;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getValue() {
-		return value;
-	}
+    public String getValue() {
+        return value;
+    }
 
-	public void setValue(String value) {
-		this.value = value;
-	}
-	
-	protected Object clone() {
-		Attribute a = new Attribute(name, type, value, columnNbr);
-		return a;
-		
-	}
+    public void setValue(String value) {
+        this.value = value;
+    }
 
-  	public String getType() {
-		return type;
-	}
+    protected Object clone() {
+        Attribute a = new Attribute(name, type, value, columnNbr);
+        return a;
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    }
 
-	public Attribute(String name, String type, String value) {
-		super();
-		this.name = name;
-		this.type = type;
-		this.value = value;
-	}
-	public Attribute(String name, String type, String value, int colNbr) {
-		super();
-		this.name = name;
-		this.type = type;
-		this.value = value;
-		this.columnNbr = colNbr;
-	}
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Attribute(String name, String type, String value) {
+        super();
+        this.name = name;
+        this.type = type;
+        this.value = value;
+    }
+
+    public Attribute(String name, String type, String value, int colNbr) {
+        super();
+        this.name = name;
+        this.type = type;
+        this.value = value;
+        this.columnNbr = colNbr;
+    }
 
     public void populateAttribute(String name, List<String> valueList) {
         if (valueList == null || valueList.size() < 2) {
             value = valueList.get(0);
-        }else {
-          this.valueList = valueList;
-          this.multiValued = true;
+        } else {
+            this.valueList = valueList;
+            this.multiValued = true;
         }
         this.name = name;
     }
 
-    public int  getColumnNbr() {
-		return columnNbr;
-	}
+    public int getColumnNbr() {
+        return columnNbr;
+    }
 
-	public void setColumnNbr(int columnNbr) {
-		this.columnNbr = columnNbr;
-	}
+    public void setColumnNbr(int columnNbr) {
+        this.columnNbr = columnNbr;
+    }
 
     public boolean isMultiValued() {
         return multiValued;

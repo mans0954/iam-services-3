@@ -65,10 +65,8 @@ public enum ImportPropertiesKey {
     USERS_USER_OWNER_ID("openiam.table.user.userOwnerId"),
     USERS_DATE_PASSWORD_CHANGED("openiam.table.user.datePasswordChanged"),
     USERS_DATE_CHALLENGE_RESP_CHANGED("openiam.table.user.dateChallengeRespChanged"),
-    USERS_SYSTEM_FLAG("openiam.table.user.systemFlag"),
     USERS_DATE_IT_POLICY_APPROVED("openiam.table.user.dateidPolicyApproved"),
     USERS_CLAIM_DATE("openiam.table.user.claimDate"),
-    USERS_RESET_PASSWORD_TYPE("openiam.table.user.resetPasswordType"),
     USERS_LASTNAME_PREFIX("openiam.table.user.lastnamePrefix"),
     USERS_SUB_TYPE_ID("openiam.table.user.subTypeId"),
     USERS_PARTNER_NAME("openiam.table.user.partnerName"),
@@ -78,7 +76,7 @@ public enum ImportPropertiesKey {
     LOGIN("openiam.table.login"),
     LOGIN_LOGIN("openiam.table.login.login"),
     LOGIN_MANAGED_SYS_ID("openiam.table.login.managedSysId"),
-    LOGIN_IDENTITY_TYPE("openiam.table.login.identityType"),
+    //    LOGIN_IDENTITY_TYPE("openiam.table.login.identityType"),
     LOGIN_CANONICAL_NAME("openiam.table.login.canonicalName"),
     LOGIN_USER_ID("openiam.table.login.userId"),
     LOGIN_PASSWORD("openiam.table.login.password"),
@@ -108,8 +106,9 @@ public enum ImportPropertiesKey {
     LOGIN_LOWERCASE_LOGIN("openiam.table.login.lowercaseLogin"),
     LOGIN_PROV_STATUS("openiam.table.login.provStatus"),
     LOGIN_CHALLENGE_RESPONSE_FAIL_COUNT("openiam.table.login.challengeResponseFailCount"),
-    LOGIN_SMS_RESET_TOKEN("openiam.table.login.smsResetToken"),
-    LOGIN_SMS_RESET_TOKEN_EXP("openiam.table.login.smsResetTokenExp"),
+    //Not now
+//    LOGIN_SMS_RESET_TOKEN("openiam.table.login.smsResetToken"),
+//    LOGIN_SMS_RESET_TOKEN_EXP("openiam.table.login.smsResetTokenExp"),
 
     //USER_ATTRIBUTES
     USER_ATTRIBUTES("openiam.table.userAttributes"),
@@ -118,7 +117,7 @@ public enum ImportPropertiesKey {
     USER_ATTRIBUTES_METADATA_ID("openiam.table.userAttributes.metaDataId"),
     USER_ATTRIBUTES_NAME("openiam.table.userAttributes.name"),
     USER_ATTRIBUTES_VALUE("openiam.table.userAttributes.value"),
-    USER_ATTRIBUTES_VALUE_AS_BYTE_ARRAY("openiam.table.userAttributes.valueAsByteArray"),
+    //    USER_ATTRIBUTES_VALUE_AS_BYTE_ARRAY("openiam.table.userAttributes.valueAsByteArray"),
     USER_ATTRIBUTES_IS_MULTIVALUED("openiam.table.userAttributes.isMultivalued"),
 
     //ROLE
@@ -152,6 +151,14 @@ public enum ImportPropertiesKey {
     GRP_GRP_RISK("openiam.table.grp.grpRisk"),
     GRP_MAX_USER_NUMBER("openiam.table.grp.maxUserNumber"),
     GRP_MEMBERSHIP_DURATION_SECONDS("openiam.table.grp.membershipDurationSeconds"),
+
+    //GRP ATTRIBUTES
+    T_GRP_ATTRIBUTES("openiam.table.grp.attributes"),
+    T_GRP_ATTRIBUTES_ID("openiam.table.grp.attributes.id"),
+    T_GRP_ATTRIBUTES_GRP_ID("openiam.table.grp.attributes.grpId"),
+    T_GRP_ATTRIBUTES_NAME("openiam.table.grp.attributes.name"),
+    T_GRP_ATTRIBUTES_ATTR_VALUE("openiam.table.grp.attributes.attrVal"),
+    T_GRP_ATTRIBUTES_METADATA_ID("openiam.table.grp.attributes.mdTypeId"),
 
     //RES
     RES("openiam.table.res"),
@@ -190,6 +197,14 @@ public enum ImportPropertiesKey {
     COMPANY_ADMIN_RESOURCE_ID("openiam.table.company.adminResourceId"),
     COMPANY_IS_SELECTABLE("openiam.table.company.isSelectable"),
     COMPANY_TYPE_ID("openiam.table.company.typeId"),
+
+    //T_COMPANY_ATTRIBUTE
+    T_COMPANY_ATTRIBUTE("openiam.table.company.attribute"),
+    T_COMPANY_ATTRIBUTE_ID("openiam.table.company.attribute.id"),
+    T_COMPANY_ATTRIBUTE_COMPANY_ID("openiam.table.company.attribute.companyId"),
+    T_COMPANY_ATTRIBUTE_NAME("openiam.table.company.attribute.name"),
+    T_COMPANY_ATTRIBUTE_VALUE("openiam.table.company.attribute.value"),
+
 
     //METADATA_TYPE
     METADATA_TYPE("openiam.table.metadataType"),
@@ -327,7 +342,6 @@ public enum ImportPropertiesKey {
     SYNCH_CONFIG_UPDATE_ATTRIBUTE("openiam.table.syncConfig.update.attribute"),
     SYNCH_CONFIG_SYNCH_FREQUENCY("openiam.table.syncConfig.sync.frequency"),
     SYNCH_CONFIG_SYNCH_TYPE("openiam.table.syncConfig.sync.type"),
-    SYNCH_CONFIG_DELETE_RULE("openiam.table.syncConfig.delete.rule"),
     SYNCH_CONFIG_PROCESS_RULE("openiam.table.syncConfig.process.rule"),
     SYNCH_CONFIG_VALIDATION_RULE("openiam.table.syncConfig.validation.rule"),
     SYNCH_CONFIG_TRANSFORMATION_RULE("openiam.table.syncConfig.transformation.rule"),

@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Created by alexander on 29/04/16.
  */
-public class SyncConfigEntityParser extends BaseParser<SynchConfigEntity>  {
+public class SyncConfigEntityParser extends BaseParser<SynchConfigEntity> {
     @Override
     protected void init() throws Exception {
 
@@ -164,19 +164,19 @@ public class SyncConfigEntityParser extends BaseParser<SynchConfigEntity>  {
                 break;
             }
             case SYNCH_CONFIG_USE_POLICY_MAP: {
-                synchConfigEntity.setUsePolicyMap((value.equals("Y")?true:false));
+                synchConfigEntity.setUsePolicyMap((value.equals("Y") ? true : false));
                 break;
             }
             case SYNCH_CONFIG_USE_TRANSFORM_SCRIPT: {
-                synchConfigEntity.setUseTransformationScript((value.equals("Y")?true:false));
+                synchConfigEntity.setUseTransformationScript((value.equals("Y") ? true : false));
                 break;
             }
             case SYNCH_CONFIG_POLICY_MAP_BEFORE_TRANSFORM: {
-                synchConfigEntity.setPolicyMapBeforeTransformation((value.equals("Y")?true:false));
+                synchConfigEntity.setPolicyMapBeforeTransformation((value.equals("Y") ? true : false));
                 break;
             }
             case SYNCH_CONFIG_USE_SYSTEM_PATH: {
-                synchConfigEntity.setUseSystemPath((value.equals("Y")?true:false));
+                synchConfigEntity.setUseSystemPath((value.equals("Y") ? true : false));
                 break;
             }
             case SYNCH_CONFIG_PRE_SYNC_SCRIPT: {
@@ -196,7 +196,7 @@ public class SyncConfigEntityParser extends BaseParser<SynchConfigEntity>  {
                 break;
             }
             case SYNCH_CONFIG_SEARCH_SCOPE: {
-                synchConfigEntity.setSearchScope(SearchScopeType.values()[Integer.valueOf(value)] );
+                synchConfigEntity.setSearchScope(SearchScopeType.values()[Integer.valueOf(value)]);
                 break;
             }
             case SYNCH_CONFIG_WS_URI: {
@@ -348,19 +348,19 @@ public class SyncConfigEntityParser extends BaseParser<SynchConfigEntity>  {
                 break;
             }
             case SYNCH_CONFIG_USE_POLICY_MAP: {
-                list.add((entity.getUsePolicyMap())?"Y":"N");
+                list.add((entity.getUsePolicyMap()) ? "Y" : "N");
                 break;
             }
             case SYNCH_CONFIG_USE_TRANSFORM_SCRIPT: {
-                list.add((entity.getUseTransformationScript())?"Y":"N");
+                list.add((entity.getUseTransformationScript()) ? "Y" : "N");
                 break;
             }
             case SYNCH_CONFIG_POLICY_MAP_BEFORE_TRANSFORM: {
-                list.add((entity.getPolicyMapBeforeTransformation())?"Y":"N");
+                list.add((entity.getPolicyMapBeforeTransformation()) ? "Y" : "N");
                 break;
             }
             case SYNCH_CONFIG_USE_SYSTEM_PATH: {
-                list.add((entity.getUseSystemPath())?"Y":"N");
+                list.add((entity.getUseSystemPath()) ? "Y" : "N");
                 break;
             }
             case SYNCH_CONFIG_PRE_SYNC_SCRIPT: {

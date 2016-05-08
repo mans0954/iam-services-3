@@ -56,7 +56,7 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                     userEntity.setMiddleInit(value);
                     break;
                 case USERS_TYPE_ID:
-                    userEntity.setType(new MetadataTypeEntityParser().getById(value));
+                    userEntity.setType(this.getMetadataType(value));
                     break;
                 case USERS_CLASSIFICATION:
                     userEntity.setClassification(value);
@@ -107,7 +107,7 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                     userEntity.setEmployeeId(value);
                     break;
                 case USERS_EMPLOYEE_TYPE:
-                    userEntity.setEmployeeType(new MetadataTypeEntityParser().getById(value));
+                    userEntity.setEmployeeType(this.getMetadataType(value));
                     break;
                 case USERS_LOCATION_CD:
                     userEntity.setLocationCd(value);
@@ -119,7 +119,7 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                     userEntity.setCompanyOwnerId(value);
                     break;
                 case USERS_JOB_CODE:
-                    userEntity.setJobCode(new MetadataTypeEntityParser().getById(value));
+                    userEntity.setJobCode(this.getMetadataType(value));
                     break;
                 case USERS_ALTERNATE_ID:
                     userEntity.setAlternateContactId(value);
@@ -151,17 +151,11 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 case USERS_DATE_CHALLENGE_RESP_CHANGED:
                     userEntity.setDateChallengeRespChanged(Utils.getDate(value));
                     break;
-                case USERS_SYSTEM_FLAG:
-                    userEntity.setSystemFlag(value);
-                    break;
                 case USERS_DATE_IT_POLICY_APPROVED:
                     userEntity.setDateITPolicyApproved(Utils.getDate(value));
                     break;
                 case USERS_CLAIM_DATE:
                     userEntity.setClaimDate(Utils.getDate(value));
-                    break;
-                case USERS_RESET_PASSWORD_TYPE:
-                    userEntity.setResetPasswordType(ResetPasswordTypeEnum.valueOf(value));
                     break;
                 case USERS_LASTNAME_PREFIX:
                     userEntity.setPrefixLastName(value);
@@ -178,6 +172,8 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 default:
                     break;
             }
+        } else {
+            System.out.println("Empty KEy");
         }
     }
 
@@ -189,51 +185,64 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_FIRST_NAME: {
-                list.add(entity.getFirstName());
+                this.putStringToList(list, column, entity.getFirstName(), 50);
                 break;
             }
             case USERS_LAST_NAME: {
-                list.add(entity.getLastName());
+                this.putStringToList(list, column, entity.getLastName(), 50);
                 break;
             }
             case USERS_MIDDLE_INIT: {
-                list.add(entity.getMiddleInit());
+                this.putStringToList(list, column, entity.getMiddleInit(), 50);
                 break;
             }
             case USERS_TYPE_ID: {
-                list.add(entity.getType());
+                if (entity.getType() != null)
+                    this.putStringToList(list, column, entity.getType().getId(), 32);
+                else
+                    list.add(null);
                 break;
             }
             case USERS_CLASSIFICATION: {
-                list.add(entity.getClassification());
+                this.putStringToList(list, column, entity.getClassification(), 20);
                 break;
             }
             case USERS_TITLE: {
-                list.add(entity.getTitle());
+                this.putStringToList(list, column, entity.getTitle(), 100);
                 break;
             }
             case USERS_MAIL_CODE: {
-                list.add(entity.getMailCode());
+                this.putStringToList(list, column, entity.getMailCode(), 100);
                 break;
             }
             case USERS_COST_CENTER: {
-                list.add(entity.getCostCenter());
+                this.putStringToList(list, column, entity.getCostCenter(), 100);
                 break;
             }
             case USERS_STATUS: {
-                list.add(entity.getStatus());
+                if (entity.getStatus() != null)
+                    list.add(entity.getStatus().getValue());
+                else
+                    list.add(null);
                 break;
             }
             case USERS_SECONDARY_STATUS: {
-                list.add(entity.getSecondaryStatus());
+                if (entity.getSecondaryStatus() != null)
+                    list.add(entity.getSecondaryStatus().getValue());
+                else
+                    list.add(null);
                 break;
             }
             case USERS_BIRTHDATE: {
-                list.add(entity.getBirthdate());
+                if (entity.getBirthdate() != null) {
+                    list.add(entity.getBirthdate());
+                } else {
+                    list.add(null);
+                }
                 break;
             }
             case USERS_SEX: {
-                list.add(entity.getSex());
+                this.putStringToList(list, column, entity.getSex(), 1);
                 break;
             }
             case USERS_CREATE_DATE: {
@@ -241,7 +250,7 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_CREATED_BY: {
-                list.add(entity.getCreatedBy());
+                this.putStringToList(list, column, entity.getCreatedBy(), 40);
                 break;
             }
             case USERS_LAST_UPDATE: {
@@ -249,43 +258,49 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_LAST_UPDATED_BY: {
-                list.add(entity.getLastUpdatedBy());
+                this.putStringToList(list, column, entity.getLastUpdatedBy(), 40);
                 break;
             }
             case USERS_PREFIX: {
-                list.add(entity.getPrefix());
+                this.putStringToList(list, column, entity.getPrefix(), 4);
                 break;
             }
             case USERS_SUFFIX: {
-                list.add(entity.getSuffix());
+                this.putStringToList(list, column, entity.getSuffix(), 20);
                 break;
             }
             case USERS_USER_TYPE_IND: {
-                list.add(entity.getUserTypeInd());
+                this.putStringToList(list, column, entity.getUserTypeInd(), 20);
                 break;
             }
             case USERS_EMPLOYEE_ID: {
-                list.add(entity.getEmployeeId());
+                this.putStringToList(list, column, entity.getEmployeeId(), 100);
                 break;
             }
             case USERS_EMPLOYEE_TYPE: {
-                list.add(entity.getEmployeeType());
+                if (entity.getEmployeeType() != null)
+                    list.add(entity.getEmployeeType().getId());
+                else list.add(null);
                 break;
             }
             case USERS_LOCATION_CD: {
-                list.add(entity.getLocationCd());
+                this.putStringToList(list, column, entity.getLocationCd(), 50);
                 break;
             }
             case USERS_LOCATION_NAME: {
-                list.add(entity.getLocationName());
+                this.putStringToList(list, column, entity.getLocationName(), 100);
                 break;
             }
             case USERS_COMPANY_OWNER_ID: {
-                list.add(entity.getCompanyOwnerId());
+                this.putStringToList(list, column, entity.getCompanyOwnerId(), 32);
                 break;
             }
             case USERS_JOB_CODE: {
-                list.add(entity.getJobCode());
+                if (entity.getJobCode() != null) {
+                    list.add(entity.getJobCode().getId());
+                } else {
+                    list.add(null);
+                }
                 break;
             }
             case USERS_ALTERNATE_ID: {
@@ -301,15 +316,15 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_MAIDEN_NAME: {
-                list.add(entity.getMaidenName());
+                this.putStringToList(list, column, entity.getMaidenName(), 40);
                 break;
             }
             case USERS_NICKNAME: {
-                list.add(entity.getNickname());
+                this.putStringToList(list, column, entity.getNickname(), 100);
                 break;
             }
             case USERS_PASSWORD_THEME: {
-                list.add(entity.getPasswordTheme());
+                this.putStringToList(list, column, entity.getPasswordTheme(), 20);
                 break;
             }
             case USERS_SHOW_IN_SEARCH: {
@@ -328,10 +343,6 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 list.add(entity.getDateChallengeRespChanged());
                 break;
             }
-            case USERS_SYSTEM_FLAG: {
-                list.add(entity.getSystemFlag());
-                break;
-            }
             case USERS_DATE_IT_POLICY_APPROVED: {
                 list.add(entity.getDateITPolicyApproved());
                 break;
@@ -340,27 +351,25 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 list.add(entity.getClaimDate());
                 break;
             }
-            case USERS_RESET_PASSWORD_TYPE: {
-                list.add(entity.getResetPasswordType());
-                break;
-            }
             case USERS_LASTNAME_PREFIX: {
-                list.add(entity.getPrefixLastName());
+                this.putStringToList(list, column, entity.getPrefixLastName(), 10);
                 break;
             }
             case USERS_SUB_TYPE_ID: {
-                list.add(entity.getSubType().getId());
+                if (entity.getSubType() != null)
+                    list.add(entity.getSubType().getId());
+                else
+                    list.add(null);
                 break;
             }
             case USERS_PARTNER_NAME: {
-                list.add(entity.getPartnerName());
+                this.putStringToList(list, column, entity.getPrefixLastName(), 60);
                 break;
             }
             case USERS_PREFIX_PARTNER_NAME: {
-                list.add(entity.getPrefixPartnerName());
+                this.putStringToList(list, column, entity.getPrefixLastName(), 10);
                 break;
             }
-
             default:
                 break;
         }

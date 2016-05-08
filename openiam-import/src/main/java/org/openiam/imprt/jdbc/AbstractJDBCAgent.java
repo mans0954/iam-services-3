@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.query.AddQueryBuilder;
 import org.openiam.imprt.query.SelectQueryBuilder;
+import org.openiam.imprt.query.UpdateQueryBuilder;
 import org.openiam.imprt.query.expression.Column;
 import org.openiam.imprt.query.expression.Expression;
 import org.openiam.imprt.util.DataHolder;
@@ -20,6 +21,35 @@ import java.util.*;
  * @author D.Zaporozhec
  * @param <E>
  * - E extends BaseEntity
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
+ * @param <E>
  * @param <E>
  * @param <E>
  */
@@ -41,6 +71,11 @@ public abstract class AbstractJDBCAgent<E> {
     private Statement stmt = null;
     private Connection conn = null;
     private PreparedStatement ps = null;
+    private final static Calendar calendar = Calendar.getInstance();
+
+    static {
+        calendar.set(Calendar.YEAR, 8000);
+    }
 
     protected Logger logger = Logger.getLogger(AbstractJDBCAgent.class);
 
@@ -115,7 +150,8 @@ public abstract class AbstractJDBCAgent<E> {
      */
     protected void connect() {
         try {
-            conn = DataSource.getInstance().getConnection();
+//            conn = DataSource.getInstance().getConnection();
+            conn = DataSource.getConnectionClear();
             stmt = conn.createStatement();
         } catch (SQLException se) {
             se.printStackTrace();
@@ -227,10 +263,10 @@ public abstract class AbstractJDBCAgent<E> {
         this.connect();
         PreparedStatement ps = conn.prepareStatement(String.format(deleteQuery, tableName, keyName));
         ps.setString(1, keyValue);
-        System.out.println(ps.toString());
         ps.executeUpdate();
         this.disconnect();
     }
+//
 
     /**
      * Execute SQL query
@@ -248,7 +284,111 @@ public abstract class AbstractJDBCAgent<E> {
             }
             for (Object o : values) {
                 if (o == null) {
-                    ps.setNull(internalCount++, 0);
+                    ps.setString(internalCount++, null);
+                } else if (o.getClass().equals(Integer.class)) {
+                    Integer i = (Integer) o;
+                    ps.setInt(internalCount++, i);
+                } else if (o.getClass().equals(Long.class)) {
+                    Long i = (Long) o;
+                    ps.setLong(internalCount++, i);
+                } else if (o.getClass().equals(Float.class)) {
+                    Float i = (Float) o;
+                    ps.setFloat(internalCount++, i);
+                } else if (o.getClass().equals(String.class)) {
+                    String i = (String) o;
+                    ps.setString(internalCount++, i);
+                } else if (o.getClass().equals(Double.class)) {
+                    Double i = (Double) o;
+                    ps.setDouble(internalCount++, i);
+                } else if (o.getClass().equals(java.util.Date.class)) {
+                    java.util.Date i = (java.util.Date) o;
+                    if (i.after(calendar.getTime())) {
+                        i = calendar.getTime();
+                    }
+                    Timestamp sqlTime = new Timestamp(i.getTime());
+                    ps.setTimestamp(internalCount++, sqlTime, Calendar.getInstance());
+                } else if (o.getClass().equals(java.lang.Boolean.class)) {
+                    ps.setBoolean(internalCount++, (Boolean) o);
+                } else {
+                    System.out.println(o.getClass() + " not supported");
+                }
+            }
+            if (!isMySql) {
+                ps.addBatch();
+            }
+        }
+        return internalCount;
+    }
+
+    protected int executeNativeQuery(String sql, List<List<Object>> valuesAll) throws SQLException {
+        int internalCount = 1;
+        try {
+            this.connect();
+            for (List<Object> values : valuesAll) {
+                PreparedStatement ps = conn.prepareStatement(String.format(sql));
+                if (!isMySQL()) {
+                    internalCount = 1;
+                }
+                for (Object o : values) {
+                    if (o == null) {
+                        ps.setString(internalCount++, null);
+                    } else if (o.getClass().equals(Integer.class)) {
+                        Integer i = (Integer) o;
+                        ps.setInt(internalCount++, i);
+                    } else if (o.getClass().equals(Long.class)) {
+                        Long i = (Long) o;
+                        ps.setLong(internalCount++, i);
+                    } else if (o.getClass().equals(Float.class)) {
+                        Float i = (Float) o;
+                        ps.setFloat(internalCount++, i);
+                    } else if (o.getClass().equals(String.class)) {
+                        String i = (String) o;
+                        ps.setString(internalCount++, i);
+                    } else if (o.getClass().equals(Double.class)) {
+                        Double i = (Double) o;
+                        ps.setDouble(internalCount++, i);
+                    } else if (o.getClass().equals(java.util.Date.class)) {
+                        java.util.Date i = (java.util.Date) o;
+                        if (i.after(calendar.getTime())) {
+                            i = calendar.getTime();
+                        }
+                        Timestamp sqlTime = new Timestamp(i.getTime());
+                        ps.setTimestamp(internalCount++, sqlTime, Calendar.getInstance());
+                    } else if (o.getClass().equals(java.lang.Boolean.class)) {
+                        ps.setBoolean(internalCount++, (Boolean) o);
+                    } else {
+                        System.out.println(o.getClass() + " not supported");
+                    }
+                }
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            ps.close();
+            this.disconnect();
+        }
+        return internalCount;
+    }
+
+    /**
+     * Execute SQL query
+     *
+     * @param valuesAll
+     * @param isMySql
+     * @return
+     * @throws SQLException
+     */
+    protected int executeQuery(Map<String, List<Object>> valuesAll, boolean isMySql) throws SQLException {
+        int internalCount = 1;
+        for (String key : valuesAll.keySet()) {
+            List<Object> values = valuesAll.get(key);
+            if (!isMySql) {
+                internalCount = 1;
+            }
+            for (Object o : values) {
+                if (o == null) {
+                    ps.setString(internalCount++, null);
                 } else if (o.getClass().equals(Integer.class)) {
                     Integer i = (Integer) o;
                     ps.setInt(internalCount++, i);
@@ -268,10 +408,14 @@ public abstract class AbstractJDBCAgent<E> {
                     java.util.Date i = (java.util.Date) o;
                     Timestamp sqlTime = new Timestamp(i.getTime());
                     ps.setTimestamp(internalCount++, sqlTime);
+
+                } else if (o.getClass().equals(java.lang.Boolean.class)) {
+                    ps.setBoolean(internalCount++, (Boolean) o);
                 } else {
-                    System.out.println(o.getClass() + "not supported");
+                    System.out.println(o.getClass() + " not supported");
                 }
             }
+            ps.setString(internalCount++, key);
             if (!isMySql) {
                 ps.addBatch();
             }
@@ -286,7 +430,6 @@ public abstract class AbstractJDBCAgent<E> {
      * @throws Exception
      */
     protected void run(boolean isMysql) throws Exception {
-        logger.debug(ps.toString());
         if (isMysql) {
             ps.executeUpdate();
         } else {
@@ -307,6 +450,12 @@ public abstract class AbstractJDBCAgent<E> {
         ps = conn.prepareStatement(add.toSqlString());
     }
 
+    protected void initBatch(UpdateQueryBuilder add) throws Exception {
+        this.connect();
+        ps = conn.prepareStatement(add.toSqlString());
+    }
+
+
     /**
      * Execute SQL query for add new records
      *
@@ -315,12 +464,28 @@ public abstract class AbstractJDBCAgent<E> {
      * @throws Exception
      */
     protected void addAll(AddQueryBuilder addQuery, List<List<Object>> lists) throws Exception {
+        this.initBatch(addQuery);
+        this.executeQuery(lists, isMySQL());
+        this.run(isMySQL());
+    }
+
+    private boolean isMySQL() {
+        return "com.mysql.jdbc.Driver".equals(DataHolder.getInstance().getProperty(ImportPropertiesKey.JDBC_DRIVER));
+    }
+
+    /**
+     * Execute SQL query for add new records
+     *
+     * @param updateQueryBuilder
+     * @param lists
+     * @throws Exception
+     */
+    protected void updateAll(UpdateQueryBuilder updateQueryBuilder, Map<String, List<Object>> lists) throws Exception {
         final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
         boolean isMySql = JDBC_DRIVER.equals(DataHolder.getInstance().getProperty(ImportPropertiesKey.JDBC_DRIVER));
-        this.initBatch(addQuery);
+        this.initBatch(updateQueryBuilder);
         this.executeQuery(lists, isMySql);
         this.run(isMySql);
-
     }
 
     /**
@@ -344,7 +509,7 @@ public abstract class AbstractJDBCAgent<E> {
         try {
             result = this.executeCountQuery(query);
         } catch (Exception ex) {
-            System.out.println(ex);
+            System.out.println("ERROR: " + ex);
         }
         return result;
     }
@@ -371,7 +536,7 @@ public abstract class AbstractJDBCAgent<E> {
         try {
             result = this.executeCountQuery(query);
         } catch (Exception ex) {
-            System.out.println(ex);
+            System.out.println("ERROR=" + ex);
         }
         return result;
     }

@@ -1,6 +1,11 @@
 package org.openiam.imprt.jdbc.parser.impl;
 
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.util.Utils;
@@ -63,25 +68,32 @@ public class GroupEntityParser extends BaseParser<GroupEntity> {
                     entity.setLastUpdatedBy(value);
                     break;
                 case GRP_MANAGED_SYS_ID:
-                    entity.setManagedSystemId(value);
+                    ManagedSysEntity managedSysEntity = new ManagedSysEntity();
+                    managedSysEntity.setId(value);
+                    entity.setManagedSystem(managedSysEntity);
                     break;
                 case GRP_ADMIN_RESOURCE_ID:
-                    entity.setAdminResource(new ResourceEntityParser().getById(value));
+                    ResourceEntity res = new ResourceEntity();
+                    res.setId(value);
+                    entity.setAdminResource(res);
                     break;
-                case GRP_TYPE_ID:
-                    entity.setType(new MetadataTypeEntityParser().getById(value));
+                case GRP_TYPE_ID: {
+                    entity.setType(getMetadataType(value));
                     break;
-                case GRP_GRP_CLASSIFICATION:
-                    entity.setClassification(new MetadataTypeEntityParser().getById(value));
+                }
+                case GRP_GRP_CLASSIFICATION: {
+                    entity.setClassification(getMetadataType(value));
                     break;
-                case GRP_AD_GRP_TYPE:
-                    entity.setAdGroupType(new MetadataTypeEntityParser().getById(value));
+                }
+                case GRP_AD_GRP_TYPE: {
+                    entity.setAdGroupType(getMetadataType(value));
                     break;
+                }
                 case GRP_AD_GRP_SCOPE:
-                    entity.setAdGroupScope(new MetadataTypeEntityParser().getById(value));
+                    entity.setAdGroupScope(getMetadataType(value));
                     break;
                 case GRP_GRP_RISK:
-                    entity.setRisk(new MetadataTypeEntityParser().getById(value));
+                    entity.setRisk(getMetadataType(value));
                     break;
                 case GRP_MAX_USER_NUMBER:
                     entity.setMaxUserNumber(Integer.valueOf(value));
@@ -93,6 +105,10 @@ public class GroupEntityParser extends BaseParser<GroupEntity> {
                     break;
             }
         }
+    }
+
+    private String getMetadataTypeValue(MetadataTypeEntity mt) {
+        return mt == null ? null : mt.getId();
     }
 
     @Override
@@ -131,31 +147,38 @@ public class GroupEntityParser extends BaseParser<GroupEntity> {
                 break;
             }
             case GRP_MANAGED_SYS_ID: {
-                list.add(entity.getManagedSystem().getId());
+                if (entity.getManagedSystem() != null) {
+                    list.add(entity.getManagedSystem().getId());
+                } else
+                    list.add(null);
                 break;
             }
             case GRP_ADMIN_RESOURCE_ID: {
-                list.add(entity.getAdminResource().getId());
+                if (entity.getAdminResource() != null) {
+                    list.add(entity.getAdminResource().getId());
+                } else {
+                    list.add(null);
+                }
                 break;
             }
             case GRP_TYPE_ID: {
-                list.add(entity.getType().getId());
+                list.add(getMetadataTypeValue(entity.getType()));
                 break;
             }
             case GRP_GRP_CLASSIFICATION: {
-                list.add(entity.getClassification());
+                list.add(getMetadataTypeValue(entity.getClassification()));
                 break;
             }
             case GRP_AD_GRP_TYPE: {
-                list.add(entity.getAdGroupType());
+                list.add(getMetadataTypeValue(entity.getAdGroupType()));
                 break;
             }
             case GRP_AD_GRP_SCOPE: {
-                list.add(entity.getAdGroupScope());
+                list.add(getMetadataTypeValue(entity.getAdGroupScope()));
                 break;
             }
             case GRP_GRP_RISK: {
-                list.add(entity.getRisk());
+                list.add(getMetadataTypeValue(entity.getRisk()));
                 break;
             }
             case GRP_MAX_USER_NUMBER: {
