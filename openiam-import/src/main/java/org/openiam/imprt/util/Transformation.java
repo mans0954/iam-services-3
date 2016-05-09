@@ -28,6 +28,7 @@ import org.openiam.imprt.jdbc.parser.impl.UserAttributeEntityParser;
 import org.openiam.imprt.model.Attribute;
 import org.openiam.imprt.model.LineObject;
 import org.openiam.imprt.query.expression.Column;
+import org.openiam.util.StringUtil;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -48,7 +49,7 @@ public class Transformation {
     final String UNITY_ROLE_ID = "2c94b2574be50e06014be569449302ed";
     final String LYNC_MNG_SYS_ID = "2c94b25748eaf9ef01492d5507100273";
     final String EXCH_MNG_SYS_ID = "2c94b25748eaf9ef01492d5312d3026d";
-
+    final List<String> activeStatuses = Arrays.asList("512", "544", "66048", "66080", "262656", "262688", "328192", "328224");
     final String DEFAULT_DATE = "01/01/2020 12:00:00";
 
     public int execute(LineObject rowObj, UserEntity user, Map<String, Object> bindingMap) {
@@ -60,8 +61,6 @@ public class Transformation {
             System.out.println(ex);
             return -1;
         }
-        user.setStatus(UserStatusEnum.ACTIVE);
-
         return 0;
     }
 
@@ -513,6 +512,19 @@ public class Transformation {
         }
 
         getLinkedOrganization(distinguishedName, siteCode, extensionAttribute15, country, organizationEntityList, locations, user);
+
+        //status
+        String status = this.getValue(lo.get("userAccountControl"));
+        if (activeStatuses.contains(status)) {
+            user.setStatus(UserStatusEnum.ACTIVE);
+            user.setSecondaryStatus(null);
+        } else {
+            user.setSecondaryStatus(UserStatusEnum.DISABLED);
+            if (StringUtils.isNotBlank(emailAddressValue) && emailAddressValue.contains(".iamterm")) {
+                user.setStatus(UserStatusEnum.LEAVE);
+            }
+        }
+
     }
 
     private void updateLoginAndRole(String login, String managedSystemId, UserEntity user, String roleId) {
