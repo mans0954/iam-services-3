@@ -1,11 +1,16 @@
 
 package org.openiam.idm.srvc.key.service;
 
-import javax.xml.namespace.QName;
-import javax.xml.ws.*;
+import org.apache.log4j.Logger;
+
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Logger;
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+import javax.xml.ws.WebEndpoint;
+import javax.xml.ws.WebServiceClient;
+import javax.xml.ws.WebServiceException;
+import javax.xml.ws.WebServiceFeature;
 
 
 /**
@@ -31,8 +36,8 @@ public class KeyManagementWS_Service
             baseUrl = org.openiam.idm.srvc.key.service.KeyManagementWS_Service.class.getResource(".");
             url = new URL(baseUrl, "http://localhost:9080/openiam-esb/idmsrvc/KeyManagementWS?wsdl");
         } catch (MalformedURLException ex) {
-            logger.warning("Failed to create URL for the wsdl Location: 'http://localhost:9080/openiam-esb/idmsrvc/KeyManagementWS?wsdl', retrying as a local file");
-            logger.warning(e.getMessage());
+            logger.warn("Failed to create URL for the wsdl Location: 'http://localhost:9080/openiam-esb/idmsrvc/KeyManagementWS?wsdl', retrying as a local file");
+            logger.warn(e.getMessage());
         }
         WSDL_LOCATION = url;
     }
@@ -70,5 +75,4 @@ public class KeyManagementWS_Service
     public KeyManagementWS getKeyManagementWSPort(WebServiceFeature... features) {
         return super.getPort(new QName("urn:idm.openiam.org/srvc/key/service", "KeyManagementWSPort"), KeyManagementWS.class, features);
     }
-
 }

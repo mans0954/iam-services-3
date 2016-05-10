@@ -85,11 +85,11 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
      * java.lang.String, boolean)
      */
     public void sendEmail(String from, String to, String cc, String subject, String msg, String attachment,
-            boolean isHtmlFormat) {
-    	if(log.isDebugEnabled()) {
-	        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
-	                + ", Format:" + isHtmlFormat);
-    	}
+                          boolean isHtmlFormat) {
+        if (log.isDebugEnabled()) {
+            log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
+                    + ", Format:" + isHtmlFormat);
+        }
         Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, null);
         try {
             mailSender.send(message);
@@ -100,10 +100,10 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     public void sendEmailByDateTime(String from, String to, String cc, String subject, String msg, String attachment,
                                     boolean isHtmlFormat, Date executionDateTime) {
-    	if(log.isDebugEnabled()) {
-	    	log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
-	                + ", Format:" + isHtmlFormat);
-    	}
+        if (log.isDebugEnabled()) {
+            log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
+                    + ", Format:" + isHtmlFormat);
+        }
         Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, executionDateTime);
         try {
             mailSender.send(message);
@@ -120,11 +120,11 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
      * java.lang.String, java.lang.String, boolean, java.lang.String[])
      */
     public void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg,
-            boolean isHtmlFormat, String[] attachmentPath) {
-    	if(log.isDebugEnabled()) {
-	        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", CC:" + cc + ", BCC:" + bcc
-	                + ", Attachment:" + attachmentPath);
-    	}
+                           boolean isHtmlFormat, String[] attachmentPath) {
+        if (log.isDebugEnabled()) {
+            log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", CC:" + cc + ", BCC:" + bcc
+                    + ", Attachment:" + attachmentPath);
+        }
         Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, null);
         try {
             mailSender.send(message);
@@ -146,11 +146,11 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     private Message fillMessage(String from, String to, String cc, String bcc, String subject, String msg, boolean isHtmlFormat, String attachment, Date executionDateTime) {
         return fillMessage(from, (to != null) ? new String[]{to} : null,
-                (cc != null)? new String[]{cc} : null,
-                (bcc != null)? new String[]{bcc} : null,
+                (cc != null) ? new String[]{cc} : null,
+                (bcc != null) ? new String[]{bcc} : null,
                 subject, msg,
                 isHtmlFormat,
-                (attachment != null)? new String[]{attachment} : null,
+                (attachment != null) ? new String[]{attachment} : null,
                 executionDateTime);
     }
 
@@ -159,23 +159,45 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         if (from != null && from.length() > 0) {
             message.setFrom(from);
+            if (log.isDebugEnabled()) {
+                log.debug("MailServiceImpl adding From:"+from);
+            }
         } else {
             message.setFrom(defaultSender);
+            if (log.isDebugEnabled()) {
+                log.debug("MailServiceImpl adding From:"+defaultSender);
+            }
         }
         if (to != null && to.length > 0) {
             for (String toString : to) {
-                message.addTo(toString);
+                if (StringUtils.isNotBlank(toString)) {
+                    message.addTo(toString);
+                    if (log.isDebugEnabled()) {
+                        log.debug("MailServiceImpl adding To:"+toString);
+                    }
+                }
+
             }
         }
         if (cc != null && cc.length > 0) {
             for (String ccString : cc) {
-                message.addCc(ccString);
+                if (StringUtils.isNotBlank(ccString)) {
+                    message.addCc(ccString);
+                    if (log.isDebugEnabled()) {
+                        log.debug("MailServiceImpl adding CC:"+ccString);
+                    }
+                }
             }
         }
 
         if (bcc != null && bcc.length > 0) {
             for (String bccString : bcc) {
-                message.addBcc(bccString);
+                if (StringUtils.isNotBlank(bccString)) {
+                    message.addBcc(bccString);
+                    if (log.isDebugEnabled()) {
+                        log.debug("MailServiceImpl adding BCC:"+bccString);
+                    }
+                }
             }
         }
 
@@ -194,6 +216,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         if (msg != null && msg.length() > 0) {
             message.setBody(msg);
+            if (log.isDebugEnabled()) {
+                log.debug("MailServiceImpl adding Message:" + msg);
+            }
         }
 
         if (executionDateTime != null) {
@@ -206,6 +231,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                 message.addAttachments(attachmentPathString);
             }
         }
+
+
         return message;
     }
 
@@ -231,8 +258,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         if (req == null) {
             return false;
         }
-        if(log.isDebugEnabled()) {
-        	log.debug("Send Notification called with notificationType = " + req.getNotificationType());
+        if (log.isDebugEnabled()) {
+            log.debug("Send Notification called with notificationType = " + req.getNotificationType());
         }
 
         if (req.getUserId() != null) {
@@ -248,9 +275,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
      * @return
      */
     private boolean sendCustomEmail(NotificationRequest req) {
-    	if(log.isDebugEnabled()) {
-    		log.debug("sendNotification to = " + req.getTo());
-    	}
+        if (log.isDebugEnabled()) {
+            log.debug("sendNotification to = " + req.getTo());
+        }
 
         String[] emailDetails = fetchEmailDetails(req.getNotificationType());
         if (emailDetails == null) {
@@ -307,9 +334,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             log.warn(String.format("Email details were null for notification type '%s'", req.getNotificationType()));
             return false;
         }
-        
-        if(CollectionUtils.isEmpty(req.getParamList())) {
-        	req.setParamList(new LinkedList<NotificationParam>());
+
+        if (CollectionUtils.isEmpty(req.getParamList())) {
+            req.setParamList(new LinkedList<NotificationParam>());
         }
         req.getParamList().add(new NotificationParam("APPLICATION_CONTEXT", ac));
 
@@ -319,8 +346,12 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
         if (emailBody != null) {
-            sendEmailByDateTime(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX], emailBody, null,
-                    isHtmlFormat(emailDetails), req.getExecutionDateTime());
+            if (req.getNotificationParam(MailTemplateParameters.SUBJECT.value()) != null)
+                sendEmailByDateTime(null, usr.getEmail(), null, String.valueOf(req.getNotificationParam(MailTemplateParameters.SUBJECT.value()).getValueObj()), emailBody, null,
+                        isHtmlFormat(emailDetails), req.getExecutionDateTime());
+            else
+                sendEmailByDateTime(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX], emailBody, null,
+                        isHtmlFormat(emailDetails), req.getExecutionDateTime());
             return true;
         }
         log.warn("Email not sent - failure occurred");

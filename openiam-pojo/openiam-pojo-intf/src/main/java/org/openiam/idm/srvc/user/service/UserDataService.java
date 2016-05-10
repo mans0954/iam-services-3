@@ -42,6 +42,10 @@ public interface UserDataService {
      */
     public UserEntity getUserByPrincipal(String principal, String managedSysId, boolean dependants);
 
+    public List<String> getUserIDs(int from, int size);
+
+    public Long getTotalNumberOfUsers();
+
     public User getUserDtoByPrincipal(String principal, String managedSysId, boolean dependants);
 
     public void addUser(UserEntity user) throws Exception;
@@ -345,4 +349,8 @@ public interface UserDataService {
     public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate);
 
     public List<Supervisor> findSupervisors(SupervisorSearchBean sb);
+
+    public List<User> getUserWithoutAnswerDto();
+    public List<String> getUsersIdsWithoutAnswers();
+    public List<Map<String,Object>> findUsersWithoutAnswersOnDate(Date fromDate, Date toDate, boolean hasAnswer);
 }

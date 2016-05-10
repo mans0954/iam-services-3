@@ -4,14 +4,14 @@
     <parent>
         <artifactId>idm-core</artifactId>
         <groupId>org.openiam</groupId>
-        <version>3.4.0.RELEASE</version>
+        <version>3.4.1.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-idm-services</artifactId>
     <packaging>jar</packaging>
     <name>openiam-idm-services</name>
-    <version>3.4.0.RELEASE</version>
+    <version>3.4.1.RELEASE</version>
     <description>OpenIAM idm sepcific service</description>
     <ciManagement>
         <system>idm</system>
@@ -192,11 +192,22 @@
             <version>${geronimo.jms.version}</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.1</version>
+        </dependency>
+
         <!--dependency>
             <groupId>com.github.groovy-wslite</groupId>
             <artifactId>groovy-wslite</artifactId>
         </dependency -->
 
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio-java-sdk</artifactId>
+            <version>3.4.5</version>
+        </dependency>
 
     </dependencies>
 

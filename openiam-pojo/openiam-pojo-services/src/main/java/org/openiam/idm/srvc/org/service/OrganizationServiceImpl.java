@@ -277,15 +277,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
      * We cache the results of this method, as it has a heavy memory footprint when called many (thousands of) times
      * We cache *only* if the findInCache parameter is true
      * The proper @EvictCache annotations are present on methods which perform CRUD on organizations.
-     * 
+     * <p/>
      * We have no 'key' parameter set for @Cacheable, as the default implementation will use a composite key of
-     * all parameter, which is what we want in this case.  
+     * all parameter, which is what we want in this case.
      * See <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html">here</a>
      */
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value = "organizations", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="#searchBean.findInCache")
+    @Cacheable(value = "organizations", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition = "#searchBean.findInCache")
     public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
         /*final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
         Set<String> filter = getDelegationFilter(requesterId, isUncoverParents);
@@ -299,23 +299,31 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         final StopWatch sw = new StopWatch();
         sw.start();
         //List<OrganizationEntity> organizationEntityList = orgDao.getByExample(searchBean, from, size);
-        List<OrganizationEntity> organizationEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size, language);
-        if (CollectionUtils.isNotEmpty(organizationEntityList) && searchBean.isDeepCopy() && searchBean.isForCurrentUsersOnly() && CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
-            OrganizationUserEntity organizationUserEntity = null;
-            Iterator<OrganizationUserEntity> organizationUserEntityIterator = null;
-            for (OrganizationEntity organizationEntity : organizationEntityList) {
-                organizationUserEntityIterator = organizationEntity.getOrganizationUser().iterator();
-                while (organizationUserEntityIterator.hasNext()) {
-                    organizationUserEntity = organizationUserEntityIterator.next();
-                    if (!searchBean.getUserIdSet().contains(organizationUserEntity.getUser().getId())) {
-                        organizationUserEntityIterator.remove();
+        List<OrganizationEntity> organizationEntityList = findBeans(searchBean, requesterId, from, size, language);
+
+        if (CollectionUtils.isNotEmpty(organizationEntityList) && searchBean.isDeepCopy() && searchBean.isForCurrentUsersOnly()) {
+            if (CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
+                OrganizationUserEntity organizationUserEntity = null;
+                Iterator<OrganizationUserEntity> organizationUserEntityIterator = null;
+                for (OrganizationEntity organizationEntity : organizationEntityList) {
+                    organizationUserEntityIterator = organizationEntity.getOrganizationUser().iterator();
+                    while (organizationUserEntityIterator.hasNext()) {
+                        organizationUserEntity = organizationUserEntityIterator.next();
+                        if (!searchBean.getUserIdSet().contains(organizationUserEntity.getUser().getId())) {
+                            organizationUserEntityIterator.remove();
+                        }
                     }
+                }
+            } else {
+                //to ignore users mappping
+                for (OrganizationEntity organizationEntity : organizationEntityList) {
+                    organizationEntity.setOrganizationUser(null);
                 }
             }
         }
         sw.stop();
-        if(log.isDebugEnabled()) {
-        	log.debug(String.format("FINISH TIME = %s", sw.getTime()));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("FINISH TIME = %s", sw.getTime()));
         }
         return organizationDozerConverter.convertToDTOList(organizationEntityList, searchBean.isDeepCopy());
     }

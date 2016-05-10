@@ -19,12 +19,17 @@
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
     
     <!--<jee:jndi-lookup jndi-name="${datasource.activiti.jndi.name}" id="bpmDataSource" />-->
-	<bean id="bpmDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-		<property name="driverClassName" value="${activiti.db.driverClassName}" />
-		<property name="url" value="${activiti.db.connection.string}" />
-		<property name="username" value="${activiti.db.username}" />
-		<property name="password" value="${activiti.db.password}" />
+
+	<bean id="bpmDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="${activiti.db.driverClassName}" />
+		<property name="jdbcUrl" value="${activiti.db.connection.string}" />
+		<property name="user" value="${activiti.db.username}" />
+		<property name="password" value="${activiti.db.password}"/>
+		<property name="minPoolSize" value="${activiti.db.pool.min}" />
+		<property name="maxPoolSize" value="${activiti.db.pool.max}" />
+		<property name="loginTimeout" value="300"/>
 	</bean>
+
     <!--
 	<bean id="bpmDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
 		<property name="driverClass" value="${org.openiam.bpm.activiti.jdbc.driver}" />

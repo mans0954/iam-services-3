@@ -101,7 +101,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     private Set<OrganizationEntity> childOrganizations;
 
     @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy = "primaryKey.organization")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     public Set<OrganizationUserEntity> organizationUser;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
@@ -381,8 +381,8 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
         int result = super.hashCode();
         result = prime * result
                 + ((abbreviation == null) ? 0 : abbreviation.hashCode());
-        result = prime * result
-                + ((adminResource == null) ? 0 : adminResource.hashCode());
+//        result = prime * result
+//                + ((adminResource == null) ? 0 : adminResource.hashCode());
         result = prime * result + ((alias == null) ? 0 : alias.hashCode());
         result = prime * result
                 + ((createDate == null) ? 0 : createDate.hashCode());
@@ -400,9 +400,9 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
         result = prime * result
                 + ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime
-                * result
-                + ((organizationType == null) ? 0 : organizationType.hashCode());
+//        result = prime
+//                * result
+//                + ((organizationType == null) ? 0 : organizationType.hashCode());
         result = prime * result + (selectable ? 1231 : 1237);
         result = prime * result + ((status == null) ? 0 : status.hashCode());
         result = prime * result + ((symbol == null) ? 0 : symbol.hashCode());

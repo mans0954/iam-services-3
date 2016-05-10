@@ -31,7 +31,7 @@ import java.util.Set;
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
         "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "skipGroupProvision",
 //        "rules",
-        "groups", "roles", "changedByEndUser"})
+        "groups", "roles", "changedByEndUser", "simulationMode"})
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto implements java.io.Serializable {
 
@@ -88,6 +88,7 @@ public class ManagedSysDto implements java.io.Serializable {
     private Set<Group> groups;
 
     private Set<Role> roles;
+    private boolean simulationMode = false;
 
     public ManagedSysDto() {
     }
@@ -216,6 +217,14 @@ public class ManagedSysDto implements java.io.Serializable {
 
     public void setChangedByEndUser(boolean changedByEndUser) {
         this.changedByEndUser = changedByEndUser;
+    }
+
+    public boolean isSimulationMode() {
+        return simulationMode;
+    }
+
+    public void setSimulationMode(boolean simulationMode) {
+        this.simulationMode = simulationMode;
     }
 
     /**

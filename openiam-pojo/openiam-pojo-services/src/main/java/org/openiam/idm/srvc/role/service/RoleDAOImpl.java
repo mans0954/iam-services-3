@@ -48,6 +48,19 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 
     private final ConcurrentHashMap<String, TreeObjectId> rolesHierarchyIds = new ConcurrentHashMap<String, TreeObjectId>();
 
+    @Override
+    public List<RoleEntity> getRolesByIdSet(Set<String> ids){
+        List ret = new ArrayList<RoleEntity>();
+        if (CollectionUtils.isNotEmpty(ids)) {
+            // Can't use Criteria for @ElementCollection due to Hibernate bug
+            // (org.hibernate.MappingException: collection was not an association)
+            HibernateTemplate template = getHibernateTemplate();
+            template.setCacheQueries(true);
+            String sql = String.format("FROM RoleEntity r where r.id in (\'%s\')",StringUtils.join(ids,"\',\'"));
+            ret = template.find(sql);
+        }
+        return ret;
+    }
 
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
@@ -57,7 +70,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 
             final RoleEntity exampleEnity = roleSearchBeanConverter.convert(roleSearchBean);
             criteria = this.getExampleCriteria(exampleEnity);
-
             if (roleSearchBean.hasMultipleKeys()) {
                 criteria.add(Restrictions.in(getPKfieldName(), roleSearchBean.getKeys()));
             } else if (StringUtils.isNotBlank(roleSearchBean.getKey())) {

@@ -127,6 +127,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                         }
                         break;
                     case RESOURCE_CERTIFICATION:
+                        // executes only when task is rejected. do disentitle user from resource
                     case DISENTITLE_USR_FROM_RESOURCE:
                         action = AuditAction.REMOVE_USER_FROM_RESOURCE;
                         resource = getResource(associationId);
@@ -266,6 +267,8 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                             response = roleDataService.addUserToRole(associationId, memberAssociationId, systemUserId);
                         }
                         break;
+                    case ROLE_CERTIFICATION:
+                        // executes only when task is rejected. do disentitle user from role
                     case REMOVE_USER_FROM_ROLE:
                         //TODO:
                         action = AuditAction.REMOVE_USER_FROM_ROLE;

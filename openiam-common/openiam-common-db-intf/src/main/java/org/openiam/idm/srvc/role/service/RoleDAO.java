@@ -39,4 +39,5 @@ public interface RoleDAO extends BaseDao<RoleEntity, String> {
     public List<String> findAllParentsIds();
 
     public void rolesHierarchyRebuild();
+    public List<RoleEntity> getRolesByIdSet(Set<String> ids);
 }

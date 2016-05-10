@@ -1,6 +1,7 @@
 package org.openiam.core.dao;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
@@ -433,6 +434,28 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
             start = end;
         }
         return orClause;
+    }
+
+    protected Criterion createInClauseForIds(String alias, String filedName, String sqlFieldName, List<String> idCollection) {
+        if (idCollection.size() <= MAX_IN_CLAUSE) {
+            return Restrictions.in(alias+"."+filedName, idCollection);
+        } else {
+            Disjunction orClause = Restrictions.disjunction();
+            int start = 0;
+            int end = 0;
+            while (start < idCollection.size()) {
+                end = start + MAX_IN_CLAUSE;
+                if (end > idCollection.size()) {
+                    end = idCollection.size();
+                }
+                String targetAlias = (!"this".equals(alias))?alias+"1_":alias+"_";
+
+                final String sql = targetAlias + "." + sqlFieldName + " in ('" + StringUtils.join(idCollection.subList(start, end), "','") + "')";
+                orClause.add(Restrictions.sqlRestriction(sql));
+                start = end;
+            }
+            return orClause;
+        }
     }
 
     public void evictCache() {
