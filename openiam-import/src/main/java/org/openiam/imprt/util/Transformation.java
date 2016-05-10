@@ -441,11 +441,11 @@ public class Transformation {
         addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
 
         if (isCacheEnabled) {
-            addUserAttribute(user, new UserAttributeEntity("archive", "Cached - Laptop"));
+            addUserAttribute(user, new UserAttributeEntity("archieve", "Cached - Laptop"));
         } else if (isCacheDisabled) {
-            addUserAttribute(user, new UserAttributeEntity("archive", "Non-Cached - Desktop"));
+            addUserAttribute(user, new UserAttributeEntity("archieve", "Non-Cached - Desktop"));
         } else {
-            addUserAttribute(user, new UserAttributeEntity("archive", null));
+            addUserAttribute(user, new UserAttributeEntity("archieve", null));
         }
         if (isMDM) {
             classification = "MDM";
