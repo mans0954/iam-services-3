@@ -2,20 +2,24 @@ package org.openiam.provision.dto.srcadapter;
 
 import org.openiam.base.AttributeOperationEnum;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by zaporozhec on 10/29/15.
  */
 
-@XmlType(propOrder = {"name", "newName", "value", "operation"})
+@XmlType(propOrder = {"name", "newName", "value", "values", "operation"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterAttributeRequest {
+public class SourceAdapterAttributeRequest  implements Serializable {
     private String name;
     private String newName;
     private String value;
+    @XmlElementWrapper(name = "multivalues")
+    @XmlElements({@XmlElement(name = "item")})
+    private List<String> values;
+
     private AttributeOperationEnum operation;
 
     public String getName() {
@@ -48,5 +52,24 @@ public class SourceAdapterAttributeRequest {
 
     public void setNewName(String newName) {
         this.newName = newName;
+    }
+
+    public List<String> getValues() {
+        return values;
+    }
+
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SourceAdapterAttributeRequest{");
+        sb.append("name='").append(name).append('\'');
+        sb.append(", value='").append(value).append('\'');
+        if (values != null)
+            sb.append(", values=").append(values);
+        sb.append('}');
+        return sb.toString();
     }
 }

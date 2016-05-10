@@ -37,8 +37,10 @@ public class UpdateIdmUserCommand extends BaseReconciliationUserCommand {
 
 	@Override
 	public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
-		log.debug("Entering UpdateIdmUserCommand");
-		log.debug("Update user: " + user.getId());
+		if(log.isDebugEnabled()) {
+			log.debug("Entering UpdateIdmUserCommand");
+			log.debug("Update user: " + user.getId());
+		}
 		try {
 			ProvisionUser pUser = new ProvisionUser(user);
 			setCurrentSuperiors(pUser);

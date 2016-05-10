@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -22,17 +23,26 @@ import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.grp.dto.GroupOwner;
+import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDataService;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
+import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
+import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.*;
 
@@ -41,7 +51,7 @@ import java.util.*;
  * as related objects such as Users. Groups are stored in an hierarchical
  * relationship. A user belongs to one or more groups.<br>
  * Groups are often modeled after an organizations structure.
- * 
+ *
  * @author Suneet Shah
  * @version 2.0
  */
@@ -49,8 +59,13 @@ import java.util.*;
 @WebService(endpointInterface = "org.openiam.idm.srvc.grp.ws.GroupDataWebService", targetNamespace = "urn:idm.openiam.org/srvc/grp/service", portName = "GroupDataWebServicePort", serviceName = "GroupDataWebService")
 @Service("groupWS")
 public class GroupDataWebServiceImpl extends AbstractBaseService implements GroupDataWebService {
+
+    private static Logger LOG = Logger.getLogger(GroupDataWebServiceImpl.class);
     @Autowired
     private GroupDataService groupManager;
+
+    @Autowired
+    private RoleDataService roleDataService;
 
     @Autowired
     private UserDataService userManager;
@@ -71,6 +86,11 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Autowired
     protected LanguageDataService languageDataService;
+
+    @Autowired
+    @Qualifier("groupEntityValidator")
+    private EntityValidator groupEntityValidator;
+
 
     public GroupDataWebServiceImpl() {
 
@@ -128,27 +148,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         if (group == null) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
         }
-
-        if (StringUtils.isBlank(group.getName())) {
-            throw new BasicDataServiceException(ResponseCode.NO_NAME);
-        }
-
-        //final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
-        log.debug("Validating group " + group.getName() + " of managed system " + group.getManagedSysId());
-        //final GroupEntity found = groupManager.getGroupByNameAndManagedSys(group.getName(), group.getManagedSysId(), null);
-        GroupSearchBean groupSearchBean = new GroupSearchBean();
-        groupSearchBean.setName(group.getName());
-        groupSearchBean.setManagedSysId(group.getManagedSysId());
-        final List <GroupEntity> foundList = groupManager.findBeans(groupSearchBean, null, 0, 1);
-        final GroupEntity found = (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
-
-        if (found != null) {
-            if ( ( !found.getId().equals(group.getId()))) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
-            }
-        }
-
-        entityValidator.isValid(groupDozerConverter.convertToEntity(group, true));
+        groupEntityValidator.isValid(groupDozerConverter.convertToEntity(group, true));
     }
 
     @Override
@@ -210,19 +210,19 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     public int getNumOfChildGroups(final String groupId, final String requesterId) {
-        return  groupManager.getNumOfChildGroups(groupId, requesterId);
+        return groupManager.getNumOfChildGroups(groupId, requesterId);
     }
 
     @Override
     @Deprecated
     public List<Group> getChildGroups(final String groupId, final String requesterId, final Boolean deepFlag,
-            final int from, final int size) {
+                                      final int from, final int size) {
         return getChildGroupsLocalize(groupId, requesterId, deepFlag, from, size, getDefaultLanguage());
     }
 
     @Override
     public List<Group> getChildGroupsLocalize(final String groupId, final String requesterId, final Boolean deepFlag,
-                                      final int from, final int size, final Language language) {
+                                              final int from, final int size, final Language language) {
         return groupManager.getChildGroupsDtoLocalize(groupId, requesterId, from, size, language);
     }
 
@@ -268,8 +268,8 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
         UserEntity user = userManager.getUser(userId);
-        LoginEntity userPrimaryIdentity =  UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
-        auditLog.setTargetUser(userId,userPrimaryIdentity.getLogin());
+        LoginEntity userPrimaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        auditLog.setTargetUser(userId, userPrimaryIdentity.getLogin());
         GroupEntity groupEntity = groupManager.getGroup(groupId);
         auditLog.setTargetGroup(groupId, groupEntity.getName());
         auditLog.setRequestorUserId(requesterId);
@@ -410,7 +410,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
      * Without @Localization for internal use only
      */
     public List<Group> findBeans(final GroupSearchBean searchBean, final String requesterId, final int from,
-            final int size) {
+                                 final int size) {
         return groupManager.findDtoBeans(searchBean, requesterId, from, size);
     }
 
@@ -427,7 +427,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     public List<Group> findGroupsForOwner(final GroupSearchBean searchBean, final String requesterId, String ownerId, final int from, final int size,
-                                         final Language language) {
+                                          final Language language) {
         return groupManager.findGroupsDtoForOwner(searchBean, requesterId, ownerId, from, size, language);
     }
 
@@ -442,13 +442,13 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
      * Without localization proxy, for internal use only
      */
     public List<Group> getGroupsForUser(final String userId, final String requesterId, Boolean deepFlag,
-            final int from, final int size) {
+                                        final int from, final int size) {
         return groupManager.getGroupsDtoForUser(userId, requesterId, from, size);
     }
 
     @Override
     public List<Group> getGroupsForUserLocalize(final String userId, final String requesterId, Boolean deepFlag,
-                                        final int from, final int size, final Language language) {
+                                                final int from, final int size, final Language language) {
         return groupManager.getGroupsDtoForUserLocalize(userId, requesterId, from, size, language);
     }
 
@@ -460,13 +460,13 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     @Deprecated
     public List<Group> getGroupsForResource(final String resourceId, final String requesterId, final boolean deepFlag,
-        final int from, final int size) {
+                                            final int from, final int size) {
         return getGroupsForResourceLocalize(resourceId, requesterId, deepFlag, from, size, getDefaultLanguage());
     }
 
     @Override
     public List<Group> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final boolean deepFlag,
-                                            final int from, final int size, final Language language) {
+                                                    final int from, final int size, final Language language) {
         return groupManager.getGroupsDtoForResourceLocalize(resourceId, requesterId, from, size, language);
     }
 
@@ -478,13 +478,13 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     @Deprecated
     public List<Group> getGroupsForRole(final String roleId, final String requesterId, final int from, final int size,
-            boolean deepFlag) {
+                                        boolean deepFlag) {
         return getGroupsForRoleLocalize(roleId, requesterId, from, size, deepFlag, getDefaultLanguage());
     }
 
     @Override
     public List<Group> getGroupsForRoleLocalize(final String roleId, final String requesterId, final int from, final int size,
-                                        boolean deepFlag, final Language language) {
+                                                boolean deepFlag, final Language language) {
         return groupManager.getGroupsDtoForRoleLocalize(roleId, requesterId, from, size, deepFlag, language);
     }
 
@@ -534,6 +534,40 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             auditLogService.enqueue(auditLog);
         }
         return response;
+    }
+
+    @Override
+    public Response bulkAddChildGroup(String groupId, List<String> childGroupIds, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLog auditLog = new IdmAuditLog();
+        auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
+        auditLog.setTargetGroup(groupId, groupEntity.getName());
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setAuditDescription(String.format("Add %s child groups to group: %s", childGroupIds.size(), groupId));
+        try {
+            if (groupId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId is null");
+            }
+            groupManager.bulkAddChildGroup(groupId, childGroupIds);
+            auditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            auditLog.fail();
+            auditLog.setFailureReason(e.getCode());
+            auditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("can't add child group", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            auditLog.fail();
+            auditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(auditLog);
+        }
+        return response;
+
     }
 
     @Override
@@ -651,5 +685,93 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public List<Group> findGroupsByAttributeValueLocalize(String attrName, String attrValue, final Language language) {
         return groupManager.findGroupsDtoByAttributeValueLocalize(attrName, attrValue, languageConverter.convertToEntity(language, false));
+    }
+
+    @Override
+    public Response removeRoleFromGroup(String roleId, String groupId, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_GROUP.value());
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
+        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        idmAuditLog.setAuditDescription(String.format("Remove role %s from group: %s", roleId, groupId));
+        try {
+            if (groupId == null || roleId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
+            }
+
+            groupManager.removeRoleFromGroup(roleId, groupId);
+            idmAuditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch (Throwable e) {
+            LOG.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    public SaveTemplateProfileResponse saveGroupRequest(final GroupRequestModel request) {
+        final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
+        try {
+            if (request == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
+            }
+
+            groupManager.saveGroupRequest(request);
+            response.setResponseValue(request.getTargetObject().getId());
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (PageTemplateException e) {
+            response.setCurrentValue(e.getCurrentValue());
+            response.setElementName(e.getElementName());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            LOG.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    public SaveTemplateProfileResponse validateGroupRequest(final GroupRequestModel request) {
+        final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
+        try {
+            groupManager.validateGroupRequest(request);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+        } catch (PageTemplateException e) {
+            response.setCurrentValue(e.getCurrentValue());
+            response.setElementName(e.getElementName());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't validate", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            response.addErrorToken(new EsbErrorToken(e.getMessage()));
+        }
+        return response;
+    }
+
+    public List<GroupOwner> getOwnersBeansForGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId) {
+        return groupManager.getOwnersBeansForGroup(groupId);
     }
 }

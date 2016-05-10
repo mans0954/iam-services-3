@@ -53,17 +53,21 @@ public class ProvisionDispatcher implements Sweepable {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
                 synchronized (mutex) {
-                    final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
+                    //final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
                     Enumeration e = browser.getEnumeration();
-                    int numMsg = 0;
+                    //int numMsg = 0;
                     while (e.hasMoreElements()) {
+                        //numMsg++;
+                        final ProvisionDataContainer data = (ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
+                        provisionTransactionHelper.process(data);
                         e.nextElement();
-                        numMsg++;
                     }
+                    /*
                     for (int i = 0; i < numMsg; i++) {
                         list.add((ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive(queue)).getObject());
                     }
                     process(list);
+                    */
                     return Boolean.TRUE;
                 }
             }
@@ -92,11 +96,15 @@ public class ProvisionDispatcher implements Sweepable {
         if (extObject == null) {
             return null;
         }
-        log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
+        if(log.isDebugEnabled()) {
+        	log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
+        }
 
         List<ExtensibleAttribute> extAttrList = extObject.getAttributes();
         if (extAttrList == null) {
-            log.debug("Extended object attributes is null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("Extended object attributes is null");
+        	}
             return null;
         }
 
@@ -113,16 +121,24 @@ public class ProvisionDispatcher implements Sweepable {
                     ExtensibleAttribute curAttr = currentValueMap.get(nm);
                     attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
                     if (attr.valuesAreEqual(curAttr)) {
-                        log.debug("- Op = 0 - AttrName = " + nm);
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("- Op = 0 - AttrName = " + nm);
+                    	}
                         attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
                     } else if (curAttr == null || !curAttr.containsAnyValue()) {
-                        log.debug("- Op = 1 - AttrName = " + nm);
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("- Op = 1 - AttrName = " + nm);
+                    	}
                         attr.setOperation(AttributeOperationEnum.ADD.getValue());
                     } else if (!attr.containsAnyValue() && curAttr.containsAnyValue()) {
-                        log.debug("- Op = 3 - AttrName = " + nm);
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("- Op = 3 - AttrName = " + nm);
+                    	}
                         attr.setOperation(AttributeOperationEnum.DELETE.getValue());
                     } else if (attr.containsAnyValue() && curAttr.containsAnyValue()) {
-                        log.debug("- Op = 2 - AttrName = " + nm);
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("- Op = 2 - AttrName = " + nm);
+                    	}
                         attr.setOperation(AttributeOperationEnum.REPLACE.getValue());
                     }
                 }

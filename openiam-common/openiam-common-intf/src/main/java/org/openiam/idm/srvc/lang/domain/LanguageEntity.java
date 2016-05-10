@@ -11,6 +11,7 @@ import org.openiam.internationalization.InternationalizedCollection;
 
 import javax.persistence.*;
 import java.util.Map;
+import java.util.Set;
 
 @Entity
 @Table(name = "LANGUAGE")
@@ -43,6 +44,9 @@ public class LanguageEntity extends KeyEntity {
     @Transient
     @InternationalizedCollection(targetField="name")
     private Map<String, LanguageMappingEntity> displayNameMap;
+
+	@OneToMany(mappedBy = "referenceId")
+	private Set<LanguageMappingEntity> languageMappings;
 
     public String getName() {
         return name;
@@ -96,7 +100,15 @@ public class LanguageEntity extends KeyEntity {
         this.displayNameMap = displayNameMap;
     }
 
-    @Override
+	public Set<LanguageMappingEntity> getLanguageMappings() {
+		return languageMappings;
+	}
+
+	public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+		this.languageMappings = languageMappings;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

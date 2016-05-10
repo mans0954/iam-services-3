@@ -9,8 +9,10 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
+import org.openiam.idm.searchbeans.SupervisorSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
@@ -846,6 +848,20 @@ public interface UserDataWebService {
     public List<User> getUserByLastDate(
             @WebParam(name = "lastDate", targetNamespace = "") final Date lastDate);
 
+    @WebMethod
+    public List<User> getUserBetweenCreateDate(
+            @WebParam(name = "fromDate", targetNamespace = "") final Date fromDate,
+            @WebParam(name = "toDate", targetNamespace = "") final Date toDate);
+
+    @WebMethod
+    public List<User> getUserBetweenLastDate(
+            @WebParam(name = "fromDate", targetNamespace = "") final Date fromDate,
+            @WebParam(name = "toDate", targetNamespace = "") final Date toDate);
+
+    @WebMethod
+    public List<User> getUserDtoBySearchBean(
+            @WebParam(name = "searchBean", targetNamespace = "") final AuditLogSearchBean searchBean);
+
     /**
      * returns a paged List of all Supervisors in the system
      *
@@ -866,8 +882,16 @@ public interface UserDataWebService {
      */
     @WebMethod
     public int getAllSuperiorsCount();
+    public List<User> getUserBetweenStartDate(Date fromDate, Date toDate);
 
 //    @WebMethod
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId);
 
+    /**
+     * Call to find supervisors by various criteria
+     * @param supervisorSearchBean
+     * @return a List Supervisor objects
+     */
+    @WebMethod
+    public List<Supervisor> findSupervisors(@WebParam(name = "searchBean", targetNamespace = "") SupervisorSearchBean supervisorSearchBean);
 }

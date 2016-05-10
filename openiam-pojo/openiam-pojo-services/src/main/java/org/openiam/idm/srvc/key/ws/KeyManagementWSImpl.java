@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by: Alexander Duckardt
@@ -25,7 +27,9 @@ public class KeyManagementWSImpl implements KeyManagementWS {
 
     @Override
     public Response initKeyManagement(){
-        log.debug("Got initKeyManagement request. ");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Got initKeyManagement request. ");
+    	}
         Response resp = new Response(ResponseStatus.SUCCESS);
         try {
             keyManagementService.initKeyManagement();
@@ -42,7 +46,9 @@ public class KeyManagementWSImpl implements KeyManagementWS {
 
     @Override
     public Response generateMasterKey() {
-        log.debug("Got generateMasterKey request. ");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Got generateMasterKey request. ");
+    	}
         Response resp = new Response(ResponseStatus.SUCCESS);
         try {
             keyManagementService.generateMasterKey();
@@ -57,9 +63,27 @@ public class KeyManagementWSImpl implements KeyManagementWS {
         return resp;
     }
 
+    public Response generateKeysForUser(String userId){
+        List<String> userList = new ArrayList<>();
+        return generateKeysForUserList(userList);
+    }
+    public Response generateKeysForUserList(List<String> userIds){
+        Response resp = new Response(ResponseStatus.SUCCESS);
+        try {
+            keyManagementService.generateKeysForUserList(userIds);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorText(e.getMessage());
+        }
+        return resp;
+    }
+
     @Override
     public Response migrateData(String secretKey) {
-        log.debug("Got migrateData request. ");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Got migrateData request. ");
+    	}
         Response resp = new Response(ResponseStatus.SUCCESS);
         try {
             keyManagementService.migrateData(secretKey);

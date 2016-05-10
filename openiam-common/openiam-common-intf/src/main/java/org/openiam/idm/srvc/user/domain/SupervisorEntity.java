@@ -1,8 +1,11 @@
 package org.openiam.idm.srvc.user.domain;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 
@@ -10,6 +13,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "ORG_STRUCTURE")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Supervisor.class)
 public class SupervisorEntity implements Serializable {
     @EmbeddedId

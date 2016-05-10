@@ -11,6 +11,7 @@ import java.util.List;
  */
 public interface UserKeyDao extends BaseDao<UserKey, String> {
     void deleteByUserId(String userId) throws Exception;
+    List<UserKey> getByUserIdsKeyName(List<String> userIds, String keyName);
     UserKey getByUserIdKeyName(String userId, String keyName)throws Exception;
 
     List<UserKey> getSublist(int startPos, int size)throws Exception;

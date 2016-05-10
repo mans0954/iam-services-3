@@ -57,6 +57,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
                         }
                     }
                 }
+
                 if (StringUtils.isNotBlank(managedSysSearchBean.getResourceId())) {
                     criteria.add(Restrictions.eq("resourceId", managedSysSearchBean.getResourceId()));
                 }

@@ -93,7 +93,9 @@ public class ModifyUserShellCommand extends AbstractCrudShellCommand<ExtensibleU
         strBuf.append("'" + displayName + "' ");
         strBuf.append("'" + title + "' ");
         strBuf.append("" + userState + " \"");
-        log.debug("**Command line string= " + strBuf.toString());
+        if(log.isDebugEnabled()) {
+        	log.debug("**Command line string= " + strBuf.toString());
+        }
         // strBuf.append(" '"+ ou +"' ");
         // strBuf.append(" '"+ title +"' \"");
         return  strBuf.toString();

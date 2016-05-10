@@ -214,6 +214,9 @@ public class OrganizationDAOImpl extends
             if (StringUtils.isNotBlank(organizationSearchBean.getAbbreviation())) {
                 criteria.add(Restrictions.eq("abbreviation", organizationSearchBean.getAbbreviation()));
             }
+            if (StringUtils.isNotBlank(organizationSearchBean.getDomainName())) {
+                criteria.add(Restrictions.eq("domainName", organizationSearchBean.getDomainName()));
+            }
         }
         return criteria;
     }

@@ -47,4 +47,5 @@
 
     <jee:jndi-lookup id="resetPassQueue" jndi-name="${jms.queue.respass}" expected-type="javax.jms.Queue" />
 
+	<jee:jndi-lookup id="sourceAdapterQueue" jndi-name="${jms.queue.sareq}" expected-type="javax.jms.Queue" />
 </beans>

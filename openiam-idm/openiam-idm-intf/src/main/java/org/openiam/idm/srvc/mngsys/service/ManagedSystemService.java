@@ -18,6 +18,7 @@ public interface ManagedSystemService {
 
     void addManagedSys(ManagedSysDto entity);
 
+    ManagedSysDto getManagedSysDTO(final String id);
     ManagedSysEntity getManagedSysById(String id);
 
     List<ManagedSysEntity> getManagedSysByConnectorId(String connectorId);
@@ -32,6 +33,7 @@ public interface ManagedSystemService {
 
     void updateManagedSys(ManagedSysDto entity);
 
+    ManagedSysDto getManagedSysDTOByResource(String id, String status);
     ManagedSysEntity getManagedSysByResource(String id, String status);
 
     String getManagedSysIdByResource(String id, String status);
@@ -63,6 +65,8 @@ public interface ManagedSystemService {
 //    ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity);
 
 //    void deleteRules(String ruleId);
+    
+    List<ManagedSystemObjectMatch> managedSysObjectParamDTO(String managedSystemId, String objectType);
 
     List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
             String managedSystemId, String objectType);
@@ -84,4 +88,6 @@ public interface ManagedSystemService {
     public void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
 
     List<ManagedSysEntity> getAllManagedSysNames();
+
+    public String getResourceIdByManagedSysId(final String managedSysId);
 }

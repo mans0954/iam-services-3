@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -234,4 +235,6 @@ public interface OrganizationDataService {
 
     public Organization getAffliation(final String userId, final String metadataTypeId, boolean deepCopy);
 
+	    @WebMethod
+    public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId);
 }

@@ -41,7 +41,7 @@ import java.util.Map.Entry;
 @DozerDTOCorrespondence(User.class)
 @Indexed
 @Internationalized
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "UserEntity")
 public class UserEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -63,13 +63,13 @@ public class UserEntity implements Serializable {
     @Column(name = "CREATED_BY", length = 32)
     private String createdBy;
 
-    @Column(name = "EMPLOYEE_ID", length = 32)
+    @Column(name = "EMPLOYEE_ID", length = 100)
     @Fields({
             @Field(index = Index.TOKENIZED),
             @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES),
             @Field(name = "employeeIdUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
-    @Size(max = 32, message = "validator.user.employee.id.toolong")
+    @Size(max = 100, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
@@ -289,6 +289,21 @@ public class UserEntity implements Serializable {
     @Column(name = "RESET_PASSWORD_TYPE", length = 20)
     @Enumerated(EnumType.STRING)
     private ResetPasswordTypeEnum resetPasswordType;
+
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "SUB_TYPE_ID", insertable = true, updatable = true, nullable = true)
+    @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    protected MetadataTypeEntity subType;
+
+    @Column(name = "PARTNER_NAME", length = 60)
+    private String partnerName;
+
+    @Column(name = "PREFIX_PARTNER_NAME", length = 10)
+    private String prefixPartnerName;
+
+    @Column(name = "LASTNAME_PREFIX", length = 10)
+    private String prefixLastName;
 
     public UserEntity() {
     }
@@ -1045,7 +1060,27 @@ public class UserEntity implements Serializable {
                 this.dateITPolicyApproved = newUser.getDateITPolicyApproved();
             }
         }
-
+        if (newUser.getPrefixLastName() != null) {
+            if (newUser.getPrefixLastName().equals(BaseConstants.NULL_STRING)) {
+                this.prefixLastName = null;
+            } else {
+                this.prefixLastName = newUser.getPrefixLastName();
+            }
+        }
+        if (newUser.getPrefixPartnerName() != null) {
+            if (newUser.getPrefixPartnerName().equals(BaseConstants.NULL_STRING)) {
+                this.prefixPartnerName = null;
+            } else {
+                this.prefixPartnerName = newUser.getPrefixPartnerName();
+            }
+        }
+        if (newUser.getPartnerName() != null) {
+            if (newUser.getPartnerName().equals(BaseConstants.NULL_STRING)) {
+                this.partnerName = null;
+            } else {
+                this.partnerName = newUser.getPartnerName();
+            }
+        }
     }
 
     public Set<SupervisorEntity> getSupervisors() {
@@ -1078,6 +1113,38 @@ public class UserEntity implements Serializable {
 
     public void setResetPasswordType(ResetPasswordTypeEnum resetPasswordType) {
         this.resetPasswordType = resetPasswordType;
+    }
+
+    public MetadataTypeEntity getSubType() {
+        return subType;
+    }
+
+    public void setSubType(MetadataTypeEntity subType) {
+        this.subType = subType;
+    }
+
+    public String getPartnerName() {
+        return partnerName;
+    }
+
+    public void setPartnerName(String partnerName) {
+        this.partnerName = partnerName;
+    }
+
+    public String getPrefixPartnerName() {
+        return prefixPartnerName;
+    }
+
+    public void setPrefixPartnerName(String prefixPartnerName) {
+        this.prefixPartnerName = prefixPartnerName;
+    }
+
+    public String getPrefixLastName() {
+        return prefixLastName;
+    }
+
+    public void setPrefixLastName(String prefixLastName) {
+        this.prefixLastName = prefixLastName;
     }
 
     @Override

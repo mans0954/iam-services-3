@@ -61,7 +61,10 @@ public class MetadataElementEntity extends KeyEntity {
 	@Column(name = "IS_PUBLIC", nullable = false)
 	@Type(type = "yes_no")
 	private boolean isPublic = true;
-    
+
+	@Column(name="DATA_MODEL_URL", nullable = true, length = 255)
+	private String dataModelUrl;
+
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false)
 	private ResourceEntity resource;
@@ -114,7 +117,10 @@ public class MetadataElementEntity extends KeyEntity {
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
     private Set<ResourcePropEntity> resourceAttributes;
-    
+
+	@OneToMany(mappedBy = "referenceId")
+	private Set<LanguageMappingEntity> languageMappings;
+
 	public String getDisplayName() {
 		return displayName;
 	}
@@ -298,7 +304,23 @@ public class MetadataElementEntity extends KeyEntity {
 		this.isPublic = isPublic;
 	}
 
-    @Override
+	public String getDataModelUrl() {
+		return dataModelUrl;
+	}
+
+	public void setDataModelUrl(String dataModelUrl) {
+		this.dataModelUrl = dataModelUrl;
+	}
+
+	public Set<LanguageMappingEntity> getLanguageMappings() {
+		return languageMappings;
+	}
+
+	public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+		this.languageMappings = languageMappings;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

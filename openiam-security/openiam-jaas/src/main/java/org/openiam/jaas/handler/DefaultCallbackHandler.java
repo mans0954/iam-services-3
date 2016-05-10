@@ -15,7 +15,9 @@ public class DefaultCallbackHandler extends AbstractCalbackHandler{
     @Override
     protected void processCallback(Callback callback)throws IOException, UnsupportedCallbackException {
         if (callback instanceof TokenCallback) {
-            log.debug("TokenCallback found");
+        	if(log.isDebugEnabled()) {
+        		log.debug("TokenCallback found");
+        	}
             ((TokenCallback)callback).setSecurityToken(this.getToken());
             ((TokenCallback)callback).setUserId(this.getUserId());
         } else {

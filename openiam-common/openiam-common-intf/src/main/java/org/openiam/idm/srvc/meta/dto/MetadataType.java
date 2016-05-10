@@ -35,7 +35,8 @@ import org.openiam.internationalization.InternationalizedCollection;
         "binary",
         "displayNameMap",
         "displayName",
-        "sensitive"
+        "sensitive",
+        "languageMappings"
 })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
 @Internationalized
@@ -59,6 +60,8 @@ public class MetadataType extends KeyDTO {
     private Map<String, LanguageMapping> displayNameMap;
 
     private String displayName;
+
+    private Set<LanguageMapping> languageMappings=new HashSet<LanguageMapping>(0);;
 
     public MetadataType() {
         super();
@@ -143,6 +146,14 @@ public class MetadataType extends KeyDTO {
 
     public void setSensitive(boolean sensitive) {
         this.sensitive = sensitive;
+    }
+
+    public Set<LanguageMapping> getLanguageMappings() {
+        return languageMappings;
+    }
+
+    public void setLanguageMappings(Set<LanguageMapping> languageMappings) {
+        this.languageMappings = languageMappings;
     }
 
     @Override

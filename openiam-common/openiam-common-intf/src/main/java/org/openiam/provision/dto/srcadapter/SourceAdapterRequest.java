@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.xml.bind.annotation.*;
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -15,15 +16,15 @@ import java.util.Set;
         "middleName", "prefix", "sex", "status", "secondaryStatus", "suffix",
         "title", "nickname", "maidenName", "userTypeId", "startDate", "lastDate",
         "userAttributes", "groups", "roles", "resources", "organizations", "emails", "addresses", "phones",
-        /*"subordinates",*/ "supervisors", "passwordRequest"})
+        /*"subordinates",*/ "supervisors","alternativeContact", "passwordRequest", "userSubTypeId", "prefixPartnerName", "prefixLastName", "partnerName"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterRequest {
-    @XmlElement(required = true)
+@XmlRootElement(name = "user",namespace = "http://www.openiam.org/service/provision/dto/srcadapter")
+public class SourceAdapterRequest implements Serializable {
     private SourceAdapterOperationEnum action;
-    @XmlElement(required = true)
     private SourceAdapterKey key;
     @XmlElement(required = true)
     private SourceAdapterKey requestor;
+    private SourceAdapterKey alternativeContact;
     private String firstName;
     private String lastName;
     private String employeeId;
@@ -41,6 +42,10 @@ public class SourceAdapterRequest {
     private String suffix;
     private String nickname;
     private String maidenName;
+    private String userSubTypeId;
+    private String partnerName;
+    private String prefixPartnerName;
+    private String prefixLastName;
 
     @XmlElement(name = "skipWarnings")
     private boolean forceMode;
@@ -359,5 +364,45 @@ public class SourceAdapterRequest {
 
     public void setPasswordRequest(SourceAdapterPasswordRequest passwordRequest) {
         this.passwordRequest = passwordRequest;
+    }
+
+    public String getUserSubTypeId() {
+        return userSubTypeId;
+    }
+
+    public void setUserSubTypeId(String userSubTypeId) {
+        this.userSubTypeId = userSubTypeId;
+    }
+
+    public String getPartnerName() {
+        return partnerName;
+    }
+
+    public void setPartnerName(String partnerName) {
+        this.partnerName = partnerName;
+    }
+
+    public String getPrefixPartnerName() {
+        return prefixPartnerName;
+    }
+
+    public void setPrefixPartnerName(String prefixPartnerName) {
+        this.prefixPartnerName = prefixPartnerName;
+    }
+
+    public String getPrefixLastName() {
+        return prefixLastName;
+    }
+
+    public void setPrefixLastName(String prefixLastName) {
+        this.prefixLastName = prefixLastName;
+    }
+
+    public SourceAdapterKey getAlternativeContact() {
+        return alternativeContact;
+    }
+
+    public void setAlternativeContact(SourceAdapterKey alternativeContact) {
+        this.alternativeContact = alternativeContact;
     }
 }

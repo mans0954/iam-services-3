@@ -18,6 +18,10 @@ import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
@@ -38,11 +42,11 @@ import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -167,6 +171,11 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Autowired
     private SupervisorDozerConverter supervisorDozerConverter;
 
+    @Autowired
+    private MetadataService metadataService;
+
+    @Autowired
+    protected AuditLogService auditLogService;
 
     @Value("${org.openiam.organization.type.id}")
     private String organizationTypeId;
@@ -225,6 +234,16 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return getUser(login.getUserId(), null);
 
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getUserIDs(int from, int size){
+        return userDao.getUserIdList(from, size);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public Long getTotalNumberOfUsers(){
+        return userDao.countAll();
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -275,7 +294,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         if (user != null && user.getType() != null && StringUtils.isNotBlank(user.getType().getId())) {
             MetadataElementSearchBean sb = new MetadataElementSearchBean();
             sb.addTypeId(user.getType().getId());
-            List<MetadataElementEntity> elementList = metadataElementDAO.getByExampleNoLocalize(sb, -1, -1);
+            List<MetadataElementEntity> elementList = metadataService.findEntityBeans(sb, -1, -1);
             if (CollectionUtils.isNotEmpty(elementList)) {
                 for (MetadataElementEntity element : elementList) {
                     if (element.isRequired()) {
@@ -775,7 +794,6 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                 && searchBean.getInitDefaulLoginFlag()) {
             setDefaultLogin(entityList);
         }
-
 
         return userDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
     }
@@ -1956,13 +1974,17 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             // update supervisor
             List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getId(), 0, Integer.MAX_VALUE);
             for (UserEntity s : supervisorList) {
-                log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
+            	if(log.isDebugEnabled()) {
+            		log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
+            	}
                 if (s.getId().equalsIgnoreCase(supervisorId)) {
                     break;
                 }
                 // this.removeSupervisor(s.getOrgStructureId());
             }
-            log.debug("adding supervisor: " + supervisorId);
+            if(log.isDebugEnabled()) {
+            	log.debug("adding supervisor: " + supervisorId);
+            }
             this.addSuperior(supervisorId, newUserEntity.getId());
         }
         return userId;
@@ -2006,6 +2028,11 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             newUserEntity.setType(metadataTypeDAO.findById(newUserEntity.getType().getId()));
         } else {
             newUserEntity.setType(null);
+        }
+        if (newUserEntity.getSubType() != null && StringUtils.isNotBlank(newUserEntity.getSubType().getId())) {
+            newUserEntity.setSubType(metadataTypeDAO.findById(newUserEntity.getSubType().getId()));
+        } else {
+            newUserEntity.setSubType(null);
         }
 
         this.addUser(newUserEntity);
@@ -2344,6 +2371,12 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             } else {
                 origUserEntity.setAlternateContactId(newUserEntity.getAlternateContactId());
             }
+        }
+
+        if (newUserEntity.getSubType() != null && StringUtils.isNotBlank(newUserEntity.getSubType().getId())) {
+            origUserEntity.setSubType(metadataTypeDAO.findById(newUserEntity.getSubType().getId()));
+        } else {
+            origUserEntity.setSubType(null);
         }
     }
 
@@ -2727,9 +2760,77 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUserDtoBetweenCreateDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenCreateDate( fromDate, toDate );
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenStartDate(fromDate, toDate);
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUserDtoBetweenLastDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenLastDate( fromDate, toDate );
+
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+	@Transactional(readOnly = true)
+    public List<User> getUserDtoBySearchBean(AuditLogSearchBean searchBean) {
+        List<IdmAuditLog> auditLogs = auditLogService.findBeans(searchBean, -1, -1, true);
+        Set<String> userIds = new HashSet<String>();
+        for (IdmAuditLog log : auditLogs) {
+            String userId = null;
+            Set<AuditLogTarget> targets = log.getTargets();
+            if(targets != null) {
+                for (AuditLogTarget target : targets) {
+                    if (target.getTargetType().equalsIgnoreCase("user")) {
+                        userId = target.getTargetId();
+                        break;
+                    }
+                }
+            }
+            userIds.add(userId);
+        }
+        List<UserEntity> userEntityList = userDao.getUserByIds(userIds);
+
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
     private UserDataService getProxyService() {
         UserDataService service = (UserDataService)ac.getBean("userManager");
         return service;
+    }
+
+    @Override
+    public List<Supervisor> findSupervisors(SupervisorSearchBean sb) {
+        List<SupervisorEntity> supers = supervisorDao.getByExample(sb);
+        return supervisorDozerConverter.convertToDTOList(supers, true);
+    }
+
+    @Override
+    public List<User> getUserWithoutAnswerDto(){
+        List<UserEntity> userEntityList = userIdentityAnswerDAO.findUsersWithoutAnswers();
+        return userDozerConverter.convertToDTOList(userEntityList, false);
+    }
+
+    @Override
+    public List<String> getUsersIdsWithoutAnswers(){
+        List<String> idList = userIdentityAnswerDAO.findUsersIdWithoutAnswers();
+        return idList;
+    }
+
+    @Override
+    public List<Map<String,Object>> findUsersWithoutAnswersOnDate(Date fromDate, Date toDate, boolean hasAnswer){
+        return userIdentityAnswerDAO.findUsersWithoutAnswersOnDate(fromDate, toDate, hasAnswer);
     }
 
 }

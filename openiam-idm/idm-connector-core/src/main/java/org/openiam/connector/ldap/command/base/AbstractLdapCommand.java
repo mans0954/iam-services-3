@@ -47,12 +47,16 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     public LdapContext connect(ManagedSysEntity managedSys) throws ConnectorDataException {
         ConnectionMgr conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
         conMgr.setApplicationContext(this.applicationContext);
-        log.debug("Connecting to directory:  " + managedSys.getName());
+        if(log.isDebugEnabled()) {
+        	log.debug("Connecting to directory:  " + managedSys.getName());
+        }
 
         LdapContext ldapctx = null;
         try {
             ldapctx = conMgr.connect(managedSys);
-            log.debug("Ldapcontext = " + ldapctx);
+            if(log.isDebugEnabled()) {
+            	log.debug("Ldapcontext = " + ldapctx);
+            }
 
             if (ldapctx == null) {
                 throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, "Unable to connect to directory.");
@@ -196,15 +200,18 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         // add the attributes
         List<ExtensibleAttribute> attrList = obj.getAttributes();
         for (ExtensibleAttribute att : attrList) {
-
-            log.debug("Extensible Attribute: " + att.getName() + " " + att.getDataType());
+        	if(log.isDebugEnabled()) {
+        		log.debug("Extensible Attribute: " + att.getName() + " " + att.getDataType());
+        	}
 
             if (att.getDataType() == null) {
                 continue;
             }
 
             if (att.getName().equalsIgnoreCase(idField)) {
-                log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
+            	if(log.isDebugEnabled()) {
+            		log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
+            	}
                 continue;
             }
 
@@ -294,8 +301,10 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
             objectBaseDN = matchObj.getSearchBaseDn();
         }
 
-        log.debug("Search Filter=" + searchFilter);
-        log.debug("Searching BaseDN=" + objectBaseDN);
+        if(log.isDebugEnabled()) {
+        	log.debug("Search Filter=" + searchFilter);
+        	log.debug("Searching BaseDN=" + objectBaseDN);
+        }
 
         return ctx.search(objectBaseDN, searchFilter, searchCtls);
     }

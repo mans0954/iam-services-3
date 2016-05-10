@@ -54,7 +54,9 @@ public abstract class AbstractLookupOracleCommand<ExtObject extends ExtensibleOb
                 response.setStatus(StatusCodeType.SUCCESS);
             }else {
             	response.setStatus(StatusCodeType.FAILURE);
-                log.debug("LOOKUP successful without results.");
+            	if(log.isDebugEnabled()) {
+            		log.debug("LOOKUP successful without results.");
+            	}
             }
             return response;
         } catch(Throwable e) {

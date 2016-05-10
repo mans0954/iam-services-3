@@ -29,7 +29,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "RES")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "ResourceEntity")
 @DozerDTOCorrespondence(Resource.class)
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_ID"))
 @Internationalized
@@ -122,6 +122,9 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     
     @Transient
     private String displayName;
+
+    @OneToMany(mappedBy = "referenceId")
+    private Set<LanguageMappingEntity> languageMappings;
 
     public ResourceRisk getRisk() {
         return risk;
@@ -400,6 +403,13 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 		this.coorelatedName = coorelatedName;
 	}
 
+    public Set<LanguageMappingEntity> getLanguageMappings() {
+        return languageMappings;
+    }
+
+    public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+        this.languageMappings = languageMappings;
+    }
 
     @Override
     public boolean equals(Object o) {

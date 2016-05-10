@@ -17,6 +17,7 @@ import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.SynchReviewDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.file.ws.FileWebService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity;
@@ -73,6 +74,10 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     protected IdentitySynchService synchService;
     @Autowired
     protected SynchReviewDozerConverter synchReviewDozerConverter;
+
+    @Autowired
+    protected FileWebService fileWebService;
+
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
@@ -99,7 +104,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             List<TransformScript> transformScripts,
             MatchObjectRule matchRule) {
 
-        log.debug("SynchReview startSynch CALLED.^^^^^^^^");
+    	if(log.isDebugEnabled()) {
+    		log.debug("SynchReview startSynch CALLED.^^^^^^^^");
+    	}
         final SynchReviewService synchReviewService = (SynchReviewService)SpringContextProvider.getBean("synchReviewService");
         final LineObject rowHeader = genHeaderFromRecord(synchReviewService.getHeaderReviewRecord(sourceReview.getSynchReviewId()));
         try {
@@ -117,7 +124,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                 }
             }
         }
-        log.debug("SYNCH REVIEW SYNCHRONIZATION COMPLETE^^^^^^^^");
+        if(log.isDebugEnabled()) {
+        	log.debug("SYNCH REVIEW SYNCHRONIZATION COMPLETE^^^^^^^^");
+        }
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
@@ -141,8 +150,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             log.error(me.getMessage());
         }
         long endTime = System.currentTimeMillis();
-        log.debug("--AddUser:SynchAdapter execution time="
-                + (endTime - startTime));
+        if(log.isDebugEnabled()) {
+        	log.debug("--AddUser:SynchAdapter execution time="+ (endTime - startTime));
+        }
     }
 
     public void modifyUser(ProvisionUser pUser) {
@@ -164,8 +174,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             log.error(me.getMessage());
         }
         long endTime = System.currentTimeMillis();
-        log.debug("--ModifyUser:SynchAdapter execution time="
-                + (endTime - startTime));
+        if(log.isDebugEnabled()) {
+        	log.debug("--ModifyUser:SynchAdapter execution time=" + (endTime - startTime));
+        }
     }
 
     /**
@@ -209,7 +220,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             synchronized (mutex) {
                 int retval = validationScript.isValid(rowObj);
                 if (retval == ValidationScript.NOT_VALID) {
-                    log.info(" - Validation failed...transformation will not be called.");
+                    if(log.isDebugEnabled()) {
+                        log.debug(" - Validation failed...transformation will not be called.");
+                    }
                     return;
                 }
                 if (retval == ValidationScript.SKIP) {
@@ -225,7 +238,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
         }
 
         Map<String, Attribute> rowAttr = rowObj.getColumnMap();
-        log.info(" - Row Attr..." + rowAttr);
+         if(log.isDebugEnabled()) {
+             log.debug(" - Row Attr..." + rowAttr);
+         }
         User usr;
         synchronized (mutex) {
             usr = matchRule.lookup(config, rowAttr);
@@ -248,26 +263,32 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                         setCurrentSuperiors(pUser);
                         transformScript.setUser(usr);
                         transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
-                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
-
+//                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
+                        transformScript.setUserRoleList(null);
                     } else {
                         transformScript.setNewUser(true);
                         transformScript.setUser(null);
                         transformScript.setPrincipalList(null);
                         transformScript.setUserRoleList(null);
                     }
-
-                    log.info(" - Execute transform script");
-
+                    if(log.isDebugEnabled()) {
+                        log.debug(" - Execute transform script");
+                    }
                     //Disable PRE and POST processors/performance optimizations
                     pUser.setSkipPreprocessor(true);
                     pUser.setSkipPostProcessor(true);
                     retval = transformScript.execute(rowObj, pUser);
-                    log.debug("Transform result=" + retval);
+                    if(log.isDebugEnabled()) {
+                        log.debug("Transform result=" + retval);
+                    }
                 }
-                log.info(" - Execute complete transform script");
+                if(log.isInfoEnabled()) {
+                    log.debug(" - Execute complete transform script");
+                }
             }
-            System.out.println("================ After Transformation => "+(System.currentTimeMillis()-startTime));
+            if(log.isDebugEnabled()) {
+                log.debug("================ After Transformation => "+(System.currentTimeMillis()-startTime));
+            }
 
             if (retval != -1) {
                 if (retval == TransformScript.SKIP_TO_REVIEW) {
@@ -282,22 +303,29 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                     // call prov service
                     if (retval != TransformScript.DELETE) {
                         if (usr != null) {
-                            log.info(" - Updating existing user");
+                            if(log.isDebugEnabled()) {
+                                log.debug(" - Updating existing user");
+                            }
                             pUser.setId(usr.getId());
                             try {
 
                                 provService.modifyUser(pUser);
-
-                                System.out.println("================ After Modify => "+(System.currentTimeMillis()-startTime));
+                                if(log.isDebugEnabled()) {
+                                    log.debug("================ After Modify => "+(System.currentTimeMillis()-startTime));
+                                }
                             } catch (Throwable e) {
                                 log.error(e);
                             }
                         } else {
-                            log.info(" - New user is being provisioned");
+                            if(log.isDebugEnabled()) {
+                                log.debug(" - New user is being provisioned");
+                            }
                             pUser.setId(null);
                             try {
                                 provService.addUser(pUser);
-                                System.out.println("================ After Add => "+(System.currentTimeMillis()-startTime));
+                                if(log.isDebugEnabled()) {
+                                    log.debug("================ After Add => "+(System.currentTimeMillis()-startTime));
+                                }
                             } catch (Exception e) {
                                 log.error(e);
                             }

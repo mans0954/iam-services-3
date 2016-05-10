@@ -72,12 +72,16 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
 
             NamingEnumeration results = null;
             try {
-                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            	if(log.isDebugEnabled()) {
+            		log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            	}
                 results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
 
             } catch (NameNotFoundException nnfe) {
-                log.debug("results=NULL");
-                log.debug(" results has more elements=0");
+            	if(log.isDebugEnabled()) {
+	                log.debug("results=NULL");
+	                log.debug(" results has more elements=0");
+            	}
                 return;
             }
 
@@ -100,7 +104,9 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             }
 
             if (StringUtils.isNotEmpty(identityDN)) {
-                log.debug("Deleting.. users in ldap.." + identityDN);
+            	if(log.isDebugEnabled()) {
+            		log.debug("Deleting.. users in ldap.." + identityDN);
+            	}
                 if (groupMembershipEnabled) {
                     dirSpecificImp.removeAccountMemberships(managedSys, identity, identityDN, matchObj, ldapctx);
                 }

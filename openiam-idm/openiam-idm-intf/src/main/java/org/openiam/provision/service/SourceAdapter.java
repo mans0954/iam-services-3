@@ -14,7 +14,7 @@ import javax.jws.WebService;
 @WebService(targetNamespace = "http://www.openiam.org/service/provision", name = "SourceAdapterService")
 public interface SourceAdapter {
     @WebMethod
-    public SourceAdapterResponse perform(@WebParam(name = "user", targetNamespace = "") SourceAdapterRequest request);
+    public SourceAdapterResponse perform(@WebParam(name = "user", targetNamespace = "http://www.openiam.org/service/provision/dto/srcadapter") SourceAdapterRequest request);
 
     @WebMethod
     public SourceAdapterInfoResponse info();

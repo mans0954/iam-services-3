@@ -78,6 +78,7 @@ public class AcceptEntitlementsNotifierDelegate extends AbstractNotificationDele
 		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_RESOURCE_FROM_RESOURCE, "REMOVE_RESOURCE_FROM_RESOURCE_APPROVED");
 		
 		NOTIFICATION_MAP.put(ActivitiRequestType.RESOURCE_CERTIFICATION, "RESOURCE_CERTIFICATION_ACCEPTED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.ROLE_CERTIFICATION, "RESOURCE_CERTIFICATION_ACCEPTED");
 	}
 	
 	public AcceptEntitlementsNotifierDelegate() {

@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -113,9 +114,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
-    public String getManagedSysIdByResource(String id, String status) {
+    @Cacheable(value = "managedSysRegion", key = "{#resourceId, #status}")
+    public String getManagedSysIdByResource(String resourceId, String status) {
         ManagedSysSearchBean searchBean = getDefaultSearchBean();
-        searchBean.setResourceId(id);
+        searchBean.setResourceId(resourceId);
         searchBean.setStatus(status);
         List<ManagedSysEntity> managedSysEntities = managedSysDAO.getByExample(searchBean);
         if (CollectionUtils.isNotEmpty(managedSysEntities)) {
@@ -123,11 +125,32 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         }
         return null;
     }
+    
+    /**
+     * This method should be called by anybody who want's a potentially <b>cached</b>
+     * Managed Sys DTO object.
+     * 
+     * fixes AM-852
+     */
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "managedSysRegion", key = "{#managedSysId}")
+    public ManagedSysDto getManagedSysDTO(final String id) {
+    	final ManagedSysEntity entity = getManagedSysById(id);
+    	return managedSysDozerConverter.convertToDTO(entity, true);
+    }
 
     @Override
     @Transactional(readOnly = true)
-    public ManagedSysEntity getManagedSysById(String id) {
-        return managedSysDAO.findById(id);
+    //@Cacheable(value = "managedSysRegion", key = "{#managedSysId}")
+    public ManagedSysEntity getManagedSysById(String managedSysId) {
+        return managedSysDAO.findById(managedSysId);
+    }
+
+    @Cacheable(value = "resource-managedSys", key = "{#managedSysId}")
+    public String getResourceIdByManagedSysId(final String managedSysId) {
+        ManagedSysEntity managedSysEntity = managedSysDAO.findById(managedSysId);
+        return managedSysEntity == null ? null : managedSysEntity.getResourceId();
     }
 
     @Override
@@ -147,8 +170,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional
-    public void removeManagedSysById(String id) {
-        ManagedSysEntity sysEntity = managedSysDAO.findById(id);
+    @CacheEvict(value = "managedSysRegion", key = "{#managedSysId}")
+    public void removeManagedSysById(String managedSysId) {
+        ManagedSysEntity sysEntity = managedSysDAO.findById(managedSysId);
         for (ManagedSystemObjectMatchEntity matchEntity : sysEntity
                 .getMngSysObjectMatchs()) {
             matchDAO.delete(matchEntity);
@@ -169,7 +193,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                 roleDAO.update(role);
             }
         }
-        List<AttributeMapEntity> attributeMapEntities = attributeMapDAO.findByManagedSysId(id);
+        List<AttributeMapEntity> attributeMapEntities = attributeMapDAO.findByManagedSysId(managedSysId);
         for (AttributeMapEntity mapEntity : attributeMapEntities) {
             attributeMapDAO.delete(mapEntity);
         }
@@ -178,7 +202,11 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    @CacheEvict(value = "decryptManagedSysPassword", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "decryptManagedSysPassword", allEntries = true),
+            @CacheEvict(value = "managedSysRegion", key = "{#sys.id}")
+    })
+
     @Transactional
     public void addManagedSys(ManagedSysDto sys) {
         final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
@@ -202,7 +230,11 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    @CacheEvict(value = "decryptManagedSysPassword", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "decryptManagedSysPassword", allEntries = true),
+            @CacheEvict(value = "managedSysRegion", key = "{#sys.id}"),
+            @CacheEvict(value = "resource-managedSys", allEntries = true),
+    })
     @Transactional
     public void updateManagedSys(ManagedSysDto sys) {
         final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
@@ -228,6 +260,11 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "decryptManagedSysPassword", allEntries = true),
+            @CacheEvict(value = "managedSysRegion", allEntries = true),
+            @CacheEvict(value = "resource-managedSys", allEntries = true),
+    })
     @Transactional
     public String saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
         ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(objectMatch, false);
@@ -237,6 +274,11 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "decryptManagedSysPassword", allEntries = true),
+            @CacheEvict(value = "managedSysRegion", allEntries = true),
+            @CacheEvict(value = "resource-managedSys", allEntries = true),
+    })
     public void updateManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
         ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(objectMatch, false);
         matchDAO.update(entity);
@@ -244,13 +286,32 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "decryptManagedSysPassword", allEntries = true),
+            @CacheEvict(value = "managedSysRegion", allEntries = true)
+    })
     public void deleteManagedSystemObjectMatch(String objectMatchId) {
         ManagedSystemObjectMatchEntity entity = matchDAO.findById(objectMatchId);
         matchDAO.delete(entity);
     }
+    
+    /**
+     * This method should be called by anybody who want's a potentially <b>cached</b>
+     * Managed Sys DTO object.
+     * 
+     * fixes AM-852
+     */
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "resource-managedSys", key = "{#id, #status}")
+    public ManagedSysDto getManagedSysDTOByResource(String id, String status) {
+    	final ManagedSysEntity entity = getManagedSysByResource(id, status);
+    	return managedSysDozerConverter.convertToDTO(entity, true);
+    }
 
     @Override
     @Transactional(readOnly = true)
+    //@Cacheable(value = "resource-managedSys", key = "{#id, #status}")
     public ManagedSysEntity getManagedSysByResource(String id, String status) {
         return managedSysDAO.findByResource(id, status);
     }
@@ -421,11 +482,25 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 //            return;
 //        managedSysRuleDAO.delete(entity);
 //    }
+    
+    /**
+     * This method should be called by anybody who want's a potentially <b>cached</b>
+     * Managed Sys DTO object.
+     * 
+     * fixes AM-852
+     */
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "managedSysObjectParam", key = "{ #managedSystemId, #objectType}")
+    public List<ManagedSystemObjectMatch> managedSysObjectParamDTO(final String managedSystemId, final String objectType) {
+    	final List<ManagedSystemObjectMatchEntity> list = managedSysObjectParam(managedSystemId, objectType);
+    	return managedSystemObjectMatchDozerConverter.convertToDTOList(list, false);
+    }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
-            String managedSystemId, String objectType) {
+    //@Cacheable(value = "managedSysObjectParam", key = "{ #managedSystemId, #objectType}")
+    public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(final String managedSystemId, final String objectType) {
         return matchDAO.findBySystemId(managedSystemId, objectType);
     }
 

@@ -258,7 +258,9 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
         LineObject lineHeader = null;
         Date mostRecentRecord = null;
 
-        log.debug("WS SYNCH STARTED ^^^^^^^^");
+        if(log.isDebugEnabled()) {
+        	log.debug("WS SYNCH STARTED ^^^^^^^^");
+        }
 
         SyncResponse res = new SyncResponse(ResponseStatus.SUCCESS);
         SynchReview review = null;
@@ -290,14 +292,18 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
             }
 
             for (LineObject rowObj : lineObjectList) {
-                log.debug("-SYNCHRONIZING NEW RECORD ---");
+            	if(log.isDebugEnabled()) {
+            		log.debug("-SYNCHRONIZING NEW RECORD ---");
+            	}
                 if (mostRecentRecord == null) {
                     mostRecentRecord = rowObj.getLastUpdate();
 
                 } else {
                     // if current record is newer than what we saved, then update the most recent record value
                     if (mostRecentRecord.before(rowObj.getLastUpdate())) {
-                        log.debug("- MostRecentRecord value updated to=" + rowObj.getLastUpdate());
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("- MostRecentRecord value updated to=" + rowObj.getLastUpdate());
+                    	}
                         mostRecentRecord.setTime(rowObj.getLastUpdate().getTime());
                     }
                 }
@@ -318,7 +324,9 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 //            auditLogProvider.persist(auditBuilder);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
-            log.debug("WS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if(log.isDebugEnabled()) {
+            	log.debug("WS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            }
             return resp;
         } catch (IOException io) {
             io.printStackTrace();
@@ -328,7 +336,9 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
-            log.debug("WS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if(log.isDebugEnabled()) {
+            	log.debug("WS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            }
             return resp;
 
         } catch (Exception se) {
@@ -347,7 +357,9 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
             }
         }
 
-        log.debug("WS SYNCH COMPLETE.^^^^^^^^");
+        if(log.isDebugEnabled()) {
+        	log.debug("WS SYNCH COMPLETE.^^^^^^^^");
+        }
 
         SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
         resp.setLastRecordTime(mostRecentRecord);

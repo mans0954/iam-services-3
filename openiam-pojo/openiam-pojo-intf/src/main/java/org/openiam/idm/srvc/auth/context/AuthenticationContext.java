@@ -54,6 +54,10 @@ public interface AuthenticationContext {
     public abstract String getResourceId();
 
     public abstract void setResourceId(String resourceId);
+    
+    public void setSkipPasswordCheck(boolean skipPasswordCheck);
+    
+    public boolean isSkipPasswordCheck();
 
     public User getUser();
 

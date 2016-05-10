@@ -22,7 +22,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "COMPANY")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "OrganizationEntity")
 @DozerDTOCorrespondence(Organization.class)
 @AttributeOverride(name = "id", column = @Column(name = "COMPANY_ID"))
 @Internationalized
@@ -398,9 +398,9 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
         result = prime * result
                 + ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime
-                * result
-                + ((organizationType == null) ? 0 : organizationType.hashCode());
+//        result = prime
+//                * result
+//                + ((organizationType == null) ? 0 : organizationType.hashCode());
         result = prime * result + (selectable ? 1231 : 1237);
         result = prime * result + ((status == null) ? 0 : status.hashCode());
         result = prime * result + ((symbol == null) ? 0 : symbol.hashCode());

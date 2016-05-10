@@ -59,7 +59,9 @@ public class MngSysLoginModule extends AbstractLoginModule {
         if(StringUtils.isEmpty(authPolicyId)) {
             authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
         }
-        log.debug("Authentication policyid=" + authPolicyId);
+        if(log.isDebugEnabled()) {
+        	log.debug("Authentication policyid=" + authPolicyId);
+        }
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
         if (authPolicy == null) {
             log.error("No auth policy found");
@@ -90,8 +92,9 @@ public class MngSysLoginModule extends AbstractLoginModule {
 
         // Find user in target system
         LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, new ArrayList<ExtensibleAttribute>());
-        log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
-
+        if(log.isDebugEnabled()) {
+        	log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
+        }
         if (resp.isFailure()) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
@@ -143,7 +146,7 @@ public class MngSysLoginModule extends AbstractLoginModule {
         passwRequest.setOperation("TEST_PASSWORD");
         passwRequest.setScriptHandler(mSys.getPasswordHandler());
         passwRequest.setExtensibleObject(new ExtensibleUser());
-        ResponseType responseType = connectorAdapter.validatePassword(mSys, passwRequest, MuleContextProvider.getCtx());
+        ResponseType responseType = connectorAdapter.validatePassword(mSys, passwRequest);
 
         if (StatusCodeType.FAILURE.equals(responseType.getStatus())) {
             // get the authentication lock out policy
@@ -200,7 +203,9 @@ public class MngSysLoginModule extends AbstractLoginModule {
             }
         }
 
-        log.debug("-login successful");
+        if(log.isDebugEnabled()) {
+        	log.debug("-login successful");
+        }
         // good login - reset the counters
 
         lg.setLastAuthAttempt(curDate);
@@ -216,7 +221,9 @@ public class MngSysLoginModule extends AbstractLoginModule {
         lg.setAuthFailCount(0);
         lg.setChallengeResponseFailCount(0);
         lg.setFirstTimeLogin(0);
-        log.debug("-Good Authn: Login object updated.");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Good Authn: Login object updated.");
+        }
         loginManager.updateLogin(lg);
 
         // check the user status
@@ -228,7 +235,9 @@ public class MngSysLoginModule extends AbstractLoginModule {
         }
 
         // Successful login
-        log.debug("-Populating subject after authentication");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Populating subject after authentication");
+        }
 
         String tokenType = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_TYPE");
         String tokenLife = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_LIFE");
@@ -243,7 +252,7 @@ public class MngSysLoginModule extends AbstractLoginModule {
         subj.setUserId(lg.getUserId());
         subj.setPrincipal(principal);
         subj.setSsoToken(token(lg.getUserId(), tokenParam));
-        setResultCode(lg, subj, curDate, passwordPolicy);
+        setResultCode(lg, subj, curDate, passwordPolicy, false);
 
         return subj;
     }

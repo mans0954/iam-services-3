@@ -14,8 +14,6 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.uriauth.comparator.ContentProviderSSSLComparator;
 
-import com.mchange.v1.util.ArrayUtils;
-
 public class ContentProviderTree {
 	
 	final Map<String, TreeSet<ContentProviderNode>> sortedSetMap = new HashMap<String, TreeSet<ContentProviderNode>>();

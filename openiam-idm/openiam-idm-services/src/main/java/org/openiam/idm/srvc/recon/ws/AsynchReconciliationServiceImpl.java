@@ -64,11 +64,14 @@ public class AsynchReconciliationServiceImpl {
 		
 	//	MuleMessage msg = null;
 		
-		log.debug("A-RECONCILIATION STARTED.............");
+		if(log.isDebugEnabled()) {
+			log.debug("A-RECONCILIATION STARTED.............");
+		}
 		
 		try {
-
-            log.debug("MuleContext = " + MuleContextProvider.getCtx());
+			if(log.isDebugEnabled()) {
+				log.debug("MuleContext = " + MuleContextProvider.getCtx());
+			}
 			
 
 			Map<String,String> msgPropMap =  new HashMap<String,String>(); 
@@ -83,12 +86,15 @@ public class AsynchReconciliationServiceImpl {
 
 			
 		}catch(Exception e) {
-			log.debug("EXCEPTION:AsynchReconciliationServiceImpl");
+			if(log.isDebugEnabled()) {
+				log.debug("EXCEPTION:AsynchReconciliationServiceImpl");
+			}
 			log.error(e);
 			//e.printStackTrace();
 		}
-		log.debug("A-RECONCILIATION COMPLETED ---------------------");
-
+		if(log.isDebugEnabled()) {
+			log.debug("A-RECONCILIATION COMPLETED ---------------------");
+		}
 	}
 
 }

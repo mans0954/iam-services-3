@@ -22,6 +22,7 @@
 package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -67,7 +68,9 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.*;
@@ -117,6 +120,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     @Value("${org.openiam.debug.hidden.attributes}")
     private String hiddenAttributes;
+
+    @Value("${openiam.audit.rehire}")
+    protected String saveRehireChange;
 
     @Value("${org.openiam.send.user.activation.link}")
     private Boolean sendActivationLink;
@@ -178,7 +184,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         for (String roleId : roles) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<Resource> resources = resourceDataService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -192,7 +198,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         for (String groupId : groups) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<Resource> resources = resourceDataService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -207,7 +213,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
             rsb.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-            List<Resource> resources = resourceDataService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -221,7 +227,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         for (String groupId : groupList) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<Resource> resources = resourceDataService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -271,7 +277,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
 
-                    idmAuditLog = auditLogService.save(idmAuditLog);
+                    auditLogService.enqueue(idmAuditLog);
+                    //idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });
@@ -298,8 +305,17 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         return modifyUser(pUser, null);
     }
 
-    @CacheEvict(value = "resources", allEntries = true)
+    //    @CacheEvict(value = "resources", allEntries = true)
     private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog) {
+        return modifyUser(pUser, auditLog, null);
+    }
+
+    //    @CacheEvict(value = "resources", allEntries = true)
+    private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog, final AuditAction auditAction) {
+
+        //clear cache
+
+
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
 
@@ -313,7 +329,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
-                    idmAuditLog.setAction(AuditAction.MODIFY_USER.value());
+                    idmAuditLog.setAction(auditAction != null ? auditAction.value() : AuditAction.MODIFY_USER.value());
                     LoginEntity loginEntity = loginManager.getByUserIdManagedSys(pUser.getId(), sysConfiguration.getDefaultManagedSysId());
                     idmAuditLog.setTargetUser(pUser.getId(), loginEntity.getLogin());
                     idmAuditLog.setAuditDescription("Provisioning modify user: " + pUser.getId()
@@ -323,8 +339,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         idmAuditLog.addParent(auditLog);
 //                        auditLogService.save(auditLog);
                     }
-                    idmAuditLog = auditLogService.save(idmAuditLog);
+                    //idmAuditLog = auditLogService.save(idmAuditLog);
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
+                    auditLogService.enqueue(idmAuditLog);
                     //idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
@@ -375,7 +392,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     }
 
     private ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
-        log.debug("----deleteByUserId called.------");
+        if (log.isDebugEnabled()) {
+            log.debug("----deleteByUserId called.------");
+        }
 
         List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), loginEntityList);
@@ -413,7 +432,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     private ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
                                                                    String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
-        log.debug("----deleteUser called.------");
+        if (log.isDebugEnabled()) {
+            log.debug("----deleteUser called.------");
+        }
 
         if (StringUtils.isEmpty(requestorId)) {
             requestorId = systemUserId;
@@ -461,8 +482,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 response.setErrorCode(ResponseCode.USER_NOT_FOUND);
                 return response;
             }
+            UserEntity u = userMgr.getUser(userId);
 
-            User usr = userDozerConverter.convertToDTO(userMgr.getUser(userId), true);
+            User usr = userDozerConverter.convertToDTO(u, true);
             if (usr == null) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.USER_NOT_FOUND);
@@ -477,6 +499,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
             ProvisionUser pUser = new ProvisionUser(usr);
             pUser.setRequestorUserId(requestorId);
+            fillUserSupervisor(pUser, usr, u);
             // SET PRE ATTRIBUTES FOR DEFAULT SYS SCRIPT
             bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSystemId);
             bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
@@ -491,7 +514,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
             if (status != UserStatusEnum.REMOVE
                     && (usr.getStatus() == UserStatusEnum.DELETED || usr.getStatus() == UserStatusEnum.TERMINATED)) {
-                log.debug("User was already deleted. Nothing more to do.");
+                if (log.isDebugEnabled()) {
+                    log.debug("User was already deleted. Nothing more to do.");
+                }
                 return response;
             }
 
@@ -507,12 +532,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 // terminate that identity
 
                 // call delete on the connector
-                ManagedSysDto mSys = managedSysService.getManagedSys(managedSystemId);
+                ManagedSysDto mSys = managedSysDataService.getManagedSys(managedSystemId);
 
                 idmAuditLogChild.setTargetManagedSys(mSys.getId(), mSys.getName());
 
                 ManagedSystemObjectMatch matchObj = null;
-                ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
+                ManagedSystemObjectMatch[] matchObjAry = managedSysDataService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
                 if (matchObjAry != null && matchObjAry.length > 0) {
                     matchObj = matchObjAry[0];
                     bindingMap.put(MATCH_PARAM, matchObj);
@@ -528,8 +553,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                         if (status == UserStatusEnum.REMOVE) {
                             // pre-processing
-                            Resource res = resourceDataService.getResource(resourceId, null);
-
+                            Resource res = resourceService.getResourceDTO(resourceId, true);
                             bindingMap.put("IDENTITY", login);
                             bindingMap.put("RESOURCE", res);
                             bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
@@ -598,13 +622,15 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 // delete user and all its identities.
                 LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
-                if (lRequestor != null && lTargetUser != null) {
-                    log.debug("Requestor identity=" + lRequestor);
-                    log.debug("Target identity=" + lTargetUser);
-                } else {
-                    log.debug("Unable to log disable operation. Of of the following is null:");
-                    log.debug("Requestor identity=" + lRequestor);
-                    log.debug("Target identity=" + lTargetUser);
+                if (log.isDebugEnabled()) {
+                    if (lRequestor != null && lTargetUser != null) {
+                        log.debug("Requestor identity=" + lRequestor);
+                        log.debug("Target identity=" + lTargetUser);
+                    } else {
+                        log.debug("Unable to log disable operation. Of of the following is null:");
+                        log.debug("Requestor identity=" + lRequestor);
+                        log.debug("Target identity=" + lTargetUser);
+                    }
                 }
 
                 // update the identities and set them to inactive
@@ -625,19 +651,20 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             // identity.
                             if (!l.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
 
-                                ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
+                                ManagedSysDto mSys = managedSysDataService.getManagedSys(l.getManagedSysId());
                                 idmAuditLogChild.setTargetManagedSys(mSys.getId(), mSys.getName());
 
                                 ManagedSystemObjectMatch matchObj = null;
-                                ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(
+                                ManagedSystemObjectMatch[] matchObjAry = managedSysDataService.managedSysObjectParam(
                                         mSys.getId(), ManagedSystemObjectMatch.USER);
                                 if (matchObjAry != null && matchObjAry.length > 0) {
                                     matchObj = matchObjAry[0];
                                     bindingMap.put(MATCH_PARAM, matchObj);
                                 }
-                                log.debug("Deleting id=" + l.getLogin());
-                                log.debug("- delete using managed sys id=" + mSys.getId());
-
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Deleting id=" + l.getLogin());
+                                    log.debug("- delete using managed sys id=" + mSys.getId());
+                                }
                                 // pre-processing
                                 bindingMap.put(IDENTITY, l);
                                 bindingMap.put(TARGET_SYS_RES, null);
@@ -658,7 +685,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                                         if (resourceId != null) {
                                             processedResources.add(resourceId);
-                                            resource = resourceDataService.getResource(resourceId, null);
+                                            resource = resourceService.getResourceDTO(resourceId, true);
                                             if (resource != null) {
                                                 bindingMap.put(TARGET_SYS_RES, resource);
 
@@ -767,6 +794,26 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     }
 
+    private void fillUserSupervisor(ProvisionUser pUser, User usr, UserEntity u) {
+        if (u != null && usr != null) {
+            int i = 0;
+            for (Supervisor s : usr.getSupervisors()) {
+                int j = 0;
+                for (SupervisorEntity supervisorEntity : u.getSupervisors()) {
+                    if (i == j) {
+                        s.setSupervisor(userDozerConverter.convertToDTO(supervisorEntity.getSupervisor(), true));
+                        if (pUser != null) {
+                            pUser.addSuperior(s.getSupervisor());
+                        }
+                        break;
+                    }
+                    j++;
+                }
+                i++;
+            }
+        }
+    }
+
     @Override
     @Transactional
     public ProvisionUserResponse deprovisionSelectedResources(String userId, String requestorUserId,
@@ -849,7 +896,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (userLogin != null) {
                 if (userLogin.getManagedSysId() != null && !userLogin.getManagedSysId().equals("0")) {
                     final String managedSysId = userLogin.getManagedSysId();
-                    final ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
+                    final ManagedSysDto managedSys = managedSysDataService.getManagedSys(managedSysId);
                     final Login login = loginDozerConverter.convertToDTO(userLogin, false);
                     boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
                     ResponseType responsetype = suspend(requestorId, login, managedSys,
@@ -876,11 +923,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         final Login primLogin = loginDozerConverter.convertToDTO(lg, false);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
-                final List<Resource> resourceList = resourceDataService.getResourcesForRoleNoLocalized(role.getId(), 0,
-                        Integer.MAX_VALUE, new ResourceSearchBean());
+                final ResourceSearchBean rsb = new ResourceSearchBean();
+                rsb.setDeepCopy(false);
+                final List<Resource> resourceList = resourceService.getResourcesForRoleNoLocalized(role.getId(), 0, Integer.MAX_VALUE, rsb);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
-                        ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getId());
+                        ManagedSysDto managedSys = managedSysDataService.getManagedSysByResource(resource.getId());
                         if (managedSys != null) {
                             boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
                             ResponseType responsetype = suspend(requestorId, primLogin, managedSys,
@@ -984,7 +1032,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     curPrincipalList);
             bindingMap.put(TARGET_SYSTEM_IDENTITY, curPrimaryIdentity.getLogin());
             if (curPrimaryIdentity == null && pUser.getPrincipalList() == null) {
-                log.debug("Primary identity not found...");
+                if (log.isDebugEnabled()) {
+                    log.debug("Primary identity not found...");
+                }
                 auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Primary identity not found...");
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -1000,7 +1050,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     primaryLogin.setOperation(AttributeOperationEnum.ADD);
 
                 } else {
-                    log.debug("policyAttrMap IS null...");
+                    if (log.isDebugEnabled()) {
+                        log.debug("policyAttrMap IS null...");
+                    }
                     resp.setStatus(ResponseStatus.FAILURE);
                     resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                     return resp;
@@ -1017,7 +1069,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         buildPrimaryIDPassword(primaryLogin, bindingMap, scriptRunner);
                     }
                 } else {
-                    log.debug("Primary identity not found...");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Primary identity not found...");
+                    }
                     resp.setStatus(ResponseStatus.FAILURE);
                     resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                     return resp;
@@ -1040,15 +1094,18 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 }
             }
             // validate that this identity does not already exist
-            LoginEntity dupPrincipal = loginManager.getLoginByManagedSys(primaryLogin.getLogin(),
-                    primaryLogin.getManagedSysId());
-
-            if (dupPrincipal != null) {
+//            LoginSearchBean lsb = new LoginSearchBean();
+//            lsb.setUseLucene(false);
+//            lsb.setManagedSysId(primaryLogin.getManagedSysId());
+//            lsb.setLoginMatchToken(new SearchParam(primaryLogin.getLogin(), MatchType.EXACT));
+//            Integer loginCounts = loginManager.count(lsb);
+            boolean isExists = loginManager.loginExists(primaryLogin.getLogin(), primaryLogin.getManagedSysId());
+            if (isExists) {
                 // identity exists
                 auditLog.fail();
-                auditLog.setFailureReason(ResponseCode.DUPLICATE_PRINCIPAL + ": " + dupPrincipal);
+                auditLog.setFailureReason(ResponseCode.DUPLICATE_PRINCIPAL + ": " + primaryLogin);
                 auditLog.addAttribute(AuditAttributeName.DESCRIPTION, ResponseCode.DUPLICATE_PRINCIPAL + ": "
-                        + dupPrincipal.getLogin());
+                        + primaryLogin.getLogin());
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.DUPLICATE_PRINCIPAL);
                 return resp;
@@ -1201,7 +1258,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             auditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
             auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                     "Primary identity not found for user=" + userEntity.getId());
-            log.debug("Primary identity not found for user=" + userEntity.getId());
+            if (log.isDebugEnabled()) {
+                log.debug("Primary identity not found for user=" + userEntity.getId());
+            }
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
             return resp;
@@ -1210,12 +1269,14 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         // update attributes
         updateUserAttributes(userEntity, pUser, auditLog);
 
-        log.debug("Binding active roles to scripting");
-        log.debug("- role set -> " + roleSet);
-        log.debug("- Primary Identity : " + primaryIdentity);
+        if (log.isDebugEnabled()) {
+            log.debug("Binding active roles to scripting");
+            log.debug("- role set -> " + roleSet);
+            log.debug("- Primary Identity : " + primaryIdentity);
+        }
         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "- Primary Identity: " + primaryIdentity.getLogin());
         ProvisionUser finalProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
-
+        finalProvUser.setSkipPostProcessor(pUser.isSkipPostProcessor());
         if (!isAdd) {
             //If identity for resource exists and it's status is 'INACTIVE' user should be deprovisioned from target system
             Set<Resource> inactiveResources = new HashSet<Resource>();
@@ -1245,15 +1306,17 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
             for (LoginEntity l : userEntity.getPrincipalList()) {
                 boolean resFound = false;
-                String resId = managedSystemService.getManagedSysById(l.getManagedSysId()).getResourceId();
-                for (Resource r : resourceSet) {
-                    if (r.getId().equals(resId)) {
-                        resFound = true;
-                        break;
+                String resId = managedSystemService.getResourceIdByManagedSysId(l.getManagedSysId());
+                if(resId!=null){
+                    for (Resource r : resourceSet) {
+                        if (r.getId().equals(resId)) {
+                            resFound = true;
+                            break;
+                        }
                     }
-                }
-                if (!resFound) {
-                    deleteResourceSet.add(resourceService.getResourceDTO(resId, false));
+                    if (!resFound) {
+                        deleteResourceSet.add(resourceService.getResourceDTO(resId, false));
+                    }
                 }
             }
 
@@ -1264,9 +1327,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             deleteResourceSet.removeAll(resourceSet);
         }
 
-        log.debug("Resources to be added ->> " + resourceSet);
-        log.debug("Delete the following resources ->> " + deleteResourceSet);
-
+        if (log.isDebugEnabled()) {
+            log.debug("Resources to be added ->> " + resourceSet);
+            log.debug("Delete the following resources ->> " + deleteResourceSet);
+        }
         // deprovision resources
         if (!isAdd) {
             if (CollectionUtils.isNotEmpty(deleteResourceSet)) {
@@ -1333,14 +1397,14 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             // do check if provisioning user has source resource
                             // => we should skip it from double provisioning
                             // reconciliation case
-                            ManagedSysDto managedSys = managedSysService.getManagedSys(pUser.getSrcSystemId());
+                            ManagedSysDto managedSys = managedSysDataService.getManagedSys(pUser.getSrcSystemId());
                             if (res.getId().equalsIgnoreCase(managedSys.getResourceId())) {
                                 continue;
                             }
                         }
                         // Protects other resources if one resource failed
                         ProvisionDataContainer data = provisionSelectedResourceHelper.provisionResource(res, userEntity, pUser, bindingMap,
-                                primaryIdentity, requestId, false);
+                                primaryIdentity, requestId);
                         auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "Provisioning for resource: " + res.getName());
                         if (data != null) {
@@ -1349,10 +1413,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         }
 
                         // Additional operation is required for managed system with property ON_DELETE = DISABLE
-                        String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
+                        String onDeleteProp = resourceService.getResourcePropValueByName(res.getId(), "ON_DELETE");
                         if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
                             ProvisionDataContainer enableData = provisionSelectedResourceHelper.provisionResource(res, userEntity, pUser, bindingMap,
-                                    primaryIdentity, requestId, true);
+                                    primaryIdentity, requestId);
                             if (enableData != null) {
                                 enableData.setParentAuditLogId(auditLog.getId());
                                 dataList.add(enableData);
@@ -1406,12 +1470,27 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         }
 
         if (isAdd) {
-            log.debug("DEFAULT PROVISIONING SERVICE: addUser complete");
+            if (log.isDebugEnabled()) {
+                log.debug("DEFAULT PROVISIONING SERVICE: addUser complete");
+            }
             auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DEFAULT PROVISIONING SERVICE: addUser complete");
         } else {
-            log.debug("DEFAULT PROVISIONING SERVICE: modifyUser complete");
+            if (log.isDebugEnabled()) {
+                log.debug("DEFAULT PROVISIONING SERVICE: modifyUser complete");
+            }
             auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DEFAULT PROVISIONING SERVICE: modifyUser complete");
         }
+
+        //TODO remove in next versions. Fix for cache evict
+
+        if (CollectionUtils.isNotEmpty(pUser.getResources())) {
+            for (Resource r : pUser.getResources()) {
+                if (AttributeOperationEnum.ADD.equals(r.getOperation()) || AttributeOperationEnum.REPLACE.equals(r.getOperation())
+                        || AttributeOperationEnum.DELETE.equals(r.getOperation()))
+                    resourceService.invalidateCache(r.getId());
+            }
+        }
+
         auditLog.succeed();
         resp.setStatus(ResponseStatus.SUCCESS);
         resp.setUser(finalProvUser);
@@ -1457,27 +1536,28 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     @Transactional
     public LookupUserResponse getTargetSystemUser(String principalName, String managedSysId,
                                                   List<ExtensibleAttribute> extensibleAttributes) {
-
-        log.debug("getTargetSystemUser called. for = " + principalName);
-
+        if (log.isDebugEnabled()) {
+            log.debug("getTargetSystemUser called. for = " + principalName);
+        }
         LookupUserResponse response = new LookupUserResponse(ResponseStatus.SUCCESS);
         try {
             response.setManagedSysId(managedSysId);
             response.setPrincipalName(principalName);
             // get the connector for the managedSystem
 
-            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSysDto mSys = managedSysDataService.getManagedSys(managedSysId);
             ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] objList = managedSysService.managedSysObjectParam(managedSysId,
+            ManagedSystemObjectMatch[] objList = managedSysDataService.managedSysObjectParam(managedSysId,
                     ManagedSystemObjectMatch.USER);
             if (objList != null && objList.length > 0) {
                 matchObj = objList[0];
             }
 
             // do the lookup
-
-            log.debug("Calling lookupRequest ");
+            if (log.isDebugEnabled()) {
+                log.debug("Calling lookupRequest ");
+            }
 
             LookupRequest<ExtensibleUser> reqType = new LookupRequest<>();
             String requestId = "R" + UUIDGen.getUUID();
@@ -1496,7 +1576,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
                 reqType.setBaseDN(matchObj.getSearchBaseDn());
             }
-            String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+            String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
             reqType.setHostLoginPassword(passwordDecoded);
             reqType.setHostUrl(mSys.getHostUrl());
             reqType.setScriptHandler(mSys.getLookupHandler());
@@ -1513,7 +1593,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 }
             }
 
-            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType, MuleContextProvider.getCtx());
+            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType);
 
             final String postProcessScript = getResourceProperty(res, "POST_PROCESS");
             if (postProcessScript != null && !postProcessScript.isEmpty()) {
@@ -1681,14 +1761,18 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     }
 
     private Set<Resource> getResourcesForRoles(Set<Role> roleSet) {
-        log.debug("GetResourcesForRole().....");
+        if (log.isDebugEnabled()) {
+            log.debug("GetResourcesForRole().....");
+        }
         final Set<Resource> resourceList = new HashSet<Resource>();
         if (CollectionUtils.isNotEmpty(roleSet)) {
             for (Role rl : roleSet) {
                 if (rl.getId() != null) {
                     ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
+                    resourceSearchBean.setFindInCache(true);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+                    //findBeansLocalizedDto
                     List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         for (Resource r : resources) {
@@ -1703,7 +1787,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     }
 
     private Set<Resource> getResourcesForGroups(Set<Group> groupSet) {
-        log.debug("GetResourcesForGroups().....");
+        if (log.isDebugEnabled()) {
+            log.debug("GetResourcesForGroups().....");
+        }
         final Set<Resource> resourceSet = new HashSet<Resource>();
         if (CollectionUtils.isNotEmpty(groupSet)) {
             for (Group gr : groupSet) {
@@ -1766,7 +1852,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     }
 
     private LookupAttributeResponse lookupAttributes(String mSysId, String execMode) {
-        ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
+        ManagedSysDto mSys = managedSysDataService.getManagedSys(mSysId);
         if (mSys != null) {
             LookupRequest lookupRequest = new LookupRequest();
             lookupRequest.setExecutionMode(execMode);
@@ -1776,8 +1862,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             lookupRequest.setHostLoginId(mSys.getUserId());
             lookupRequest.setHostLoginPassword(mSys.getDecryptPassword());
             lookupRequest.setScriptHandler(mSys.getAttributeNamesHandler());
-            return connectorAdapter.lookupAttributes(mSys.getConnectorId(), lookupRequest,
-                    MuleContextProvider.getCtx());
+            return connectorAdapter.lookupAttributes(mSys.getConnectorId(), lookupRequest);
         }
         return null;
     }
@@ -1785,8 +1870,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     public Response syncPasswordFromSrc(PasswordSync passwordSync) {
         // ManagedSystemId where this event originated.
         // Ensure that we dont send the event back to this system
-
-        log.debug("----syncPasswordFromSrc called.------");
+        if (log.isDebugEnabled()) {
+            log.debug("----syncPasswordFromSrc called.------");
+        }
         boolean saveAuditLog = true;
         final IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setBaseObject(passwordSync);
@@ -1895,9 +1981,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 // otherwise do a sync
                 if (targetLoginEntity.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId())
                         || targetLoginEntity.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
-
-                    log.debug("Updating password for " + targetLoginEntity.getLogin());
-
+                    if (log.isDebugEnabled()) {
+                        log.debug("Updating password for " + targetLoginEntity.getLogin());
+                    }
                     auditLog.setManagedSysId(targetLoginEntity.getManagedSysId());
                     auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Updating password for " + targetLoginEntity.getLogin());
 
@@ -1905,7 +1991,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             passwordSync.isPreventChangeCountIncrement());
                     if (retval) {
                         auditLog.succeed();
-                        log.debug("-Password changed in openiam repository for user:" + passwordSync.getPrincipal());
+                        if (log.isDebugEnabled()) {
+                            log.debug("-Password changed in openiam repository for user:" + passwordSync.getPrincipal());
+                        }
                         childAuditLog.addCustomRecord("Password changed success in openiam repository", "User='" + passwordSync.getPrincipal() + "'");
                         childAuditLog.succeed();
                         auditLog.addChild(childAuditLog);
@@ -1927,15 +2015,16 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         return response; //SIA 2015-08-01
                     }
                 } else {
-
-                    log.debug("Synchronizing password from: " + targetLoginEntity);
-
+                    if (log.isDebugEnabled()) {
+                        log.debug("Synchronizing password from: " + targetLoginEntity);
+                    }
                     // determine if you should sync the password or not
                     String managedSysId = targetLoginEntity.getManagedSysId();
                     final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
 
-                    log.debug("Sync allowed for sys=" + managedSysId);
-
+                    if (log.isDebugEnabled()) {
+                        log.debug("Sync allowed for sys=" + managedSysId);
+                    }
                     // update the password in openiam
                     loginManager.setPassword(targetLoginEntity.getLogin(), targetLoginEntity.getManagedSysId(), encPassword,
                             passwordSync.isPreventChangeCountIncrement());
@@ -2031,12 +2120,15 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                         Response res = new Response(ResponseStatus.FAILURE);
                         for (OperationBean ob : bulkRequest.getOperations()) {
+
+                            AuditAction auditAction = null;
+
                             switch (ob.getObjectType()) {
                                 case USER:
                                     switch (ob.getOperation()) {
                                         case ACTIVATE_USER:
                                             pUser.setStatus(UserStatusEnum.ACTIVE);
-                                            res = modifyUser(pUser, idmAuditLog);
+                                            res = modifyUser(pUser, idmAuditLog, AuditAction.USER_ACTIVE);
                                             break;
                                         case DEACTIVATE_USER:
                                             res = deleteByUserWithSkipManagedSysList(
@@ -2393,8 +2485,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     public Response requestAdd(ExtensibleUser extUser, Login login, String requestorId) {
         final String requestId = "R" + UUIDGen.getUUID();
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
-
-        log.debug("----addModify called.------");
+        if (log.isDebugEnabled()) {
+            log.debug("----addModify called.------");
+        }
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requestorId != null ? requestorId : systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_ADD.value());
@@ -2424,7 +2517,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         final String requestId = "R" + UUIDGen.getUUID();
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
 
-        log.debug("----requestModify called.------");
+        if (log.isDebugEnabled()) {
+            log.debug("----requestModify called.------");
+        }
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requestorId != null ? requestorId : systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
@@ -2543,10 +2638,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     @Transactional
     public Response disableUser(String userId, boolean operation, String requestorId, IdmAuditLog auditLog) {
-
-        log.debug("----disableUser called.------");
-        log.debug("operation code=" + operation);
-
+        if (log.isDebugEnabled()) {
+            log.debug("----disableUser called.------");
+            log.debug("operation code=" + operation);
+        }
         Response response = new Response(ResponseStatus.SUCCESS);
         if (userId == null) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -2603,10 +2698,26 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (operation) {
                 idmAuditLog.setAction(AuditAction.PROVISIONING_DISABLE.value());
                 usr.setSecondaryStatus(UserStatusEnum.DISABLED);
+                if (saveRehireChange.equalsIgnoreCase("true")) {
+                    IdmAuditLog childAuditLog = new IdmAuditLog();
+                    childAuditLog.setUserId(usr.getId());
+                    childAuditLog.setTargetUser(usr.getId(), org.mule.util.StringUtils.EMPTY);
+                    childAuditLog.setAction(AuditAction.USER_LEAVER.value());
+                    childAuditLog.setAuditDescription(usr.getDisplayName() + " User disabled");
+                    idmAuditLog.addChild(childAuditLog);
+                }
             } else {
                 // enable an account that was previously disabled.
                 idmAuditLog.setAction(AuditAction.PROVISIONING_ENABLE.value());
                 usr.setSecondaryStatus(null);
+                if (saveRehireChange.equalsIgnoreCase("true")) {
+                    IdmAuditLog childAuditLog = new IdmAuditLog();
+                    childAuditLog.setUserId(usr.getId());
+                    childAuditLog.setTargetUser(usr.getId(), org.mule.util.StringUtils.EMPTY);
+                    childAuditLog.setAction(AuditAction.USER_REHIRED.value());
+                    childAuditLog.setAuditDescription(usr.getDisplayName() + " User rehired");
+                    idmAuditLog.addChild(childAuditLog);
+                }
             }
             userMgr.updateUserWithDependent(usr, false);
 
@@ -2637,7 +2748,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             List<LoginEntity> principalList = loginManager
                     .getLoginByUser(usr.getId());
             if (principalList != null) {
-                log.debug("PrincipalList size =" + principalList.size());
+                if (log.isDebugEnabled()) {
+                    log.debug("PrincipalList size =" + principalList.size());
+                }
                 for (LoginEntity lg : principalList) {
 
                     final IdmAuditLog idmAuditLogChild = new IdmAuditLog();
@@ -2651,18 +2764,21 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                     // get the managed system for the identity - ignore the managed
                     // system id that is linked to openiam's repository
-                    log.debug("-diabling managed system=" + lg.getLogin()
-                            + " - " + lg.getManagedSysId());
-
+                    if (log.isDebugEnabled()) {
+                        log.debug("-diabling managed system=" + lg.getLogin()
+                                + " - " + lg.getManagedSysId());
+                    }
                     if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
                         String managedSysId = lg.getManagedSysId();
                         // update the target system
-                        ManagedSysDto mSys = managedSysService
+                        ManagedSysDto mSys = managedSysDataService
                                 .getManagedSys(managedSysId);
 
                         final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
-                        log.debug(" - Managed System Id = " + managedSysId);
-                        log.debug(" - Resource Id = " + res.getId());
+                        if (log.isDebugEnabled()) {
+                            log.debug(" - Managed System Id = " + managedSysId);
+                            log.debug(" - Resource Id = " + res.getId());
+                        }
                         //Pre-processor script
 
                         bindingMap.put(TARGET_SYSTEM_IDENTITY, lg.getLogin());
@@ -2689,7 +2805,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         ResponseType resp;
                         if (operation) {
                             // suspend
-                            log.debug("preparing suspendRequest object");
+                            if (log.isDebugEnabled()) {
+                                log.debug("preparing suspendRequest object");
+                            }
 
                             resp = suspend(requestId, login, mSys, buildPolicyMapHelper.buildMngSysAttributes(login, "SUSPEND"), operation);
 
@@ -2708,8 +2826,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                         } else {
                             // resume - re-enable
-                            log.debug("preparing resumeRequest object");
-
+                            if (log.isDebugEnabled()) {
+                                log.debug("preparing resumeRequest object");
+                            }
                             // reset flags that go with this identiy
                             lg.setAuthFailCount(0);
                             lg.setIsLocked(0);

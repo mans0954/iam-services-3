@@ -15,12 +15,19 @@ import java.util.Set;
 @XmlType(name = "AbstractSearchBean", propOrder = {
         "key",
         "deepCopy",
-        "sortBy"
+        "sortBy",
+        "findInCache"
 })
 public abstract class AbstractSearchBean<T, KeyType> {
 
 	private boolean deepCopy = true;
 	private KeyType key;
+	
+	/**
+	 * If true, the Service-level will attempt to find the given entity in the cache.
+	 * By default this is false to support backwards compatability.
+	 */
+	private boolean findInCache;
 
     private List<SortParam> sortBy;
 	
@@ -57,7 +64,34 @@ public abstract class AbstractSearchBean<T, KeyType> {
 		}
 	}
 
-    @Override
+	public boolean isFindInCache() {
+		return findInCache;
+	}
+
+	public void setFindInCache(boolean findInCache) {
+		this.findInCache = findInCache;
+	}
+
+	/**
+     * This method must be used only for as a key for secondary level cache
+     * @return
+     */
+    public abstract String getCacheUniqueBeanKey();
+
+	protected String getSortKeyForCache(){
+		StringBuilder sb = new StringBuilder();
+		if (sortBy != null) {
+			for (SortParam sort : sortBy) {
+				if (sort.getSortBy() != null)
+					sb.append(sort.getSortBy().toString());
+				if (sort.getOrderBy() != null)
+					sb.append(sort.getOrderBy().toString());
+			}
+		}
+		return StringUtils.isNotBlank(sb.toString()) ? sb.toString() : "";
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -65,12 +99,6 @@ public abstract class AbstractSearchBean<T, KeyType> {
 		result = prime * result + ((key == null) ? 0 : key.hashCode());
 		return result;
 	}
-
-    /**
-     * This method must be used only for as a key for secondary level cache
-     * @return
-     */
-    public abstract String getCacheUniqueBeanKey();
 
 	@Override
 	public boolean equals(Object obj) {
@@ -83,10 +111,17 @@ public abstract class AbstractSearchBean<T, KeyType> {
 		AbstractSearchBean other = (AbstractSearchBean) obj;
 		if (deepCopy != other.deepCopy)
 			return false;
+		if (findInCache != other.findInCache)
+			return false;
 		if (key == null) {
 			if (other.key != null)
 				return false;
 		} else if (!key.equals(other.key))
+			return false;
+		if (sortBy == null) {
+			if (other.sortBy != null)
+				return false;
+		} else if (!sortBy.equals(other.sortBy))
 			return false;
 		return true;
 	}

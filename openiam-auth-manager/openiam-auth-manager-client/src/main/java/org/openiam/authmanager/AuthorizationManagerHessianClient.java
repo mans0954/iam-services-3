@@ -50,9 +50,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserWithIdEntitledToResourceWithId(userId, resourceId);
 		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserEntitledToResoruceWithId: userId: %s, resourceId: %s, time: %s ms", userId, resourceId, time);
-			log.debug(logMessage);
+			if(log.isDebugEnabled()) {
+				long time = System.currentTimeMillis() - start;
+				final String logMessage = String.format("isUserEntitledToResoruceWithId: userId: %s, resourceId: %s, time: %s ms", userId, resourceId, time);
+				log.debug(logMessage);
+			}
 		}
 		return retval;
 	}
@@ -66,9 +68,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserWithIdEntitledToResourceWithName(userId, resourceName);
 		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserEntitledToResourceWithName: userId: %s, resourceName: %s, time: %s ms", userId, resourceName, time);
-			log.debug(logMessage);
+			if(log.isDebugEnabled()) {
+				long time = System.currentTimeMillis() - start;
+				final String logMessage = String.format("isUserEntitledToResourceWithName: userId: %s, resourceName: %s, time: %s ms", userId, resourceName, time);
+				log.debug(logMessage);
+			}
 		}
 		return retval;
 	}
@@ -82,9 +86,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserWithLoginEntitledToResourceWithId(login, managedSysId, resourceId);
 		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserEntitledToResourceWithId: login: %s, managedSysId: %s, resourceId: %s, time: %s ms", login, managedSysId, resourceId, time);
-			log.debug(logMessage);
+			if(log.isDebugEnabled()) {
+				long time = System.currentTimeMillis() - start;
+				final String logMessage = String.format("isUserEntitledToResourceWithId: login: %s, managedSysId: %s, resourceId: %s, time: %s ms", login, managedSysId, resourceId, time);
+				log.debug(logMessage);
+			}
 		}
 		return retval;
 	}
@@ -98,9 +104,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserWithLoginEntitledToResourceWithName(login, managedSysId, resourceName);
 		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserEntitledToResourceWithName: login: %s, managedSysId: %s, resourceName: %s, time: %s ms", login, managedSysId, resourceName, time);
-			log.debug(logMessage);
+			if(log.isDebugEnabled()) {
+				long time = System.currentTimeMillis() - start;
+				final String logMessage = String.format("isUserEntitledToResourceWithName: login: %s, managedSysId: %s, resourceName: %s, time: %s ms", login, managedSysId, resourceName, time);
+				log.debug(logMessage);
+			}
 		}
 		return retval;
 	}
@@ -114,9 +122,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserWithIdMemberOfGroupWithId(userId, groupId);
 		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfGroupWithId: userId: %s, groupId: %s, time: %s ms", userId, groupId, time);
-			log.debug(logMessage);
+			if(log.isDebugEnabled()) {
+				long time = System.currentTimeMillis() - start;
+				final String logMessage = String.format("isUserMemberOfGroupWithId: userId: %s, groupId: %s, time: %s ms", userId, groupId, time);
+				log.debug(logMessage);
+			}
 		}
 		return retval;
 	}
@@ -130,9 +140,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserWithIdMemberOfGroupWithName(userId, groupName);
 		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfGroupWithName: userId: %s, groupName: %s, time: %s ms", userId, groupName, time);
-			log.debug(logMessage);
+			if(log.isDebugEnabled()) {
+				long time = System.currentTimeMillis() - start;
+				final String logMessage = String.format("isUserMemberOfGroupWithName: userId: %s, groupName: %s, time: %s ms", userId, groupName, time);
+				log.debug(logMessage);
+			}
 		}
 		return retval;
 	}
@@ -146,9 +158,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserWithLoginMemberOfGroupWithId(login, managedSysId, groupId);
 		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfGroupWithId: login: %s, managedSysId: %s, groupId: %s, time: %s ms", login, managedSysId, groupId, time);
-			log.debug(logMessage);
+			if(log.isDebugEnabled()) {
+				long time = System.currentTimeMillis() - start;
+				final String logMessage = String.format("isUserMemberOfGroupWithId: login: %s, managedSysId: %s, groupId: %s, time: %s ms", login, managedSysId, groupId, time);
+				log.debug(logMessage);
+			}
 		}
 		return retval;
 	}
@@ -162,9 +176,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserWithLoginMemberOfGroupWithName(login, managedSysId, groupName);
 		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfGroupWithName: login: %s, managedSysId: %s, groupName: %s, time: %s ms", login, managedSysId, groupName, time);
-			log.debug(logMessage);
+			if(log.isDebugEnabled()) {
+				long time = System.currentTimeMillis() - start;
+				final String logMessage = String.format("isUserMemberOfGroupWithName: login: %s, managedSysId: %s, groupName: %s, time: %s ms", login, managedSysId, groupName, time);
+				log.debug(logMessage);
+			}
 		}
 		return retval;
 	}
@@ -178,9 +194,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserWithIdMemberOfRoleWithId(userId, roleId);
 		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfRoleWithId: userId: %s, roleId: %s, time: %s ms", userId, roleId, time);
-			log.debug(logMessage);
+			if(log.isDebugEnabled()) {
+				long time = System.currentTimeMillis() - start;
+				final String logMessage = String.format("isUserMemberOfRoleWithId: userId: %s, roleId: %s, time: %s ms", userId, roleId, time);
+				log.debug(logMessage);
+			}
 		}
 		return retval;
 	}

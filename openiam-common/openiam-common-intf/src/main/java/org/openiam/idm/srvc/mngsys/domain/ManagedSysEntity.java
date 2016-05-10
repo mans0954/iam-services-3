@@ -16,7 +16,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "MANAGED_SYS")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "ManagedSysEntity")
 @DozerDTOCorrespondence(ManagedSysDto.class)
 public class ManagedSysEntity implements Serializable {
     private static final long serialVersionUID = -648884785253890053L;
@@ -96,12 +96,15 @@ public class ManagedSysEntity implements Serializable {
     @Type(type = "yes_no")
     private boolean changedByEndUser = true;
 
+    @Column(name = "SIMULATION_MODE", nullable = false)
+    @Type(type = "yes_no")
+    private boolean simulationMode = false;
+
     @OneToMany(mappedBy = "managedSys")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "managedSystem")
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<AttributeMapEntity> attributeMaps = new HashSet<AttributeMapEntity>(0);
 
     @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
@@ -109,7 +112,7 @@ public class ManagedSysEntity implements Serializable {
     private Set<GroupEntity> groups;
 
     @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "managedSysRegion")
     private Set<RoleEntity> roles;
 
 
@@ -407,6 +410,14 @@ public class ManagedSysEntity implements Serializable {
 
     public void setAttributeMaps(Set<AttributeMapEntity> attributeMaps) {
         this.attributeMaps = attributeMaps;
+    }
+
+    public boolean isSimulationMode() {
+        return simulationMode;
+    }
+
+    public void setSimulationMode(boolean simulationMode) {
+        this.simulationMode = simulationMode;
     }
 
     @Override

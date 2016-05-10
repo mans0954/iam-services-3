@@ -61,7 +61,9 @@ public class LookupGroupLdapCommand extends AbstractLookupLdapCommand<Extensible
                 }
             }
 
-            log.debug("looking up identity: " + identity);
+            if(log.isDebugEnabled()) {
+            	log.debug("looking up identity: " + identity);
+            }
 
             List<String> attrList = new ArrayList<String>();
             ExtensibleObject object = lookupRequest.getExtensibleObject();
@@ -71,7 +73,9 @@ public class LookupGroupLdapCommand extends AbstractLookupLdapCommand<Extensible
                     attrList.add(ea.getName());
                 }
             } else {
-                log.debug("Resource id = " + resourceId);
+            	if(log.isDebugEnabled()) {
+            		log.debug("Resource id = " + resourceId);
+            	}
                 List<AttributeMapEntity> attrMap = managedSysService.getResourceAttributeMaps(resourceId);
                 if (attrMap != null) {
                     attrList = getAttributeNameList(attrMap);
@@ -82,20 +86,25 @@ public class LookupGroupLdapCommand extends AbstractLookupLdapCommand<Extensible
 
                 String[] attrAry = new String[attrList.size()];
                 attrList.toArray(attrAry);
-                log.debug("Attribute array=" + attrAry);
+                if(log.isDebugEnabled()) {
+                	log.debug("Attribute array=" + attrAry);
+                }
 
                 NamingEnumeration results = null;
                 try {
                     results = lookupSearch(managedSys, matchObj, ldapctx, identity, attrAry, objectBaseDN);
                 } catch (NameNotFoundException nnfe) {
-                    log.debug("results=NULL");
-                    log.debug(" results has more elements=0");
+                	if(log.isDebugEnabled()) {
+	                    log.debug("results=NULL");	
+	                    log.debug(" results has more elements=0");
+                	}
                     return false;
                 }
 
-                log.debug("results=" + results);
-                log.debug(" results has more elements=" + results.hasMoreElements());
-
+                if(log.isDebugEnabled()) {
+	                log.debug("results=" + results);
+	                log.debug(" results has more elements=" + results.hasMoreElements());
+                }
                 while (results != null && results.hasMoreElements()) {
                     SearchResult sr = (SearchResult) results.next();
                     Attributes attrs = sr.getAttributes();

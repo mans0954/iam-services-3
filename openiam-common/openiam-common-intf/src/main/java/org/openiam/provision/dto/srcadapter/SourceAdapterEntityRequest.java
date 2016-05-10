@@ -3,6 +3,7 @@ package org.openiam.provision.dto.srcadapter;
 import org.openiam.base.AttributeOperationEnum;
 
 import javax.xml.bind.annotation.*;
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Set;
 
 @XmlType(propOrder = { "name", "operation"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterEntityRequest {
+public class SourceAdapterEntityRequest   implements Serializable {
     private String name;
     private AttributeOperationEnum operation;
 //    @XmlElementWrapper(name = "entity-attributes-set")
@@ -40,7 +41,7 @@ public class SourceAdapterEntityRequest {
 //    public Set<SourceAdapterAttributeRequest> getEntityAttributes() {
 //        return entityAttributes;
 //    }
-
+//
 //    public void setEntityAttributes(Set<SourceAdapterAttributeRequest> entityAttributes) {
 //        this.entityAttributes = entityAttributes;
 //    }

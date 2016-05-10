@@ -54,4 +54,16 @@ public class AuthorizationManagerAdminWebServiceImpl implements AuthorizationMan
         resp.setObjectOwnerMap(authManagerAdminService.getOwnerIdsForGroupSet(groupIdSet));
         return resp;
     }
+    @Override
+    @WebMethod
+    public Set<String> getOwnerIdsForRole(@WebParam(name = "roleId", targetNamespace = "") String roleId){
+        return authManagerAdminService.getOwnerIdsForRole(roleId);
+    }
+    @Override
+    @WebMethod
+    public ObjectOwnerBean getOwnerIdsForRoleSet(@WebParam(name = "roleIdSet", targetNamespace = "") Set<String> roleIdSet){
+        ObjectOwnerBean resp =new ObjectOwnerBean();
+        resp.setObjectOwnerMap(authManagerAdminService.getOwnerIdsForRoleSet(roleIdSet));
+        return resp;
+    }
 }

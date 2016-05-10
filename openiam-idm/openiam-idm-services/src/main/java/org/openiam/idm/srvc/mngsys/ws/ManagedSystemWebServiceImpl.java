@@ -135,6 +135,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "managedSysAttributeMaps", key = "{#managedSysId}")
     public List<AttributeMap> getAttributeMapsByManagedSysId(final String managedSysId) {
         List<AttributeMapEntity> attributeMaps = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
         return attributeMapDozerConverter.convertToDTOList(attributeMaps, true);
@@ -260,7 +261,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
      * @return
      */
     @Override
-    @Cacheable(value = "managedSysObjectParam", key = "{ #managedSystemId, #objectType}")
     public ManagedSystemObjectMatch[] managedSysObjectParam(
             String managedSystemId, String objectType) {
         if (managedSystemId == null) {

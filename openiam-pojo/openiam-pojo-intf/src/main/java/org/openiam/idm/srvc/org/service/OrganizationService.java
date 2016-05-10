@@ -11,6 +11,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 
@@ -165,4 +166,5 @@ public interface OrganizationService {
     public List<Organization> getUserAffiliationsByType(String userId, String typeId, String requesterId, final int from, final int size, final LanguageEntity langauge);
     public OrganizationEntity getPrimaryAffliation(String userId, String mdTypeId);
   public String getAliasesForOrganizations(String userId);
+    public List<OrganizationAttribute> getOrgAttributesDtoList(String orgId);
 }

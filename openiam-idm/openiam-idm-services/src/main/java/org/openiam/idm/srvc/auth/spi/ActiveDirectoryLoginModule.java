@@ -29,11 +29,9 @@ import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
@@ -45,6 +43,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.naming.ldap.LdapContext;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -93,11 +92,13 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         String principal = cred.getPrincipal();
         String password = cred.getPassword();
 
-        String authPolicyId = (String)authContext.getAuthParam().get(AuthenticationRequest.AUTH_POLICY_ID);
-        if(StringUtils.isEmpty(authPolicyId)) {
+        String authPolicyId = (String) authContext.getAuthParam().get(AuthenticationRequest.AUTH_POLICY_ID);
+        if (StringUtils.isEmpty(authPolicyId)) {
             authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
         }
-        log.debug("Authentication policyid=" + authPolicyId);
+        if(log.isDebugEnabled()) {
+        	log.debug("Authentication policyid=" + authPolicyId);
+        }
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
         if (authPolicy == null) {
             log.error("No auth policy found");
@@ -129,25 +130,45 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         // Find user in target system
         List<ExtensibleAttribute> attrs = new ArrayList<ExtensibleAttribute>();
         attrs.add(new ExtensibleAttribute("distinguishedName", null));
+        attrs.add(new ExtensibleAttribute("Enabled", null));
+        attrs.add(new ExtensibleAttribute("AccountExpirationDate", null));
+        attrs.add(new ExtensibleAttribute("ChangePasswordAtLogon", null));
+        if(log.isDebugEnabled()) {
+        	log.debug("AD_LOGIN_MODULE. Find in AD. Start");
+        }
         LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, attrs);
-        log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
-
+        if(log.isDebugEnabled()) {
+        	log.debug("AD_LOGIN_MODULE. Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
+        }
         if (resp.isFailure()) {
+        	if(log.isDebugEnabled()) {
+        		log.debug("AD_LOGIN_MODULE throws=" + AuthenticationConstants.RESULT_INVALID_LOGIN);
+        	}
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
+
         principal = lg.getLogin();
 
         String distinguishedName = null;
         if (CollectionUtils.isNotEmpty(resp.getAttrList())) {
             distinguishedName = resp.getAttrList().get(0).getValue();
+
         }
         if (StringUtils.isEmpty(distinguishedName)) {
+        	if(log.isDebugEnabled()) {
+        		log.debug("AD_LOGIN_MODULE throws=" + AuthenticationConstants.RESULT_INVALID_LOGIN);
+        	}
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
-
+        if(log.isDebugEnabled()) {
+        	log.debug("AD_LOGIN_MODULE Find in AD distiguihed name=" + distinguishedName);
+        }
         // checking password policy
         Policy passwordPolicy = passwordManager.getPasswordPolicy(principal, lg.getManagedSysId());
         if (passwordPolicy == null) {
+        	if(log.isDebugEnabled()) {
+        		log.debug("AD_LOGIN_MODULE throws=" + AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+        	}
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
 
@@ -156,112 +177,132 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         try {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("distinguishedName", distinguishedName);
-            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, params);
-
+            if(log.isDebugEnabled()) {
+            	log.debug("AD_LOGIN_MODULE. Validator stars");
+            }
+            validateFromAD(resp, lg, AuthCredentialsValidator.NEW, params);
+            if(log.isDebugEnabled()) {
+            	log.debug("AD_LOGIN_MODULE. Validator finish successfully");
+            }
         } catch (AuthenticationException ae) {
+        	if(log.isDebugEnabled()) {
+        		log.debug("AD_LOGIN_MODULE Validator throws=" + ae);
+        	}
             // we should validate password before change password
             if (AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
-                    AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
                     AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
                 changePassword = ae;
 
             } else {
                 throw ae;
             }
+
         }
 
-        // checking if provided Password is not empty
-        if (StringUtils.isEmpty(password)) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-        }
+        if (!authContext.isSkipPasswordCheck()) {
+            // checking if provided Password is not empty
+            if (StringUtils.isEmpty(password)) {
+            	if(log.isDebugEnabled()) {
+            		log.debug("AD_LOGIN_MODULE checking if provided Password is not empty throws=" + AuthenticationConstants.RESULT_INVALID_PASSWORD);
+            	}
+                throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+            }
+            // try to login to AD with this user
+            LdapContext ldapCtx = connect(distinguishedName, password, mSys);
 
-        // try to login to AD with this user
-        LdapContext ldapCtx = connect(distinguishedName, password, mSys);
+            if (ldapCtx == null) {
+            	if(log.isDebugEnabled()) {
+            		log.debug("AD_LOGIN_MODULE. COntext is null for dn=" + distinguishedName);
+            	}
+                // get the authentication lock out policy
+                String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
-        if (ldapCtx == null) {
-            // get the authentication lock out policy
-            String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
+                // if failed auth count is part of the polices, then do the
+                // following processing
+                if (StringUtils.isNotBlank(attrValue)) {
 
-            // if failed auth count is part of the polices, then do the
-            // following processing
-            if (StringUtils.isNotBlank(attrValue)) {
+                    int authFailCount = Integer.parseInt(attrValue);
+                    // increment the auth fail counter
+                    int failCount = 0;
+                    if (lg.getAuthFailCount() != null) {
+                        failCount = lg.getAuthFailCount().intValue();
+                    }
+                    failCount++;
+                    lg.setAuthFailCount(failCount);
+                    lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
+                    if (failCount >= authFailCount) {
+                        // lock the record and save the record.
+                        lg.setIsLocked(1);
+                        loginManager.updateLogin(lg);
 
-                int authFailCount = Integer.parseInt(attrValue);
-                // increment the auth fail counter
-                int failCount = 0;
-                if (lg.getAuthFailCount() != null) {
-                    failCount = lg.getAuthFailCount().intValue();
-                }
-                failCount++;
-                lg.setAuthFailCount(failCount);
-                lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
-                if (failCount >= authFailCount) {
-                    // lock the record and save the record.
-                    lg.setIsLocked(1);
-                    loginManager.updateLogin(lg);
+                        // set the flag on the primary user record
+                        user.setSecondaryStatus(UserStatusEnum.LOCKED);
+                        userManager.updateUser(user);
 
-                    // set the flag on the primary user record
-                    user.setSecondaryStatus(UserStatusEnum.LOCKED);
-                    userManager.updateUser(user);
+                        throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_LOCKED);
 
-                    throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_LOCKED);
+                    } else {
+                        // update the counter save the record
+                        loginManager.updateLogin(lg);
+
+                        throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                    }
 
                 } else {
-                    // update the counter save the record
-                    loginManager.updateLogin(lg);
+                    log.error("No auth fail password policy value found");
+                    throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
 
-                    throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
                 }
+            }
 
-            } else {
-                log.error("No auth fail password policy value found");
-                throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+            // now we can change password
+            if (changePassword != null) {
+                throw changePassword;
+            }
 
+            Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
+            if (daysToExp != null) {
+                subj.setDaysToPwdExp(0);
+                if (daysToExp > -1) {
+                    subj.setDaysToPwdExp(daysToExp);
+                }
+            }
+
+            if(log.isDebugEnabled()) {
+            	log.debug("-login successful");
+            }
+            // good login - reset the counters
+
+            lg.setLastAuthAttempt(curDate);
+
+            // move the current login to prev login fields
+            lg.setPrevLogin(lg.getLastLogin());
+            lg.setPrevLoginIP(lg.getLastLoginIP());
+
+            // assign values to the current login
+            lg.setLastLogin(curDate);
+            lg.setLastLoginIP(authContext.getClientIP());
+
+            lg.setAuthFailCount(0);
+            lg.setChallengeResponseFailCount(0);
+            lg.setFirstTimeLogin(0);
+            if(log.isDebugEnabled()) {
+            	log.debug("-Good Authn: Login object updated.");
+            }
+            loginManager.updateLogin(lg);
+
+            // check the user status
+            if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
+                    // after the start date
+                    UserStatusEnum.PENDING_START_DATE.equals(user.getStatus())) {
+                user.setStatus(UserStatusEnum.ACTIVE);
+                userManager.updateUser(user);
             }
         }
-
-        // now we can change password
-        if (changePassword != null) {
-            throw changePassword;
-        }
-
-        Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
-        if (daysToExp != null) {
-            subj.setDaysToPwdExp(0);
-            if (daysToExp > -1) {
-                subj.setDaysToPwdExp(daysToExp);
-            }
-        }
-
-        log.debug("-login successful");
-        // good login - reset the counters
-
-        lg.setLastAuthAttempt(curDate);
-
-        // move the current login to prev login fields
-        lg.setPrevLogin(lg.getLastLogin());
-        lg.setPrevLoginIP(lg.getLastLoginIP());
-
-        // assign values to the current login
-        lg.setLastLogin(curDate);
-        lg.setLastLoginIP(authContext.getClientIP());
-
-        lg.setAuthFailCount(0);
-        lg.setChallengeResponseFailCount(0);
-        lg.setFirstTimeLogin(0);
-        log.debug("-Good Authn: Login object updated.");
-        loginManager.updateLogin(lg);
-
-        // check the user status
-        if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
-                // after the start date
-                UserStatusEnum.PENDING_START_DATE.equals(user.getStatus())) {
-            user.setStatus(UserStatusEnum.ACTIVE);
-            userManager.updateUser(user);
-        }
-
         // Successful login
-        log.debug("-Populating subject after authentication");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Populating subject after authentication");
+        }
 
         String tokenType = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_TYPE");
         String tokenLife = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_LIFE");
@@ -276,9 +317,72 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         subj.setUserId(lg.getUserId());
         subj.setPrincipal(principal);
         subj.setSsoToken(token(lg.getUserId(), tokenParam));
-        setResultCode(lg, subj, curDate, passwordPolicy);
+        setResultCode(lg, subj, curDate, passwordPolicy, false);
 
         return subj;
+    }
+
+
+    private void validateFromAD(LookupUserResponse resp, LoginEntity login, int operation, Map<String, Object> bindingMap) throws AuthenticationException {
+        boolean enabled = false;
+        Date accExpDate = null;
+        boolean changePsswdAtLogon = false;
+        if (resp.isSuccess()) {
+            for (ExtensibleAttribute a : resp.getAttrList()) {
+                switch (a.getName()) {
+                    case "Enabled":
+                        enabled = StringUtils.equalsIgnoreCase("True", a.getValue());
+                        break;
+                    case "AccountExpirationDate":
+                        if (StringUtils.isNotBlank(a.getValue())) {
+                            Date maxDate = new Date(221876910000000L); // Dec, 31, 9999
+                            if ("0".equals(a.getValue())) { // never expires
+                                accExpDate = maxDate;
+                            } else {
+                                try {
+                                    SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy h:mm:ss a");
+                                    accExpDate = sdf.parse(a.getValue());
+                                    if (accExpDate.after(maxDate)) {
+                                        accExpDate = maxDate;
+                                    }
+                                } catch (Exception e) {
+                                    log.error(e);
+                                }
+                            }
+                        }
+                        break;
+                    case "ChangePasswordAtLogon":
+                        changePsswdAtLogon = StringUtils.equalsIgnoreCase("True", a.getValue());
+                        break;
+                }
+            }
+        } else {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
+        }
+
+        if (!enabled) {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_LOGIN_DISABLED);
+        }
+
+        if (accExpDate != null) {
+            if (operation == AuthCredentialsValidator.NEW) {
+                login.setPwdExp(accExpDate);
+            }
+            Date curDate = new Date();
+            if (curDate.after(accExpDate)) {
+                throw new AuthenticationException(
+                        AuthenticationConstants.RESULT_LOGIN_DISABLED);
+            }
+        }
+        if (operation == AuthCredentialsValidator.NEW) {
+            if (changePsswdAtLogon) {
+                throw new AuthenticationException(
+                        AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
+            }
+        }
+
     }
 
 }

@@ -232,7 +232,7 @@ public class BaseProvisioningHelper {
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request);
         /*
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),

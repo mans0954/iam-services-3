@@ -44,6 +44,11 @@ public class MetadataElementPageTemplateEntity extends KeyEntity {
 	
 	@Column(name = "NAME", length = 40)
 	private String name;
+
+	@Column(name="DATA_MODEL_URL", nullable = true, length = 255)
+	private String dataModelUrl;
+	@Column(name="CUSTOM_JS", nullable = true, columnDefinition = "text")
+	private String customJS;
 	
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_ID", insertable=true, updatable=false)
@@ -143,6 +148,22 @@ public class MetadataElementPageTemplateEntity extends KeyEntity {
 		this.fieldXrefs = fieldXrefs;
 	}
 
+	public String getDataModelUrl() {
+		return dataModelUrl;
+	}
+
+	public void setDataModelUrl(String dataModelUrl) {
+		this.dataModelUrl = dataModelUrl;
+	}
+
+	public String getCustomJS() {
+		return customJS;
+	}
+
+	public void setCustomJS(String customJS) {
+		this.customJS = customJS;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -150,6 +171,8 @@ public class MetadataElementPageTemplateEntity extends KeyEntity {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((dataModelUrl == null) ? 0 : dataModelUrl.hashCode());
+		result = prime * result + ((customJS == null) ? 0 : customJS.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result
@@ -187,6 +210,16 @@ public class MetadataElementPageTemplateEntity extends KeyEntity {
 			if (other.templateType != null)
 				return false;
 		} else if (!templateType.equals(other.templateType))
+			return false;
+		if (dataModelUrl == null) {
+			if (other.dataModelUrl != null)
+				return false;
+		} else if (!dataModelUrl.equals(other.dataModelUrl))
+			return false;
+		if (customJS == null) {
+			if (other.customJS != null)
+				return false;
+		} else if (!customJS.equals(other.customJS))
 			return false;
 		return true;
 	}

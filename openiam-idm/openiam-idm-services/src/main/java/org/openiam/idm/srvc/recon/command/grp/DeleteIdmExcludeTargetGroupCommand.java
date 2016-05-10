@@ -30,8 +30,10 @@ public class DeleteIdmExcludeTargetGroupCommand extends BaseReconciliationGroupC
 
 	@Override
 	public boolean execute(ReconciliationSituation config, String principal, String mSysID, Group group, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering DeleteIdmExcludeTargetGroupCommand");
-        log.debug("Delete  group from IDM only :" + principal);
+		if(log.isDebugEnabled()) {
+	        log.debug("Entering DeleteIdmExcludeTargetGroupCommand");
+	        log.debug("Delete  group from IDM only :" + principal);
+		}
 		try {
 			ProvisionGroup pGroup = new ProvisionGroup(group);
 			pGroup.setSrcSystemId(mSysID);

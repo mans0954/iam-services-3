@@ -11,7 +11,7 @@ import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 	"groupId",
 	"active"
 })
-public class IdentityQuestionSearchBean extends AbstractSearchBean<IdentityQuestion, String> implements SearchBean<IdentityQuestion, String> {
+public class IdentityQuestionSearchBean extends AbstractLanguageSearchBean<IdentityQuestion, String> implements SearchBean<IdentityQuestion, String> {
 
 	private String groupId;
 	private Boolean active;
@@ -39,6 +39,7 @@ public class IdentityQuestionSearchBean extends AbstractSearchBean<IdentityQuest
                 .append(groupId != null ? groupId : "")
                 .append(active != null ? active.booleanValue() : "")
                 .append(getKey() != null ? getKey() : "")
+				.append(getSortKeyForCache())
                 .toString();
     }
 }

@@ -14,9 +14,11 @@ import javax.xml.bind.annotation.XmlType;
         "clientIP",
         "nodeIP",
         "requestSource",
-        "authPolicyId"
+        "authPolicyId",
+        "kerberosAuth"
 })
 public class AuthenticationRequest {
+	private boolean kerberosAuth;
     String principal;
     String password;
     String clientIP;
@@ -36,7 +38,15 @@ public class AuthenticationRequest {
 
     }
 
-    public String getPrincipal() {
+    public boolean isKerberosAuth() {
+		return kerberosAuth;
+	}
+
+	public void setKerberosAuth(boolean kerberosAuth) {
+		this.kerberosAuth = kerberosAuth;
+	}
+
+	public String getPrincipal() {
         return principal;
     }
 

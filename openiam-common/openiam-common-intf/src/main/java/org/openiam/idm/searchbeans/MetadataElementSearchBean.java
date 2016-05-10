@@ -23,7 +23,7 @@ import java.util.Set;
 	"excludedGroupings",
 	"groupings"
 })
-public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElement, String> implements SearchBean<MetadataElement, String> {
+public class MetadataElementSearchBean extends AbstractLanguageSearchBean<MetadataElement, String> implements SearchBean<MetadataElement, String> {
 
 	private Set<String> keySet;
 	private Set<String> typeIdSet;
@@ -158,6 +158,7 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
                 .append(excludedGroupings != null ? excludedGroupings.toString().hashCode() : "")
                 .append(getKey() != null ? getKey() : "")
                 .append(getKeys() != null ? getKeys().toString().hashCode() : "")
+				.append(getSortKeyForCache())
                 .toString();
     }
 }

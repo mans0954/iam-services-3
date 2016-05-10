@@ -26,7 +26,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 @Entity
 @Table(name = "POLICY_DEF_PARAM")
 @DozerDTOCorrespondence(PolicyDefParam.class)
-@Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage=CacheConcurrencyStrategy.READ_WRITE, region="PolicyDefParamEntity")
 public class PolicyDefParamEntity implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;

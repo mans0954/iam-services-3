@@ -94,7 +94,9 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 			ReportInfoDto report = reportDataService.getReportByName(reportQuery.getReportName());
 			if (report == null) {
-				log.debug("Report couldn't be found. Report name = " + reportQuery.getReportName());
+				if(log.isDebugEnabled()) {
+					log.debug("Report couldn't be found. Report name = " + reportQuery.getReportName());
+				}
 				return null;
 			}
 			String taskPath = StringUtils.isNotBlank(taskName) ? taskName : DEFAULT_REPORT_TASK;
@@ -216,7 +218,9 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 	@Override
 	public Response createOrUpdateReportInfoParam(final ReportCriteriaParamDto reportParam) {
-		log.debug("In createOrUpdateReportInfoParam:" + reportParam);
+		if(log.isDebugEnabled()) {
+			log.debug("In createOrUpdateReportInfoParam:" + reportParam);
+		}
 		Response response = new Response();
 		String paramId = null;
 
@@ -610,7 +614,9 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 	@Override
 	public Response createOrUpdateSubCriteriaParam(final ReportSubCriteriaParamDto subCriteriaParamReport) {
-		log.debug("In createOrUpdateSubCriteriaParam:" + subCriteriaParamReport);
+		if(log.isDebugEnabled()) {
+			log.debug("In createOrUpdateSubCriteriaParam:" + subCriteriaParamReport);
+		}
 		Response response = new Response();
 		String paramId = null;
 

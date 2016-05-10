@@ -4,14 +4,14 @@
     <parent>
         <artifactId>openiam-security</artifactId>
         <groupId>org.openiam</groupId>
-        <version>3.4.0.RELEASE</version>
+        <version>3.4.1.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-jaas</artifactId>
     <packaging>jar</packaging>
     <name>openiam-jaas</name>
-    <version>3.4.0.RELEASE</version>
+    <version>3.4.1.RELEASE</version>
     <description>OpenIAM JAAS</description>
     <ciManagement>
         <system>am</system>
@@ -127,7 +127,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.security</groupId>
+			<artifactId>jacc</artifactId>
+			<version>1.0</version>
+			<scope>provided</scope>
+		</dependency>
+		
     </dependencies>
 
 
