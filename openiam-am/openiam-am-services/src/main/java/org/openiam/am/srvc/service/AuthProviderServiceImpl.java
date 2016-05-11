@@ -210,7 +210,51 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     	}
     	
         final AuthProviderEntity dbEntity = authProviderDao.findById(provider.getId());
-        final Set<AuthProviderAttributeEntity> dbAttributeEntitySet = dbEntity.getAttributes();
+        // make a copy of attribute collection for the future reference
+
+        Set<String> oauthScopestoSync = new HashSet<>();
+        if("OAUTH_CLIENT".equals(provider.getType().getId()) && dbEntity!=null){
+            // AM-766. Need to delete scopes from users' authorized list only if it is deleted from oauth client.
+
+            final Set<AuthProviderAttributeEntity> dbAttributeEntitySet = dbEntity.getAttributes();
+
+            if(CollectionUtils.isNotEmpty(dbAttributeEntitySet)){
+                Set<String> dbOauthScopeSet=new HashSet<>();
+                // get OAuthClientScopes scopes for oauth client before applying changes
+                for(AuthProviderAttributeEntity dbAttr: dbAttributeEntitySet){
+                    if("OAuthClientScopes".equals(dbAttr.getAttribute().getId())){
+                        if(StringUtils.isNotBlank(dbAttr.getValue())){
+                            dbOauthScopeSet=new HashSet<>(Arrays.asList(dbAttr.getValue().split(",")));
+                        }
+                    }
+                }
+                // if there were no scopes before then skip this part
+                if(CollectionUtils.isNotEmpty(dbOauthScopeSet)){
+                    // get OAuthClientScopes scopes for updated oauth client
+                    Set<String> newOauthScopeSet=new HashSet<>();
+                    final Set<AuthProviderAttributeEntity> newAttributeEntitySet = provider.getAttributes();
+                    if(CollectionUtils.isNotEmpty(newAttributeEntitySet)){
+                        for(AuthProviderAttributeEntity attr: newAttributeEntitySet){
+                            if("OAuthClientScopes".equals(attr.getAttribute().getId())){
+                                if(StringUtils.isNotBlank(attr.getValue())){
+                                    newOauthScopeSet=new HashSet<>(Arrays.asList(attr.getValue().split(",")));
+                                }
+                            }
+                        }
+                    }
+
+                    // compare scopes. if scope was removed then do delete
+                    for(String dbScope: dbOauthScopeSet){
+                        if(!newOauthScopeSet.contains(dbScope)){
+                            // the scope has been removed from oauth client
+                            oauthScopestoSync.add(dbScope);
+                        }
+                    }
+                }
+
+
+            }
+        }
 
         if(dbEntity!=null){
         	if(dbEntity.isReadOnly()) {
@@ -297,40 +341,10 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         } else {
         	authProviderDao.merge(provider);
         }
-
-        if("OAUTH_CLIENT".equals(provider.getType().getId())){
-            // AM-766. Need to delete scopes from users' authorized list only if it is deleted from oauth client.
-            // if there were no scopes before then skip this part
-            if(CollectionUtils.isNotEmpty(dbAttributeEntitySet)){
-                Set<String> dbOauthScopeSet=new HashSet<>();
-                // get OAuthClientScopes scopes for oauth client before applying changes
-                for(AuthProviderAttributeEntity dbAttr: dbAttributeEntitySet){
-                    if("OAuthClientScopes".equals(dbAttr.getAttribute().getId())){
-                        if(StringUtils.isNotBlank(dbAttr.getValue())){
-                            dbOauthScopeSet=new HashSet<>(Arrays.asList(dbAttr.getValue().split(",")));
-                        }
-                    }
-                }
-                // get OAuthClientScopes scopes for updated oauth client
-                Set<String> newOauthScopeSet=new HashSet<>();
-                final Set<AuthProviderAttributeEntity> newAttributeEntitySet = provider.getAttributes();
-                if(CollectionUtils.isNotEmpty(newAttributeEntitySet)){
-                    for(AuthProviderAttributeEntity attr: newAttributeEntitySet){
-                        if("OAuthClientScopes".equals(attr.getAttribute().getId())){
-                            if(StringUtils.isNotBlank(attr.getValue())){
-                                newOauthScopeSet=new HashSet<>(Arrays.asList(attr.getValue().split(",")));
-                            }
-                        }
-                    }
-                }
-
-                // compare scopes. if scope was removed then do delete
-                for(String dbScope: dbOauthScopeSet){
-                    if(!newOauthScopeSet.contains(dbScope)){
-                        // the scope has been removed from oauth client
-                        oauthUserClientXrefDao.deleteByScopeId(dbScope);
-                    }
-                }
+        // AM-766. Need to delete scopes from users' authorized list only if it is deleted from oauth client.
+        if(CollectionUtils.isNotEmpty(oauthScopestoSync)){
+            for (String dbScope : oauthScopestoSync) {
+                oauthUserClientXrefDao.deleteByScopeId(dbScope);
             }
         }
     }
