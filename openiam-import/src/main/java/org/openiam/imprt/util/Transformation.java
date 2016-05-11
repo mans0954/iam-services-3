@@ -35,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.openiam.util.encrypt.RijndaelCryptor;
 
 public class Transformation {
 
@@ -51,6 +52,9 @@ public class Transformation {
     final String EXCH_MNG_SYS_ID = "2c94b25748eaf9ef01492d5312d3026d";
     final List<String> activeStatuses = Arrays.asList("512", "544", "66048", "66080", "262656", "262688", "328192", "328224");
     final String DEFAULT_DATE = "01/01/2020 12:00:00";
+
+    final byte[] pwd = "90eb79e8-5954-4af1-b0e3-f712e25e1fca".getBytes();
+    final byte[] iv = "tu89geji340t89u2".getBytes();
 
     public int execute(LineObject rowObj, UserEntity user, Map<String, Object> bindingMap) {
         try {
@@ -317,6 +321,10 @@ public class Transformation {
         }
 
         //phones
+        for (PhoneEntity e : user.getPhones()) {
+            e.setDescription("DELETE_FROM_DB");
+        }
+
         attr = this.getValue(lo.get("telephoneNumber"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("OfficePhone", attr));
@@ -331,6 +339,25 @@ public class Transformation {
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("Fax", attr));
             addPhone(attr, "FAX", user);
+        }
+
+        String attr13 = this.getValue(lo.get("extensionAttribute13"));
+        String attr13decr = new RijndaelCryptor().decrypt(pwd, iv, attr13);
+        if (attr13decr != null && attr13decr.length() > 0) {
+            for (String curStr : attr13decr.split(";")) {
+                String[] curPh = curStr.split(":");
+                if (curPh.length == 2) {
+                    if ("tablet".equalsIgnoreCase(curPh[0])) {
+                        addPhone(curPh[1].trim(), "tablet", user);
+                    } else if ("voice".equalsIgnoreCase(curPh[0])) {
+                        addPhone(curPh[1].trim(), "voice", user);
+                    } else if ("data".equalsIgnoreCase(curPh[0])) {
+                        addPhone(curPh[1].trim(), "data", user);
+                    } else if ("dongle".equalsIgnoreCase(curPh[0])) {
+                        addPhone(curPh[1].trim(), "dongle", user);
+                    }
+                }
+            }
         }
 
         //Drive & Directory
@@ -796,6 +823,7 @@ public class Transformation {
     }
 
     private void addPhone(UserEntity user, PhoneEntity phone) {
+        /*
         for (PhoneEntity e : user.getPhones()) {
             if (e.getMetadataType().equals(phone.getMetadataType())) {
                 e.setName(phone.getName());
@@ -806,6 +834,7 @@ public class Transformation {
                 return;
             }
         }
+        */
         user.getPhones().add(phone);
     }
 

@@ -818,6 +818,10 @@ public class ImportProcessor {
         if (user.getPhones() != null) {
             for (PhoneEntity entry : user.getPhones()) {
                 if (entry == null) continue;
+                if ((entry.getPhoneId() != null) && ("DELETE_FROM_DB".equalsIgnoreCase(entry.getDescription()))) {
+                    parser.delete(entry.getPhoneId());
+                    continue;
+                }
                 if (entry.getPhoneId() == null) {
                     entry.setParent(user);
                     entry.setPhoneId(UUIDGen.getUUID());

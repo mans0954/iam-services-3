@@ -87,6 +87,10 @@
         </dependency>
 
         <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-pojo-services</artifactId>
+        </dependency>
+        <dependency>
             <groupId>aopalliance</groupId>
             <artifactId>aopalliance</artifactId>
         </dependency>
