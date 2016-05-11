@@ -203,7 +203,7 @@ public class ImportProcessor {
         //**************************************************************************************************************
         this.saveToCacheObject(processingData, "DATA" + filesAmount);
 
-        if (CollectionUtils.isEmpty(processingData) || filesAmount == 0) {
+        if (CollectionUtils.isEmpty(processingData) && filesAmount == 0) {
             if (debugMode) {
                 System.out.println("Nothing FOund in AD!");
             }
@@ -340,7 +340,9 @@ public class ImportProcessor {
         int res = 0;
         List<Column> userColumns = Utils.getColumnsForTable(ImportPropertiesKey.USERS);
         for (int i = 0; i <= filesAmount; i++) {
-            processingData = this.readFromCacheObjects("DATA" + i);
+            if (filesAmount != 0) {
+                processingData = this.readFromCacheObjects("DATA" + i);
+            }
             for (LineObject lo : processingData) {
                 sAMAccountNameAttribute = lo.get("sAMAccountName");
                 if (sAMAccountNameAttribute != null && sAMAccountNameAttribute.getValue() != null) {
