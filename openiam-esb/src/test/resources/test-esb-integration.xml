@@ -298,6 +298,17 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}AuthProviderWebService" />
     </bean>
 
+    <bean id="oauthServiceClient" class="org.openiam.am.srvc.ws.OAuthWebService"
+          factory-bean="oauthServiceFactory" factory-method="create" />
+
+
+    <bean id="oauthServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+        <property name="serviceClass"
+                  value="org.openiam.am.srvc.ws.OAuthWebService" />
+        <property name="address"
+                  value="${openiam.service_host}${openiam.idm.ws.path}OAuthWebService" />
+    </bean>
+
     <jaxws:client id="uriFederationServiceClient"
                   serviceClass="org.openiam.am.srvc.ws.URIFederationWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}URIFederationWebService" />
