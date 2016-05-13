@@ -142,6 +142,13 @@ public class LoginEntity implements java.io.Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date pswdResetTokenExp;
 
+    @Column(name = "SMS_RESET_TOKEN")
+    protected String smsResetToken;
+
+    @Column(name = "SMS_RESET_TOKEN_EXP", length = 8)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date smsResetTokenExp;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "LOGIN_ID")
     @Fetch(FetchMode.SUBSELECT)
@@ -449,6 +456,22 @@ public class LoginEntity implements java.io.Serializable {
 
     public void setChallengeResponseFailCount(Integer challengeResponseFailCount) {
         this.challengeResponseFailCount = challengeResponseFailCount;
+    }
+
+    public String getSmsResetToken() {
+        return smsResetToken;
+    }
+
+    public void setSmsResetToken(String smsResetToken) {
+        this.smsResetToken = smsResetToken;
+    }
+
+    public Date getSmsResetTokenExp() {
+        return smsResetTokenExp;
+    }
+
+    public void setSmsResetTokenExp(Date smsResetTokenExp) {
+        this.smsResetTokenExp = smsResetTokenExp;
     }
 
     @Override
