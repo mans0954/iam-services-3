@@ -101,7 +101,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     @Column(name = "IS_PUBLIC")
     @Type(type = "yes_no")
-    private boolean isPublic = true;
+    private boolean isPublic;
     
     @Column(name = "COORELATED_NAME", length=250)
     private String coorelatedName;
