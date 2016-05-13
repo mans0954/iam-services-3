@@ -342,19 +342,23 @@ public class Transformation {
         }
 
         String attr13 = this.getValue(lo.get("extensionAttribute13"));
-        String attr13decr = new RijndaelCryptor().decrypt(pwd, iv, attr13);
-        if (attr13decr != null && attr13decr.length() > 0) {
-            for (String curStr : attr13decr.split(";")) {
-                String[] curPh = curStr.split(":");
-                if (curPh.length == 2) {
-                    if ("tablet".equalsIgnoreCase(curPh[0])) {
-                        addPhone(curPh[1].trim(), "tablet", user);
-                    } else if ("voice".equalsIgnoreCase(curPh[0])) {
-                        addPhone(curPh[1].trim(), "voice", user);
-                    } else if ("data".equalsIgnoreCase(curPh[0])) {
-                        addPhone(curPh[1].trim(), "data", user);
-                    } else if ("dongle".equalsIgnoreCase(curPh[0])) {
-                        addPhone(curPh[1].trim(), "dongle", user);
+        if (StringUtils.isNotBlank(attr13)) {
+            String attr13decr = new RijndaelCryptor().decrypt(pwd, iv, attr13);
+            if (StringUtils.isNotBlank(attr13decr)) {
+                for (String curStr : attr13decr.split(";")) {
+                    String[] curPh = curStr.split(":");
+                    if (curPh.length == 2) {
+                        if (StringUtils.isNotBlank(curPh[1])&&StringUtils.isNotBlank(curPh[0])) {
+                            if ("tablet".equalsIgnoreCase(curPh[0])) {
+                                addPhone(curPh[1].trim(), "tablet", user);
+                            } else if ("voice".equalsIgnoreCase(curPh[0])) {
+                                addPhone(curPh[1].trim(), "voice", user);
+                            } else if ("data".equalsIgnoreCase(curPh[0])) {
+                                addPhone(curPh[1].trim(), "data", user);
+                            } else if ("dongle".equalsIgnoreCase(curPh[0])) {
+                                addPhone(curPh[1].trim(), "dongle", user);
+                            }
+                        }
                     }
                 }
             }

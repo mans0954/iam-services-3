@@ -818,7 +818,7 @@ public class ImportProcessor {
         if (user.getPhones() != null) {
             for (PhoneEntity entry : user.getPhones()) {
                 if (entry == null) continue;
-                if ((entry.getPhoneId() != null) && ("DELETE_FROM_DB".equalsIgnoreCase(entry.getDescription()))) {
+                if ((entry.getPhoneId() != null) && (entry.getDescription() != null) && ("DELETE_FROM_DB".equalsIgnoreCase(entry.getDescription()))) {
                     parser.delete(entry.getPhoneId());
                     continue;
                 }
