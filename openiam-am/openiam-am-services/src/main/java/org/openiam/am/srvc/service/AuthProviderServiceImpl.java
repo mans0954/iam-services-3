@@ -427,14 +427,23 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
             if(CollectionUtils.isNotEmpty(clientScopesIds)){
                 // if not all scopes authorized
-                // get user resource
-                Set<ResourceAuthorizationRight>  userResources = authorizationManagerService.getResourcesForUser(userId);
-                if(CollectionUtils.isNotEmpty(userResources)) {
-                    Set<String> userResourceIds = userResources.stream().map(res->res.getEntity().getId()).collect(Collectors.toSet());
-                    // do intersection between unauthorized scopes and user resources
-                    // leave only those scopes that user have access to
-                    clientScopesIds.retainAll(userResourceIds);
+
+                // do intersection between unauthorized scopes and user resources
+                // leave only those scopes that user have access to
+                Iterator<String> scopeIter = clientScopesIds.iterator();
+                while (scopeIter.hasNext()) {
+                    String clientScopesId = scopeIter.next();
+                    if (!authorizationManagerService.isEntitled(userId, clientScopesId)) {
+                        scopeIter.remove();
+                    }
                 }
+//
+//                Set<ResourceAuthorizationRight>  userResources = authorizationManagerService.getResourcesForUser(userId);
+//                if(CollectionUtils.isNotEmpty(userResources)) {
+//                    Set<String> userResourceIds = userResources.stream().map(res->res.getEntity().getId()).collect(Collectors.toSet());
+//
+//                    clientScopesIds.retainAll(userResourceIds);
+//                }
             }
 
             if(CollectionUtils.isNotEmpty(clientScopesIds) || isClientAuthorized){

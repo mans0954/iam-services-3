@@ -479,19 +479,29 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             if(resourceType==null){
                 throw new NullPointerException("Cannot create resource for URI pattern. Resource type is not found");
             }
+            // we need to make corresponded resource as public if it is protected by oauth
+            boolean isOAuthProtected = false;
+            final Set<AuthLevelGroupingURIPatternXrefEntity> incomingXrefs = pattern.getGroupingXrefs();
+            if(CollectionUtils.isNotEmpty(incomingXrefs)) {
+                for(final AuthLevelGroupingURIPatternXrefEntity xref : incomingXrefs) {
+                     if("OAUTH".equals(xref.getId().getGroupingId())){
+                         isOAuthProtected = true;
+                         break;
+                     }
+                }
+            }
 
             final ResourceEntity resource = new ResourceEntity();
             resource.setName(System.currentTimeMillis() + "_" + pattern.getPattern());
             resource.setResourceType(resourceType);
             resource.setURL(applicationURL);
             resource.setId(null);
-            resource.setIsPublic(false);
+            resource.setIsPublic(isOAuthProtected);
             resource.setCoorelatedName(String.format("%s - %s", contentProvider.getName(), pattern.getPattern()));
             resourceDao.add(resource);
-
             pattern.setResource(resource);
             
-            final Set<AuthLevelGroupingURIPatternXrefEntity> incomingXrefs = pattern.getGroupingXrefs();
+
             pattern.setGroupingXrefs(null);
             uriPatternDao.save(pattern);
             if(CollectionUtils.isNotEmpty(incomingXrefs)) {
