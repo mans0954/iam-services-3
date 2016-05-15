@@ -3,13 +3,13 @@
     <parent>
         <groupId>org.openiam</groupId>
         <artifactId>iam-services</artifactId>
-        <version>3.4.1.RELEASE</version>
+        <version>3.4.2.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-import</artifactId>
     <name>openiam-import</name>
-    <version>3.4.1.RELEASE</version>
+    <version>3.4.2.RELEASE</version>
     <description>OPENIAM Import</description>
 
     <build>

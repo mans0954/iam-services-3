@@ -159,23 +159,45 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         if (from != null && from.length() > 0) {
             message.setFrom(from);
+            if (log.isDebugEnabled()) {
+                log.debug("MailServiceImpl adding From:"+from);
+            }
         } else {
             message.setFrom(defaultSender);
+            if (log.isDebugEnabled()) {
+                log.debug("MailServiceImpl adding From:"+defaultSender);
+            }
         }
         if (to != null && to.length > 0) {
             for (String toString : to) {
-                message.addTo(toString);
+                if (StringUtils.isNotBlank(toString)) {
+                    message.addTo(toString);
+                    if (log.isDebugEnabled()) {
+                        log.debug("MailServiceImpl adding To:"+toString);
+                    }
+                }
+
             }
         }
         if (cc != null && cc.length > 0) {
             for (String ccString : cc) {
-                message.addCc(ccString);
+                if (StringUtils.isNotBlank(ccString)) {
+                    message.addCc(ccString);
+                    if (log.isDebugEnabled()) {
+                        log.debug("MailServiceImpl adding CC:"+ccString);
+                    }
+                }
             }
         }
 
         if (bcc != null && bcc.length > 0) {
             for (String bccString : bcc) {
-                message.addBcc(bccString);
+                if (StringUtils.isNotBlank(bccString)) {
+                    message.addBcc(bccString);
+                    if (log.isDebugEnabled()) {
+                        log.debug("MailServiceImpl adding BCC:"+bccString);
+                    }
+                }
             }
         }
 
@@ -194,6 +216,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         if (msg != null && msg.length() > 0) {
             message.setBody(msg);
+            if (log.isDebugEnabled()) {
+                log.debug("MailServiceImpl adding Message:" + msg);
+            }
         }
 
         if (executionDateTime != null) {
@@ -206,6 +231,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                 message.addAttachments(attachmentPathString);
             }
         }
+
+
         return message;
     }
 
