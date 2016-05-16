@@ -210,6 +210,52 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     	}
     	
         final AuthProviderEntity dbEntity = authProviderDao.findById(provider.getId());
+        // make a copy of attribute collection for the future reference
+
+        Set<String> oauthScopestoSync = new HashSet<>();
+        if("OAUTH_CLIENT".equals(provider.getType().getId()) && dbEntity!=null){
+            // AM-766. Need to delete scopes from users' authorized list only if it is deleted from oauth client.
+
+            final Set<AuthProviderAttributeEntity> dbAttributeEntitySet = dbEntity.getAttributes();
+
+            if(CollectionUtils.isNotEmpty(dbAttributeEntitySet)){
+                Set<String> dbOauthScopeSet=new HashSet<>();
+                // get OAuthClientScopes scopes for oauth client before applying changes
+                for(AuthProviderAttributeEntity dbAttr: dbAttributeEntitySet){
+                    if("OAuthClientScopes".equals(dbAttr.getAttribute().getId())){
+                        if(StringUtils.isNotBlank(dbAttr.getValue())){
+                            dbOauthScopeSet=new HashSet<>(Arrays.asList(dbAttr.getValue().split(",")));
+                        }
+                    }
+                }
+                // if there were no scopes before then skip this part
+                if(CollectionUtils.isNotEmpty(dbOauthScopeSet)){
+                    // get OAuthClientScopes scopes for updated oauth client
+                    Set<String> newOauthScopeSet=new HashSet<>();
+                    final Set<AuthProviderAttributeEntity> newAttributeEntitySet = provider.getAttributes();
+                    if(CollectionUtils.isNotEmpty(newAttributeEntitySet)){
+                        for(AuthProviderAttributeEntity attr: newAttributeEntitySet){
+                            if("OAuthClientScopes".equals(attr.getAttribute().getId())){
+                                if(StringUtils.isNotBlank(attr.getValue())){
+                                    newOauthScopeSet=new HashSet<>(Arrays.asList(attr.getValue().split(",")));
+                                }
+                            }
+                        }
+                    }
+
+                    // compare scopes. if scope was removed then do delete
+                    for(String dbScope: dbOauthScopeSet){
+                        if(!newOauthScopeSet.contains(dbScope)){
+                            // the scope has been removed from oauth client
+                            oauthScopestoSync.add(dbScope);
+                        }
+                    }
+                }
+
+
+            }
+        }
+
         if(dbEntity!=null){
         	if(dbEntity.isReadOnly()) {
         		throw new BasicDataServiceException(ResponseCode.READONLY);
@@ -275,7 +321,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         		}
         	}
         }
-        
+
         /*
         if(MapUtils.isNotEmpty(provider.getResourceAttributeMap())) {
         	for(final AuthResourceAttributeMapEntity attribute : provider.getResourceAttributeMap().values()) {
@@ -294,6 +340,12 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         	authProviderDao.save(provider);
         } else {
         	authProviderDao.merge(provider);
+        }
+        // AM-766. Need to delete scopes from users' authorized list only if it is deleted from oauth client.
+        if(CollectionUtils.isNotEmpty(oauthScopestoSync)){
+            for (String dbScope : oauthScopestoSync) {
+                oauthUserClientXrefDao.deleteByScopeId(dbScope);
+            }
         }
     }
 
@@ -375,14 +427,23 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
             if(CollectionUtils.isNotEmpty(clientScopesIds)){
                 // if not all scopes authorized
-                // get user resource
-                Set<ResourceAuthorizationRight>  userResources = authorizationManagerService.getResourcesForUser(userId);
-                if(CollectionUtils.isNotEmpty(userResources)) {
-                    Set<String> userResourceIds = userResources.stream().map(res->res.getEntity().getId()).collect(Collectors.toSet());
-                    // do intersection between unauthorized scopes and user resources
-                    // leave only those scopes that user have access to
-                    clientScopesIds.retainAll(userResourceIds);
+
+                // do intersection between unauthorized scopes and user resources
+                // leave only those scopes that user have access to
+                Iterator<String> scopeIter = clientScopesIds.iterator();
+                while (scopeIter.hasNext()) {
+                    String clientScopesId = scopeIter.next();
+                    if (!authorizationManagerService.isEntitled(userId, clientScopesId)) {
+                        scopeIter.remove();
+                    }
                 }
+//
+//                Set<ResourceAuthorizationRight>  userResources = authorizationManagerService.getResourcesForUser(userId);
+//                if(CollectionUtils.isNotEmpty(userResources)) {
+//                    Set<String> userResourceIds = userResources.stream().map(res->res.getEntity().getId()).collect(Collectors.toSet());
+//
+//                    clientScopesIds.retainAll(userResourceIds);
+//                }
             }
 
             if(CollectionUtils.isNotEmpty(clientScopesIds) || isClientAuthorized){

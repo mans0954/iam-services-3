@@ -10,4 +10,5 @@ import java.util.List;
  */
 public interface OAuthUserClientXrefDao  extends BaseDao<OAuthUserClientXrefEntity, String> {
     List<OAuthUserClientXrefEntity> getByClientAndUser(String clientId, String userId, Boolean isAuthorized);
+    void deleteByScopeId(String scopeId);
 }

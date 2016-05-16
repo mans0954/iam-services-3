@@ -6,6 +6,7 @@ import org.hibernate.sql.JoinType;
 import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,5 +37,11 @@ public class OAuthUserClientXrefDaoImpl extends BaseDaoImpl<OAuthUserClientXrefE
 
 
         return criteria.list();
+    }
+
+    @Override
+    public void deleteByScopeId(String scopeId) {
+        getSession().createQuery("delete from " + this.domainClass.getName() + " obj where obj.scope.id=?")
+                .setParameter(0, scopeId).executeUpdate();
     }
 }
