@@ -67,7 +67,7 @@ public class Resource extends AdminResourceDTO {
 
     private Set<Group> groups = new HashSet<Group>(0);
     private String minAuthLevel;
-    private boolean isPublic = true;
+    private boolean isPublic;
     private ResourceRisk risk;
     
     @InternationalizedCollection(targetField="displayName")

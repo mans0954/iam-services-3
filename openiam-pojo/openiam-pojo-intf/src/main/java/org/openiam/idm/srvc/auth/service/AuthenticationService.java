@@ -10,6 +10,7 @@ import org.openiam.exception.LogoutException;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.dto.OTPServiceRequest;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -83,5 +84,11 @@ public interface AuthenticationService {
     
     @WebMethod
     public Response save(final @WebParam(name = "entity", targetNamespace = "") AuthStateEntity entity);
+
+    @WebMethod
+    public Response sendSMSOtp(final @WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
+
+    @WebMethod
+    public Response validateSMSOtp(final @WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
 
 }

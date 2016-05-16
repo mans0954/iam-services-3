@@ -54,8 +54,8 @@ public class PhoneEntity implements Serializable{
     @Size(max = 10, message = "validator.phone.area.code.toolong")
     private String areaCd;
 
-    @Column(name="COUNTRY_CD", length=3)
-    @Size(max = 3, message = "validator.phone.country.code.toolong")
+    @Column(name="COUNTRY_CD", length=10)
+    @Size(max = 10, message = "validator.phone.country.code.toolong")
     private String countryCd;
 
     @Column(name="DESCRIPTION", length=100)
