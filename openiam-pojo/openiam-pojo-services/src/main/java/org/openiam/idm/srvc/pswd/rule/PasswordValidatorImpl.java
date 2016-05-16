@@ -131,7 +131,9 @@ public class PasswordValidatorImpl implements PasswordValidator {
 
     @Override
     public List<PasswordRule> getPasswordRules(final Policy policy, final Password password) throws ObjectNotFoundException, IOException {
+        log.info(String.format("Principal=%s", password.getPrincipal()));
         LoginEntity lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId());
+        log.info(String.format("User id=%s", lg.getUserId()));
         UserEntity usr = userDao.findById(lg.getUserId());
         return getPasswordRules(policy, password, usr, lg);
     }
