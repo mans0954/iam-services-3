@@ -164,7 +164,7 @@ public class Transformation {
                 resSn = surname;
             }
 
-            user.setPrefixLastName(prefSn.length() > 10 ? prefSn.substring(0, 9) : prefSn);
+            user.setPrefixLastName(prefSn.length() > 10 ? prefSn.substring(0, 10) : prefSn);
             if (StringUtils.isNotBlank(resSn)) {
                 user.setLastName(resSn.substring(0, 1).toUpperCase() + resSn.substring(1));
             }
