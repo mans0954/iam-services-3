@@ -611,6 +611,18 @@
 				}
 			],
 			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/selfservice/editGroup.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheTTL" : 30
 		}
 	]
 }
