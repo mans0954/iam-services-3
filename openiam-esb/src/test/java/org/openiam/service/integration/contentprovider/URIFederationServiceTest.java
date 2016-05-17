@@ -136,7 +136,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
     public void testKerberosAuthentication() {
     	final AuthenticationRequest request = new AuthenticationRequest();
     	request.setPrincipal("snelson");
-    	request.setKerberosAuth(true);
+    	request.setSkipPasswordCheck(true);
     	request.setAuthPolicyId(null);
 		request.setLanguageId(getDefaultLanguage().getId());
     	AuthenticationResponse response = authServiceClient.login(request);

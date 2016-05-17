@@ -371,19 +371,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Cacheable(value = "resources", key = "{ #resourceId,#language}")
     public Resource findResourceDtoById(String resourceId, Language language) {
         Resource resource = null;
-        try {
-            if (resourceId != null) {
-                //ResourceEntity resourceEntity = resourceDao.findById(resourceId);
-                ResourceEntity resourceEntity = this.getProxyService().findResourceById(resourceId);
-                Resource resourceDto = resourceConverter.convertToDTO(resourceEntity, true);
-                if (resourceDto != null) {
-                    resource = resourceDto;
-                }
+        if (resourceId != null) {
+            ResourceEntity resourceEntity = this.findResourceById(resourceId);
+            Resource resourceDto = resourceConverter.convertToDTO(resourceEntity, true);
+            if (resourceDto != null) {
+                resource = resourceDto;
             }
-        } catch (Throwable e) {
-            log.error("Exception", e);
         }
-
         return resource;
     }
 

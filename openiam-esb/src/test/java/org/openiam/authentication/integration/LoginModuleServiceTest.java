@@ -72,7 +72,7 @@ public class LoginModuleServiceTest extends AbstractServiceTest {
 		final String password = (String)wsResponse.getResponseValue();
 		
 		final AuthenticationRequest request = new AuthenticationRequest();
-		request.setKerberosAuth(true);
+		request.setSkipPasswordCheck(true);
 		request.setPrincipal(loginResponse.getPrincipal().getLogin());
 		request.setPatternId(pattern.getId());
 		request.setPassword(null);
@@ -83,7 +83,7 @@ public class LoginModuleServiceTest extends AbstractServiceTest {
 		Assert.assertNotNull(authResponse.getSubject());
 		Assert.assertNotNull(authResponse.getSubject().getSsoToken());
 		
-		request.setKerberosAuth(false);
+		request.setSkipPasswordCheck(false);
 		request.setPatternId(cp.getPatternSet().stream().filter(e -> !e.getId().equals(pattern.getId())).findAny().get().getId());
 		authResponse = authServiceClient.login(request);
 		Assert.assertNotNull(authResponse);

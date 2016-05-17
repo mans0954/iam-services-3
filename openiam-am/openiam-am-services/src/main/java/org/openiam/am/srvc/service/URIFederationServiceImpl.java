@@ -372,7 +372,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				
 			final AuthenticationRequest request = new AuthenticationRequest();
 			request.setPrincipal(primaryLogin.getLogin());
-			request.setKerberosAuth(isKerberosAuth);
+			request.setSkipPasswordCheck(isKerberosAuth);
 			
 			if(uriPattern != null) {
 				request.setPatternId(uriPattern.getId());

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
 import org.openiam.base.Tuple;
@@ -18,6 +19,7 @@ import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.res.dto.ResourceRisk;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
@@ -58,6 +60,15 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 	protected Resource newInstance() {
 		final Resource resource = new Resource();
 		resource.setResourceType(resourceDataService.findResourceTypes(null, 0, Integer.MAX_VALUE, null).stream().filter(e -> e.isSupportsHierarchy()).findFirst().get());
+		resource.setCoorelatedName(getRandomName());
+		resource.setDescription(getRandomName());
+		resource.setDisplayOrder(RandomUtils.nextInt(100));
+		resource.setGroovyScript(getRandomName());
+		resource.setIsPublic(true);
+		resource.setReferenceId(getRandomName());
+		resource.setRisk(ResourceRisk.HIGH);
+		resource.setTestRequest(true);
+		resource.setURL(getRandomName());
 		return resource;
 	}
 

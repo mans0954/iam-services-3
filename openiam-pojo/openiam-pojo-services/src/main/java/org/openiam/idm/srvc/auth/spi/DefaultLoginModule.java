@@ -118,7 +118,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         tokenParam.put("PRINCIPAL", principal);
 
         // check the password
-        final boolean skipPasswordCheck = (context.isKerberosAuth() || context.isCertAuth());
+        final boolean skipPasswordCheck = context.isSkipPasswordCheck();
         if(!skipPasswordCheck) {
 	        final String decryptPswd = this.decryptPassword(login.getUserId(), login.getPassword());
 	        if (decryptPswd != null && !decryptPswd.equals(password)) {
@@ -232,7 +232,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         sub.setUserId(login.getUserId());
         sub.setPrincipal(principal);
         sub.setSsoToken(token(login.getUserId(), tokenType, tokenLife, tokenParam));
-        setResultCode(login, sub, curDate, policy, context.isKerberosAuth());
+        setResultCode(login, sub, curDate, policy, context.isSkipPasswordCheck());
 
         newLoginEvent.setSuccessReason("Succssfull authentication into Default Login Module");
         return sub;
