@@ -343,7 +343,12 @@ public class Transformation {
 
         String attr13 = this.getValue(lo.get("extensionAttribute13"));
         if (StringUtils.isNotBlank(attr13)) {
-            String attr13decr = new RijndaelCryptor().decrypt(pwd, iv, attr13);
+            String attr13decr = null;
+            try {
+                attr13decr = new RijndaelCryptor().decrypt(pwd, iv, attr13);
+            } catch (Exception ex) {
+                System.out.println("Error on extensionAttribute13 decript.  extensionAttribute13=" + attr13);
+            }
             if (StringUtils.isNotBlank(attr13decr)) {
                 for (String curStr : attr13decr.split(";")) {
                     String[] curPh = curStr.split(":");
