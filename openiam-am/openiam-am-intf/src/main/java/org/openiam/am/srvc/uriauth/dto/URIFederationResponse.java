@@ -124,7 +124,9 @@ public class URIFederationResponse extends Response {
 			if(authLevelTokenList == null) {
 				authLevelTokenList = new LinkedList<URIAuthLevelToken>();
 			}
-			authLevelTokenList.add(token);
+			if(authLevelTokenList.size() == 0 || !authLevelTokenList.contains(token)) {
+				authLevelTokenList.add(token);
+			}
 		}
 	}
 
