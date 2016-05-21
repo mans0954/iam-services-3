@@ -53,7 +53,8 @@ import org.springframework.validation.beanvalidation.CustomValidatorBean;
 	"startMembershipDate",
 	"endMembershipDate",
 	"userNotes",
-	"attestationManagedSysFilter"
+	"attestationManagedSysFilter",
+	"resourceId"
 })
 public class TaskWrapper implements Serializable {
 	
@@ -71,6 +72,8 @@ public class TaskWrapper implements Serializable {
 	private String customObjectURI;
 	private String employeeId;
 	private boolean deletable = true;
+	
+	private String resourceId;
 	
 	@XmlSchemaType(name = "dateTime")
 	private Date createdTime;
@@ -254,6 +257,10 @@ public class TaskWrapper implements Serializable {
 
 					if(customVariables.containsKey(ActivitiConstants.WORKFLOW_NAME.getName())) {
 						workflowName = (String)customVariables.get(ActivitiConstants.WORKFLOW_NAME.getName());
+					}
+					
+					if(customVariables.containsKey(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName())) {
+						resourceId = (String)customVariables.get(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName());
 					}
 
 					if(customVariables.containsKey(ActivitiConstants.ASSOCIATION_TYPE.getName())) {
@@ -457,6 +464,16 @@ public class TaskWrapper implements Serializable {
 
 	public void setEmployeeId(String employeeId) {
 		this.employeeId = employeeId;
+	}
+	
+	
+
+	public String getResourceId() {
+		return resourceId;
+	}
+
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
 	}
 
 	@Override
