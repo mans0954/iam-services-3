@@ -135,6 +135,15 @@ public class Transformation {
         //Last Name
         String surname = this.getValue(lo.get("sn"));
         if (StringUtils.isNotBlank(surname)) {
+            String prefixLastName = user.getPrefixLastName();
+            if (StringUtils.isNotBlank(prefixLastName)) {
+                surname = surname.replace(prefixLastName.trim(), "").trim();
+            } else {
+                user.setPrefixLastName(null);
+            }
+            user.setLastName(surname);
+
+            /*
             String[] surnameSplit = surname.trim().split(" ");
             List<String> snRes = new ArrayList<>();
             for (String str1 : surnameSplit) {
@@ -164,10 +173,12 @@ public class Transformation {
                 resSn = surname;
             }
 
+
             user.setPrefixLastName(prefSn.length() > 10 ? prefSn.substring(0, 10) : prefSn);
             if (StringUtils.isNotBlank(resSn)) {
                 user.setLastName(resSn.substring(0, 1).toUpperCase() + resSn.substring(1));
             }
+            */
         } else {
             user.setLastName(samAccountName);
         }
@@ -532,7 +543,11 @@ public class Transformation {
         // Exchange
         String userPrincipalName = this.getValue(lo.get("userPrincipalName"));
 
+        // PROD
         updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
+
+        // STAGING
+        //updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
 
         // lync
         String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
