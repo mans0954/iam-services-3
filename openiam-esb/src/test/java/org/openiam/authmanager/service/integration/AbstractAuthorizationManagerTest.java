@@ -124,6 +124,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void assertUserEntitledToPublicResource() {
 		checkUser2ResourceEntitlement(user.getId(), publicResource.getId(), new HashSet<String>(), true);
+		Assert.assertTrue(authorizationManagerServiceClient.getResourcesForUser(user.getId()).stream().filter(e -> e.getEntity().getId().equals(publicResource.getId())).count() > 0);
 	}
 	
 	@Test

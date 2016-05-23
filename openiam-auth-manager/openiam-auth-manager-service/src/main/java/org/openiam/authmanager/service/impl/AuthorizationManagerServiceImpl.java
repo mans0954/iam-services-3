@@ -1,5 +1,6 @@
 package org.openiam.authmanager.service.impl;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -118,6 +119,9 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	private AtomicInteger userBitSet;
 	private Integer accessRightBitSet;
 	
+	private Set<AuthorizationResource> publicResourceSet;
+	private Set<ResourceAuthorizationRight> publicResourceRightSet;
+	
 	@Autowired
 	private MembershipDAO membershipDAO;
 	
@@ -182,6 +186,15 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 			swDB.start();
 			final List<AuthorizationUser> tempUserList = membershipDAO.getUsers(loginThreshold);
 			
+			final Set<AuthorizationResource> tempPublicResourceSet = model.getResourceBitSetMap().values().stream().filter(e -> e.isPublic()).collect(Collectors.toSet());
+			
+			final Set<AuthorizationAccessRight> allRights = new HashSet<AuthorizationAccessRight>(model.getTempAccessRightBitMap().values());
+			final Set<ResourceAuthorizationRight> tempPublicResourceRightSet = tempPublicResourceSet.stream().map(e -> {
+				final ResourceAuthorizationRight right = new ResourceAuthorizationRight();
+				right.setEntity(e);
+				right.setRights(allRights);
+				return right;
+			}).collect(Collectors.toSet());
 
 			final Map<String, AuthorizationUser> tempUserMap = tempUserList
 					.stream()
@@ -260,6 +273,8 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 				organizationIdCache = model.getTempOrganizationIdMap();
 				accessRightIdCache = model.getTempAccessRightMap();
 				accessRightBitCache = model.getTempAccessRightBitMap();
+				publicResourceSet = Collections.unmodifiableSet(tempPublicResourceSet);
+				publicResourceRightSet = Collections.unmodifiableSet(tempPublicResourceRightSet);
 				
 				/* END CRITICAL SECTION */
 			}
@@ -421,7 +436,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 
 	private Set<ResourceAuthorizationRight> getResorucesFor(final AuthorizationUser user) {
 		final int numOfRights = accessRightIdCache.size();
-		final Set<ResourceAuthorizationRight> retVal = new HashSet<ResourceAuthorizationRight>();
+		final Set<ResourceAuthorizationRight> retVal = new HashSet<ResourceAuthorizationRight>(publicResourceRightSet);
 		if(user != null) {
 			final List<Integer> bitList = user.getLinearResources();
 			final Map<Integer, AuthorizationResource> bitsetMap = new HashMap<Integer, AuthorizationResource>();
