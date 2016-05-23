@@ -221,10 +221,10 @@ public class Transformation {
 
         //MD_TYPE, Classification, Service
         String mdTypeId = null;
-        ;
+
         String attr = this.getValue(lo.get("userPrincipalName"));
         if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("userPrincipalName", attr));
+            addUserAttribute(user, new UserAttributeEntity("UserPrincipalName", attr));
         }
 
         if (StringUtils.isNotBlank(samAccountName)) {
