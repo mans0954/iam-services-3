@@ -106,13 +106,16 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
             if (StringUtils.isNotBlank(auditSearch.getLogin())) {
                 criteria.add(Restrictions.eq("principal", auditSearch.getLogin()));
             }
-            if (StringUtils.isNotEmpty(auditSearch.getAttributeName())) {
+            if (StringUtils.isNotBlank(auditSearch.getAttributeValue()) ||
+                    StringUtils.isNotBlank(auditSearch.getAttributeName())) {
                 criteria.createAlias("customRecords", "c");
-                criteria.add(Restrictions.eq("c.key", auditSearch.getAttributeName()));
-            }
-            if (StringUtils.isNotEmpty(auditSearch.getAttributeValue())) {
-                criteria.createAlias("customRecords", "c");
-                criteria.add(Restrictions.like("c.value", auditSearch.getAttributeValue()));
+                if (StringUtils.isNotBlank(auditSearch.getAttributeValue())) {
+                    criteria.add(Restrictions.ilike("c.value", auditSearch.getAttributeValue(),MatchMode.ANYWHERE));
+                }
+
+                if (StringUtils.isNotBlank(auditSearch.getAttributeName())) {
+                    criteria.add(Restrictions.eq("c.key", auditSearch.getAttributeName()));
+                }
             }
             if (StringUtils.isNotBlank(auditSearch.getManagedSysId())) {
                 criteria.add(Restrictions.eq("managedSysId", auditSearch.getManagedSysId()));
