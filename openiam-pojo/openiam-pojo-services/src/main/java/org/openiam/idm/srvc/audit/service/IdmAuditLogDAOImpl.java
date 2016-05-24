@@ -19,6 +19,7 @@ import java.util.List;
 
 /**
  * RDMBS implementation the DAO for IdmAudit
+ *
  * @author Suneet Shah
  */
 @Repository("idmAuditLogDAO")
@@ -31,22 +32,22 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
     @Override
     public IdmAuditLogEntity findByRequesterId(String requesterId, String correlationID) {
         final Criteria criteria = super.getCriteria();
-        IdmAuditLogEntity auditLogEntity = (IdmAuditLogEntity)criteria.add(Restrictions.and(Restrictions.eq("userId",requesterId),Restrictions.eq("coorelationId",correlationID))).uniqueResult();
+        IdmAuditLogEntity auditLogEntity = (IdmAuditLogEntity) criteria.add(Restrictions.and(Restrictions.eq("userId", requesterId), Restrictions.eq("coorelationId", correlationID))).uniqueResult();
         return auditLogEntity;
     }
 
     @Override
     protected Criteria getExampleCriteria(final IdmAuditLogEntity entity) {
         final Criteria criteria = super.getCriteria();
-        if(entity != null) {
-            if(StringUtils.isNotBlank(entity.getId())) {
+        if (entity != null) {
+            if (StringUtils.isNotBlank(entity.getId())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
             }
-            if(StringUtils.isNotEmpty(entity.getAction())) {
-                criteria.add(Restrictions.eq("action",entity.getAction()));
+            if (StringUtils.isNotEmpty(entity.getAction())) {
+                criteria.add(Restrictions.eq("action", entity.getAction()));
             }
-            if(StringUtils.isNotEmpty(entity.getResult())) {
-                criteria.add(Restrictions.eq("result",entity.getResult()));
+            if (StringUtils.isNotEmpty(entity.getResult())) {
+                criteria.add(Restrictions.eq("result", entity.getResult()));
             }
         }
         return criteria;
@@ -66,22 +67,22 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
         criteria.addOrder(Order.desc("timestamp"));
         criteria.setProjection(Projections.property("id"));
 
-        List<String> resultList =  (List<String>)criteria.list();
+        List<String> resultList = (List<String>) criteria.list();
 
         return resultList;
     }
 
-    private Criteria buildCriteriaForInActions(Criteria criteria,AuditLogSearchBean auditLogSearchBean) {
-        if(auditLogSearchBean != null) {
-            if(auditLogSearchBean.getActions() != null) {
+    private Criteria buildCriteriaForInActions(Criteria criteria, AuditLogSearchBean auditLogSearchBean) {
+        if (auditLogSearchBean != null) {
+            if (auditLogSearchBean.getActions() != null) {
                 List<String> actions = new ArrayList<String>(auditLogSearchBean.getActions().length);
-                for(String action : auditLogSearchBean.getActions()) {
-                    if(StringUtils.isNotEmpty(action)) {
+                for (String action : auditLogSearchBean.getActions()) {
+                    if (StringUtils.isNotEmpty(action)) {
                         actions.add(action);
                     }
                 }
-                if(!actions.isEmpty())
-                    criteria.add(Restrictions.in("action",actions));
+                if (!actions.isEmpty())
+                    criteria.add(Restrictions.in("action", actions));
             }
         }
         return criteria;
@@ -90,46 +91,57 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
     @Override
     protected Criteria getExampleCriteria(SearchBean searchBean) {
         Criteria criteria = super.getCriteria();
-        if(searchBean != null && (searchBean instanceof AuditLogSearchBean)) {
-            final AuditLogSearchBean auditSearch = (AuditLogSearchBean)searchBean;
+        if (searchBean != null && (searchBean instanceof AuditLogSearchBean)) {
+            final AuditLogSearchBean auditSearch = (AuditLogSearchBean) searchBean;
             criteria = getExampleCriteria(converter.convert(auditSearch));
-            criteria = buildCriteriaForInActions(criteria,auditSearch);
-            if(auditSearch.getFrom() != null && auditSearch.getTo() != null) {
+            criteria = buildCriteriaForInActions(criteria, auditSearch);
+            if (auditSearch.getFrom() != null && auditSearch.getTo() != null) {
                 criteria.add(Restrictions.between("timestamp", auditSearch.getFrom(), auditSearch.getTo()));
-            } else if(auditSearch.getFrom() != null) {
+            } else if (auditSearch.getFrom() != null) {
                 criteria.add(Restrictions.gt("timestamp", auditSearch.getFrom()));
-            } else if(auditSearch.getTo() != null) {
+            } else if (auditSearch.getTo() != null) {
                 criteria.add(Restrictions.lt("timestamp", auditSearch.getTo()));
             }
 
-            if(StringUtils.isNotBlank(auditSearch.getManagedSysId())) {
+            if (StringUtils.isNotBlank(auditSearch.getLogin())) {
+                criteria.add(Restrictions.eq("principal", auditSearch.getLogin()));
+            }
+            if (StringUtils.isNotEmpty(auditSearch.getAttributeName())) {
+                criteria.createAlias("customRecords", "c");
+                criteria.add(Restrictions.eq("c.key", auditSearch.getAttributeName()));
+            }
+            if (StringUtils.isNotEmpty(auditSearch.getAttributeValue())) {
+                criteria.createAlias("customRecords", "c");
+                criteria.add(Restrictions.like("c.value", auditSearch.getAttributeValue()));
+            }
+            if (StringUtils.isNotBlank(auditSearch.getManagedSysId())) {
                 criteria.add(Restrictions.eq("managedSysId", auditSearch.getManagedSysId()));
             }
 
-            if(StringUtils.isNotBlank(auditSearch.getSource())) {
+            if (StringUtils.isNotBlank(auditSearch.getSource())) {
                 criteria.add(Restrictions.eq("source", auditSearch.getSource()));
             }
 
-            if(StringUtils.isNotEmpty(auditSearch.getParentId()) && auditSearch.isParentOnly()) {
+            if (StringUtils.isNotEmpty(auditSearch.getParentId()) && auditSearch.isParentOnly()) {
                 criteria.add(Restrictions.isEmpty("parentLogs"));
             }
-            if(StringUtils.isNotBlank(auditSearch.getUserId()) &&
+            if (StringUtils.isNotBlank(auditSearch.getUserId()) &&
                     StringUtils.isNotBlank(auditSearch.getTargetId())) {
                 Criterion sourceCriterion = Restrictions.eq("userId", auditSearch.getUserId());
                 DetachedCriteria subquery = DetachedCriteria.forClass(AuditLogTargetEntity.class);
-                subquery.add(Restrictions.eq("targetId",auditSearch.getTargetId()));
+                subquery.add(Restrictions.eq("targetId", auditSearch.getTargetId()));
                 subquery.setProjection(Projections.property("log.id"));
                 if (((AuditLogSearchBean) searchBean).getUserVsTargetAndFlag()) {
-                    criteria.add(Restrictions.and(sourceCriterion, Subqueries.propertyIn("id",subquery)));
+                    criteria.add(Restrictions.and(sourceCriterion, Subqueries.propertyIn("id", subquery)));
                 } else {
-                    criteria.add(Restrictions.or(sourceCriterion, Subqueries.propertyIn("id",subquery)));
+                    criteria.add(Restrictions.or(sourceCriterion, Subqueries.propertyIn("id", subquery)));
                 }
             } else {
-                if(StringUtils.isNotBlank(auditSearch.getUserId())) {
+                if (StringUtils.isNotBlank(auditSearch.getUserId())) {
                     criteria.add(Restrictions.eq("userId", auditSearch.getUserId()));
                 }
 
-                if((StringUtils.isNotBlank(auditSearch.getTargetId())
+                if ((StringUtils.isNotBlank(auditSearch.getTargetId())
                         || StringUtils.isNotBlank(auditSearch.getTargetType())) &&
                         (StringUtils.isNotBlank(auditSearch.getSecondaryTargetId())
                                 || StringUtils.isNotBlank(auditSearch.getSecondaryTargetType()))) {
@@ -159,16 +171,16 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
                             )
                     );
 
-                } else if(StringUtils.isNotBlank(auditSearch.getTargetId())
+                } else if (StringUtils.isNotBlank(auditSearch.getTargetId())
                         || StringUtils.isNotBlank(auditSearch.getTargetType())) {
 
                     criteria.createAlias("targets", "tar");
 
-                    if(StringUtils.isNotBlank(auditSearch.getTargetId())) {
+                    if (StringUtils.isNotBlank(auditSearch.getTargetId())) {
                         criteria.add(Restrictions.eq("tar.targetId", auditSearch.getTargetId()));
                     }
 
-                    if(StringUtils.isNotBlank(auditSearch.getTargetType())) {
+                    if (StringUtils.isNotBlank(auditSearch.getTargetType())) {
                         criteria.add(Restrictions.eq("tar.targetType", auditSearch.getTargetType()));
                     }
 
@@ -177,11 +189,11 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
 
                     criteria.createAlias("targets", "tar");
 
-                    if(StringUtils.isNotBlank(auditSearch.getSecondaryTargetId())) {
+                    if (StringUtils.isNotBlank(auditSearch.getSecondaryTargetId())) {
                         criteria.add(Restrictions.eq("tar.targetId", auditSearch.getSecondaryTargetId()));
                     }
 
-                    if(StringUtils.isNotBlank(auditSearch.getSecondaryTargetType())) {
+                    if (StringUtils.isNotBlank(auditSearch.getSecondaryTargetType())) {
                         criteria.add(Restrictions.eq("tar.targetType", auditSearch.getSecondaryTargetType()));
                     }
                 }

@@ -240,6 +240,7 @@ public class SourceAdapterDispatcher implements Runnable {
             case ADD: {
                 pUser.setOperation(AttributeOperationEnum.ADD);
                 ProvisionUserResponse provisionUserResponse = provisioningDataService.addUser(pUser);
+                idmAuditLog.setUserId(provisionUserResponse.getUser().getId());
                 break;
             }
             case MODIFY: {

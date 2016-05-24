@@ -194,6 +194,4 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
         return sb.toString();
     }
-
-
 }
