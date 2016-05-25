@@ -240,6 +240,7 @@ public class SourceAdapterDispatcher implements Runnable {
             case ADD: {
                 pUser.setOperation(AttributeOperationEnum.ADD);
                 ProvisionUserResponse provisionUserResponse = provisioningDataService.addUser(pUser);
+                idmAuditLog.setUserId(provisionUserResponse.getUser().getId());
                 break;
             }
             case MODIFY: {
@@ -1131,14 +1132,12 @@ public class SourceAdapterDispatcher implements Runnable {
 
         //Write it
         JAXBContext ctx = JAXBContext.newInstance(SourceAdapterRequest.class);
-
         Marshaller m = ctx.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
         StringWriter sw = new StringWriter();
         m.marshal(request, sw);
         sw.close();
-
         return prettyFormat(sw.toString(), 7);
     }
 
