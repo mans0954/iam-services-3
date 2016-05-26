@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.msg.service;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.idm.srvc.key.ws.KeyManagementWS;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -47,6 +48,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     @Autowired
     protected UserDataService userManager;
+
+    @Autowired
+    protected KeyManagementWS keyManagementWS;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -160,12 +164,12 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         if (from != null && from.length() > 0) {
             message.setFrom(from);
             if (log.isDebugEnabled()) {
-                log.debug("MailServiceImpl adding From:"+from);
+                log.debug("MailServiceImpl adding From:" + from);
             }
         } else {
             message.setFrom(defaultSender);
             if (log.isDebugEnabled()) {
-                log.debug("MailServiceImpl adding From:"+defaultSender);
+                log.debug("MailServiceImpl adding From:" + defaultSender);
             }
         }
         if (to != null && to.length > 0) {
@@ -173,7 +177,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                 if (StringUtils.isNotBlank(toString)) {
                     message.addTo(toString);
                     if (log.isDebugEnabled()) {
-                        log.debug("MailServiceImpl adding To:"+toString);
+                        log.debug("MailServiceImpl adding To:" + toString);
                     }
                 }
 
@@ -184,7 +188,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                 if (StringUtils.isNotBlank(ccString)) {
                     message.addCc(ccString);
                     if (log.isDebugEnabled()) {
-                        log.debug("MailServiceImpl adding CC:"+ccString);
+                        log.debug("MailServiceImpl adding CC:" + ccString);
                     }
                 }
             }
@@ -195,7 +199,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                 if (StringUtils.isNotBlank(bccString)) {
                     message.addBcc(bccString);
                     if (log.isDebugEnabled()) {
-                        log.debug("MailServiceImpl adding BCC:"+bccString);
+                        log.debug("MailServiceImpl adding BCC:" + bccString);
                     }
                 }
             }
@@ -458,6 +462,29 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         }
     }
 
+    @Override
+    public String returnEmailBody(NotificationRequest req, boolean isEncrypted) {
+        UserEntity usr = userManager.getUser(req.getUserId());
+        if (usr == null) {
+            log.warn(String.format("Can't find user with id '%s", req.getUserId()));
+            return null;
+        }
+        String[] emailDetails = fetchEmailDetails(req.getNotificationType());
+        if (emailDetails == null) {
+            return "Empty email body";
+        }
+        Map<String, Object> bindingMap = new HashMap<>();
+        bindingMap.put("user", usr);
+        bindingMap.put("req", req);
+        String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
+        if (emailBody != null) {
+            if (isEncrypted) {
+                return keyManagementWS.encryptUserData(req.getUserId(), emailBody);
+            }else return emailBody;
+        }
+        return "Empty email body";
+    }
+
     private Twitter getTwitterInstance() {
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true).setOAuthConsumerKey(consumerKey).setOAuthConsumerSecret(consumerSecret)
@@ -475,5 +502,6 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         }
         return areTwitterPropsSet;
     }
+
 
 }
