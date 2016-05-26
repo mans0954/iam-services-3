@@ -352,7 +352,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly=true)
     public String encryptPassword(String userId, String password)
             throws Exception {
         if (password != null) {

@@ -1,8 +1,10 @@
 package org.openiam.service.integration;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -29,6 +31,7 @@ import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.config.IntegrationTestConfig;
 import org.openiam.http.client.OpenIAMHttpClient;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
@@ -37,8 +40,10 @@ import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.access.ws.AccessRightDataService;
 import org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService;
+import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
+import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
@@ -160,6 +165,8 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	private OpenIAMHttpClient httpClient;
 	
+	protected Language defaultLanguage;
+	
 	protected Date getMiddleDate(final Date startDate, final Date endDate) {
 		if(startDate != null) {
 			return DateUtils.addSeconds(new Date(), 10);
@@ -214,6 +221,14 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		Assert.assertTrue(response.isSuccess());
 	}
 	
+	protected void sleep(final long ms) {
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
+			
+		}
+	}
+	
 	protected List<MetadataType> getMetadataTypesByGrouping(final MetadataTypeGrouping grouping) {
     	final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
     	searchBean.setGrouping(grouping);
@@ -222,9 +237,9 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
         return types;
     }
 	
-	protected void sleep(final int numOfSeconds) {
+	protected void sleep(final int ms) {
 		try {
-			Thread.sleep(numOfSeconds * 1000);
+			Thread.sleep(ms);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -273,16 +288,36 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		Assert.assertEquals(response.getErrorCode(), responseCode, String.format("Expteded '%s'.  Got Response: '%s'", responseCode, response));
 	}
 	
+	protected void login(final String userId) {
+		final Login login = loginServiceClient.getPrimaryIdentity(userId).getPrincipal();
+		Assert.assertNotNull(login);
+		final String password = (String)loginServiceClient.decryptPassword(userId, login.getPassword()).getResponseValue();
+		Assert.assertTrue(StringUtils.isNotBlank(password));
+		
+		final AuthenticationRequest authenticatedRequest = new AuthenticationRequest();
+		authenticatedRequest.setPassword(password);
+		authenticatedRequest.setPrincipal(login.getLogin());
+		authenticatedRequest.setLanguageId(getDefaultLanguage().getId());
+		try {
+			authenticatedRequest.setNodeIP(InetAddress.getLocalHost().getHostAddress());
+		} catch (UnknownHostException e) {
+			
+		}
+		final AuthenticationResponse authenticationResponse = authServiceClient.login(authenticatedRequest);
+		Assert.assertNotNull(authenticationResponse);
+		Assert.assertEquals(authenticationResponse.getStatus(), ResponseStatus.SUCCESS);
+	}
+	
 	protected User createUser() {
 		User user = new User();
 		user.setFirstName(getRandomName());
 		user.setLastName(getRandomName());
-		user.setLogin(getRandomName());
+		user.setLogin(getRandomName(10));
 		user.setPassword(getRandomName());
 		user.setNotifyUserViaEmail(false);
 
 		final Login login = new Login();
-		login.setLogin(getRandomName());
+		login.setLogin(getRandomName(10));
 		login.setManagedSysId(getDefaultManagedSystemId());
 		user.setPrincipalList(Arrays.asList(new Login[] {login}));
 		
@@ -292,9 +327,12 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected Language getDefaultLanguage() {
-		final LanguageSearchBean searchBean = new LanguageSearchBean();
-		searchBean.setKey("1");
-		return languageServiceClient.findBeans(searchBean, 0, 1, null).get(0);
+		if(defaultLanguage == null) {
+			final LanguageSearchBean searchBean = new LanguageSearchBean();
+			searchBean.setKey("1");
+			defaultLanguage = languageServiceClient.findBeans(searchBean, 0, 1, null).get(0);
+		}
+		return defaultLanguage;
 	}
 	
 	protected final Map<String, LanguageMapping> generateRandomLanguageMapping() {

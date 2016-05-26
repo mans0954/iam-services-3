@@ -29,6 +29,7 @@ import org.openiam.base.ws.SortParam;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.core.dao.UserKeyDao;
+import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.converter.*;
 import org.openiam.elasticsearch.dao.EmailElasticSearchRepository;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
@@ -305,7 +306,12 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         }
         
         userDao.save(user);
-        keyManagementService.generateUserKeys(user);
+        if(user.getUserKeys() == null) {
+        	user.setUserKeys(new HashSet<UserKey>());
+        }
+        user.getUserKeys().clear();
+        user.getUserKeys().addAll(keyManagementService.generateUserKeys(user));
+        //userDao.save(user);
         
         addRequiredAttributes(user);
     }
@@ -1982,7 +1988,6 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     	login.addHistoryRecord(history);
     }
 
-    @Transactional
     private String createNewUser(UserEntity newUserEntity) throws Exception {
         List<LoginEntity> principalList = newUserEntity.getPrincipalList();
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();

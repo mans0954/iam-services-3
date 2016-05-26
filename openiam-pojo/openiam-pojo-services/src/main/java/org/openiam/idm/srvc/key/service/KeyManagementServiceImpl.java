@@ -208,11 +208,13 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
     }
 
     @Override
+    @Transactional(readOnly=true)
     public byte[] getSystemUserKey(String keyName) throws EncryptionException {
         return getUserKey(systemUserId, keyName);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public byte[] getUserKey(String userId, String keyName) throws EncryptionException {
 
         byte[] masterKey = new byte[0];
@@ -292,17 +294,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long generateUserKeys(String userId) throws Exception {
-        UserEntity userEntity = userDAO.findById(userId);
-        if (userEntity != null) {
-            return generateUserKeys(userEntity);
-        }
-        return 0L;
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Long generateUserKeys(UserEntity user) throws Exception {
+    public Set<UserKey> generateUserKeys(UserEntity user) throws Exception {
         byte[] masterKey = getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
         if (masterKey == null || masterKey.length == 0) {
             throw new NullPointerException("Cannot get master key to encrypt user keys");
@@ -332,9 +324,12 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
 
         encryptUserData(masterKey, usw, newUserKeyList);
         // replace user key for given user
-        userKeyDao.deleteByUserId(user.getId());
-        addUserKeys(newUserKeyList);
-        return 2L;
+
+        //userKeyDao.deleteByUserId(user.getId());
+        //addUserKeys(newUserKeyList);
+
+        //return 2L;
+        return new HashSet<UserKey>(newUserKeyList);
     }
 
     @Override
@@ -404,11 +399,14 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
     public String encryptData(String data)throws Exception{
         return encryptData(null, data);
     }
+    
     @Override
     public String decryptData(String encryptedData)throws Exception{
         return decryptData(null, encryptedData);
     }
+    
     @Override
+    @Transactional(readOnly=true)
     public String encryptData(String userId, String data)throws Exception{
         byte[] dataKey = null;
         if(StringUtils.hasText(userId)){
@@ -425,6 +423,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
     }
 
     @Override
+    @Transactional(readOnly=true)
     public String decryptData(String userId, String encryptedData)throws Exception{
         byte[] dataKey = null;
         if(StringUtils.hasText(userId)){
@@ -439,7 +438,9 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
             return encryptedData;
         return this.decrypt(dataKey, encryptedData);
     }
+    
     @Override
+    @Transactional(readOnly=true)
     public String encrypt(String userId, KeyName keyName, String data)throws Exception{
         byte[] dataKey = getUserKey(userId, keyName.name());
         if(dataKey!=null && dataKey.length>0){
@@ -448,11 +449,14 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         log.warn("Data Key is null. Skipping ecryption...");
         return null;
     }
+    
     @Override
     public String encrypt(byte[] key, String data)throws Exception{
         return cryptor.encrypt(key, data);
     }
+    
     @Override
+    @Transactional(readOnly=true)
     public String decrypt(String userId, KeyName keyName, String encryptedData)throws Exception{
         byte[] dataKey = getUserKey(userId, keyName.name());
         if(dataKey!=null && dataKey.length>0){
@@ -461,6 +465,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         log.warn("Data Key is null. Skipping decryption...");
         return null;
     }
+    
     @Override
     public String decrypt(byte[] key, String encryptedData)throws Exception{
         return cryptor.decrypt(key, encryptedData);
@@ -521,7 +526,9 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
 
     @Transactional(rollbackFor = Exception.class)
     private void encryptUserChallengeResponses(byte[] key, UserSecurityWrapper userSecurityWrapper)throws Exception {
-        log.warn("Encrypt user ChallengeResponses ...");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Encrypt user ChallengeResponses ...");
+    	}
         if (userSecurityWrapper.getUserIdentityAnswerList() != null && !userSecurityWrapper.getUserIdentityAnswerList().isEmpty()) {
             for (UserIdentityAnswerEntity answer : userSecurityWrapper.getUserIdentityAnswerList()) {
                 if(StringUtils.hasText(answer.getQuestionAnswer()))
@@ -530,12 +537,16 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
                 userIdentityAnswerDAO.update(answer);
             }
         }
-        log.warn("Encrypt user ChallengeResponses FINISHED...");
+        if(log.isDebugEnabled()) {
+        	log.debug("Encrypt user ChallengeResponses FINISHED...");
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
     private void encryptUserPasswords(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
-        log.warn("Encrypt user passwords ...");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Encrypt user passwords ...");
+    	}
         if (userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
             for (LoginEntity login : userSecurityWrapper.getLoginList()) {
                 if(StringUtils.hasText(login.getPassword())){
@@ -544,7 +555,9 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
                 }
             }
         }
-        log.warn("Encrypt user passwords history...");
+        if(log.isDebugEnabled()) {
+        	log.debug("Encrypt user passwords history...");
+        }
         if (userSecurityWrapper.getPasswordHistoryList() != null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()) {
             for (PasswordHistoryEntity pwd : userSecurityWrapper.getPasswordHistoryList()) {
                 if(StringUtils.hasText(pwd.getPassword())){
@@ -555,7 +568,9 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         }
 
         if (userSecurityWrapper.getManagedSysList() != null && !userSecurityWrapper.getManagedSysList().isEmpty()) {
-            log.warn("Encrypt manages sys...");
+        	if(log.isDebugEnabled()) {
+        		log.debug("Encrypt manages sys...");
+        	}
             for (ManagedSysEntity ms : userSecurityWrapper.getManagedSysList()) {
                 if (ms.getPswd() != null) {
                     ms.setPswd(this.encrypt(key, ms.getPswd()));
@@ -563,7 +578,9 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
                 managedSysDAO.save(ms);
             }
         }
-        log.warn("Encrypt user passwords FINISHED...");
+        if(log.isDebugEnabled()) {
+        	log.debug("Encrypt user passwords FINISHED...");
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -588,7 +605,9 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
 
     @Transactional(rollbackFor = Exception.class)
     private void decryptSecurityDataForUser(byte[] masterKey, UserSecurityWrapper userSecurityWrapper) throws Exception {
-        log.warn("Decrypting user data ...");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Decrypting user data ...");
+    	}
         for (UserKey uk : userSecurityWrapper.getUserKeyList()) {
             byte[] key = jksManager.decodeKey(this.decrypt(masterKey, uk.getValue()));
             if (KeyName.password.name().equals(uk.getName())) {
@@ -597,12 +616,16 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
                 decryptUserChallengeResponse(key, userSecurityWrapper);
             }
         }
-        log.warn("Decrypting user data FINISHED...");
+        if(log.isDebugEnabled()) {
+        	log.debug("Decrypting user data FINISHED...");
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
     private void decryptUserChallengeResponse(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
-        log.warn("Decrypting user ChallengeResponses ...");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Decrypting user ChallengeResponses ...");
+    	}
         if (userSecurityWrapper.getUserIdentityAnswerList() != null && !userSecurityWrapper.getUserIdentityAnswerList().isEmpty()) {
             for (UserIdentityAnswerEntity answer : userSecurityWrapper.getUserIdentityAnswerList()) {
                 if(answer.getIsEncrypted()){
@@ -611,12 +634,16 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
                 }
             }
         }
-        log.warn("Decrypting user ChallengeResponses FINISHED...");
+        if(log.isDebugEnabled()) {
+        	log.debug("Decrypting user ChallengeResponses FINISHED...");
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
     private void decryptUserPasswords(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
-        log.warn("Decrypting user passwords ...");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Decrypting user passwords ...");
+    	}
         if (userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
             for (LoginEntity login : userSecurityWrapper.getLoginList()) {
                 if(StringUtils.hasText(login.getPassword()))
@@ -624,7 +651,9 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
             }
         }
         if (userSecurityWrapper.getPasswordHistoryList() != null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()) {
-            log.warn("Decrypting user passwords history ...");
+        	if(log.isDebugEnabled()) {
+        		log.debug("Decrypting user passwords history ...");
+        	}
             for (PasswordHistoryEntity pwd : userSecurityWrapper.getPasswordHistoryList()) {
                 if(StringUtils.hasText(pwd.getPassword()))
                     pwd.setPassword(this.decrypt(key, pwd.getPassword()));
@@ -632,14 +661,18 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         }
 
         if (userSecurityWrapper.getManagedSysList() != null && !userSecurityWrapper.getManagedSysList().isEmpty()) {
-            log.warn("Decrypting manages sys ...");
+        	if(log.isDebugEnabled()) {
+        		log.debug("Decrypting manages sys ...");
+        	}
             for (ManagedSysEntity ms : userSecurityWrapper.getManagedSysList()) {
                 if (ms.getPswd() != null) {
                     ms.setPswd(this.decrypt(key, ms.getPswd()));
                 }
             }
         }
-        log.warn("Decrypting user passwords FINISHED...");
+        if(log.isDebugEnabled()) {
+        	log.debug("Decrypting user passwords FINISHED...");
+        }
     }
 
     private void printUserData(User user, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSysDto>> managedSysMap) {

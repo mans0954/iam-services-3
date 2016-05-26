@@ -80,23 +80,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		Assert.assertNotNull(resource);
 		
 		if(loginAfterUserCreation()) {
-			final Login login = loginServiceClient.getPrimaryIdentity(user.getId()).getPrincipal();
-			Assert.assertNotNull(login);
-			final String password = (String)loginServiceClient.decryptPassword(user.getId(), login.getPassword()).getResponseValue();
-			Assert.assertTrue(StringUtils.isNotBlank(password));
-			
-			final AuthenticationRequest authenticatedRequest = new AuthenticationRequest();
-			authenticatedRequest.setPassword(password);
-			authenticatedRequest.setPrincipal(login.getLogin());
-			authenticatedRequest.setLanguageId(getDefaultLanguage().getId());
-			try {
-				authenticatedRequest.setNodeIP(InetAddress.getLocalHost().getHostAddress());
-			} catch (UnknownHostException e) {
-				
-			}
-			final AuthenticationResponse authenticationResponse = authServiceClient.login(authenticatedRequest);
-			Assert.assertNotNull(authenticationResponse);
-			Assert.assertEquals(authenticationResponse.getStatus(), ResponseStatus.SUCCESS);
+			login(user.getId());
 			refreshAuthorizationManager();
 		}
 	}

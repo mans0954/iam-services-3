@@ -94,13 +94,19 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 
     @Override
     public void run() {
-        logger.debug("Thread ID:" + Thread.currentThread().getId() + ". Thread name:" + Thread.currentThread().getName());
+    	if(logger.isDebugEnabled()) {
+    		logger.debug("Thread ID:" + Thread.currentThread().getId() + ". Thread name:" + Thread.currentThread().getName());
+    	}
         try {
             while ((reindexRequest = pullFromQueue()) != null) {
                 try {
-                	logger.debug(String.format("processing reindex request %s - starting", reindexRequest));
+                	if(logger.isDebugEnabled()) {
+                		logger.debug(String.format("processing reindex request %s - starting", reindexRequest));
+                	}
                     processingRequest(reindexRequest);
-                    logger.debug(String.format("processing reindex request %s - finished", reindexRequest));
+                    if(logger.isDebugEnabled()) {
+                    	logger.debug(String.format("processing reindex request %s - finished", reindexRequest));
+                    }
                 } catch (Exception e) {
                 	logger.error(e.getMessage(), e);
                 }
@@ -133,9 +139,13 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 
 	@Override
 	public void pushToQueue(ElasticsearchReindexRequest reindexRequest) {
-		logger.debug(String.format("adding reindex request %s to queue - starting", reindexRequest));
+		if(logger.isDebugEnabled()) {
+			logger.debug(String.format("adding reindex request %s to queue - starting", reindexRequest));
+		}
         requestQueue.add(reindexRequest);
-        logger.debug(String.format("adding reindex request %s to queue - finished", reindexRequest));
+        if(logger.isDebugEnabled()) {
+        	logger.debug(String.format("adding reindex request %s to queue - finished", reindexRequest));
+        }
 	}
 
 	@Override
