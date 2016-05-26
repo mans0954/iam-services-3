@@ -157,7 +157,7 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 		return tempDataSet;
 	}
 
-	private void fillEntitlementToken(final AbstractEntitlementToken entitlementToken, final  Set<? extends AbstractAuthorizationRight> tempDataSet,  final  Map<String, Set<String>> directEntitlements){
+	private void fillEntitlementToken(final AbstractEntitlementToken entitlementToken, final  Set<? extends AbstractAuthorizationRight> tempDataSet,  final  Map<String, Set<InternalAuthorizationToken>> directEntitlements){
 		if(CollectionUtils.isNotEmpty(tempDataSet)){
 			for(AbstractAuthorizationRight data: tempDataSet){
 				if (directEntitlements != null && directEntitlements.containsKey(data.getEntity().getId())) {

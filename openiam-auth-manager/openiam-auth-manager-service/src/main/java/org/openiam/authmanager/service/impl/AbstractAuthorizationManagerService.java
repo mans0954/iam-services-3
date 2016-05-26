@@ -139,7 +139,8 @@ public abstract class AbstractAuthorizationManagerService {
 		if(user != null) {
 			final AuthorizationUser retVal = new AuthorizationUser(user);
 			if(MapUtils.isNotEmpty(user.getGroups())) {
-				user.getGroups().forEach((entityId, rights) -> {
+				user.getGroups().forEach((entityId, internalRights) -> {
+					final Set<String> rights = internalRights.stream().map(e -> e.getRightId()).collect(Collectors.toSet());
 					final AuthorizationGroup entity = groupIdCache.get(entityId);
 					if(entity != null) {
 						final GroupUserXref xref = new GroupUserXref();
@@ -152,7 +153,8 @@ public abstract class AbstractAuthorizationManagerService {
 			}
 			
 			if(MapUtils.isNotEmpty(user.getRoles())) {
-				user.getRoles().forEach((entityId, rights) -> {
+				user.getRoles().forEach((entityId, internalRights) -> {
+					final Set<String> rights = internalRights.stream().map(e -> e.getRightId()).collect(Collectors.toSet());
 					final AuthorizationRole entity = roleIdCache.get(entityId);
 					if(entity != null) {
 						final RoleUserXref xref = new RoleUserXref();
@@ -165,7 +167,8 @@ public abstract class AbstractAuthorizationManagerService {
 			}
 			
 			if(MapUtils.isNotEmpty(user.getResources())) {
-				user.getResources().forEach((entityId, rights) -> {
+				user.getResources().forEach((entityId, internalRights) -> {
+					final Set<String> rights = internalRights.stream().map(e -> e.getRightId()).collect(Collectors.toSet());
 					final AuthorizationResource entity = resourceIdCache.get(entityId);
 					if(entity != null) {
 						final ResourceUserXref xref = new ResourceUserXref();
@@ -178,8 +181,9 @@ public abstract class AbstractAuthorizationManagerService {
 			}
 			
 			if(MapUtils.isNotEmpty(user.getOrganizations())) {
-				user.getOrganizations().forEach((entityId, rights) -> {
+				user.getOrganizations().forEach((entityId, internalRights) -> {
 					final AuthorizationOrganization entity = organizationIdCache.get(entityId);
+					final Set<String> rights = internalRights.stream().map(e -> e.getRightId()).collect(Collectors.toSet());
 					if(entity != null) {
 						final OrgUserXref xref = new OrgUserXref();
 						xref.setOrganization(entity);

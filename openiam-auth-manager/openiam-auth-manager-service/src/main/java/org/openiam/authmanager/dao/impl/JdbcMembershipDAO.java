@@ -2,6 +2,7 @@ package org.openiam.authmanager.dao.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -53,10 +54,18 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 	
 	private String GET_FULLY_POPULATED_USER_RS_RANGE = "SELECT " + 
 													  "	l.USER_ID AS ID, " + 
-													  "	gm.GRP_ID AS GROUP_ID, " + 
-												      " rm.ROLE_ID AS ROLE_ID, " + 
-													  "	resm.RESOURCE_ID AS RESOURCE_ID, " + 
-													  "	orgm.COMPANY_ID AS COMPANY_ID, " + 
+													  "	gm.GRP_ID AS GROUP_ID, " +
+													  "	gm.START_DATE AS GROUP_START_DATE, " +
+													  "	gm.END_DATE AS GROUP_END_DATE, " +
+												      " rm.ROLE_ID AS ROLE_ID, " +
+												      " rm.START_DATE AS ROLE_START_DATE, " +
+												      " rm.END_DATE AS ROLE_END_DATE, " +
+													  "	resm.RESOURCE_ID AS RESOURCE_ID, " +
+													  "	resm.START_DATE AS RESOURCE_START_DATE, " +
+													  "	resm.END_DATE AS RESOURCE_END_DATE, " +
+													  "	orgm.COMPANY_ID AS COMPANY_ID, " +
+													  "	orgm.START_DATE AS COMPANY_START_DATE, " + 
+													  "	orgm.END_DATE AS COMPANY_END_DATE, " + 
 													  "	gmr.ACCESS_RIGHT_ID AS GROUP_ID_RIGHT, " + 
 													  "	rmr.ACCESS_RIGHT_ID AS ROLE_ID_RIGHT, " + 
 													  "	resmr.ACCESS_RIGHT_ID AS RESOURCE_ID_RIGHT, " + 
@@ -561,15 +570,30 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 				final String organizationIdRight = rs.getString("COMPANY_ID_RIGHT");
 				final String resourceIdRight = rs.getString("RESOURCE_ID_RIGHT");
 				
+				final Date resourceStartDate = getDate(rs.getTimestamp("RESOURCE_START_DATE"));
+				final Date resourceEndDate = getDate(rs.getTimestamp("RESOURCE_END_DATE"));
+				
+				final Date roleStartDate = getDate(rs.getTimestamp("ROLE_START_DATE"));
+				final Date roleEndDate = getDate(rs.getTimestamp("ROLE_END_DATE"));
+				
+				final Date groupStartDate = getDate(rs.getTimestamp("GROUP_START_DATE"));
+				final Date groupEndDate = getDate(rs.getTimestamp("GROUP_END_DATE"));
+				
+				final Date orgStartDate = getDate(rs.getTimestamp("COMPANY_START_DATE"));
+				final Date orgEndDate = getDate(rs.getTimestamp("COMPANY_END_DATE"));
+				
 				user.setUserId(userId);
-				user.addGroupRight(groupId, groupIdRight);
-				user.addRoleRight(roleId, roleIdRight);
-				user.addOrganizationRight(organizationId, organizationIdRight);
-				user.addResourceRight(resourceId, resourceIdRight);
+				user.addGroupRight(groupId, groupIdRight, groupStartDate, groupEndDate);
+				user.addRoleRight(roleId, roleIdRight, roleStartDate, roleEndDate);
+				user.addOrganizationRight(organizationId, organizationIdRight, orgStartDate, orgEndDate);
+				user.addResourceRight(resourceId, resourceIdRight, resourceStartDate, resourceEndDate);
 			}
 			return (user.getUserId() != null) ? user : null;
 		}
-		
+	}
+	
+	private static Date getDate(final Timestamp ts) {
+		return (ts != null) ? new Date(ts.getTime()) : null;
 	}
 	
 	private static final class RoleMapper implements RowMapper<AuthorizationRole> {
