@@ -365,6 +365,7 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 			synchronized(userList) {
 				userList.add(user);
 			}
+			logger.info(String.format("Created user at idx: %s", i));
 		}
 		
 	}

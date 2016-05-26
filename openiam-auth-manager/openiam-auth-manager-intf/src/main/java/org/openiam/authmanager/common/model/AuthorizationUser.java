@@ -98,7 +98,7 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 	public void compile(final int numOfRights, final int executionIndex) {
 		final StopWatch sw = new StopWatch();
 		sw.start();
-		final StringBuilder sb = (log.isDebugEnabled()) ? new StringBuilder(String.format("User ID: %s", getId())) : null;
+		final StringBuilder sb = (log.isTraceEnabled()) ? new StringBuilder(String.format("User ID: %s", getId())) : null;
 		
 		final StopWatch innerSW = new StopWatch();
 		innerSW.start();
@@ -113,7 +113,7 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 			linearOrganizationBitSet.set(getBitIndex(null, xref.getOrganization(), numOfRights));
 		}
 		innerSW.stop();
-		if(log.isDebugEnabled()) {
+		if(log.isTraceEnabled()) {
 			sb.append(String.format("Compiled Orgs: %s.  ", innerSW.getTime()));
 		}
 		innerSW.reset();
@@ -129,7 +129,7 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 			linearRoleBitSet.set(getBitIndex(null, xref.getRole(), numOfRights));
 		}
 		innerSW.stop();
-		if(log.isDebugEnabled()) {
+		if(log.isTraceEnabled()) {
 			sb.append(String.format("Compiled Roles: %s.  ", innerSW.getTime()));
 		}
 		innerSW.reset();
@@ -145,7 +145,7 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 			linearGroupBitSet.set(getBitIndex(null, xref.getGroup(), numOfRights));
 		}
 		innerSW.stop();
-		if(log.isDebugEnabled()) {
+		if(log.isTraceEnabled()) {
 			sb.append(String.format("Compiled Groups: %s.  ", innerSW.getTime()));
 		}
 		innerSW.reset();
@@ -161,13 +161,13 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 			linearResourceBitSet.set(getBitIndex(null, xref.getResource(), numOfRights));
 		}
 		innerSW.stop();
-		if(log.isDebugEnabled()) {
+		if(log.isTraceEnabled()) {
 			sb.append(String.format("Compiled Resources: %s.  ", innerSW.getTime()));
 		}
 		sw.stop();
-		if(log.isDebugEnabled()) {
+		if(log.isTraceEnabled()) {
 			sb.append(String.format("Compiled User: %s.  Execution Index: %s", sw.getTime(), executionIndex));
-			log.debug(sb.toString());
+			log.trace(sb.toString());
 		}
 	}
 	
