@@ -894,4 +894,7 @@ public interface UserDataWebService {
      */
     @WebMethod
     public List<Supervisor> findSupervisors(@WebParam(name = "searchBean", targetNamespace = "") SupervisorSearchBean supervisorSearchBean);
+
+    @WebMethod
+    public Response resendEmail(@WebParam(name = "userId", targetNamespace = "") String userId);
 }

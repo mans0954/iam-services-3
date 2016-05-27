@@ -6,6 +6,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -38,6 +40,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     @Autowired
     protected AuditLogService auditLogService;
+
+    @Autowired
+    private LoginDataService loginManager;
 
     @Value("${mail.defaultSender}")
     private String defaultSender;
@@ -77,10 +82,6 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         log.warn("sendToGroup was called, but is not implemented");
     }
 
-    public void sendEmail(String from, String to, String cc, String subject, String msg, String attachment,
-                          boolean isHtmlFormat) {
-        sendEmail(from, to, cc, subject, msg, attachment, isHtmlFormat, null, null);
-    }
     /*
      * public void send(String from, String to, String subject, String msg) {
      * sendWithCC(from, to, null, subject, msg); }
@@ -95,18 +96,16 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
      * java.lang.String, boolean)
      */
     public void sendEmail(String from, String to, String cc, String subject, String msg, String attachment,
-                          boolean isHtmlFormat, String userId, String principal) {
+                          boolean isHtmlFormat) {
         if (log.isDebugEnabled()) {
             log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
                     + ", Format:" + isHtmlFormat);
         }
         Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, null);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
-
-        idmAuditLog.setRequestorUserId(userId);
-        idmAuditLog.setRequestorPrincipal(principal);
         idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
-        idmAuditLog.setAuditDescription("Send email to user :" + userId + " with principal: " + principal);
+        idmAuditLog.setAuditDescription("Send email to :" + to + "  subject: " + subject);
+
         try {
             mailSender.send(message);
             idmAuditLog.succeed();
@@ -120,21 +119,19 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     public void sendEmailByDateTime(String from, String to, String cc, String subject, String msg, String attachment,
                                     boolean isHtmlFormat, Date executionDateTime) {
-        sendEmailByDateTime(from, to, cc, subject, msg, attachment, isHtmlFormat, executionDateTime, null, null);
+        sendEmailByDateTimeExt(from, to, cc, subject, msg, attachment, isHtmlFormat, executionDateTime, null, null, AuditAction.SEND_EMAIL.value());
     }
-    public void sendEmailByDateTime(String from, String to, String cc, String subject, String msg, String attachment,
-                                    boolean isHtmlFormat, Date executionDateTime, String userId, String principal) {
+    private void sendEmailByDateTimeExt(String from, String to, String cc, String subject, String msg, String attachment,
+                                    boolean isHtmlFormat, Date executionDateTime, String userId, String principal, String action) {
         if (log.isDebugEnabled()) {
             log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
                     + ", Format:" + isHtmlFormat);
         }
         Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, executionDateTime);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
-
-        idmAuditLog.setRequestorUserId(userId);
-        idmAuditLog.setRequestorPrincipal(principal);
-        idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
-        idmAuditLog.setAuditDescription("Send email to user :" + userId + " with principal: " + principal);
+        idmAuditLog.setAction(action);
+        idmAuditLog.setTargetUser(userId, principal);
+        idmAuditLog.setAuditDescription("Send email to :" + to + "  subject: " + subject + "   -  principal:" + principal);
         try {
             mailSender.send(message);
             idmAuditLog.succeed();
@@ -146,10 +143,6 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         auditLogService.enqueue(idmAuditLog);
     }
 
-    public void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg,
-                           boolean isHtmlFormat, String[] attachmentPath) {
-        sendEmails(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, null, null);
-    }
     /*
      * (non-Javadoc)
      * 
@@ -158,18 +151,15 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
      * java.lang.String, java.lang.String, boolean, java.lang.String[])
      */
     public void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg,
-                           boolean isHtmlFormat, String[] attachmentPath, String userId, String principal) {
+                           boolean isHtmlFormat, String[] attachmentPath) {
         if (log.isDebugEnabled()) {
             log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", CC:" + cc + ", BCC:" + bcc
                     + ", Attachment:" + attachmentPath);
         }
         Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, null);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
-
-        idmAuditLog.setRequestorUserId(userId);
-        idmAuditLog.setRequestorPrincipal(principal);
         idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
-        idmAuditLog.setAuditDescription("Send email to user :" + userId + " with principal: " + principal);
+        idmAuditLog.setAuditDescription("Send email to :" + to + "  subject: " + subject);
         try {
             mailSender.send(message);
             idmAuditLog.succeed();
@@ -183,18 +173,15 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
     @Override
     public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat,
                                      String[] attachmentPath, Date executionDateTime) {
-        sendEmailsByDateTime(from, to, cc, bcc, subject,  msg,  isHtmlFormat, attachmentPath, executionDateTime, null, null);
+        sendEmailsByDateTimeExt(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, executionDateTime, null, null, AuditAction.SEND_EMAIL);
     }
 
-    public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat,
-                                     String[] attachmentPath, Date executionDateTime, String userId, String principal) {
+    private void sendEmailsByDateTimeExt(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat,
+                                     String[] attachmentPath, Date executionDateTime, String userId, String principal, AuditAction action) {
         Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, executionDateTime);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
-
-        idmAuditLog.setRequestorUserId(userId);
-        idmAuditLog.setRequestorPrincipal(principal);
         idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
-        idmAuditLog.setAuditDescription("Send email to user :" + userId + " with principal: " + principal);
+        idmAuditLog.setAuditDescription("Send email to :" + to + "  subject: " + subject);
 
         try {
             mailSender.send(message);
@@ -403,6 +390,18 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         }
         req.getParamList().add(new NotificationParam("APPLICATION_CONTEXT", ac));
 
+        String action = AuditAction.SEND_EMAIL.value();
+        if (req.getNotificationParam(MailTemplateParameters.AUDIT_ACTION.value()) != null) {
+            action = req.getNotificationParam(MailTemplateParameters.AUDIT_ACTION.value()).getValue();
+            log.warn("Audit Action :" + action);
+        }
+
+        LoginEntity principal = loginManager.getPrimaryIdentity(usr.getId());
+        String login = null;
+        if (principal != null) {
+            login = principal.getLogin();
+        }
+
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("user", usr);
         bindingMap.put("req", req);
@@ -410,11 +409,11 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
         if (emailBody != null) {
             if (req.getNotificationParam(MailTemplateParameters.SUBJECT.value()) != null)
-                sendEmailByDateTime(null, usr.getEmail(), null, String.valueOf(req.getNotificationParam(MailTemplateParameters.SUBJECT.value()).getValueObj()), emailBody, null,
-                        isHtmlFormat(emailDetails), req.getExecutionDateTime());
+                sendEmailByDateTimeExt(null, usr.getEmail(), null, String.valueOf(req.getNotificationParam(MailTemplateParameters.SUBJECT.value()).getValueObj()), emailBody, null,
+                        isHtmlFormat(emailDetails), req.getExecutionDateTime(), usr.getId(), login, action);
             else
-                sendEmailByDateTime(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX], emailBody, null,
-                        isHtmlFormat(emailDetails), req.getExecutionDateTime());
+                sendEmailByDateTimeExt(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX], emailBody, null,
+                        isHtmlFormat(emailDetails), req.getExecutionDateTime(),  usr.getId(), login, action);
             return true;
         }
         log.warn("Email not sent - failure occurred");

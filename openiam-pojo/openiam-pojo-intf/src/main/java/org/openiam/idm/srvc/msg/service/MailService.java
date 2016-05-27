@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.msg.service;
 
+import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 
 import javax.jws.WebMethod;
@@ -56,7 +57,6 @@ public interface MailService {
     public void sendEmailByDateTime(String from, String to, String cc, String subject,
                           String msg ,String attachment ,boolean isHtmlFormat, Date executionDateTime);
 
-    
     /**
      * sending a email to one user,cc and having one attachment at time.
      * @param from
@@ -68,8 +68,8 @@ public interface MailService {
      * @param isHtmlFormat 
      */
     public void sendEmail(String from, String to, String cc, String subject,
-            String msg ,String attachment ,boolean isHtmlFormat);  
-    
+            String msg ,String attachment ,boolean isHtmlFormat);
+
     /**
      * 
      * sending a email from one user to multiple user,cc and bcc having multiple attachement at a time.
@@ -111,4 +111,5 @@ public interface MailService {
      * @param status
      */
     public void tweetMessage(String status);
+
 }

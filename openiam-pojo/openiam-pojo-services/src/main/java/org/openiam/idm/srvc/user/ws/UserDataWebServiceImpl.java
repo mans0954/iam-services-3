@@ -41,12 +41,14 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
@@ -119,6 +121,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Autowired
     private UserProfileService userProfileService;
+
+    @Autowired
+    private KeyManagementService keyManagementService;
 
     @Override
     public Response addAddress(final Address val) {
@@ -1350,5 +1355,42 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
     public List<Supervisor> findSupervisors(SupervisorSearchBean supervisorSearchBean) {
         return userManager.findSupervisors(supervisorSearchBean);
+    }
+
+    @Override
+    public Response resendEmail(String userId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+
+        UserAttributeEntity attr = null;
+        String emailAddress = null;
+        String emailSubject = null;
+        String emailBody = null;
+        StringBuilder sb = new StringBuilder();
+        for (int cnt = 1; cnt < 20; cnt++) {
+            attr = userDataService.getAttribute("EMAIL_FORM" + cnt);
+            if (attr != null) {
+                sb.append(attr.getValue());
+            } else {
+                break;
+            }
+        }
+
+        if (sb.length() > 0) {
+            String[] splitAttr = sb.toString().split(":");
+            if (splitAttr.length == 3) {
+                emailAddress = splitAttr[0];
+                emailSubject = splitAttr[1];
+                emailBody = splitAttr[2];
+            }
+            try {
+                emailBody = keyManagementService.decryptData(userId, emailBody);
+            } catch (Exception ex) {
+                response.setErrorText("Cann't decrypt email body");
+                response.setStatus(ResponseStatus.FAILURE);
+            }
+        }
+
+        mailService.sendEmail(null, emailAddress, null, emailSubject, emailBody, null, true);
+        return response;
     }
 }
