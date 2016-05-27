@@ -13,28 +13,29 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuditLogSearchBean", propOrder = {
-	"from",
-	"to",
-    "action",
-    "actions",
-    "managedSysId",
-    "source",
-    "userId",
-    "targetId",
-    "targetType",
-    "parentId",
-    "result",
-    "secondaryTargetId",
-    "secondaryTargetType",
-    "userVsTargetAndFlag"
+        "from",
+        "to",
+        "action",
+        "actions",
+        "managedSysId",
+        "source",
+        "userId",
+        "targetId",
+        "targetType",
+        "parentId",
+        "result",
+        "secondaryTargetId",
+        "secondaryTargetType",
+        "userVsTargetAndFlag",
+        "login", "attributeName", "attributeValue"
 })
 public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> implements SearchBean<IdmAuditLog, String> {
 
-	private String userId;
-	private Date from;
-	private Date to;
+    private String userId;
+    private Date from;
+    private Date to;
     private String action;
-	private String[] actions;
+    private String[] actions;
     private String result;
     private String managedSysId;
     private String source;
@@ -44,31 +45,37 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
     private String secondaryTargetId;
     private String secondaryTargetType;
     private Boolean userVsTargetAndFlag;
+    private String login;
+    private String attributeName;
+    private String attributeValue;
 
     public AuditLogSearchBean() {
         userVsTargetAndFlag = false;
     }
 
-    public void setParentOnly(){
+    public void setParentOnly() {
         parentId = "null";
     }
 
-    public boolean isParentOnly(){
+    public boolean isParentOnly() {
         return StringUtils.isNotEmpty(parentId) && parentId.equals("null");
     }
 
-	public Date getFrom() {
-		return from;
-	}
-	public void setFrom(Date from) {
-		this.from = from;
-	}
-	public Date getTo() {
-		return to;
-	}
-	public void setTo(Date to) {
-		this.to = to;
-	}
+    public Date getFrom() {
+        return from;
+    }
+
+    public void setFrom(Date from) {
+        this.from = from;
+    }
+
+    public Date getTo() {
+        return to;
+    }
+
+    public void setTo(Date to) {
+        this.to = to;
+    }
 
     public String getAction() {
         return action;
@@ -101,12 +108,14 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
     public void setSource(String source) {
         this.source = source;
     }
-	public String getUserId() {
-		return userId;
-	}
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
     public String getTargetId() {
         return targetId;
@@ -162,6 +171,30 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
 
     public void setUserVsTargetAndFlag(Boolean userVsTargetAndFlag) {
         this.userVsTargetAndFlag = userVsTargetAndFlag;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public String getAttributeName() {
+        return attributeName;
+    }
+
+    public void setAttributeName(String attributeName) {
+        this.attributeName = attributeName;
+    }
+
+    public String getAttributeValue() {
+        return attributeValue;
+    }
+
+    public void setAttributeValue(String attributeValue) {
+        this.attributeValue = attributeValue;
     }
 
     @Override

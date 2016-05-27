@@ -65,13 +65,13 @@ public interface MailService {
      * @param subject
      * @param msg
      * @param attachment
-     * @param isHtmlFormat 
+     * @param isHtmlFormat
      */
     public void sendEmail(String from, String to, String cc, String subject,
             String msg ,String attachment ,boolean isHtmlFormat);
 
     /**
-     * 
+     *
      * sending a email from one user to multiple user,cc and bcc having multiple attachement at a time.
      * @param from
      * @param to
@@ -105,11 +105,13 @@ public interface MailService {
      * @param msg
      */
     public void tweetPrivateMessage(String userid, String msg);
-    
+
     /**
      * mmethod used to update status over twitter.
      * @param status
      */
     public void tweetMessage(String status);
+
+    public String returnEmailBody( NotificationRequest req, boolean isEncrypted);
 
 }
