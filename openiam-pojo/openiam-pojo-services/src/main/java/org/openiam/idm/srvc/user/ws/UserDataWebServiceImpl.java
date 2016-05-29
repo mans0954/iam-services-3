@@ -1364,10 +1364,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         UserAttributeEntity attr = null;
         String emailAddress = null;
         String emailSubject = null;
+        String enEmailBody = null;
         String emailBody = null;
         StringBuilder sb = new StringBuilder();
+        Map<String, UserAttributeEntity> userAttrList = userDataService.getUserAttributes(userId);
         for (int cnt = 1; cnt < 20; cnt++) {
-            attr = userDataService.getAttribute("EMAIL_FORM" + cnt);
+            attr = userAttrList.get("EMAIL_FORM" + cnt);
             if (attr != null) {
                 sb.append(attr.getValue());
             } else {
@@ -1378,19 +1380,30 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         if (sb.length() > 0) {
             String[] splitAttr = sb.toString().split(":");
             if (splitAttr.length == 3) {
-                emailAddress = splitAttr[0];
-                emailSubject = splitAttr[1];
-                emailBody = splitAttr[2];
+                emailAddress = splitAttr[0].trim();
+                emailSubject = splitAttr[1].trim();
+                enEmailBody = splitAttr[2].trim();
             }
             try {
-                emailBody = keyManagementService.decryptData(userId, emailBody);
+                emailBody = keyManagementService.decryptData(enEmailBody);
             } catch (Exception ex) {
                 response.setErrorText("Cann't decrypt email body");
                 response.setStatus(ResponseStatus.FAILURE);
             }
+            if (StringUtils.isNotBlank(emailBody)) {
+                try {
+                    mailService.sendEmail(null, emailAddress, null, emailSubject, emailBody, null, true);
+                } catch (Exception ex) {
+                    response.setErrorText("Cann't send email");
+                    response.setStatus(ResponseStatus.FAILURE);
+                }
+            }
+        } else {
+            response.setErrorText("Cann't find email for resend");
+            response.setStatus(ResponseStatus.FAILURE);
         }
 
-        mailService.sendEmail(null, emailAddress, null, emailSubject, emailBody, null, true);
+
         return response;
     }
 }

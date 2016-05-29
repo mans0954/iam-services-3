@@ -541,7 +541,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
         if (emailBody != null) {
             if (isEncrypted) {
-                return keyManagementWS.encryptUserData(req.getUserId(), emailBody);
+                return keyManagementWS.encryptData(emailBody);
             }else return emailBody;
         }
         return "Empty email body";
