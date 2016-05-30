@@ -1358,7 +1358,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    public Response resendEmail(String userId) {
+    public Response resendEmail(String userId, Integer cnt) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
         UserAttributeEntity attr = null;
@@ -1368,15 +1368,11 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         String emailBody = null;
         StringBuilder sb = new StringBuilder();
         Map<String, UserAttributeEntity> userAttrList = userDataService.getUserAttributes(userId);
-        for (int cnt = 1; cnt < 20; cnt++) {
-            attr = userAttrList.get("EMAIL_FORM" + cnt);
-            if (attr != null) {
-                sb.append(attr.getValue());
-            } else {
-                break;
-            }
-        }
 
+        attr = userAttrList.get("EMAIL_FORM" + cnt);
+        if (attr != null) {
+            sb.append(attr.getValue());
+        }
         if (sb.length() > 0) {
             String[] splitAttr = sb.toString().split(":");
             if (splitAttr.length == 3) {
@@ -1398,12 +1394,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
                     response.setStatus(ResponseStatus.FAILURE);
                 }
             }
-        } else {
-            response.setErrorText("Cann't find email for resend");
-            response.setStatus(ResponseStatus.FAILURE);
         }
-
-
         return response;
     }
 }
