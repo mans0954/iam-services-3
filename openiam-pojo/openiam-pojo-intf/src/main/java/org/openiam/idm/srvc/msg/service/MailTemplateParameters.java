@@ -27,7 +27,8 @@ public enum MailTemplateParameters {
     REQUESTER("requester"),
     TARGET_USER("targetUser"),
     BASE_URL("baseUrl"),
-    TOKEN("token");
+    TOKEN("token"),
+    AUDIT_ACTION("auditAction");
 
     private final String value;
 

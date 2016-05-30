@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.msg.service;
 
+import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 
 import javax.jws.WebMethod;
@@ -55,7 +56,6 @@ public interface MailService {
      */
     public void sendEmailByDateTime(String from, String to, String cc, String subject,
                           String msg ,String attachment ,boolean isHtmlFormat, Date executionDateTime);
-
 
     /**
      * sending a email to one user,cc and having one attachment at time.
