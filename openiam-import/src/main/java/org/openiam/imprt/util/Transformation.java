@@ -35,7 +35,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.openiam.util.encrypt.RijndaelCryptor;
+import org.w3c.dom.Attr;
 
 public class Transformation {
 
@@ -142,43 +144,6 @@ public class Transformation {
                 user.setPrefixLastName(null);
             }
             user.setLastName(surname);
-
-            /*
-            String[] surnameSplit = surname.trim().split(" ");
-            List<String> snRes = new ArrayList<>();
-            for (String str1 : surnameSplit) {
-                if (str1.trim().length() > 0) {
-                    snRes.add(str1.trim());
-                }
-            }
-            String prefSn = "";
-            String resSn = "";
-            if (snRes.size() == 1) {
-                resSn = snRes.get(0);
-            } else if (snRes.size() == 2) {
-                prefSn = snRes.get(0);
-                resSn = snRes.get(1);
-            } else if (snRes.size() == 3) {
-                if (snRes.get(0).equals(snRes.get(1))) {
-                    prefSn = snRes.get(0);
-                    resSn = snRes.get(2);
-                } else if ((snRes.get(0).length() + snRes.get(1)).length() > 9) {
-                    prefSn = snRes.get(0);
-                    resSn = snRes.get(1) + " " + snRes.get(2);
-                } else {
-                    prefSn = snRes.get(0) + " " + snRes.get(1);
-                    resSn = snRes.get(2);
-                }
-            } else {
-                resSn = surname;
-            }
-
-
-            user.setPrefixLastName(prefSn.length() > 10 ? prefSn.substring(0, 10) : prefSn);
-            if (StringUtils.isNotBlank(resSn)) {
-                user.setLastName(resSn.substring(0, 1).toUpperCase() + resSn.substring(1));
-            }
-            */
         } else {
             user.setLastName(samAccountName);
         }
@@ -207,6 +172,9 @@ public class Transformation {
         // Service Type (extensionAttribute2)
         String serviceTypeAttr = this.getValue(lo.get("extensionAttribute2"));
         addUserAttribute(user, new UserAttributeEntity("serviceType", serviceTypeAttr));
+
+        String sbu = this.getValue(lo.get("extensionAttribute5"));
+        addUserAttribute(user, new UserAttributeEntity("ORG_SBU_SHORT_NAME", serviceTypeAttr));
 
         // Start Date
         try {
@@ -364,7 +332,7 @@ public class Transformation {
                 for (String curStr : attr13decr.split(";")) {
                     String[] curPh = curStr.split(":");
                     if (curPh.length == 2) {
-                        if (StringUtils.isNotBlank(curPh[1])&&StringUtils.isNotBlank(curPh[0])) {
+                        if (StringUtils.isNotBlank(curPh[1]) && StringUtils.isNotBlank(curPh[0])) {
                             if ("tablet".equalsIgnoreCase(curPh[0])) {
                                 addPhone(curPh[1].trim(), "tablet", user);
                             } else if ("voice".equalsIgnoreCase(curPh[0])) {
@@ -406,6 +374,7 @@ public class Transformation {
         boolean isService = false;
 
         attr = this.getValue(lo.get("extensionAttribute14"));
+        addUserAttribute(user, new UserAttributeEntity("extensionAttribute14", attr));
         boolean isMDM = "MDM".equalsIgnoreCase(attr);
         String classification = attr == null ? "None" : attr;
         addUserAttribute(user, new UserAttributeEntity("classification", attr));
@@ -575,7 +544,20 @@ public class Transformation {
                 user.setStatus(UserStatusEnum.LEAVE);
             }
         }
+        //here is some extra fields that we should provision
 
+        Attribute proxyAttr = lo.get("proxyAddress");
+        if (proxyAttr != null) {
+            UserAttributeEntity userAttributeEntity = new UserAttributeEntity();
+            userAttributeEntity.setName("proxyAddress");
+            if (proxyAttr.isMultiValued()) {
+                if (proxyAttr.getValueList() != null) {
+                    userAttributeEntity.setValue(StringUtils.join(proxyAttr.getValueList(), ";"));
+                }
+            } else {
+                userAttributeEntity.setValue(proxyAttr.getValue());
+            }
+        }
     }
 
     private void updateLoginAndRole(String login, String managedSystemId, UserEntity user, String roleId) {
