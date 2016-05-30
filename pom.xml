@@ -189,6 +189,7 @@
         <apache.commons.pool.version>2.2</apache.commons.pool.version>
         <redis.client.version>2.7.3</redis.client.version>
         <redis.scheduler.version>1.0.0-SNAPSHOT</redis.scheduler.version>
+        <guava.version>19.0</guava.version>
 		<skipTests>true</skipTests>
 	</properties>
 
@@ -914,6 +915,12 @@
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
+            
+            <dependency>
+    			<groupId>com.google.guava</groupId>
+    			<artifactId>guava</artifactId>
+    			<version>${guava.version}</version>
+			</dependency>
         </dependencies>
 	</dependencyManagement>
 

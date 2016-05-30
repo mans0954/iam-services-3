@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -62,6 +64,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.google.common.util.concurrent.Striped;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 
@@ -121,6 +124,15 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	
 	private Set<AuthorizationResource> publicResourceSet;
 	private Set<ResourceAuthorizationRight> publicResourceRightSet;
+	
+	/*
+	 * This object is used to provide fine-grain concurrency control to the case
+	 * when multiple threads to try fetch the user out of the database at once, with the 
+	 * same user ID.  In these cases, you want only one of these threads to go to the DB,
+	 * and the other threads to wait.  We probably will never have 50 of these going on at once, but
+	 * let's leave it at 50 for now.
+	 */
+	private final Striped<Lock> stripedLock = Striped.lazyWeakLock(50);
 	
 	@Autowired
 	private MembershipDAO membershipDAO;
@@ -348,9 +360,40 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	
 	private AuthorizationUser fetchUser(final String userId) {
 		AuthorizationUser retVal = getCachedUser(userId);
+		
+		/*
+		 * Start critical section
+		 * 
+		 * This method can be called multiple times for hte same userId
+		 * within a very short time.  This may trigger several calls to the DB simultaneously.
+		 * Under extremely high load, this may cause saturation of the underlying thread pool.
+		 * 
+		 * To fix this, we lock access to the DB method call, but only when it is necessary.  A lock happens when:
+		 * 1) if the current user is not cached AND
+		 * 2) 
+		 * 
+		 */
 		if(retVal == null) {
-			final InternalAuthroizationUser user = membershipDAO.getUser(userId, new Date());
-			retVal = process(user);
+			final Lock lock = stripedLock.get(userId);
+			if(lock == null) {
+				throw new RuntimeException(String.format("Could not get Striped Lock for %s", userId));
+			}
+			boolean lockHeld = false;
+			try {
+				lock.lock();
+				lockHeld = true;
+				
+				/* another thread could have already cached this userId, so need to check for null again */
+				retVal = getCachedUser(userId);
+				if(retVal == null) {
+					final InternalAuthroizationUser user = membershipDAO.getUser(userId, new Date());
+					retVal = process(user);
+				}
+			} finally {
+				if(lock != null && lockHeld) {
+					lock.unlock();
+				}
+			}
 		}
 		return retVal;
 	}

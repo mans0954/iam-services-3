@@ -256,6 +256,11 @@
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-spring</artifactId>
 		</dependency>
+		
+		<dependency>
+   			<groupId>com.google.guava</groupId>
+   			<artifactId>guava</artifactId>
+		</dependency>
     </dependencies>
 
 </project>

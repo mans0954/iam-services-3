@@ -1,6 +1,7 @@
 package org.openiam.service.integration.stresstest;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -26,21 +27,26 @@ import twitter4j.UserList;
 
 public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTest {
 
+	private static final int NUM_OF_RESOURCES = 100;
+	private static final int NUM_OF_GROUPS = 100;
+	private static final int NUM_OF_ROLES = 10;
+	private static final int NUM_OF_USERS = 150;
+	
+	/*
 	private static final int NUM_OF_RESOURCES = 10000;
 	private static final int NUM_OF_GROUPS = 10000;
 	private static final int NUM_OF_ROLES = 1000;
 	private static final int NUM_OF_USERS = 1500000;
+	*/
 	
 	private final List<Resource> resourceList = new LinkedList<Resource>();
 	private final List<Group> groupList = new LinkedList<Group>();
 	private final List<Role> roleList = new LinkedList<Role>();
 	private final List<User> userList = new LinkedList<User>();
 	
-	private final List<Long> entitlementResponseTimes = new LinkedList<Long>();
-	
 	private enum EXECUTOION_STATE {BOUNDED, UNBOUNDED};
 	
-	private static final EXECUTOION_STATE state = EXECUTOION_STATE.UNBOUNDED;
+	private static final EXECUTOION_STATE state = EXECUTOION_STATE.BOUNDED;
 	
 	@BeforeClass
 	public void init() throws InterruptedException {
@@ -111,7 +117,9 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 		resourceList.removeIf(e -> e == null);
 		userList.removeIf(e -> e == null);
 		
-		pool = Executors.newFixedThreadPool(50);
+		final Set<String> allRightIds = getAllRightIds();
+		
+		pool = Executors.newFixedThreadPool(100);
 		for(int i = 0; i < roleList.size(); i++) {
 			final Role role = roleList.get(i);
 			for(int j = 0; j < 10; j++) {
@@ -120,7 +128,7 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 					
 					@Override
 					public void run() {
-						assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), getAllRightIds(), null, null));
+						assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), allRightIds, null, null));
 					}
 				});
 			}
@@ -131,7 +139,7 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 					
 					@Override
 					public void run() {
-						assertSuccess(resourceDataService.addRoleToResource(resource.getId(), role.getId(), getRequestorId(), getAllRightIds(), null, null));
+						assertSuccess(resourceDataService.addRoleToResource(resource.getId(), role.getId(), getRequestorId(), allRightIds, null, null));
 					}
 				});
 			}
@@ -143,7 +151,7 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 		  
 		}
 		
-		pool = Executors.newFixedThreadPool(50);
+		pool = Executors.newFixedThreadPool(100);
 		for(int i = 0; i < userList.size(); i++) {
 			final User user = userList.get(i);
 			for(int j = 0; j < 5; j++) {
@@ -152,7 +160,7 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 				
 					@Override
 					public void run() {
-						assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), getAllRightIds(), null, null));
+						assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), allRightIds, null, null));
 					}
 				});
 			}
@@ -165,42 +173,41 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 		}
 	}
 	
-	@Test
+	@Test(priority=1, invocationCount=100)
 	public void testAuthorization() {
+		final AverageTimePrinter printer = new AverageTimePrinter("=============AUTHORIZATION AVERGE=============");
+		new Thread(printer).start();
 		final Set<String> allRightIds = getAllRightIds();
 		final AtomicInteger idx = new AtomicInteger(0);
 		
-		final int numOfRequestsPerSecond = 30;
+		final int numOfRequestsPerSecond = 100;
 		
-		final ExecutorService pool = Executors.newFixedThreadPool(100);
+		final List<Runnable> runnables = new LinkedList<Runnable>();
+		
+		final ExecutorService pool = Executors.newFixedThreadPool(numOfRequestsPerSecond);
 		userList.forEach(user -> {
 			resourceList.forEach(entity -> {
-				final Runnable r = new ResourceAuthorizationTask(user, entity, allRightIds, idx.getAndIncrement());
-				if(state == EXECUTOION_STATE.BOUNDED) {
-					pool.submit(r);
-				} else {
-					new Thread(r).start();
-					sleep(1000 / numOfRequestsPerSecond);
-				}
+				final Runnable r = new ResourceAuthorizationTask(user, entity, allRightIds, idx.getAndIncrement(), printer);
+				runnables.add(r);
 			});
 			groupList.forEach(entity -> {
-				final Runnable r = new GroupAuthorizationTask(user, entity, allRightIds, idx.getAndIncrement());
-				if(state == EXECUTOION_STATE.BOUNDED) {
-					pool.submit(r);
-				} else {
-					new Thread(r).start();
-					sleep(1000 / numOfRequestsPerSecond);
-				}
+				final Runnable r = new GroupAuthorizationTask(user, entity, allRightIds, idx.getAndIncrement(), printer);
+				runnables.add(r);
 			});
 			roleList.forEach(entity -> {
-				final Runnable r = new RoleAuthorizationTask(user, entity, allRightIds, idx.getAndIncrement());
-				if(state == EXECUTOION_STATE.BOUNDED) {
-					pool.submit(r);
-				} else {
-					new Thread(r).start();
-					sleep(1000 / numOfRequestsPerSecond);
-				}
+				final Runnable r = new RoleAuthorizationTask(user, entity, allRightIds, idx.getAndIncrement(), printer);
+				runnables.add(r);
 			});
+		});
+		
+		Collections.shuffle(runnables);
+		runnables.forEach(r -> {
+			if(state == EXECUTOION_STATE.BOUNDED) {
+				pool.submit(r);
+			} else {
+				new Thread(r).start();
+				sleep(1000 / numOfRequestsPerSecond);
+			}
 		});
 		
 		pool.shutdown();
@@ -209,20 +216,18 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 		} catch (InterruptedException e) {
 		  
 		}
-		
-		final double avg = entitlementResponseTimes.stream().mapToLong(e -> e.longValue()).average().getAsDouble();
-		logger.info(String.format("%s ms per authorization call", avg / 4.0));
 	}
 	
-	@Test
+	@Test(priority=2, invocationCount=1)
 	public void testAuthentication() {
+		final AverageTimePrinter printer = new AverageTimePrinter("================AUTHENTICATIONA AVERAGE====================");
+		new Thread(printer).start();
+		final int numOfRequestsPerSecond = 20;
 		
-		final int numOfRequestsPerSecond = 4;
-		
-		final ExecutorService pool = Executors.newFixedThreadPool(100);
+		final ExecutorService pool = Executors.newFixedThreadPool(numOfRequestsPerSecond);
 		final AtomicInteger idx = new AtomicInteger(0);
 		userList.forEach(user -> {
-			final Runnable r = new LoginThread(user, idx.getAndIncrement());
+			final Runnable r = new LoginThread(user, idx.getAndIncrement(), printer);
 			if(state == EXECUTOION_STATE.BOUNDED) {
 				pool.submit(r);
 			} else {
@@ -245,12 +250,14 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 		private Resource entity;
 		private Set<String> allRightIds;
 		private int idx;
+		private AverageTimePrinter printer;
 		
-		private ResourceAuthorizationTask(final User user, final Resource entity, final Set<String> allRightIds, final int idx) {
+		private ResourceAuthorizationTask(final User user, final Resource entity, final Set<String> allRightIds, final int idx, final AverageTimePrinter printer) {
 			this.user = user;
 			this.entity = entity;
 			this.allRightIds = allRightIds;
 			this.idx = idx;
+			this.printer = printer;
 		}
 
 		@Override
@@ -262,8 +269,8 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 				authorizationManagerServiceClient.isUserEntitledToResourceWithRight(user.getId(), entity.getId(), right);
 			});
 			sw.stop();
-			entitlementResponseTimes.add(sw.getTime());
-			logger.info(String.format("%s ms for %s checks.  %s.  IDX: %s", sw.getTime(), allRightIds.size() + 1, this.getClass(), idx));
+			this.printer.add(sw.getTime());
+			//logger.info(String.format("%s ms for %s checks.  %s.  IDX: %s", sw.getTime(), allRightIds.size() + 1, this.getClass(), idx));
 		}
 		
 	}
@@ -274,12 +281,14 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 		private Group entity;
 		private Set<String> allRightIds;
 		private int idx;
+		private AverageTimePrinter printer;
 		
-		private GroupAuthorizationTask(final User user, final Group entity, final Set<String> allRightIds, final int idx) {
+		private GroupAuthorizationTask(final User user, final Group entity, final Set<String> allRightIds, final int idx, final AverageTimePrinter printer) {
 			this.user = user;
 			this.entity = entity;
 			this.allRightIds = allRightIds;
 			this.idx = idx;
+			this.printer = printer;
 		}
 
 		@Override
@@ -291,8 +300,8 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 				authorizationManagerServiceClient.isMemberOfGroupWithRight(user.getId(), entity.getId(), right);
 			});
 			sw.stop();
-			entitlementResponseTimes.add(sw.getTime());
-			logger.info(String.format("%s ms for %s checks.  %s.  IDX: %s", sw.getTime(), allRightIds.size() + 1, this.getClass(), idx));
+			this.printer.add(sw.getTime());
+			//logger.info(String.format("%s ms for %s checks.  %s.  IDX: %s", sw.getTime(), allRightIds.size() + 1, this.getClass(), idx));
 		}
 		
 	}
@@ -303,12 +312,14 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 		private Role entity;
 		private Set<String> allRightIds;
 		private int idx;
+		private AverageTimePrinter printer;
 		
-		private RoleAuthorizationTask(final User user, final Role entity, final Set<String> allRightIds, final int idx) {
+		private RoleAuthorizationTask(final User user, final Role entity, final Set<String> allRightIds, final int idx, final AverageTimePrinter printer) {
 			this.user = user;
 			this.entity = entity;
 			this.allRightIds = allRightIds;
 			this.idx = idx;
+			this.printer = printer;
 		}
 
 		@Override
@@ -320,8 +331,8 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 				authorizationManagerServiceClient.isMemberOfRoleWithRight(user.getId(), entity.getId(), right);
 			});
 			sw.stop();
-			entitlementResponseTimes.add(sw.getTime());
-			logger.info(String.format("%s ms for %s checks.  %s.  IDX: %s", sw.getTime(), allRightIds.size() + 1, this.getClass(), idx));
+			this.printer.add(sw.getTime());
+			//logger.info(String.format("%s ms for %s checks.  %s.  IDX: %s", sw.getTime(), allRightIds.size() + 1, this.getClass(), idx));
 		}
 		
 	}
@@ -330,10 +341,12 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 		
 		private User user;
 		private int idx;
+		private AverageTimePrinter printer;
 		
-		LoginThread(final User user, final int idx) {
+		LoginThread(final User user, final int idx, final AverageTimePrinter printer) {
 			this.user = user;
 			this.idx = idx;
+			this.printer = printer;
 		}
 
 		@Override
@@ -342,7 +355,7 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 			sw.start();
 			login(user.getId());
 			sw.stop();
-			logger.info(String.format("%s ms for Login.  IDX: %s", sw.getTime(), idx));
+			this.printer.add(sw.getTime());
 		}
 		
 		
@@ -370,4 +383,43 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 		
 	}
 	
+	
+	private class AverageTimePrinter implements Runnable {
+
+		private String description;
+		private final List<Long> responseTimes = new LinkedList<Long>();
+		
+		private AverageTimePrinter() {}
+		
+		public AverageTimePrinter(String description) {
+			this.description = description;
+		}
+		
+		public void add(long arg) {
+			synchronized(responseTimes) {
+				responseTimes.add(Long.valueOf(arg));
+			}
+		}
+		
+		@Override
+		public void run() {
+			while(true) {
+				synchronized(responseTimes) {
+					if(responseTimes.size() > 0) {
+						final double avg = responseTimes.stream().filter(e -> e != null).mapToLong(e -> e.longValue()).average().getAsDouble();
+						final int size = responseTimes.size();
+						responseTimes.clear();
+						logger.info(String.format("%s.  # calls: %s.  Avg Time: %s ms", description, size, avg));
+					}
+				}
+				try {
+					Thread.sleep(10000L);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
 }
