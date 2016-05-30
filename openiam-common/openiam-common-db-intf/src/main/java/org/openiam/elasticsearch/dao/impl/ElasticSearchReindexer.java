@@ -110,7 +110,11 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
                 } catch (Exception e) {
                 	logger.error(e.getMessage(), e);
                 }
-                Thread.sleep(500);
+                /*
+                 * This was a copy/paste error.  Vitaly liked to do "multithreading" using Thread.sleep()...
+                 * we are better than that.
+                 */
+                //Thread.sleep(500);
             }
         } catch (InterruptedException e) {
             logger.error(e.getMessage(), e);
