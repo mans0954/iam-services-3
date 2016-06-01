@@ -240,9 +240,9 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 		Group r2 = newInstance();
 		
 		r1.setName(name);
-		r1.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 10, 0).get(0).getId());
+		r1.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 0, 10).get(0).getId());
 		r2.setName(name);
-		r2.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 10, 0).get(1).getId());
+		r2.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 0, 10).get(1).getId());
 		Response response = groupServiceClient.saveGroup(r1, getRequestorId());
 		assertSuccess(response);
 		response = groupServiceClient.saveGroup(r2, getRequestorId());

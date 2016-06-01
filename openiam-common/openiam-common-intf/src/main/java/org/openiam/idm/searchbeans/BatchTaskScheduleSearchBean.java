@@ -18,7 +18,7 @@ import org.openiam.idm.srvc.batch.dto.BatchTaskSchedule;
 	"nextScheduledRunFrom",
 	"nextScheduledRunTo"
 })
-public class BatchTaskScheduleSearchBean extends AbstractSearchBean<BatchTaskSchedule, String> implements SearchBean {
+public class BatchTaskScheduleSearchBean extends AbstractSearchBean<BatchTaskSchedule, String> {
 	
 	public BatchTaskScheduleSearchBean() {}
 

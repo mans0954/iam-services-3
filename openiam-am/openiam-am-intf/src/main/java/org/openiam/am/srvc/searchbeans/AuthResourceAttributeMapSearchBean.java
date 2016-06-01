@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlType;
         "providerId",
         "amAttributeId"
 })
-public class AuthResourceAttributeMapSearchBean extends AbstractKeyNameSearchBean<AuthResourceAttributeMap, String> implements SearchBean {
+public class AuthResourceAttributeMapSearchBean extends AbstractKeyNameSearchBean<AuthResourceAttributeMap, String> {
     private String providerId;
     private String amAttributeId;
 

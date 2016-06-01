@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlType;
         "attributeName",
         "providerType"
 })
-public class AuthAttributeSearchBean extends AbstractSearchBean<AuthAttribute, String> implements SearchBean {
+public class AuthAttributeSearchBean extends AbstractSearchBean<AuthAttribute, String> {
     private String attributeName;
     private String providerType;
 

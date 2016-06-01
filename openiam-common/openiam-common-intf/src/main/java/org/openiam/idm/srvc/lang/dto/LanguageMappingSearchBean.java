@@ -14,7 +14,7 @@ import org.openiam.idm.searchbeans.SearchBean;
         "referenceType",
         "value"
 })
-public class LanguageMappingSearchBean extends AbstractSearchBean<LanguageMapping, String> implements SearchBean {
+public class LanguageMappingSearchBean extends AbstractSearchBean<LanguageMapping, String>  {
 
 	private String languageId;
 	private String referenceId;

@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "ProvisionConnectorSearchBean", propOrder = {
         "typeId"
 })
-public class ProvisionConnectorSearchBean extends AbstractKeyNameSearchBean<ProvisionConnectorDto, String> implements SearchBean {
+public class ProvisionConnectorSearchBean extends AbstractKeyNameSearchBean<ProvisionConnectorDto, String> {
 	private String typeId;
 
 	public String getTypeId() {

@@ -10,7 +10,7 @@ import org.openiam.idm.srvc.batch.dto.BatchTask;
 @XmlType(name = "BatchTaskSearchBean", propOrder = {
 	"enabled"
 })
-public class BatchTaskSearchBean extends AbstractKeyNameSearchBean<BatchTask, String> implements SearchBean {
+public class BatchTaskSearchBean extends AbstractKeyNameSearchBean<BatchTask, String> {
     /**
      * 
      */

@@ -12,10 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 public class ConnectorServiceTest extends AbstractKeyNameServiceTest<ProvisionConnectorDto, ProvisionConnectorSearchBean> {
-
-	@Autowired
-	@Qualifier("connectorServiceClient")
-	private ProvisionConnectorWebService service;
 	
 	@Override
 	protected ProvisionConnectorDto newInstance() {
@@ -29,23 +25,23 @@ public class ConnectorServiceTest extends AbstractKeyNameServiceTest<ProvisionCo
 
 	@Override
 	protected Response save(ProvisionConnectorDto t) {
-		return service.save(t);
+		return provisionConnectorWebServiceClient.save(t);
 	}
 
 	@Override
 	protected Response delete(ProvisionConnectorDto t) {
-		return service.removeProvisionConnector(t.getId());
+		return provisionConnectorWebServiceClient.removeProvisionConnector(t.getId());
 	}
 
 	@Override
 	protected ProvisionConnectorDto get(String key) {
-		return service.getProvisionConnector(key);
+		return provisionConnectorWebServiceClient.getProvisionConnector(key);
 	}
 
 	@Override
 	public List<ProvisionConnectorDto> find(
 			ProvisionConnectorSearchBean searchBean, int from, int size) {
-		return service.getProvisionConnectors(searchBean, from, size);
+		return provisionConnectorWebServiceClient.getProvisionConnectors(searchBean, from, size);
 	}
 
 	@Test

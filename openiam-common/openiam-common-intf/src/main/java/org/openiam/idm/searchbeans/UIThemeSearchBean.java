@@ -13,7 +13,7 @@ import org.openiam.idm.srvc.ui.theme.dto.UITheme;
 @XmlType(name = "UIThemeSearchBean", propOrder = {
 	
 })
-public class UIThemeSearchBean extends AbstractSearchBean<UITheme, String> implements SearchBean {
+public class UIThemeSearchBean extends AbstractSearchBean<UITheme, String> {
 
 	public UIThemeSearchBean() {}
 

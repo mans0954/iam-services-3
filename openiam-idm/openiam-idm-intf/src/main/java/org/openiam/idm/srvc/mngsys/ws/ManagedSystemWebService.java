@@ -42,8 +42,8 @@ public interface ManagedSystemWebService {
     @WebMethod
     List<ManagedSysDto> getManagedSystems(
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean,
-            @WebParam(name = "size", targetNamespace = "") Integer size,
-            @WebParam(name = "from", targetNamespace = "") Integer from);
+            @WebParam(name = "from", targetNamespace = "") int from,
+            @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Returns a ManagedSys object for the specified systemId.

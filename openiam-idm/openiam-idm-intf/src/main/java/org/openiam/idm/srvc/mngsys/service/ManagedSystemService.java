@@ -24,8 +24,7 @@ public interface ManagedSystemService {
 	
 	int count(final ManagedSysSearchBean searchBean);
 
-    List<ManagedSysDto> getManagedSystemsByExample(ManagedSysSearchBean example,
-                                                      Integer from, Integer size);
+    List<ManagedSysDto> getManagedSystemsByExample(ManagedSysSearchBean example, int from, int size);
 
     ManagedSysEntity getManagedSysById(String id);
 

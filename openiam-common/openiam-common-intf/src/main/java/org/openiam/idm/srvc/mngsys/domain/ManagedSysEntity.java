@@ -390,11 +390,11 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
         this.roles = roles;
     }
 
-    public Boolean getSkipGroupProvision() {
+    public boolean getSkipGroupProvision() {
         return skipGroupProvision;
     }
 
-    public void setSkipGroupProvision(Boolean skipGroupProvision) {
+    public void setSkipGroupProvision(boolean skipGroupProvision) {
         this.skipGroupProvision = skipGroupProvision;
     }
 

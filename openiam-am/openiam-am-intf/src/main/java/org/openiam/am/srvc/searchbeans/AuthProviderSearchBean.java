@@ -24,7 +24,7 @@ import java.util.Set;
         "resourceId",
         "nextAuthProviderId"
 })
-public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvider, String> implements SearchBean {
+public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvider, String> {
     private String managedSysId;
     private String providerType;
     private Boolean defaultAuthProvider;

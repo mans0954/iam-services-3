@@ -22,7 +22,7 @@ import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
         "approverEntityType",
         "approverLevel"
 })
-public class ApproverAssocationSearchBean extends AbstractSearchBean<ApproverAssociation, String> implements SearchBean {
+public class ApproverAssocationSearchBean extends AbstractSearchBean<ApproverAssociation, String> {
 	private AssociationType associationType;
 	private String associationEntityId;
 	private String requestType;

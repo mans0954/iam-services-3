@@ -160,10 +160,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ManagedSysDto> getManagedSystems(
-            @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean,
-            @WebParam(name = "size", targetNamespace = "") Integer size,
-            @WebParam(name = "from", targetNamespace = "") Integer from) {
+    public List<ManagedSysDto> getManagedSystems(final ManagedSysSearchBean searchBean, final int from, final int size) {
         final List<ManagedSysDto> sysDtos = managedSystemService.getManagedSystemsByExample(searchBean, from, size);
         return sysDtos;
     }

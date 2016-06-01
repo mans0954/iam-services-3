@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlType;
         "synchType",
         "excludeBooleanProperties"
 })
-public class SynchConfigSearchBean extends AbstractSearchBean<SynchConfig, String> implements SearchBean {
+public class SynchConfigSearchBean extends AbstractSearchBean<SynchConfig, String> {
     private String name;
     private String synchType;
     private boolean excludeBooleanProperties;

@@ -10,6 +10,6 @@ import org.openiam.idm.searchbeans.SearchBean;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MailTemplateSearchBean", propOrder = {
 })
-public class MailTemplateSearchBean extends AbstractKeyNameSearchBean<MailTemplateDto, String> implements SearchBean {
+public class MailTemplateSearchBean extends AbstractKeyNameSearchBean<MailTemplateDto, String>  {
 
 }

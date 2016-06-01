@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
         "showOnApplicationPage",
         "resourceId"
 })
-public class URIPatternSearchBean extends AbstractSearchBean<URIPattern, String> implements SearchBean {
+public class URIPatternSearchBean extends AbstractSearchBean<URIPattern, String> {
     private String pattern;
     private String contentProviderId;
     private String authProviderId;

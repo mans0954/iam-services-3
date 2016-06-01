@@ -13,7 +13,7 @@ import org.openiam.idm.srvc.lang.dto.Language;
 @XmlType(name = "LanguageSearchBean", propOrder = {
 	"code"
 })
-public class LanguageSearchBean extends AbstractLanguageSearchBean<Language, String> implements SearchBean<Language, String>, Serializable {
+public class LanguageSearchBean extends AbstractLanguageSearchBean<Language, String> {
 
 	private String code;
 

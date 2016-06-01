@@ -37,6 +37,7 @@
 	<test name="integration.connectors">
 		<classes>
 			<class name="org.openiam.service.integration.connector.ConnectorServiceTest" />
+			<class name="org.openiam.service.integration.provisioning.ManagedSystemServiceTest" />
 		</classes>
 	</test>
 	

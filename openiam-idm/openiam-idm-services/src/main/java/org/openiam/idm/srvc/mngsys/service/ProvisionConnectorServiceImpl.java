@@ -24,7 +24,7 @@ public class ProvisionConnectorServiceImpl implements ProvisionConnectorService 
     @Transactional(readOnly = true)
     public List<ProvisionConnectorDto> getProvisionConnectorsByExample(ProvisionConnectorSearchBean searchBean, int from, int size) {
     	final List<ProvisionConnectorEntity> entities = provisionConnectorDao.getByExample(searchBean, from, size);
-        return provisionConnectorConverter.convertToDTOList(entities, searchBean.isDeepCopy());
+        return provisionConnectorConverter.convertToDTOList(entities, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
 
     @Override

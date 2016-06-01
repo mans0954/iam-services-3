@@ -13,26 +13,16 @@ import java.io.Serializable;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ManagedSysSearchBean", propOrder = {
-        "name",
         "connectorId",
         "resourceId",
         "status"
 })
-public class ManagedSysSearchBean extends AbstractSearchBean<ManagedSysDto, String> implements SearchBean<ManagedSysDto, String>, Serializable {
+public class ManagedSysSearchBean extends AbstractKeyNameSearchBean<ManagedSysDto, String> {
 
-    private String name;
     private String connectorId;
     private String resourceId;
     private String status;
 
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getConnectorId() {
         return connectorId;
@@ -62,7 +52,6 @@ public class ManagedSysSearchBean extends AbstractSearchBean<ManagedSysDto, Stri
 		int result = super.hashCode();
 		result = prime * result
 				+ ((connectorId == null) ? 0 : connectorId.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
@@ -82,11 +71,6 @@ public class ManagedSysSearchBean extends AbstractSearchBean<ManagedSysDto, Stri
 			if (other.connectorId != null)
 				return false;
 		} else if (!connectorId.equals(other.connectorId))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
 			return false;
 		if (resourceId == null) {
 			if (other.resourceId != null)

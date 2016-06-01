@@ -148,10 +148,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ManagedSysDto> getManagedSystemsByExample(
-            ManagedSysSearchBean searchBean, Integer from, Integer size) {
+    public List<ManagedSysDto> getManagedSystemsByExample(final ManagedSysSearchBean searchBean, int from, int size) {
         List<ManagedSysEntity> sysEntities = managedSysDAO.getByExample(searchBean, from, size);
-        List<ManagedSysDto> managedSysDtos = managedSysDozerConverter.convertToDTOList(sysEntities, false);
+        List<ManagedSysDto> managedSysDtos = managedSysDozerConverter.convertToDTOList(sysEntities, (searchBean != null) ? searchBean.isDeepCopy() : false);
         return managedSysDtos;
     }
 
@@ -643,25 +642,23 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional
-    @Caching(
-    	evict={
-    		@CacheEvict(cacheNames="decryptManagedSysPassword", key="{#entity.id}"),
-    		@CacheEvict(cacheNames="managedSysAttributeMaps", key="{#entity.id}")
-    	}
-    )
     @CacheKeyEviction(
         	evictions={
-                @CacheKeyEvict("managedSysObjectParam")
+                @CacheKeyEvict("managedSysObjectParam"),
+                @CacheKeyEvict("decryptManagedSysPassword"),
+                @CacheKeyEvict("managedSysAttributeMaps")
             }
         )
     public void save(final ManagedSysEntity entity) throws BasicDataServiceException {
-        if (StringUtils.isBlank(entity.getResource().getId())) {
+        if (entity.getResource() == null || StringUtils.isBlank(entity.getResource().getId())) {
             final ResourceEntity resource = new ResourceEntity();
             resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
             resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
             resource.setIsPublic(false);
             resource.setCoorelatedName(entity.getName());
-            resource.setResourceProps(entity.getResource().getResourceProps());
+            if(entity.getResource() != null) {
+            	resource.setResourceProps(entity.getResource().getResourceProps());
+            }
             resourceService.save(resource, null);
             entity.setResource(resource);
         } else {

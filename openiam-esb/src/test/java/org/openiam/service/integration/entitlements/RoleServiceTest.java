@@ -116,9 +116,9 @@ public class RoleServiceTest extends AbstractAttributeServiceTest<Role, RoleSear
 		Role r2 = newInstance();
 		
 		r1.setName(name);
-		r1.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 10, 0).get(0).getId());
+		r1.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 0, 10).get(0).getId());
 		r2.setName(name);
-		r2.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 10, 0).get(1).getId());
+		r2.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 0, 10).get(1).getId());
 		Response response = roleServiceClient.saveRole(r1, getRequestorId());
 		assertSuccess(response);
 		response = roleServiceClient.saveRole(r2, getRequestorId());

@@ -17,7 +17,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 		"patternIds",
 		"resourceId"
 })
-public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearchBean<MetadataElementPageTemplate, String> implements SearchBean {
+public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearchBean<MetadataElementPageTemplate, String> {
 
 	private Set<String> patternIds;
 	private Set<String> keySet;

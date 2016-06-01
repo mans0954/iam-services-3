@@ -103,6 +103,19 @@
 			"cacheTTL" : 30
 		},
 		{
+			"pattern" : "/swagger-ui.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 300
+		},
+		{
 			"pattern" : "/openiam-ui-static/*",
 			"isPublic" : true,
 			"groupingXrefs" : [

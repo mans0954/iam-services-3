@@ -17,7 +17,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
         "policyDefId",
         "attributes"
 })
-public class PolicySearchBean extends AbstractKeyNameSearchBean<Policy, String> implements SearchBean {
+public class PolicySearchBean extends AbstractKeyNameSearchBean<Policy, String> {
 
 	private String policyDefId;
 	

@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
         "isSSL",
         "resourceId"
 })
-public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<ContentProvider, String> implements SearchBean {
+public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<ContentProvider, String> {
 
     private static final long serialVersionUID = 4085178050605918460L;
     private String domainPattern;

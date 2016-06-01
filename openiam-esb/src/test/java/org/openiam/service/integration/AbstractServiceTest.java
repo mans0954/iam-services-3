@@ -56,6 +56,7 @@ import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationTypeDataService;
@@ -109,6 +110,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
     @Qualifier("metadataServiceClient")
     protected MetadataWebService metadataServiceClient;
+	
+	@Autowired
+	@Qualifier("provisionConnectorWebServiceClient")
+	protected ProvisionConnectorWebService provisionConnectorWebServiceClient;
 	
 	@Autowired
 	@Qualifier("contentProviderServiceClient")

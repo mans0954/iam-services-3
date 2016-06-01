@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlType;
         "managedSystemId", 
         "metadataTypeId"
 })
-public class MngSysPolicySearchBean extends AbstractKeyNameSearchBean<MngSysPolicyDto, String> implements SearchBean {
+public class MngSysPolicySearchBean extends AbstractKeyNameSearchBean<MngSysPolicyDto, String> {
 
     private String managedSystemId;
     private String metadataTypeId;

@@ -14,7 +14,7 @@ import org.openiam.idm.srvc.membership.dto.AbstractMembershipXref;
         "memberEntityId",
         "rightIds"
 })
-public class MembershipSearchBean extends AbstractSearchBean<AbstractMembershipXref, String> implements SearchBean {
+public class MembershipSearchBean extends AbstractSearchBean<AbstractMembershipXref, String> {
 
 	private String entityId;
 	private String memberEntityId;

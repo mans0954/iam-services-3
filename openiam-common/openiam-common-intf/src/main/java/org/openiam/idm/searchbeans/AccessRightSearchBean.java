@@ -11,7 +11,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 @XmlType(name = "AccessRightSearchBean", propOrder = {
 
 })
-public class AccessRightSearchBean  extends AbstractKeyNameSearchBean<AccessRight, String> implements SearchBean {
+public class AccessRightSearchBean  extends AbstractKeyNameSearchBean<AccessRight, String> {
 
 
 }

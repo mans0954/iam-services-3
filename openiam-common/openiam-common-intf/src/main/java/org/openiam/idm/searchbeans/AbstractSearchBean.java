@@ -17,7 +17,7 @@ import java.util.List;
         "sortBy",
         "findInCache"
 })
-public abstract class AbstractSearchBean<T, KeyType> {
+public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType> {
 
 	private boolean deepCopy = true;
 	private KeyType key;
