@@ -222,7 +222,8 @@ public class Transformation {
 
         attr = this.getValue(lo.get("division"));
         if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("division", attr));
+//            addUserAttribute(user, new UserAttributeEntity("division", attr));
+            addUserAttribute(user, new UserAttributeEntity("REGION", attr));
         }
 
         attr = this.getValue(lo.get("department"));
