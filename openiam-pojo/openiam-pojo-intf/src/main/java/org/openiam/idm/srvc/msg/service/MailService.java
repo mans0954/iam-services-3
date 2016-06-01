@@ -112,6 +112,5 @@ public interface MailService {
      */
     public void tweetMessage(String status);
 
-    public String returnEmailBody( NotificationRequest req, boolean isEncrypted);
 
 }
