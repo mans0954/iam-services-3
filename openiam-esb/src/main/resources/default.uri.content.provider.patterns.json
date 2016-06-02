@@ -636,6 +636,29 @@
 				}
 			],
 			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/selfservice/editGroup.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "webconsole/rest/api/syncconfig/save.html",
+			"isPublic" : false,
+			"xssRules" : [
+				{
+					"paramName" :"query",
+					"ignoreXSS" : true
+				}
+			],
+            "cacheable" : false
 		}
 	]
 }

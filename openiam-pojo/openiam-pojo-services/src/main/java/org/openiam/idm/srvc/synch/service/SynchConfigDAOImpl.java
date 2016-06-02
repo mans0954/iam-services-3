@@ -15,6 +15,7 @@ import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Home object for domain model class SynchConfig.
@@ -73,7 +74,7 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
         Criteria criteria = getCriteria().addOrder(Order.asc("name"));
         return (List<SynchConfigEntity>)criteria.list();
 	}
-
+	@Transactional
 	public int updateExecTime(String configId, Timestamp execTime) {
 		Query qry = getSession().createQuery("UPDATE org.openiam.idm.srvc.synch.domain.SynchConfigEntity sc " +
                 " 					SET  sc.lastExecTime = :execTime  " +
@@ -84,7 +85,7 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
 		
 		return qry.executeUpdate();
 	}
-
+	@Transactional
     public int updateLastRecProcessed(String configId,String processTime) {
 		Query qry = getSession().createQuery(" UPDATE org.openiam.idm.srvc.synch.domain.SynchConfigEntity sc " +
                 " 					SET  sc.lastRecProcessed = :processTime  " +
