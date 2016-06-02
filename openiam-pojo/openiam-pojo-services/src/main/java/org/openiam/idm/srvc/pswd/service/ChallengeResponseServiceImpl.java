@@ -1,8 +1,10 @@
 package org.openiam.idm.srvc.pswd.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -75,9 +77,26 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     @Override
     public List<UserIdentityAnswerEntity> findAnswerBeans(
             IdentityAnswerSearchBean searchBean, String requesterId, int from, int size) throws Exception {
-        List<UserIdentityAnswerEntity> beans = getResponseValidator().findAnswerBeans(searchBean, requesterId, from, size);
+        final List<UserIdentityAnswerEntity> beans = getResponseValidator().findAnswerBeans(searchBean, requesterId, from, size);
+        if(searchBean != null && searchBean.isDecryptAnswers()) {
+        	if(CollectionUtils.isNotEmpty(beans)) {
+        		for(final UserIdentityAnswerEntity answer : beans) {
+        			if(answer.getIsEncrypted()) {
+        				answer.setQuestionAnswer(decryptAnswer(answer));
+        			}
+        		}
+        	}
+        }
         return beans;
 //        return decryptAnswers(beans, requesterId);
+    }
+    
+    private String decryptAnswer(final UserIdentityAnswerEntity answer) throws Exception {
+    	String retVal = null;
+    	if(StringUtils.isNotBlank(answer.getQuestionAnswer())) {
+    		retVal = keyManagementService.decrypt(answer.getUserId(), KeyName.challengeResponse, answer.getQuestionAnswer());
+    	}
+    	return retVal;
     }
 
 //    private List<UserIdentityAnswerEntity> decryptAnswers(List<UserIdentityAnswerEntity> answerList, String requesterId)
