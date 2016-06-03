@@ -539,29 +539,34 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         }
     }
 
-    private boolean storeEmailBody(Message message, String userId) {
-        UserEntity usr = userDAO.findById(userId);
-        if (usr == null) {
-            log.warn(String.format("Can't find user with id '%s", userId));
-            return false;
+    @Override
+    public List<EmailEntity> getEmailsForUser(String userId, int from, int size) {
+        if (userId == null) {
+            log.warn("UserID is null");
+            return null;
         }
+        return emailDAO.getEmailsForUser(userId, from, size);
+
+    }
+
+    private boolean storeEmailBody(Message message, String userId) {
+//        UserEntity usr = userDAO.findById(userId);
+//        if (usr == null) {
+//            log.warn(String.format("Can't find user with id '%s", userId));
+//            return false;
+//        }
         String emailBody = message.getBody();
         emailBody = keyManagementWS.encryptData(emailBody);
-        if ((usr.getEmailAddresses()).isEmpty()) {
-            log.error(String.format("Store email failed. Email was null for userId=%s", usr.getId()));
+         if ((message.getTo()).isEmpty()) {
+            log.error(String.format("Store email failed. Email was null for userId=%s", userId));
             return false;
         }
         EmailEntity emailEntity = new EmailEntity();
         emailEntity.setSubject(message.getSubject());
         emailEntity.setEmailBody(emailBody);
-        String address;
-        for (EmailAddressEntity emailAddress : usr.getEmailAddresses()) {
-            if (emailAddress.getIsDefault()) {
-                address = emailAddress.getEmailAddress();
-                emailEntity.setAddress(address);
-            }
-        }
-        emailEntity.setParent(usr);
+        String address = message.getTo().get(0).getAddress();
+        emailEntity.setAddress(address);
+        emailEntity.setParentId(userId);
         emailEntity.setTimeStamp(message.getProcessingTime());
         emailDAO.add(emailEntity);
         return true;

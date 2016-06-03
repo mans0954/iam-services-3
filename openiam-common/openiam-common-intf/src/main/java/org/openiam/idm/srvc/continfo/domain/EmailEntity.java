@@ -42,10 +42,8 @@ public class EmailEntity implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date timeStamp;
 
-    @ManyToOne
-    @JoinColumn(name = "PARENT_ID")
-    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store= Store.YES)
-    private UserEntity parent;
+    @Column(name = "PARENT_ID")
+    private String parentId;
 
 
     public EmailEntity() {
@@ -93,12 +91,12 @@ public class EmailEntity implements Serializable {
         this.subject = subject;
     }
 
-    public UserEntity getParent() {
-        return parent;
+    public String getParentId() {
+        return parentId;
     }
 
-    public void setParent(UserEntity parent) {
-        this.parent = parent;
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
     }
 
     @Override
@@ -108,25 +106,24 @@ public class EmailEntity implements Serializable {
 
         EmailEntity that = (EmailEntity) o;
 
-        if (getEmailId() != null ? !getEmailId().equals(that.getEmailId()) : that.getEmailId() != null) return false;
-        if (getEmailBody() != null ? !getEmailBody().equals(that.getEmailBody()) : that.getEmailBody() != null)
-            return false;
-        if (getAddress() != null ? !getAddress().equals(that.getAddress()) : that.getAddress() != null) return false;
+        if (!getEmailId().equals(that.getEmailId())) return false;
+        if (!getEmailBody().equals(that.getEmailBody())) return false;
+        if (!getAddress().equals(that.getAddress())) return false;
         if (getSubject() != null ? !getSubject().equals(that.getSubject()) : that.getSubject() != null) return false;
         if (getTimeStamp() != null ? !getTimeStamp().equals(that.getTimeStamp()) : that.getTimeStamp() != null)
             return false;
-        return !(getParent() != null ? !getParent().equals(that.getParent()) : that.getParent() != null);
+        return getParentId().equals(that.getParentId());
 
     }
 
     @Override
     public int hashCode() {
-        int result = getEmailId() != null ? getEmailId().hashCode() : 0;
-        result = 31 * result + (getEmailBody() != null ? getEmailBody().hashCode() : 0);
-        result = 31 * result + (getAddress() != null ? getAddress().hashCode() : 0);
+        int result = getEmailId().hashCode();
+        result = 31 * result + getEmailBody().hashCode();
+        result = 31 * result + getAddress().hashCode();
         result = 31 * result + (getSubject() != null ? getSubject().hashCode() : 0);
         result = 31 * result + (getTimeStamp() != null ? getTimeStamp().hashCode() : 0);
-        result = 31 * result + (getParent() != null ? getParent().hashCode() : 0);
+        result = 31 * result + getParentId().hashCode();
         return result;
     }
 }
