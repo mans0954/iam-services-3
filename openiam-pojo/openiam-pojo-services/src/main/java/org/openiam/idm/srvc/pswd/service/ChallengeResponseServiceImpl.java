@@ -78,26 +78,10 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     public List<UserIdentityAnswerEntity> findAnswerBeans(
             IdentityAnswerSearchBean searchBean, String requesterId, int from, int size) throws Exception {
         final List<UserIdentityAnswerEntity> beans = getResponseValidator().findAnswerBeans(searchBean, requesterId, from, size);
-        if(searchBean != null && searchBean.isDecryptAnswers()) {
-        	if(CollectionUtils.isNotEmpty(beans)) {
-        		for(final UserIdentityAnswerEntity answer : beans) {
-        			if(answer.getIsEncrypted()) {
-        				answer.setQuestionAnswer(decryptAnswer(answer));
-        			}
-        		}
-        	}
-        }
         return beans;
 //        return decryptAnswers(beans, requesterId);
     }
     
-    private String decryptAnswer(final UserIdentityAnswerEntity answer) throws Exception {
-    	String retVal = null;
-    	if(StringUtils.isNotBlank(answer.getQuestionAnswer())) {
-    		retVal = keyManagementService.decrypt(answer.getUserId(), KeyName.challengeResponse, answer.getQuestionAnswer());
-    	}
-    	return retVal;
-    }
 
 //    private List<UserIdentityAnswerEntity> decryptAnswers(List<UserIdentityAnswerEntity> answerList, String requesterId)
 //            throws Exception {
@@ -175,9 +159,13 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
                 requiredCorrectUserSpecified = Integer.parseInt(attrUserSpecified.getValue1());
             }
         }
+        
+        final IdentityAnswerSearchBean sb = new IdentityAnswerSearchBean();
+        sb.setUserId(userId);
+        final List<UserIdentityAnswerEntity> savedAnsList = findAnswerBeans(sb, null, 0, Integer.MAX_VALUE);
 
-        return getResponseValidator().isResponseValid(userId, newAnswerList, requiredCorrectEnterprise, true)
-                && getResponseValidator().isResponseValid(userId, newAnswerList, requiredCorrectUserSpecified, false);
+        return getResponseValidator().isResponseValid(userId, newAnswerList, savedAnsList, requiredCorrectEnterprise, true)
+                && getResponseValidator().isResponseValid(userId, newAnswerList, savedAnsList, requiredCorrectUserSpecified, false);
     }
 
     private ChallengeResponseValidator getResponseValidator() {

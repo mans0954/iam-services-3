@@ -90,13 +90,18 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     private static final Integer maxLengthAnswer = 255;
 
     @Override
-    public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns, boolean isEnterprise)
-            throws Exception {
-        final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList, isEnterprise);
+    @Transactional(readOnly=true)
+    public boolean isResponseValid(final String userId, 
+    							   final List<UserIdentityAnswerEntity> newAnswerList, 
+    							   final List<UserIdentityAnswerEntity> savedAnsList, 
+    							   final int requiredCorrectAns, 
+    							   final boolean isEnterprise) throws Exception {
+        final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList, savedAnsList, isEnterprise);
         return correctAns >= requiredCorrectAns && requiredCorrectAns > 0;
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Integer getNumOfRequiredQuestions(final String userId, boolean isEnterprise) {
         Policy passwordPolicy = null;
         if (StringUtils.isNotBlank(userId)) {
@@ -121,6 +126,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Integer getNumOfCorrectAnswers(final String userId, boolean isEnterprise) {
         Policy passwordPolicy = null;
         if (StringUtils.isNotBlank(userId)) {
@@ -145,14 +151,14 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     }
 
     @Override
+    @Transactional(readOnly=true)
     public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
-        return this.isUserAnsweredSecurityQuestions(userId, true) && this.isUserAnsweredSecurityQuestions(userId, false);
+    	final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
+        return this.isUserAnsweredSecurityQuestions(userId, true, answerList) && this.isUserAnsweredSecurityQuestions(userId, false, answerList);
     }
 
-    @Override
-    public boolean isUserAnsweredSecurityQuestions(final String userId, boolean isEnterprise) throws Exception {
+    private boolean isUserAnsweredSecurityQuestions(final String userId, final boolean isEnterprise, final List<UserIdentityAnswerEntity> answerList) throws Exception {
         final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId, isEnterprise);
-        final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
 
 
         boolean retVal = false;
@@ -167,7 +173,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         return retVal;
     }
 
-    private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList, boolean isEnterprise)
+    private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList, final List<UserIdentityAnswerEntity> savedAnsList, boolean isEnterprise)
             throws Exception {
         int correctAns = 0;
 
@@ -177,7 +183,6 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
             throw new PrincipalNotFoundException(String.format("Login object not found for userId=%s", userId));
         }
         // get the answers in the system to validate the response.
-        final List<UserIdentityAnswerEntity> savedAnsList = answersByUser(lg.getUserId());
         if (CollectionUtils.isEmpty(savedAnsList)) {
             throw new IdentityAnswerNotFoundException();
         }
@@ -188,10 +193,9 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
             }
             for (UserIdentityAnswerEntity newAns : newAnswerList) {
                 if (StringUtils.equalsIgnoreCase(newAns.getId(), savedAns.getId())) {
-                    String savedAnswer = (savedAns.getIsEncrypted()) ? keyManagementService.decrypt(lg.getUserId(), KeyName.challengeResponse, savedAns.getQuestionAnswer())
-                            : savedAns.getQuestionAnswer();
 
-                    if (StringUtils.equalsIgnoreCase(newAns.getQuestionAnswer(), savedAnswer)) {
+                	/* savedAns.getQuestionAnswer() should contain the plaintext answer at this point */
+                    if (StringUtils.equalsIgnoreCase(newAns.getQuestionAnswer(), savedAns.getQuestionAnswer())) {
                         correctAns++;
                     }
                 }
@@ -207,10 +211,11 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
         final IdentityAnswerSearchBean sb = new IdentityAnswerSearchBean();
         sb.setUserId(userId);
-        return answerDAO.getByExample(sb);
+        return findAnswerBeans(sb, null, 0, Integer.MAX_VALUE);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size) {
         List<IdentityQuestionEntity> resultList = null;
         if (searchBean != null && searchBean.getKey() != null) {
@@ -226,12 +231,14 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Integer count(final IdentityQuestionSearchBean searchBean) {
         return questionDAO.count(searchBean);
     }
 
 
     @Override
+    @Transactional(readOnly=true)
     public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)
             throws Exception {
         List<UserIdentityAnswerEntity> resultList = null;
@@ -271,7 +278,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly=true)
     public IdentityQuestionEntity getQuestion(final String questionId) {
         final IdentityQuestionEntity entity = questionDAO.findById(questionId);
         return entity;
@@ -323,7 +330,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
                 } else {
                     throw new BasicDataServiceException(ResponseCode.ANSWER_IS_TOO_LONG);
                 }
-                entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
+                //entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
                 entity.setIsEncrypted(true);
             }
             answerDAO.save(answerList);
@@ -353,18 +360,19 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
             throws Exception {
         if (CollectionUtils.isNotEmpty(answerList)) {
             for (UserIdentityAnswerEntity entity : answerList) {
-                if (StringUtils.isNotBlank(requesterId)
-                        && requesterId.equals(entity.getUserId())
-                        && entity.getIsEncrypted()) {
+            	/* 
+            	 * if requesterId is null, then it's an unauthenticated user trying to answer his response questions
+            	 * this should happen *only* if the user is trying to unlock his password. 
+            	 */
+                if ((StringUtils.isBlank(requesterId) || requesterId.equals(entity.getUserId())) && entity.getIsEncrypted()) {
 
                     entity.setQuestionAnswer(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
                             entity.getQuestionAnswer()));
 
                 }
-                //enncrypt Custom question
+                //decrypt Custom question
                 if ((entity.getIdentityQuestion() == null || entity.getIdentityQuestion().getId() == null) && StringUtils.isNotBlank(entity.getQuestionText())) {
-                    entity.setQuestionText(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
-                            entity.getQuestionText()));
+                    entity.setQuestionText(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionText()));
                 }
             }
         }

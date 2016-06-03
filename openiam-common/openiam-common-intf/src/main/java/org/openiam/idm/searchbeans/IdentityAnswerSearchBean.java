@@ -10,12 +10,10 @@ import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdentityAnswerSearchBean", propOrder = {
 	"userId",
-	"questionId",
-	"decryptAnswers"
+	"questionId"
 })
 public class IdentityAnswerSearchBean extends AbstractSearchBean<UserIdentityAnswer, String> implements SearchBean<UserIdentityAnswer, String> {
 
-	private boolean decryptAnswers;
 	private String questionId;
 	private String userId;
 
@@ -35,19 +33,10 @@ public class IdentityAnswerSearchBean extends AbstractSearchBean<UserIdentityAns
 		this.questionId = questionId;
 	}
 
-	public boolean isDecryptAnswers() {
-		return decryptAnswers;
-	}
-
-	public void setDecryptAnswers(boolean decryptAnswers) {
-		this.decryptAnswers = decryptAnswers;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + (decryptAnswers ? 1231 : 1237);
 		result = prime * result
 				+ ((questionId == null) ? 0 : questionId.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
@@ -63,8 +52,6 @@ public class IdentityAnswerSearchBean extends AbstractSearchBean<UserIdentityAns
 		if (getClass() != obj.getClass())
 			return false;
 		IdentityAnswerSearchBean other = (IdentityAnswerSearchBean) obj;
-		if (decryptAnswers != other.decryptAnswers)
-			return false;
 		if (questionId == null) {
 			if (other.questionId != null)
 				return false;

@@ -35,7 +35,7 @@ import java.util.List;
  */
 public interface ChallengeResponseValidator {
     
-    boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns, boolean isEnterprise)
+    boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, List<UserIdentityAnswerEntity> savedAnsList, int requiredCorrectAns, boolean isEnterprise)
             throws Exception;
     Integer count(final IdentityQuestionSearchBean searchBean);
     List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size);
@@ -47,7 +47,6 @@ public interface ChallengeResponseValidator {
     void saveAnswer(final UserIdentityAnswerEntity answer) throws Exception;
     void deleteAnswer(final String answerId) throws Exception;
     void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception;
-    public boolean isUserAnsweredSecurityQuestions(final String userId, boolean isEnterprise) throws Exception;    
 	boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception;
     public Integer getNumOfRequiredQuestions(final String userId, boolean isEnterprise);
     public Integer getNumOfCorrectAnswers(final String userId, boolean isEnterprise);
