@@ -43,6 +43,12 @@ public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEnt
 			if(sb.getQuestionId() != null) {
 				criteria.add(Restrictions.eq("identityQuestion.id", sb.getQuestionId()));
 			}
+			if(StringUtils.isNotBlank(sb.getQuestionText())) {
+				criteria.add(Restrictions.eq("questionText", sb.getQuestionText()).ignoreCase());
+			}
+			if(sb.getIsEncrypted() != null) {
+				criteria.add(Restrictions.eq("isEncrypted", sb.getIsEncrypted().booleanValue()));
+			}
 		}
 		return criteria.addOrder(Order.asc("identityQuestion.id"));
 	}

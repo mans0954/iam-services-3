@@ -100,6 +100,9 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         return correctAns >= requiredCorrectAns && requiredCorrectAns > 0;
     }
 
+    /**
+     * Gets the number of questions to show on challenge response questions based on isEnterprise flag
+     */
     @Override
     @Transactional(readOnly=true)
     public Integer getNumOfRequiredQuestions(final String userId, boolean isEnterprise) {
@@ -125,6 +128,9 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         return count;
     }
 
+    /**
+     * How many questions the user must answer correctly
+     */
     @Override
     @Transactional(readOnly=true)
     public Integer getNumOfCorrectAnswers(final String userId, boolean isEnterprise) {
@@ -242,14 +248,21 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)
             throws Exception {
         List<UserIdentityAnswerEntity> resultList = null;
-        if (searchBean.getKey() != null) {
-            final UserIdentityAnswerEntity entity = answerDAO.findById(searchBean.getKey());
-            if (entity != null) {
-                resultList = new LinkedList<UserIdentityAnswerEntity>();
-                resultList.add(entity);
-            }
-        } else {
-            resultList = answerDAO.getByExample(searchBean, from, size);
+        if(searchBean != null) {
+	        if (searchBean.getKey() != null) {
+	            final UserIdentityAnswerEntity entity = answerDAO.findById(searchBean.getKey());
+	            if (entity != null) {
+	                resultList = new LinkedList<UserIdentityAnswerEntity>();
+	                resultList.add(entity);
+	            }
+	        } else {
+	        	if(Boolean.TRUE.equals(searchBean.getIsEncrypted()) && StringUtils.isNotBlank(searchBean.getQuestionText()) && StringUtils.isNotBlank(searchBean.getUserId())) {
+	        		if(StringUtils.isNotBlank(searchBean.getQuestionText())) {
+	        			searchBean.setQuestionText(keyManagementService.encrypt(searchBean.getUserId(), KeyName.challengeResponse, searchBean.getQuestionText()));
+	        		}
+	        	}
+	            resultList = answerDAO.getByExample(searchBean, from, size);
+	        }
         }
         return decryptAnswers(resultList, requesterId);
     }

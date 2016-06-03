@@ -51,6 +51,9 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
         return getResponseValidator().getNumOfRequiredQuestions(userId, isEnterprise);
     }
 
+    /**
+     * How many questions the user must answer correctly
+     */
     @Override
     public Integer getNumOfCorrectAnswers(String userId, boolean isEnterprise) {
         return getResponseValidator().getNumOfCorrectAnswers(userId, isEnterprise);
