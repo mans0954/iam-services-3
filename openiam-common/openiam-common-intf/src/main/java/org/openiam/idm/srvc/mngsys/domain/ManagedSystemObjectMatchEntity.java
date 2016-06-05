@@ -3,26 +3,23 @@ package org.openiam.idm.srvc.mngsys.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 
 @Entity
 @Table(name = "MNG_SYS_OBJECT_MATCH")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(ManagedSystemObjectMatch.class)
-public class ManagedSystemObjectMatchEntity implements Serializable {
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="OBJECT_SEARCH_ID", length=32, nullable = false)
-    private String objectSearchId;
-
+@AttributeOverride(name = "id", column = @Column(name = "OBJECT_SEARCH_ID"))
+public class ManagedSystemObjectMatchEntity extends KeyEntity {
+    
     @ManyToOne
     @JoinColumn(name = "MANAGED_SYS_ID")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ManagedSysEntity managedSys;
 
     @Column(name="OBJECT_TYPE", length=20)
@@ -37,14 +34,6 @@ public class ManagedSystemObjectMatchEntity implements Serializable {
     private String searchBaseDn;
     @Column(name="KEY_FIELD", length=40)
     private String keyField;
-
-    public String getObjectSearchId() {
-        return objectSearchId;
-    }
-
-    public void setObjectSearchId(String objectSearchId) {
-        this.objectSearchId = objectSearchId;
-    }
 
     public ManagedSysEntity getManagedSys() {
         return managedSys;
@@ -102,25 +91,81 @@ public class ManagedSystemObjectMatchEntity implements Serializable {
         this.keyField = keyField;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((baseDn == null) ? 0 : baseDn.hashCode());
+		result = prime * result
+				+ ((keyField == null) ? 0 : keyField.hashCode());
+		result = prime * result
+				+ ((managedSys == null) ? 0 : managedSys.hashCode());
+		result = prime * result
+				+ ((matchMethod == null) ? 0 : matchMethod.hashCode());
+		result = prime * result
+				+ ((objectType == null) ? 0 : objectType.hashCode());
+		result = prime * result
+				+ ((searchBaseDn == null) ? 0 : searchBaseDn.hashCode());
+		result = prime * result
+				+ ((searchFilter == null) ? 0 : searchFilter.hashCode());
+		return result;
+	}
 
-        ManagedSystemObjectMatchEntity that = (ManagedSystemObjectMatchEntity) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ManagedSystemObjectMatchEntity other = (ManagedSystemObjectMatchEntity) obj;
+		if (baseDn == null) {
+			if (other.baseDn != null)
+				return false;
+		} else if (!baseDn.equals(other.baseDn))
+			return false;
+		if (keyField == null) {
+			if (other.keyField != null)
+				return false;
+		} else if (!keyField.equals(other.keyField))
+			return false;
+		if (managedSys == null) {
+			if (other.managedSys != null)
+				return false;
+		} else if (!managedSys.equals(other.managedSys))
+			return false;
+		if (matchMethod == null) {
+			if (other.matchMethod != null)
+				return false;
+		} else if (!matchMethod.equals(other.matchMethod))
+			return false;
+		if (objectType == null) {
+			if (other.objectType != null)
+				return false;
+		} else if (!objectType.equals(other.objectType))
+			return false;
+		if (searchBaseDn == null) {
+			if (other.searchBaseDn != null)
+				return false;
+		} else if (!searchBaseDn.equals(other.searchBaseDn))
+			return false;
+		if (searchFilter == null) {
+			if (other.searchFilter != null)
+				return false;
+		} else if (!searchFilter.equals(other.searchFilter))
+			return false;
+		return true;
+	}
 
-        if (managedSys != null ? !managedSys.equals(that.managedSys) : that.managedSys != null) return false;
-        if (objectSearchId != null ? !objectSearchId.equals(that.objectSearchId) : that.objectSearchId != null)
-            return false;
-        return !(objectType != null ? !objectType.equals(that.objectType) : that.objectType != null);
+	@Override
+	public String toString() {
+		return "ManagedSystemObjectMatchEntity [managedSys=" + managedSys
+				+ ", objectType=" + objectType + ", matchMethod=" + matchMethod
+				+ ", searchFilter=" + searchFilter + ", baseDn=" + baseDn
+				+ ", searchBaseDn=" + searchBaseDn + ", keyField=" + keyField
+				+ ", id=" + id + "]";
+	}
 
-    }
-
-    @Override
-    public int hashCode() {
-        int result = objectSearchId != null ? objectSearchId.hashCode() : 0;
-        result = 31 * result + (managedSys != null ? managedSys.hashCode() : 0);
-        result = 31 * result + (objectType != null ? objectType.hashCode() : 0);
-        return result;
-    }
+   
 }

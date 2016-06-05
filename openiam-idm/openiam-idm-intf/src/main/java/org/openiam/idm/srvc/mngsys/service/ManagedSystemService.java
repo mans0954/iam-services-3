@@ -89,15 +89,11 @@ public interface ManagedSystemService {
 
     void deleteAttributesMapList(List<String> ids) throws Exception;
 
-    String saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch);
-
-    void updateManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch);
-
-    void deleteManagedSystemObjectMatch(String objectMatchId);
-
     List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId);
 
     void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
 
     void save(final ManagedSysEntity entity) throws BasicDataServiceException;
+    
+    public void saveManagedSysObjectMatch(final ManagedSystemObjectMatchEntity entity);
 }

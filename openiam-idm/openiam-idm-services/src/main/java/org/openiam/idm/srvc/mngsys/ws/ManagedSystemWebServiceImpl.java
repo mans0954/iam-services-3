@@ -493,13 +493,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
 
-            if(StringUtils.isNotBlank(obj.getObjectSearchId())) {
-                managedSystemService.updateManagedSystemObjectMatch(obj);
-                response.setResponseValue(obj.getObjectSearchId());
-            } else {
-                String objId = managedSystemService.saveManagedSystemObjectMatch(obj);
-                response.setResponseValue(objId);
-            }
+            final ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(obj, true);
+            managedSystemService.saveManagedSysObjectMatch(entity);
+            response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
@@ -508,16 +504,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             response.setStatus(ResponseStatus.FAILURE);
         }
         return response;
-    }
-
-    @Override
-    @CacheKeyEviction(
-    	evictions={
-            @CacheKeyEvict("managedSysObjectParam")
-        }
-    )
-    public void removeManagedSystemObjectMatch(final ManagedSystemObjectMatch obj) {
-        this.managedSystemService.deleteManagedSystemObjectMatch(obj.getObjectSearchId());
     }
 
     @Override

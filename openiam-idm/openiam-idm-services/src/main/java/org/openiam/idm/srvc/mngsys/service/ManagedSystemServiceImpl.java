@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.mngsys.service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -230,24 +231,14 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional
-    public String saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
-        ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(objectMatch, false);
-        matchDAO.save(entity);
-        return entity.getObjectSearchId();
-    }
-
-    @Override
-    @Transactional
-    public void updateManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
-        ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(objectMatch, false);
-        matchDAO.update(entity);
-    }
-
-    @Override
-    @Transactional
-    public void deleteManagedSystemObjectMatch(String objectMatchId) {
-        ManagedSystemObjectMatchEntity entity = matchDAO.findById(objectMatchId);
-        matchDAO.delete(entity);
+    public void saveManagedSysObjectMatch(final ManagedSystemObjectMatchEntity entity) {
+    	if(entity != null && entity.getManagedSys() != null && StringUtils.isNotBlank(entity.getManagedSys().getId())) {
+    		final ManagedSysEntity managedSys = managedSysDAO.findById(entity.getManagedSys().getId());
+    		if(managedSys != null) {
+    			entity.setManagedSys(managedSys);
+    			matchDAO.save(entity);
+    		}
+    	}
     }
 
     @Override

@@ -125,10 +125,6 @@ public interface ManagedSystemWebService {
     public Response saveManagedSystemObjectMatch(
             @WebParam(name = "obj", targetNamespace = "") ManagedSystemObjectMatch obj);
 
-    @WebMethod
-    public void removeManagedSystemObjectMatch(
-            @WebParam(name = "obj", targetNamespace = "") ManagedSystemObjectMatch obj);
-
     /**
      * Removes the approver association.
      * 

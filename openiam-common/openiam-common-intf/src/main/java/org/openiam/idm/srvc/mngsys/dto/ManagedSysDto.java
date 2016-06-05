@@ -231,7 +231,7 @@ public class ManagedSysDto extends KeyNameDTO {
         if (match != null && this.mngSysObjectMatchs != null) {
             for (final Iterator<ManagedSystemObjectMatch> it = this.mngSysObjectMatchs.iterator(); it.hasNext();) {
                 final ManagedSystemObjectMatch next = it.next();
-                if (StringUtils.equals(next.getObjectSearchId(), match.getObjectSearchId())) {
+                if (StringUtils.equals(next.getId(), match.getId())) {
                     it.remove();
                 }
             }

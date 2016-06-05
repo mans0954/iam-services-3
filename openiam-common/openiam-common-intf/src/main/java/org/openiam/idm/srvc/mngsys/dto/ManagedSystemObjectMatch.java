@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.mngsys.dto;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 
@@ -17,7 +18,6 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ManagedSystemObjectMatch", propOrder = {
-    "objectSearchId",
     "managedSys",
     "objectType",
     "matchMethod",
@@ -27,11 +27,10 @@ import javax.xml.bind.annotation.XmlType;
     "keyField"
 })
 @DozerDTOCorrespondence(ManagedSystemObjectMatchEntity.class)
-public class ManagedSystemObjectMatch implements java.io.Serializable {
+public class ManagedSystemObjectMatch extends KeyDTO {
 	public static String USER ="USER";
     public static String GROUP = "GROUP";
 
-    private String objectSearchId;
 	private String managedSys;
 	private String objectType;
 	private String matchMethod;
@@ -49,14 +48,6 @@ public class ManagedSystemObjectMatch implements java.io.Serializable {
 	}
 
 	public ManagedSystemObjectMatch() {
-	}
-
-	public String getObjectSearchId() {
-		return this.objectSearchId;
-	}
-
-	public void setObjectSearchId(String objectSearchId) {
-		this.objectSearchId = objectSearchId;
 	}
 
 	public String getManagedSys() {
@@ -111,24 +102,10 @@ public class ManagedSystemObjectMatch implements java.io.Serializable {
 		this.searchBaseDn = searchBaseDn;
 	}
 
-    @Override
-    public String toString() {
-        return "ManagedSystemObjectMatch{" +
-                "objectSearchId='" + objectSearchId + '\'' +
-                ", managedSys='" + managedSys + '\'' +
-                ", objectType='" + objectType + '\'' +
-                ", matchMethod='" + matchMethod + '\'' +
-                ", searchFilter='" + searchFilter + '\'' +
-                ", baseDn='" + baseDn + '\'' +
-                ", searchBaseDn='" + searchBaseDn + '\'' +
-                ", keyField='" + keyField + '\'' +
-                '}';
-    }
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + ((baseDn == null) ? 0 : baseDn.hashCode());
 		result = prime * result
 				+ ((keyField == null) ? 0 : keyField.hashCode());
@@ -136,8 +113,6 @@ public class ManagedSystemObjectMatch implements java.io.Serializable {
 				+ ((managedSys == null) ? 0 : managedSys.hashCode());
 		result = prime * result
 				+ ((matchMethod == null) ? 0 : matchMethod.hashCode());
-		result = prime * result
-				+ ((objectSearchId == null) ? 0 : objectSearchId.hashCode());
 		result = prime * result
 				+ ((objectType == null) ? 0 : objectType.hashCode());
 		result = prime * result
@@ -151,7 +126,7 @@ public class ManagedSystemObjectMatch implements java.io.Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -176,11 +151,6 @@ public class ManagedSystemObjectMatch implements java.io.Serializable {
 				return false;
 		} else if (!matchMethod.equals(other.matchMethod))
 			return false;
-		if (objectSearchId == null) {
-			if (other.objectSearchId != null)
-				return false;
-		} else if (!objectSearchId.equals(other.objectSearchId))
-			return false;
 		if (objectType == null) {
 			if (other.objectType != null)
 				return false;
@@ -198,6 +168,18 @@ public class ManagedSystemObjectMatch implements java.io.Serializable {
 			return false;
 		return true;
 	}
-    
+
+	@Override
+	public String toString() {
+		return "ManagedSystemObjectMatch [managedSys=" + managedSys
+				+ ", objectType=" + objectType + ", matchMethod=" + matchMethod
+				+ ", searchFilter=" + searchFilter + ", baseDn=" + baseDn
+				+ ", searchBaseDn=" + searchBaseDn + ", keyField=" + keyField
+				+ ", id=" + id + ", objectState=" + objectState
+				+ ", requestorSessionID=" + requestorSessionID
+				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
+				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";
+	}
+
     
 }

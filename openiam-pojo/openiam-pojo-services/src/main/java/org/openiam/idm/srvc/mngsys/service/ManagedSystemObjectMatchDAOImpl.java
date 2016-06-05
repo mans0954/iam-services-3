@@ -26,7 +26,7 @@ public class ManagedSystemObjectMatchDAOImpl extends BaseDaoImpl<ManagedSystemOb
 
     @Override
     protected String getPKfieldName() {
-        return "objectSearchId";
+        return "id";
     }
 
     /**

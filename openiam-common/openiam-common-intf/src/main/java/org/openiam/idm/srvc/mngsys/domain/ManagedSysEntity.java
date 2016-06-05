@@ -104,7 +104,7 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     private boolean changedByEndUser = true;
 
     @OneToMany(mappedBy = "managedSys")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
 
 /*    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -368,6 +368,15 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 
     public Set<ManagedSystemObjectMatchEntity> getMngSysObjectMatchs() {
         return mngSysObjectMatchs;
+    }
+    
+    public void addMngSysObjectMatch(final ManagedSystemObjectMatchEntity match) {
+    	if(match != null) {
+    		if(this.mngSysObjectMatchs == null) {
+    			this.mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
+    		}
+    		this.mngSysObjectMatchs.add(match);
+    	}
     }
 
     public void setMngSysObjectMatchs(Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs) {
