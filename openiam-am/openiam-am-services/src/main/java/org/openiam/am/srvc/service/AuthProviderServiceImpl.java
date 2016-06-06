@@ -261,6 +261,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         		throw new BasicDataServiceException(ResponseCode.READONLY);
         	}
         	
+        	dbEntity.getResource().setURL(provider.getResource().getURL());
         	provider.setResource(dbEntity.getResource());
         	provider.setResourceAttributeMap(dbEntity.getResourceAttributeMap());
         	provider.setDefaultProvider(dbEntity.isDefaultProvider());
@@ -306,9 +307,6 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             }
             resourceService.save(resource, requestorId);
             provider.setResource(resource);
-        } else {
-        	dbEntity.getResource().setURL(provider.getResource().getURL());
-        	provider.setResource(dbEntity.getResource());
         }
         provider.getResource().setCoorelatedName(provider.getName());
         

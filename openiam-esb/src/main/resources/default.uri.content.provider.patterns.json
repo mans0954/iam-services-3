@@ -143,6 +143,20 @@
 			"cacheTTL" : 30
 		},
 		{
+			"pattern" : "/webconsole-am/editAuthProvider.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"ignoreXSS" : true,
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
 			"pattern" : "/idp/changePassword.html",
 			"isPublic" : true,
 			"groupingXrefs" : [
