@@ -38,15 +38,18 @@ public class EmailDAOImpl extends BaseDaoImpl<EmailEntity, String> implements Em
         return "emailId";
     }
 
+
+
     @Override
-    @SuppressWarnings(value = "unchecked")
     public List<EmailEntity> getEmailsForUser(String userId, int from, int size) {
-        final Criteria criteria = getCriteria();
+        final Criteria criteria =getCriteria();
         if (StringUtils.isNotBlank(userId)) {
             criteria.add(Restrictions.eq("parentId", userId));
         }
         return getList(criteria, from, size);
     }
+
+
 
     private List<EmailEntity> getList(Criteria criteria, int from, int size) {
         if (from > -1) {

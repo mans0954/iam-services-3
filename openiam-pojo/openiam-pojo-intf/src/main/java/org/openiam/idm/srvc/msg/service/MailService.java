@@ -116,4 +116,5 @@ public interface MailService {
     public List<EmailEntity> getEmailsForUser(String userId,int from, int size);
 
 
+
 }

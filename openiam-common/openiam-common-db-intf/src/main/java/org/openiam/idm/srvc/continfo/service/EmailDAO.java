@@ -10,7 +10,10 @@ import java.util.List;
  */
 public interface EmailDAO extends BaseDao<EmailEntity, String> {
 
-    List<EmailEntity> getEmailsForUser (final String userId, final int from, final int size);
+     List<EmailEntity> getEmailsForUser (final String userId, final int from, final int size);
+
+
+
 
 
 }

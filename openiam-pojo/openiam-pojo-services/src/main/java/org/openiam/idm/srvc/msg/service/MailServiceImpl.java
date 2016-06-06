@@ -539,6 +539,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         }
     }
 
+
+
     @Override
     public List<EmailEntity> getEmailsForUser(String userId, int from, int size) {
         if (userId == null) {
