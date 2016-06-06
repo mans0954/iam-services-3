@@ -308,7 +308,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional(readOnly = true)
     public List<AttributeMap> getAttributeMapsByMngSysPolicyId(String mngSysPolicyId) {
         List<AttributeMapEntity> attributeMapEntities = attributeMapDAO.findByMngSysPolicyId(mngSysPolicyId);
-        return attributeMapDozerConverter.convertToDTOList(attributeMapEntities,false);
+        return attributeMapDozerConverter.convertToDTOList(attributeMapEntities,true);
     }
 
     @Override
@@ -632,7 +632,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly=true)
     @CacheKeyEviction(
         	evictions={
                 @CacheKeyEvict("managedSysObjectParam"),
