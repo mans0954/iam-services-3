@@ -86,7 +86,7 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     private ManagedSysEntity managedSystem;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
+    @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=false)
     private ResourceEntity resource;
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider", orphanRemoval=true)

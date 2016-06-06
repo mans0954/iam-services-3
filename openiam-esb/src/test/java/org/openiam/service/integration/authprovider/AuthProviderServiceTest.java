@@ -24,6 +24,7 @@ import org.openiam.am.srvc.ws.AuthResourceAttributeWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,6 +70,25 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 			resourceAttributeMap.put(attribute1.getName(), attribute1);
 		}
 		return resourceAttributeMap;
+	}
+	
+	@Test
+	public void testSaveURL() {
+		final String url = getRandomName();
+		AuthProvider instance = super.createBean();
+		instance.setResource(new Resource());
+		instance.getResource().setURL(url);
+		try {
+			Response wsResponse = saveAndAssert(instance);
+			instance = get((String)wsResponse.getResponseValue());
+			Assert.assertNotNull(instance);
+			Assert.assertNotNull(instance.getResource());
+			Assert.assertEquals(instance.getResource().getURL(), url);
+		} finally {
+			if(instance != null && instance.getId() != null) {
+				deleteAndAssert(instance);
+	    	}
+		}
 	}
 	
 	@Test

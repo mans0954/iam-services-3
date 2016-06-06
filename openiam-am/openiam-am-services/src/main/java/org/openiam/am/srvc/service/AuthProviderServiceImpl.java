@@ -301,8 +301,14 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             final ResourceEntity resource = new ResourceEntity();
             resource.setName(System.currentTimeMillis() + "_" + provider.getName());
             resource.setResourceType(resourceType);
+            if(provider.getResource() != null) {
+            	resource.setURL(provider.getResource().getURL());
+            }
             resourceService.save(resource, requestorId);
             provider.setResource(resource);
+        } else {
+        	dbEntity.getResource().setURL(provider.getResource().getURL());
+        	provider.setResource(dbEntity.getResource());
         }
         provider.getResource().setCoorelatedName(provider.getName());
         
