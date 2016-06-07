@@ -1707,10 +1707,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             log.info("============== Connector Reset Password call: " + new Date());
                             Login login = loginDozerConverter.convertToDTO(lg, false);
                             ManagedSysDto managedSysDto = managedSysDozerConverter.convertToDTO(mSys, false);
+                            final ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(login, "RESET_PASSWORD");
                             ResponseType resp = resetPassword(requestId,
                                     login, password, managedSysDto,
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildPolicyMapHelper.buildMngSysAttributes(login, "RESET_PASSWORD"), "RESET_PASSWORD");
+                                    extensibleUser, "RESET_PASSWORD");
                             log.info("============== Connector Reset Password get : " + new Date());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 if (enableOnPassReset(res)) {

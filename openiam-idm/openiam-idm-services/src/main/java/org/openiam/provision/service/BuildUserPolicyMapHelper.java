@@ -1,6 +1,8 @@
 package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
@@ -63,6 +65,8 @@ public class BuildUserPolicyMapHelper {
     @Autowired
     @Qualifier("defaultProvision")
     private ProvisionService provisionService;
+    
+    private static final Log LOG = LogFactory.getLog(BuildUserPolicyMapHelper.class);
 
     public ExtensibleUser buildMngSysAttributes(Login login, String operation) {
         String userId = login.getUserId();
@@ -73,6 +77,12 @@ public class BuildUserPolicyMapHelper {
             return null;
         }
         MngSysPolicyDto mngSysPolicy = managedSystemService.getManagedSysPolicyByMngSysIdAndMetadataType(managedSysId, "USER_OBJECT");
+        if(mngSysPolicy == null) {
+        	if(LOG.isInfoEnabled()) {
+        		LOG.info(String.format("%s is not present on managed system %s", "USER_OBJECT", managedSysId));
+        	}
+        	return null;
+        }
         List<AttributeMap> attrMap = managedSystemService.getAttributeMapsByMngSysPolicyId(mngSysPolicy.getId());
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
         for (AttributeMap ame : attrMap) {
