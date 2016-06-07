@@ -44,6 +44,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.continfo.domain.EmailEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
@@ -122,8 +123,6 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Autowired
     private UserProfileService userProfileService;
 
-    @Autowired
-    private KeyManagementService keyManagementService;
 
     @Override
     public Response addAddress(final Address val) {
@@ -1358,37 +1357,15 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    public Response resendEmail(String userId, Integer cnt) {
+    public Response resendEmail(String id) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
-        UserAttributeEntity attr = null;
-        String emailAddress = null;
-        String emailSubject = null;
-        String enEmailBody = null;
-        String emailBody = null;
-        StringBuilder sb = new StringBuilder();
-        Map<String, UserAttributeEntity> userAttrList = userDataService.getUserAttributes(userId);
+        EmailEntity ee = mailService.getEmailById(id);
 
-        attr = userAttrList.get("EMAIL_FORM" + cnt);
-        if (attr != null) {
-            sb.append(attr.getValue());
-        }
-        if (sb.length() > 0) {
-            String[] splitAttr = sb.toString().split(":");
-            if (splitAttr.length == 3) {
-                emailAddress = splitAttr[0].trim();
-                emailSubject = splitAttr[1].trim();
-                enEmailBody = splitAttr[2].trim();
-            }
-            try {
-                emailBody = keyManagementService.decryptData(enEmailBody);
-            } catch (Exception ex) {
-                response.setErrorText("Cann't decrypt email body");
-                response.setStatus(ResponseStatus.FAILURE);
-            }
-            if (StringUtils.isNotBlank(emailBody)) {
+        if (ee != null) {
+            if (StringUtils.isNotBlank(ee.getEmailBody()) && StringUtils.isNotBlank(ee.getAddress())) {
                 try {
-                    mailService.sendEmail(null, emailAddress, null, emailSubject, emailBody, null, true);
+                    mailService.sendEmail(null, ee.getAddress(), null, ee.getSubject(), ee.getEmailBody(), null, true);
                 } catch (Exception ex) {
                     response.setErrorText("Cann't send email");
                     response.setStatus(ResponseStatus.FAILURE);

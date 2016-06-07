@@ -551,6 +551,16 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     }
 
+    @Override
+    public EmailEntity getEmailById(String id) {
+        if (id == null) {
+            log.warn("User's Email id is null");
+            return null;
+        }
+        return emailDAO.findById(id);
+
+    }
+
     private boolean storeEmailBody(Message message, String userId) {
 //        UserEntity usr = userDAO.findById(userId);
 //        if (usr == null) {

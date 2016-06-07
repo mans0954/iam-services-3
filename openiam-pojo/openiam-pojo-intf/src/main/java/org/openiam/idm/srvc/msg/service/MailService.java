@@ -114,6 +114,7 @@ public interface MailService {
      */
     public void tweetMessage(String status);
     public List<EmailEntity> getEmailsForUser(String userId,int from, int size);
+    public EmailEntity getEmailById(String id);
 
 
 
