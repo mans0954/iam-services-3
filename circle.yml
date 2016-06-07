@@ -7,18 +7,18 @@ dependencies:
     - sudo apt-get install dos2unix
     - mysql -u root --execute="SET PASSWORD FOR 'root'@'localhost' = PASSWORD('passwd00')"
     - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
-    	parallel: true
+        parallel: true
     - sudo apt-get update
-    	parallel: true
+        parallel: true
     - sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server-5.6
-    	parallel: true
+        parallel: true
     - cd conf; sudo /bin/sh setup.sh
     - cd /tmp/openiam/schema/mysql; sudo ./execute.sh passwd00 new_install
   override:
     - mvn install -s conf/settings.xml
-    	parallel: true
+        parallel: true
     - mvn package spring-boot:repackage -f openiam-esb/pom.xml
-    	parallel: true
+        parallel: true
 test:
   post:
     - sudo nohup bash -c "sudo -u ubuntu java -Xms512m -Xmx1024m -XX:ReservedCodeCacheSize=64m -Dconfpath=/data/openiam -jar /home/ubuntu/iam-services/openiam-esb/target/openiam-esb.jar > /var/log/esb.log &"
