@@ -1,4 +1,4 @@
-<suite name="TestAll" parallel="classes" thread-count="10">
+<suite name="TestAll" parallel="classes">
  
 	<test name="integration.entitlements">
 		<classes>
