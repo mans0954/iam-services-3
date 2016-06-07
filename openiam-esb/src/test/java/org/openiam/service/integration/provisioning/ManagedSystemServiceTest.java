@@ -61,6 +61,7 @@ public class ManagedSystemServiceTest extends AbstractKeyNameServiceTest<Managed
 		ManagedSysDto dto = createBean();
 		Response wsResponse = saveAndAssert(dto);
 		dto = get((String)wsResponse.getResponseValue());
+		Assert.assertNotNull(dto);
 		try {
 			final ManagedSystemObjectMatch matchObj = new ManagedSystemObjectMatch();
 	        matchObj.setBaseDn(getRandomName());

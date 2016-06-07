@@ -632,7 +632,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional
     @CacheKeyEviction(
         	evictions={
                 @CacheKeyEvict("managedSysObjectParam"),

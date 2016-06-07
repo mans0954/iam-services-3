@@ -11,6 +11,7 @@ import org.openiam.idm.srvc.org.service.OrganizationTypeDataService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.annotations.Test;
 
 public class OrganizationTypeServiceTest extends AbstractKeyNameServiceTest<OrganizationType, OrganizationTypeSearchBean> {
 	
@@ -51,29 +52,6 @@ public class OrganizationTypeServiceTest extends AbstractKeyNameServiceTest<Orga
 		return organizationTypeClient.findBeans(searchBean, from, size, getDefaultLanguage());
 	}
 
-	/*@Override
-	protected String getId(OrganizationType bean) {
-		return bean.getId();
-	}
-
-	@Override
-	protected void setId(OrganizationType bean, String id) {
-		bean.setId(id);
-	}
-
-	@Override
-	protected void setName(OrganizationType bean, String name) {
-		bean.setName(name);
-	}
-
-	@Override
-	protected String getName(OrganizationType bean) {
-		return bean.getName();
-	}
-
-	@Override
-	protected void setNameForSearch(OrganizationTypeSearchBean searchBean, String name) {
-		searchBean.setName(name);
-	}*/
-
+	@Test
+	public void foo() {}
 }
