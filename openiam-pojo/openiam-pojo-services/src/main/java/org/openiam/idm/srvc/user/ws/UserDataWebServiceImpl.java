@@ -42,6 +42,7 @@ import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailEntity;
@@ -122,6 +123,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Autowired
     private UserProfileService userProfileService;
+
+    @Autowired
+    private KeyManagementService keyManagementService;
 
 
     @Override
@@ -1357,7 +1361,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    public Response resendEmail(String id) {
+    public Response resendEmail(String id, String cc) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
         EmailEntity ee = mailService.getEmailById(id);
@@ -1365,7 +1369,16 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         if (ee != null) {
             if (StringUtils.isNotBlank(ee.getEmailBody()) && StringUtils.isNotBlank(ee.getAddress())) {
                 try {
-                    mailService.sendEmail(null, ee.getAddress(), null, ee.getSubject(), ee.getEmailBody(), null, true);
+                    String emailBody = keyManagementService.decryptData(ee.getEmailBody());
+                    if (cc != null) {
+                        String[] copies = cc.split(";");
+                        String[] to = new String[1];
+                        to [0] =ee.getAddress();
+                        mailService.sendEmails(null, to, copies, null, ee.getSubject(), emailBody, true, null);
+                    } else {
+                        mailService.sendEmail(null, ee.getAddress(), null, ee.getSubject(), emailBody, null, true);
+                    }
+
                 } catch (Exception ex) {
                     response.setErrorText("Cann't send email");
                     response.setStatus(ResponseStatus.FAILURE);
