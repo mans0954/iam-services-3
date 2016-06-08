@@ -11,6 +11,7 @@ import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.service.integration.AbstractKeyServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.annotations.Test;
 
 public class ApproverAssociationServiceTest extends AbstractKeyServiceTest<ApproverAssociation, ApproverAssocationSearchBean> {
 	
@@ -60,14 +61,6 @@ public class ApproverAssociationServiceTest extends AbstractKeyServiceTest<Appro
 		return managedSysServiceClient.getApproverAssociations(searchBean, from, size);
 	}
 
-/*	@Override
-	protected String getId(ApproverAssociation bean) {
-		return bean.getId();
-	}
-
-	@Override
-	protected void setId(ApproverAssociation bean, String id) {
-		bean.setId(id);
-	}*/
-
+	@Test
+	public void foo() {}
 }

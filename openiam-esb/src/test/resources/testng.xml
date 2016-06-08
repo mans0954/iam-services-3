@@ -26,9 +26,13 @@
 			<class name="org.openiam.service.integration.entitlements.Resource2OrganizationEntitlementsTest"/>
 			
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerWebServiceTest"/>
-			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerHessianClientTest"/>
 			<class name="org.openiam.authmanager.service.integration.ActivitiAuthorizationManagerWebServiceTest"/>
+			<!--
+			Hessian is not used
+			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerHessianClientTest"/>
+			-->
             <!--
+            Takes to long on CI
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerMenuWebServiceTest" />
             -->
 		</classes>
