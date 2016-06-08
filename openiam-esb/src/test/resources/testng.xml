@@ -1,6 +1,19 @@
-<suite name="TestAll" parallel="classes">
+<suite name="TestAll">
  
-	<test name="integration.entitlements">
+ 	<test name="integration.entitlements.auth.manager" thread-count="5" parallel="classes">
+ 		<class name="org.openiam.authmanager.service.integration.AuthorizationManagerWebServiceTest"/>
+		<class name="org.openiam.authmanager.service.integration.ActivitiAuthorizationManagerWebServiceTest"/>
+		<!--
+		Hessian is not used
+		<class name="org.openiam.authmanager.service.integration.AuthorizationManagerHessianClientTest"/>
+		-->
+        <!--
+        Takes to long on CI
+		<class name="org.openiam.authmanager.service.integration.AuthorizationManagerMenuWebServiceTest" />
+        -->
+ 	</test>
+ 
+	<test name="integration.entitlements" thread-count="5" parallel="classes">
 		<classes>
 			<class name="org.openiam.service.integration.entitlements.Group2GroupEntitlementsTest" />
 			<class name="org.openiam.service.integration.entitlements.Group2ResourceEntitlementsTest" />
@@ -24,28 +37,17 @@
 			<class name="org.openiam.service.integration.entitlements.Group2OrganizationEntitlementsTest"/>
 			<class name="org.openiam.service.integration.entitlements.Role2OrganizationEntitlementsTest"/>
 			<class name="org.openiam.service.integration.entitlements.Resource2OrganizationEntitlementsTest"/>
-			
-			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerWebServiceTest"/>
-			<class name="org.openiam.authmanager.service.integration.ActivitiAuthorizationManagerWebServiceTest"/>
-			<!--
-			Hessian is not used
-			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerHessianClientTest"/>
-			-->
-            <!--
-            Takes to long on CI
-			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerMenuWebServiceTest" />
-            -->
 		</classes>
 	</test>
 	
-	<test name="integration.connectors">
+	<test name="integration.connectors" thread-count="5" parallel="classes">
 		<classes>
 			<class name="org.openiam.service.integration.connector.ConnectorServiceTest" />
 			<class name="org.openiam.service.integration.provisioning.ManagedSystemServiceTest" />
 		</classes>
 	</test>
 	
-	<test name="integration.meta">
+	<test name="integration.meta" thread-count="5" parallel="classes">
 		<classes>
 			<class name="org.openiam.service.integration.meta.MetadataElementTemplateServiceTest" />
 			<class name="org.openiam.service.integration.meta.MetadataElementTest" />
@@ -54,13 +56,13 @@
 		</classes>
 	</test>
 	
-	<test name="integration.policy">
+	<test name="integration.policy" thread-count="5" parallel="classes">
 		<classes>
 			<class name="org.openiam.service.integration.policy.PolicyTest" />
 		</classes>
 	</test>
 	
-	<test name="integration.user">
+	<test name="integration.user" thread-count="5" parallel="classes">
 		<classes>
 			<class name="org.openiam.service.integration.login.LoginServiceTest" />
 <!--
@@ -69,14 +71,14 @@
 		</classes>
 	</test>
 	
-	<test name="integration.challenge.response">
+	<test name="integration.challenge.response" thread-count="5" parallel="classes">
 		<classes>
 			<class name="org.openiam.service.integration.challengeresponse.UserIdentityAnswerServiceTest" />
 			<class name="org.openiam.service.integration.challengeresponse.IdentityQuestionServiceTest" />
 		</classes>
 	</test>
 	
-	<test name="integration.mail">
+	<test name="integration.mail" thread-count="5" parallel="classes">
 		<classes>
 			<!--
 			<class name="org.openiam.service.integration.mail.MailTemplateServiceTest" />
@@ -84,7 +86,7 @@
 		</classes>
 	</test>
 	
-	<test name="content.provider">
+	<test name="content.provider" thread-count="5" parallel="classes">
 		<classes>
 			<class name="org.openiam.service.integration.contentprovider.UIThemeServiceTest" />
 			<class name="org.openiam.service.integration.contentprovider.ContentProviderServiceTest" />
@@ -93,7 +95,7 @@
 		</classes>
 	</test>
 	
-	<test name="elasticsearch.integration">
+	<test name="elasticsearch.integration" thread-count="5" parallel="classes">
 		<classes>
 			<!--
 			This test kept failing on CI, and passing locally.  NOt sure why, but it's not that important of
@@ -104,14 +106,14 @@
 		</classes>
 	</test>
 	
-	<test name="auth.provider">
+	<test name="auth.provider" thread-count="5" parallel="classes">
 		<classes>
 			<class name="org.openiam.service.integration.authprovider.AuthProviderServiceTest" />
 			<class name="org.openiam.service.integration.authprovider.OAuthServiceTest" />
 		</classes>
 	</test>
 
-    <test name="integration.group">
+    <test name="integration.group" thread-count="5" parallel="classes">
         <classes>
             <class name="org.openiam.service.integration.provisioning.GroupManagementServiceTest" />
         </classes>
