@@ -49,4 +49,5 @@ mvn deploy -s conf/settings.xml
 for artifact in "${artifact_list[@]}"
 do
   	curl -u sysadmin:${OPENIAM_ARTIFACTORY_PASSWORD} -X DELETE "${base_artifactory_url}/org/openiam/${artifact}/${current_version}/${artifact}-${current_version}.jar"
+  	curl -u sysadmin:${OPENIAM_ARTIFACTORY_PASSWORD} -X DELETE "${base_artifactory_url}/org/openiam/${artifact}/${current_version}/${artifact}-${current_version}.pom"
 done
