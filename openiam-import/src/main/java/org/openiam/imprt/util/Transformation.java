@@ -175,7 +175,12 @@ public class Transformation {
 
         String sbu = this.getValue(lo.get("extensionAttribute5"));
         addUserAttribute(user, new UserAttributeEntity("ORG_SBU_SHORT_NAME", serviceTypeAttr));
-
+        String  msExchExtensionAttribute16= this.getValue(lo.get("msExchExtensionAttribute16"));
+        if ("1".equalsIgnoreCase(msExchExtensionAttribute16)){
+            addUserAttribute(user, new UserAttributeEntity("syncToCloud", "On"));
+        }else {
+            addUserAttribute(user, new UserAttributeEntity("syncToCloud", "Off"));
+        }
         // Start Date
         try {
             String str2 = this.getValue(lo.get("whenCreated"));
