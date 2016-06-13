@@ -9,14 +9,10 @@ import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
-import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
@@ -28,16 +24,13 @@ import org.openiam.imprt.jdbc.parser.impl.UserAttributeEntityParser;
 import org.openiam.imprt.model.Attribute;
 import org.openiam.imprt.model.LineObject;
 import org.openiam.imprt.query.expression.Column;
-import org.openiam.util.StringUtil;
+import org.openiam.util.encrypt.RijndaelCryptor;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.openiam.util.encrypt.RijndaelCryptor;
-import org.w3c.dom.Attr;
 
 public class Transformation {
 
@@ -552,7 +545,7 @@ public class Transformation {
         }
         //here is some extra fields that we should provision
 
-        Attribute proxyAttr = lo.get("proxyAddress");
+        Attribute proxyAttr = lo.get("proxyAddresses");
         if (proxyAttr != null) {
             UserAttributeEntity userAttributeEntity = new UserAttributeEntity();
             userAttributeEntity.setName("proxyAddress");
