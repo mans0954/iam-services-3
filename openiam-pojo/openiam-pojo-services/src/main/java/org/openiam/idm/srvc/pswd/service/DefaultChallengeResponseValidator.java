@@ -331,20 +331,11 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
             final IdmAuditLog auditLog = new IdmAuditLog();
             auditLog.succeed();
             auditLog.setUserId(answerList.get(0).getUserId());
-
-            AuditLogSearchBean logSearchBean = new AuditLogSearchBean();
-            logSearchBean.setUserId(answerList.get(0).getUserId());
-            logSearchBean.setAction(AuditAction.SAVE_CHALLENGE_ANSWERS.value());
-
-            Integer countLogs = auditLogService.count(logSearchBean);
-            if (countLogs >= 1) {
-                auditLog.setAction(AuditAction.CHANGE_CHALLENGE_ANSWERS.value());
-            } else {
-                auditLog.setAction(AuditAction.SAVE_CHALLENGE_ANSWERS.value());
-            }
+            auditLog.setAction(AuditAction.SAVE_CHALLENGE_ANSWERS.value());
 
             LoginEntity loginEntity = loginManager.getPrimaryIdentity(answerList.get(0).getUserId());
             auditLog.setPrincipal(loginEntity.getLogin());
+            auditLog.setTargetUser(answerList.get(0).getUserId(), loginEntity.getLogin());
 
             for (final UserIdentityAnswerEntity entity : answerList) {
 

@@ -1,12 +1,14 @@
 package org.openiam.idm.srvc.msg.service;
 
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.continfo.domain.EmailEntity;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Provides methods to be able to send emails and send direct message to authorized users.
@@ -111,7 +113,9 @@ public interface MailService {
      * @param status
      */
     public void tweetMessage(String status);
+    public List<EmailEntity> getEmailsForUser(String userId,int from, int size);
+    public EmailEntity getEmailById(String id);
 
-    public String returnEmailBody( NotificationRequest req, boolean isEncrypted);
+
 
 }
