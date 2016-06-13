@@ -113,6 +113,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     @Value("${org.openiam.pattern.meta.type.cookie}")
     private String cookieMetadataType;
     
+    @Value("${org.openiam.auth.provider.type.sms.id}")
+    private String smsAuthLevelId;
+    
+    @Value("${org.openiam.auth.provider.type.totp.id}")
+    private String totpAuthLevelId;
+    
 	@Override
     @Transactional(readOnly = true)
 	public AuthLevelAttribute getAuthLevelAttribute(String id) {
@@ -342,6 +348,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         		}
         	}
         }
+        
+        if(CollectionUtils.isNotEmpty(provider.getGroupingXrefs())) {
+        	if(provider.getGroupingXrefs().stream().map(e -> e.getId()).filter(e -> e.getGroupingId().equals(smsAuthLevelId) || e.getGroupingId().equals(totpAuthLevelId)).count() == 2) {
+        		throw new BasicDataServiceException(ResponseCode.SMS_AND_TOTP_NOT_ALLOWED_SIMULTANEOUSLY);
+        	}
+        }
 
         if(provider.getId()==null){
             // if provider is new, test for unique domain+ssl
@@ -479,7 +491,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
-    public Response saveURIPattern(@WebParam(name = "pattern", targetNamespace = "") URIPattern pattern) {
+    public Response saveURIPattern(final @WebParam(name = "pattern", targetNamespace = "") URIPattern pattern) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (pattern==null ) {
@@ -557,6 +569,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             			response.addFieldMapping("redirectURL", mapping.getRedirectURL());
             			throw new BasicDataServiceException(ResponseCode.INVALID_ERROR_REDIRECT_URL);
             		}
+            	}
+            }
+            
+            if(CollectionUtils.isNotEmpty(pattern.getGroupingXrefs())) {
+            	if(pattern.getGroupingXrefs().stream().map(e -> e.getId()).filter(e -> e.getGroupingId().equals(smsAuthLevelId) || e.getGroupingId().equals(totpAuthLevelId)).count() == 2) {
+            		throw new BasicDataServiceException(ResponseCode.SMS_AND_TOTP_NOT_ALLOWED_SIMULTANEOUSLY);
             	}
             }
             
