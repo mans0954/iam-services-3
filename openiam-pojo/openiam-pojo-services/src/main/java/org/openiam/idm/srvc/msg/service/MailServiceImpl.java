@@ -176,7 +176,11 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, null);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
-        idmAuditLog.setAuditDescription("Send email to :" + to + "  subject: " + subject);
+        if (cc != null) {
+            idmAuditLog.setAuditDescription("Send email to :" + Arrays.toString(to) + " and CC :" + Arrays.toString(cc) + " with subject: " + subject);
+        }  else {
+            idmAuditLog.setAuditDescription("Send email to :" + Arrays.toString(to) + " with subject: " + subject);
+        }
         try {
             mailSender.send(message);
             idmAuditLog.succeed();
@@ -540,7 +544,6 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
     }
 
 
-
     @Override
     public List<EmailEntity> getEmailsForUser(String userId, int from, int size) {
         if (userId == null) {
@@ -569,7 +572,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 //        }
         String emailBody = message.getBody();
         emailBody = keyManagementWS.encryptData(emailBody);
-         if ((message.getTo()).isEmpty()) {
+        if ((message.getTo()).isEmpty()) {
             log.error(String.format("Store email failed. Email was null for userId=%s", userId));
             return false;
         }
