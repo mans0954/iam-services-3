@@ -27,7 +27,11 @@ public class EmailSearchDAO extends AbstractHibernateSearchDao<EmailAddressEntit
 					clause = buildExactClause("emailAddressUntokenized", param.getValue());
 					break;
 				case STARTS_WITH:
+<<<<<<< HEAD
+					clause = buildTokenizedClauseMUST("emailAddress", param.getValue());
+=======
 					clause = buildExactClauseStartWith("emailAddress", param.getValue());
+>>>>>>> RELEASE-3.4.2
 					break;
 				default:
 					break;

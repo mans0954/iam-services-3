@@ -303,6 +303,16 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
         return null;
     }
 
+	protected Query buildExactClauseStartWith(final String paramName, final String paramValue) {
+		if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
+			final BooleanQuery query = new BooleanQuery();
+			final String trimmedKeyword = StringUtils.trimToEmpty(paramValue.toLowerCase());
+			query.add(new PrefixQuery(new Term(paramName, trimmedKeyword)), BooleanClause.Occur.SHOULD);
+			return query;
+		}
+		return null;
+	}
+
     protected Query buildInClause(final String paramName, final Collection<String> paramValues) {
         if (paramValues != null && !paramValues.isEmpty() && StringUtils.isNotBlank(paramName)) {
             final BooleanQuery query = new BooleanQuery();

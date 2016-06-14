@@ -7,6 +7,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -240,6 +241,12 @@ public class SourceAdapterDispatcher implements Runnable {
             case ADD: {
                 pUser.setOperation(AttributeOperationEnum.ADD);
                 ProvisionUserResponse provisionUserResponse = provisioningDataService.addUser(pUser);
+                if (ResponseStatus.SUCCESS.equals(provisionUserResponse.getStatus()) && provisionUserResponse.getUser() != null) {
+                    idmAuditLog.setUserId(provisionUserResponse.getUser().getId());
+                } else if (ResponseStatus.FAILURE.equals(provisionUserResponse.getStatus())) {
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason("Can't add user due to Internal error. Very possible that some of your fields is out of Max range");
+                }
                 break;
             }
             case MODIFY: {
@@ -1131,14 +1138,12 @@ public class SourceAdapterDispatcher implements Runnable {
 
         //Write it
         JAXBContext ctx = JAXBContext.newInstance(SourceAdapterRequest.class);
-
         Marshaller m = ctx.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
         StringWriter sw = new StringWriter();
         m.marshal(request, sw);
         sw.close();
-
         return prettyFormat(sw.toString(), 7);
     }
 
