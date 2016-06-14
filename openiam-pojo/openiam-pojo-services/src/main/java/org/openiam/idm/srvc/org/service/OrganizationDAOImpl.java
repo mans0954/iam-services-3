@@ -405,8 +405,8 @@ public class OrganizationDAOImpl extends
             sb.append(userId);
             sb.append("' AND ");
         }
-        sb.append("ALIAS IS NOT NULL ");
-        sb.append("AND org.ORG_TYPE_ID='ORGANIZATION' GROUP BY org.ALIAS");
+        sb.append("ALIAS IS NOT NULL GROUP BY org.ALIAS");
+        //sb.append("AND org.ORG_TYPE_ID='ORGANIZATION' GROUP BY org.ALIAS");
         reval = this.getSession().createSQLQuery(sb.toString()).list();
         if (CollectionUtils.isNotEmpty(reval)) {
             return StringUtils.join(reval, ',');
