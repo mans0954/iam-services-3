@@ -21,6 +21,8 @@ import java.util.Set;
  */
 public interface UserDAO extends BaseDao<UserEntity, String> {
 
+    public List<String> getUserIds(UserSearchBean searchBean);
+
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter);
 
     public List<UserEntity> findByDelegationProperties(DelegationFilterSearch search);
