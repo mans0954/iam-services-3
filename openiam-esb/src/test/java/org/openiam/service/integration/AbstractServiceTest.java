@@ -167,6 +167,9 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Value("${openiam.service_host}")
 	private String serviceHost;
 	
+	@Value("${org.openiam.auth.provider.type.totp.id}")
+	private String totpAuthLevelId;
+	
 	@Autowired
 	private OpenIAMHttpClient httpClient;
 	
@@ -260,6 +263,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		
 		final AuthProviderSearchBean sb = new AuthProviderSearchBean();
 		sb.setLinkableToContentProvider(true);
+		sb.setDefaultAuthProvider(true);
 		cp.setAuthProviderId(authProviderServiceClient.findAuthProviderBeans(sb, 0, 1).get(0).getId());
 		cp.setUnavailable(false);
 		
@@ -272,11 +276,14 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		final Set<AuthLevelGroupingContentProviderXref> groupingXrefs = new HashSet<AuthLevelGroupingContentProviderXref>();
 		//for(final AuthLevelGrouping grouping : contentProviderServiceClient.getAuthLevelGroupingList()) {
 		contentProviderServiceClient.getAuthLevelGroupingList().forEach((final AuthLevelGrouping grouping) -> {
-			final AuthLevelGroupingContentProviderXref xref = new AuthLevelGroupingContentProviderXref();
-			final AuthLevelGroupingContentProviderXrefId id = new AuthLevelGroupingContentProviderXrefId();
-			id.setGroupingId(grouping.getId());
-			xref.setId(id);
-			groupingXrefs.add(xref);
+			/* don't add totp, b/c SMS will already be added.  Error will be thrown if both SMS and TOTP are present */
+			if(!grouping.getId().equals(totpAuthLevelId)) {
+				final AuthLevelGroupingContentProviderXref xref = new AuthLevelGroupingContentProviderXref();
+				final AuthLevelGroupingContentProviderXrefId id = new AuthLevelGroupingContentProviderXrefId();
+				id.setGroupingId(grouping.getId());
+				xref.setId(id);
+				groupingXrefs.add(xref);
+			}
 		});
 		//}
 		cp.setGroupingXrefs(groupingXrefs);

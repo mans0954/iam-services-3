@@ -376,6 +376,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		assertMetadataEquals(url, method, response);
 		SSOLoginResponse loginResponse = getCookieFromProxyURIAndPrincipal(url, principal, method);
 		Assert.assertNotNull(loginResponse);
+		assertSuccess(loginResponse);
 		Assert.assertTrue(renewToken(loginResponse.getOpeniamPrincipal(), response.getPatternId(), loginResponse.getSsoToken().getToken(), loginResponse.getSsoToken().getTokenType()).isSuccess());
 		
 		url = "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5";
@@ -387,6 +388,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		assertMetadataEquals(url, method, response);
 		loginResponse = getCookieFromProxyURIAndPrincipal(url, principal, method);
 		Assert.assertNotNull(loginResponse);
+		assertSuccess(loginResponse);
 		Assert.assertTrue(renewToken(loginResponse.getOpeniamPrincipal(), response.getPatternId(), loginResponse.getSsoToken().getToken(), loginResponse.getSsoToken().getTokenType()).isSuccess());
 
 /* all auth level groupings should have been added by the code that created the cp */
