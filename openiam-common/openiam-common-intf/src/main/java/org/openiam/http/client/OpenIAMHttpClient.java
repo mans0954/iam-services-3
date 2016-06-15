@@ -41,6 +41,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
+import org.openiam.http.model.HttpClientResponseWrapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -159,7 +160,7 @@ public final class OpenIAMHttpClient {
 				.build();
 	}
 	
-	public String doPost(final URL url, final Map<String, String> headers, final Map<String, String> params, final Credentials credentials) throws IOException, AuthenticationException {
+	public HttpClientResponseWrapper doPost(final URL url, final Map<String, String> headers, final Map<String, String> params, final Credentials credentials) throws IOException, AuthenticationException {
 		final RequestConfig config = RequestConfig.custom()
 				.setConnectionRequestTimeout(timeout)
 				.setSocketTimeout(timeout)
@@ -198,7 +199,7 @@ public final class OpenIAMHttpClient {
 			LOG.debug(String.format("Status=%s, Content=%s", status, content));
 		}
 		IOUtils.closeQuietly(entity.getContent());
-		return content;
+		return new HttpClientResponseWrapper(status, content);
 	}
 	
 	public String getResponse(final URL url) throws IOException {
