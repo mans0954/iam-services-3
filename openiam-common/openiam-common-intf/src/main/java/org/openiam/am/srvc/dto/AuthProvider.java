@@ -41,7 +41,10 @@ import java.util.Set;
 		"oAuthTokens",
 		"readOnly",
 		"attributeId2ValueMap",
-		"lastModified"
+		"lastModified",
+		"supportsCertAuth",
+		"certRegex",
+		"certGroovyScript"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider extends KeyNameDTO {
@@ -68,6 +71,10 @@ public class AuthProvider extends KeyNameDTO {
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
     private Resource resource;
     private Date lastModified;
+    
+    private boolean supportsCertAuth;
+    private String certRegex;
+    private String certGroovyScript;
 
 	private Set<OAuthToken> oAuthTokens;
     @XmlTransient
@@ -298,11 +305,41 @@ public class AuthProvider extends KeyNameDTO {
 		this.lastModified = lastModified;
 	}
 
+	public boolean isSupportsCertAuth() {
+		return supportsCertAuth;
+	}
+
+	public void setSupportsCertAuth(boolean supportsCertAuth) {
+		this.supportsCertAuth = supportsCertAuth;
+	}
+
+	public String getCertRegex() {
+		return certRegex;
+	}
+
+	public void setCertRegex(String certRegex) {
+		this.certRegex = certRegex;
+	}
+
+	public String getCertGroovyScript() {
+		return certGroovyScript;
+	}
+
+	public void setCertGroovyScript(String certGroovyScript) {
+		this.certGroovyScript = certGroovyScript;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
+		result = prime * result
+				+ ((authnPolicyId == null) ? 0 : authnPolicyId.hashCode());
+		result = prime
+				* result
+				+ ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+		result = prime * result
+				+ ((certRegex == null) ? 0 : certRegex.hashCode());
 		result = prime * result + (defaultProvider ? 1231 : 1237);
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
@@ -310,23 +347,32 @@ public class AuthProvider extends KeyNameDTO {
 				+ ((groovyScriptURL == null) ? 0 : groovyScriptURL.hashCode());
 		result = prime * result + (isSignRequest ? 1231 : 1237);
 		result = prime * result
+				+ ((lastModified == null) ? 0 : lastModified.hashCode());
+		result = prime * result
 				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime
+				* result
+				+ ((passwordPolicyId == null) ? 0 : passwordPolicyId.hashCode());
 		result = prime * result + Arrays.hashCode(privateKey);
 		result = prime * result
 				+ ((providerType == null) ? 0 : providerType.hashCode());
 		result = prime * result + Arrays.hashCode(publicKey);
+		result = prime * result + (readOnly ? 1231 : 1237);
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
-		result = prime * result + ((springBeanName == null) ? 0 : springBeanName.hashCode());
+		result = prime
+				* result
+				+ ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript
+						.hashCode());
+		result = prime * result
+				+ ((springBeanName == null) ? 0 : springBeanName.hashCode());
+		result = prime * result + (supportsCertAuth ? 1231 : 1237);
+		result = prime * result
+				+ (supportsJustInTimeAuthentication ? 1231 : 1237);
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
 		result = prime * result + (supportsTOTP ? 1231 : 1237);
-		result = prime * result + (readOnly ? 1231 : 1237);
-		result = prime * result + ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript.hashCode());
-		result = prime * result + ((passwordPolicyId == null) ? 0 : passwordPolicyId.hashCode());
-		result = prime * result + ((authnPolicyId == null) ? 0 : authnPolicyId.hashCode());
-		result = prime * result + ((lastModified == null) ? 0 : lastModified.hashCode());
 		return result;
 	}
 
@@ -339,6 +385,21 @@ public class AuthProvider extends KeyNameDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		AuthProvider other = (AuthProvider) obj;
+		if (authnPolicyId == null) {
+			if (other.authnPolicyId != null)
+				return false;
+		} else if (!authnPolicyId.equals(other.authnPolicyId))
+			return false;
+		if (certGroovyScript == null) {
+			if (other.certGroovyScript != null)
+				return false;
+		} else if (!certGroovyScript.equals(other.certGroovyScript))
+			return false;
+		if (certRegex == null) {
+			if (other.certRegex != null)
+				return false;
+		} else if (!certRegex.equals(other.certRegex))
+			return false;
 		if (defaultProvider != other.defaultProvider)
 			return false;
 		if (description == null) {
@@ -353,10 +414,20 @@ public class AuthProvider extends KeyNameDTO {
 			return false;
 		if (isSignRequest != other.isSignRequest)
 			return false;
+		if (lastModified == null) {
+			if (other.lastModified != null)
+				return false;
+		} else if (!lastModified.equals(other.lastModified))
+			return false;
 		if (managedSysId == null) {
 			if (other.managedSysId != null)
 				return false;
 		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		if (passwordPolicyId == null) {
+			if (other.passwordPolicyId != null)
+				return false;
+		} else if (!passwordPolicyId.equals(other.passwordPolicyId))
 			return false;
 		if (!Arrays.equals(privateKey, other.privateKey))
 			return false;
@@ -366,6 +437,8 @@ public class AuthProvider extends KeyNameDTO {
 		} else if (!providerType.equals(other.providerType))
 			return false;
 		if (!Arrays.equals(publicKey, other.publicKey))
+			return false;
+		if (readOnly != other.readOnly)
 			return false;
 		if (resource == null) {
 			if (other.resource != null)
@@ -377,41 +450,23 @@ public class AuthProvider extends KeyNameDTO {
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
 			return false;
+		if (smsOTPGroovyScript == null) {
+			if (other.smsOTPGroovyScript != null)
+				return false;
+		} else if (!smsOTPGroovyScript.equals(other.smsOTPGroovyScript))
+			return false;
 		if (springBeanName == null) {
 			if (other.springBeanName != null)
 				return false;
 		} else if (!springBeanName.equals(other.springBeanName))
+			return false;
+		if (supportsCertAuth != other.supportsCertAuth)
 			return false;
 		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
 			return false;
 		if (supportsSMSOTP != other.supportsSMSOTP)
 			return false;
 		if (supportsTOTP != other.supportsTOTP)
-			return false;
-		if (readOnly != other.readOnly)
-			return false;
-		if (smsOTPGroovyScript == null) {
-			if (other.smsOTPGroovyScript != null)
-				return false;
-		} else if (!smsOTPGroovyScript.equals(other.smsOTPGroovyScript))
-			return false;
-		
-		if (passwordPolicyId == null) {
-			if (other.passwordPolicyId != null)
-				return false;
-		} else if (!passwordPolicyId.equals(other.passwordPolicyId))
-			return false;
-		
-		if (authnPolicyId == null) {
-			if (other.authnPolicyId != null)
-				return false;
-		} else if (!authnPolicyId.equals(other.authnPolicyId))
-			return false;	
-		
-		if (lastModified == null) {
-			if (other.lastModified != null)
-				return false;
-		} else if (!lastModified.equals(other.lastModified))
 			return false;
 		return true;
 	}

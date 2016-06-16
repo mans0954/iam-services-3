@@ -3,11 +3,14 @@ package org.openiam.am.srvc.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -54,12 +57,14 @@ import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("authProviderService")
-public class AuthProviderServiceImpl implements AuthProviderService {
+public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     private final Log log = LogFactory.getLog(this.getClass());
     private static final String resourceTypeId="AUTH_PROVIDER";
 
@@ -103,6 +108,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     private OAuthCodeDozerConverter oauthCodeDozerConverter;
     @Autowired
     private OAuthCodeDao oAuthCodeDao;
+    
+    private Map<String, AuthProvider> authProviderCache = new HashMap<String, AuthProvider>();
 
     /*
     *==================================================
@@ -571,5 +578,25 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 			String providerId) {
 		final AuthProviderEntity provider = authProviderDao.findById(providerId);
 		return (provider != null) ? provider.getType() : null;
+	}
+
+	@Override
+	public AuthProvider getCachedAuthProvider(String id) {
+		return authProviderCache.get(id);
+	}
+
+	@Override
+	@Transactional
+	@Scheduled(fixedRateString="${org.openiam.am.uri.federation.threadsweep}", initialDelay=0)
+	public void sweep() {
+		Map<String, AuthProvider> tempAuthProviderCache = new HashMap<String, AuthProvider>();
+		final List<AuthProviderEntity> entities = authProviderDao.findAll();
+		if(CollectionUtils.isNotEmpty(entities)) {
+			tempAuthProviderCache = 
+					entities.stream().map(e -> authProviderDozerConverter.convertToDTO(e, true)).collect(Collectors.toMap(AuthProvider::getId, Function.identity()));
+		}
+		synchronized(authProviderCache) {
+			authProviderCache = tempAuthProviderCache;
+		}
 	}
 }

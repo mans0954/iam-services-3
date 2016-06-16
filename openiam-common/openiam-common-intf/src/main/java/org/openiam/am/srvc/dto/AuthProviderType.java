@@ -29,7 +29,8 @@ import java.util.Set;
         "hasAuthnPolicy",
         "authnPolicyRequired",
         "linkableToContentProvider",
-		"chainable"
+		"chainable",
+		"supportsCertAuth"
 })
 @DozerDTOCorrespondence(AuthProviderTypeEntity.class)
 public class AuthProviderType extends KeyNameDTO {
@@ -47,6 +48,7 @@ public class AuthProviderType extends KeyNameDTO {
     private boolean authnPolicyRequired;
     private boolean linkableToContentProvider;
     private boolean chainable;
+    private boolean supportsCertAuth;
     
     @XmlTransient
     private Set<AuthAttributeEntity> attributeSet;
@@ -182,6 +184,14 @@ public class AuthProviderType extends KeyNameDTO {
 		this.chainable = chainable;
 	}
 
+	public boolean isSupportsCertAuth() {
+		return supportsCertAuth;
+	}
+
+	public void setSupportsCertAuth(boolean supportsCertAuth) {
+		this.supportsCertAuth = supportsCertAuth;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -199,7 +209,8 @@ public class AuthProviderType extends KeyNameDTO {
 		result = prime * result + (hasAuthnPolicy ? 1231 : 1237);
 		result = prime * result + (authnPolicyRequired ? 1231 : 1237);
 		result = prime * result + (linkableToContentProvider ? 1231 : 1237);
-		result = prime * result + (chainable ? 1231 : 1237);		
+		result = prime * result + (chainable ? 1231 : 1237);
+		result = prime * result + (supportsCertAuth ? 1231 : 1237);		
 		return result;
 	}
 
@@ -237,6 +248,8 @@ public class AuthProviderType extends KeyNameDTO {
 		if (linkableToContentProvider != other.linkableToContentProvider)
 			return false;
 		if (chainable != other.chainable)
+			return false;
+		if (supportsCertAuth != other.supportsCertAuth)
 			return false;
 		return authnPolicyRequired == other.authnPolicyRequired;
 	}

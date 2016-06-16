@@ -48,6 +48,7 @@ public interface AuthProviderService {
     void saveAuthProvider(AuthProviderEntity attribute, final String requestorId) throws BasicDataServiceException;
     void deleteAuthProvider(String providerId) throws BasicDataServiceException;
     public AuthProvider getProvider(final String id);
+    public AuthProvider getCachedAuthProvider(final String id);
 
     /*
     *==================================================

@@ -27,6 +27,7 @@ import org.openiam.base.ws.ResponseStatus;
 @XmlType(name = "URIFederationResponse", propOrder = {
 	"ruleTokenList",
 	"authLevelTokenList",
+	"authProviderId",
 	"server",
 	"patternId",
 	"cpId",
@@ -58,6 +59,7 @@ public class URIFederationResponse extends Response {
 	private String cpId;
 	private String loginURL;
 	private String postbackURLParamName;
+	private String authProviderId;
 	private String authCookieName;
 	private String authCookieDomain;
 	private String methodId;
@@ -221,8 +223,14 @@ public class URIFederationResponse extends Response {
 	public void setCacheTTL(Integer cacheTTL) {
 		this.cacheTTL = cacheTTL;
 	}
-	
-	
+
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
+
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
+	}
 
 	public boolean isConfigured() {
 		return configured;

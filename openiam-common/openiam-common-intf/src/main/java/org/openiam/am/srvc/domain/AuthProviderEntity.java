@@ -76,6 +76,16 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     @Column(name = "PRIVATE_KEY", nullable = true)
     @Lob
     private byte[] privateKey=null;
+    
+    @Column(name="SUPPORTS_CERT_AUTH")
+    @Type(type = "yes_no")
+    private boolean supportsCertAuth;
+    
+    @Column(name="CERT_AUTH_REGEX",length=19)
+    private String certRegex;
+    
+    @Column(name="CERT_AUTH_REGEX_SCRIPT",length=19)
+    private String certGroovyScript;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="PROVIDER_TYPE", referencedColumnName = "PROVIDER_TYPE", insertable = true, updatable = false)
@@ -328,33 +338,72 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		this.lastModified = lastModified;
 	}
 
+	public boolean isSupportsCertAuth() {
+		return supportsCertAuth;
+	}
+
+	public void setSupportsCertAuth(boolean supportsCertAuth) {
+		this.supportsCertAuth = supportsCertAuth;
+	}
+
+	public String getCertRegex() {
+		return certRegex;
+	}
+
+	public void setCertRegex(String certRegex) {
+		this.certRegex = certRegex;
+	}
+
+	public String getCertGroovyScript() {
+		return certGroovyScript;
+	}
+
+	public void setCertGroovyScript(String certGroovyScript) {
+		this.certGroovyScript = certGroovyScript;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
+		result = prime
+				* result
+				+ ((authenticationPolicy == null) ? 0 : authenticationPolicy
+						.hashCode());
+		result = prime
+				* result
+				+ ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+		result = prime * result
+				+ ((certRegex == null) ? 0 : certRegex.hashCode());
 		result = prime * result + (defaultProvider ? 1231 : 1237);
-		result = prime * result + (readOnly ? 1231 : 1237);
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
 				+ ((groovyScriptURL == null) ? 0 : groovyScriptURL.hashCode());
 		result = prime * result + (isSignRequest ? 1231 : 1237);
 		result = prime * result
+				+ ((lastModified == null) ? 0 : lastModified.hashCode());
+		result = prime * result
 				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
-		result = prime * result + ((passwordPolicy == null) ? 0 : passwordPolicy.hashCode());
-		result = prime * result + ((authenticationPolicy == null) ? 0 : authenticationPolicy.hashCode());
+		result = prime * result
+				+ ((passwordPolicy == null) ? 0 : passwordPolicy.hashCode());
 		result = prime * result + Arrays.hashCode(privateKey);
 		result = prime * result + Arrays.hashCode(publicKey);
+		result = prime * result + (readOnly ? 1231 : 1237);
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime
+				* result
+				+ ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript
+						.hashCode());
 		result = prime * result
 				+ ((springBeanName == null) ? 0 : springBeanName.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + (supportsCertAuth ? 1231 : 1237);
+		result = prime * result
+				+ (supportsJustInTimeAuthentication ? 1231 : 1237);
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
 		result = prime * result + (supportsTOTP ? 1231 : 1237);
-		result = prime * result + ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript.hashCode());
-		result = prime * result + ((lastModified == null) ? 0 : lastModified.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
 
@@ -367,6 +416,21 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		AuthProviderEntity other = (AuthProviderEntity) obj;
+		if (authenticationPolicy == null) {
+			if (other.authenticationPolicy != null)
+				return false;
+		} else if (!authenticationPolicy.equals(other.authenticationPolicy))
+			return false;
+		if (certGroovyScript == null) {
+			if (other.certGroovyScript != null)
+				return false;
+		} else if (!certGroovyScript.equals(other.certGroovyScript))
+			return false;
+		if (certRegex == null) {
+			if (other.certRegex != null)
+				return false;
+		} else if (!certRegex.equals(other.certRegex))
+			return false;
 		if (defaultProvider != other.defaultProvider)
 			return false;
 		if (description == null) {
@@ -381,42 +445,43 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 			return false;
 		if (isSignRequest != other.isSignRequest)
 			return false;
+		if (lastModified == null) {
+			if (other.lastModified != null)
+				return false;
+		} else if (!lastModified.equals(other.lastModified))
+			return false;
 		if (managedSystem == null) {
 			if (other.managedSystem != null)
 				return false;
 		} else if (!managedSystem.equals(other.managedSystem))
 			return false;
-		
 		if (passwordPolicy == null) {
 			if (other.passwordPolicy != null)
 				return false;
 		} else if (!passwordPolicy.equals(other.passwordPolicy))
 			return false;
-		
-		if (authenticationPolicy == null) {
-			if (other.authenticationPolicy != null)
-				return false;
-		} else if (!authenticationPolicy.equals(other.authenticationPolicy))
-			return false;
-		
 		if (!Arrays.equals(privateKey, other.privateKey))
 			return false;
 		if (!Arrays.equals(publicKey, other.publicKey))
+			return false;
+		if (readOnly != other.readOnly)
 			return false;
 		if (resource == null) {
 			if (other.resource != null)
 				return false;
 		} else if (!resource.equals(other.resource))
 			return false;
+		if (smsOTPGroovyScript == null) {
+			if (other.smsOTPGroovyScript != null)
+				return false;
+		} else if (!smsOTPGroovyScript.equals(other.smsOTPGroovyScript))
+			return false;
 		if (springBeanName == null) {
 			if (other.springBeanName != null)
 				return false;
 		} else if (!springBeanName.equals(other.springBeanName))
 			return false;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
+		if (supportsCertAuth != other.supportsCertAuth)
 			return false;
 		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
 			return false;
@@ -424,21 +489,13 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 			return false;
 		if (supportsTOTP != other.supportsTOTP)
 			return false;
-		if (readOnly != other.readOnly)
-			return false;
-		if (smsOTPGroovyScript == null) {
-			if (other.smsOTPGroovyScript != null)
+		if (type == null) {
+			if (other.type != null)
 				return false;
-		} else if (!smsOTPGroovyScript.equals(other.smsOTPGroovyScript))
-			return false;
-		
-		if (lastModified == null) {
-			if (other.lastModified != null)
-				return false;
-		} else if (!lastModified.equals(other.lastModified))
+		} else if (!type.equals(other.type))
 			return false;
 		return true;
 	}
-	
+
 	
 }

@@ -12,6 +12,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.cert.groovy.DefaultCertToIdentityConverter;
+import org.openiam.am.srvc.dto.AuthProvider;
+import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
 import org.openiam.am.srvc.uriauth.dto.URIAuthLevelAttribute;
@@ -71,6 +73,9 @@ public class URIFederationRestController {
 	@Autowired
 	@Qualifier("configurableGroovyScriptEngine")
 	private ScriptIntegration scriptIntegration;
+	
+	@Autowired
+	private AuthProviderService authProviderService;
 	
 	private Map<String, HttpMethod> httpMethodMap = new HashMap<String, HttpMethod>();
 	
@@ -157,28 +162,18 @@ public class URIFederationRestController {
 				throw new BasicDataServiceException(ResponseCode.METADATA_INVALID);
 			}
 			
-			if(CollectionUtils.isEmpty(metadata.getAuthLevelTokenList())) {
+			final AuthProvider provider = authProviderService.getCachedAuthProvider(metadata.getAuthProviderId());
+			
+			if(provider == null) {
 				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
 			}
 			
-			final URIAuthLevelToken authLevel = metadata.getAuthLevelTokenList().stream().filter(e -> e.getAuthLevelId().equals(certAuthLevelId)).findAny().orElse(null);
-			if(authLevel == null) {
+			if(!provider.isSupportsCertAuth()) {
 				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
 			}
 			
-			if(CollectionUtils.isEmpty(authLevel.getAttributes())) {
-				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
-			}
-			
-			final URIAuthLevelAttribute authLevelRegexAttribute = authLevel.getAttributes().stream().filter(e -> e.getTypeId().equals(authLevelRegex)).findFirst().orElse(null);
-			final URIAuthLevelAttribute authLevelRegexScriptAttribute = authLevel.getAttributes().stream().filter(e -> e.getTypeId().equals(authLevelRegexScript)).findFirst().orElse(null);
-			
-			if(authLevelRegexAttribute == null && authLevelRegexScriptAttribute == null) {
-				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
-			}
-			
-			final String regex = (authLevelRegexAttribute != null) ? StringUtils.trimToNull(authLevelRegexAttribute.getValueAsString()) : null;
-			final String regexScript = (authLevelRegexScriptAttribute != null) ? StringUtils.trimToNull(authLevelRegexScriptAttribute.getValueAsString()) : null;
+			final String regex = StringUtils.trimToNull(provider.getCertRegex());
+			final String regexScript = StringUtils.trimToNull(provider.getCertGroovyScript());
 			if(StringUtils.isBlank(regex) && StringUtils.isBlank(regexScript)) {
 				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
 			}

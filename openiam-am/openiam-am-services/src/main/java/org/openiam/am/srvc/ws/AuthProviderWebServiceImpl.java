@@ -10,6 +10,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.cert.groovy.DefaultCertToIdentityConverter;
 import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
@@ -231,6 +232,32 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
                         }
                     }
                 }
+            }
+            
+            if(type.isSupportsCertAuth()) {
+            	if(provider.isSupportsCertAuth()) {
+            		final EsbErrorToken errorToken = new EsbErrorToken();
+            		errorToken.setClassName(DefaultCertToIdentityConverter.class.getCanonicalName());
+            		if(StringUtils.isNotBlank(provider.getCertGroovyScript())) {
+            			if(!scriptRunner.scriptExists(provider.getCertGroovyScript())) {
+        					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, errorToken);
+        				}
+            			
+            			final Object o = scriptRunner.instantiateClass(null, provider.getCertGroovyScript());
+            			if(!(o instanceof DefaultCertToIdentityConverter)) {
+            				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, errorToken);
+            			}
+            			provider.setCertRegex(null);
+            		} else if(StringUtils.isNotBlank(provider.getCertRegex())) {
+            			provider.setCertGroovyScript(null);
+            		} else {
+            			throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, errorToken);
+            		}
+            	}
+            } else {
+            	provider.setSupportsCertAuth(false);
+            	provider.setCertGroovyScript(null);
+            	provider.setCertRegex(null);
             }
 
             if(provider.isSignRequest()) {

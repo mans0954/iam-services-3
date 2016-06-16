@@ -81,6 +81,10 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
     @Type(type = "yes_no")
     private boolean linkableToContentProvider;
     
+    @Column(name="SUPPORTS_CERT_AUTH")
+    @Type(type = "yes_no")
+    private boolean supportsCertAuth;
+    
     @OneToMany(mappedBy = "type", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<AuthAttributeEntity> attributeSet;
     
@@ -216,6 +220,14 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		this.chainable = chainable;
 	}
 
+	public boolean isSupportsCertAuth() {
+		return supportsCertAuth;
+	}
+
+	public void setSupportsCertAuth(boolean supportsCertAuth) {
+		this.supportsCertAuth = supportsCertAuth;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -234,6 +246,7 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		result = prime * result + (hasAuthnPolicy ? 1231 : 1237);
 		result = prime * result + (authnPolicyRequired ? 1231 : 1237);
 		result = prime * result + (linkableToContentProvider ? 1231 : 1237);
+		result = prime * result + (supportsCertAuth ? 1231 : 1237);
 		return result;
 	}
 
@@ -271,6 +284,8 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		if (hasAuthnPolicy != other.hasAuthnPolicy)
 			return false;
 		if (linkableToContentProvider != other.linkableToContentProvider)
+			return false;
+		if (supportsCertAuth != other.supportsCertAuth)
 			return false;
 		return authnPolicyRequired == other.authnPolicyRequired;
 	}
