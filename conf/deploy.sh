@@ -4,6 +4,7 @@ set -e
 set -x
 
 mvn help:evaluate -Dexpression=project.version | grep -v '\[.*'
+
 current_version=$(mvn help:evaluate -Dexpression=project.version | grep -v '\[.*')-${CIRCLE_BUILD_NUM}
 base_artifactory_url="https://openiam.artifactoryonline.com/openiam/libs-releases-local"
 
