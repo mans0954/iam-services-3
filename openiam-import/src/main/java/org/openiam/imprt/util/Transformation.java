@@ -168,10 +168,10 @@ public class Transformation {
 
         String sbu = this.getValue(lo.get("extensionAttribute5"));
         addUserAttribute(user, new UserAttributeEntity("ORG_SBU_SHORT_NAME", serviceTypeAttr));
-        String  msExchExtensionAttribute16= this.getValue(lo.get("msExchExtensionAttribute16"));
-        if ("1".equalsIgnoreCase(msExchExtensionAttribute16)){
+        String msExchExtensionAttribute16 = this.getValue(lo.get("msExchExtensionAttribute16"));
+        if ("1".equalsIgnoreCase(msExchExtensionAttribute16)) {
             addUserAttribute(user, new UserAttributeEntity("syncToCloud", "On"));
-        }else {
+        } else {
             addUserAttribute(user, new UserAttributeEntity("syncToCloud", "Off"));
         }
         // Start Date
@@ -546,16 +546,16 @@ public class Transformation {
         //here is some extra fields that we should provision
 
         Attribute proxyAttr = lo.get("proxyAddresses");
+        System.out.println("Proxy address bean=" + proxyAttr);
         if (proxyAttr != null) {
             UserAttributeEntity userAttributeEntity = new UserAttributeEntity();
             userAttributeEntity.setName("proxyAddress");
-            if (proxyAttr.isMultiValued()) {
-                if (proxyAttr.getValueList() != null) {
-                    userAttributeEntity.setValue(StringUtils.join(proxyAttr.getValueList(), ";"));
-                }
+            if (proxyAttr.getValueList() != null) {
+                userAttributeEntity.setValue(StringUtils.join(proxyAttr.getValueList(), "\n"));
             } else {
                 userAttributeEntity.setValue(proxyAttr.getValue());
             }
+            user.addUserAttribute(userAttributeEntity);
         }
     }
 
