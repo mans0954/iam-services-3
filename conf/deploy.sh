@@ -4,8 +4,11 @@ set -e
 set -x
 
 mvn help:evaluate -Dexpression=project.version | grep -v '\[.*'
+echo 'Maven preparation complete'
 
 current_version=$(mvn help:evaluate -Dexpression=project.version | grep -v '\[.*')-${CIRCLE_BUILD_NUM}
+echo 'CALCULATED VERSION: ${current_version}'
+
 base_artifactory_url="https://openiam.artifactoryonline.com/openiam/libs-releases-local"
 
 artifact_list=(
