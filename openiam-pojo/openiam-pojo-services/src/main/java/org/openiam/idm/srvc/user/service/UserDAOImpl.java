@@ -51,6 +51,12 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     @Value("${org.openiam.department.type.id}")
     private String departmentTypeId;
 
+    /* DO NOT MERGE INTO 4.0!!!! */
+    @Override
+    public List<String> getUserIds(UserSearchBean searchBean) {
+        return getExampleCriteria(searchBean).setProjection(Projections.property("id")).list();
+    }
+
     @Override
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter) {
         Criteria criteria = getCriteria();

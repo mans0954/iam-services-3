@@ -621,7 +621,11 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         }
         List<String> idList = null;
         if (isSearchByPrimaryAttributes(searchBean)) {
-            idList = userSearchDAO.findIds(0, Integer.MAX_VALUE, null, searchBean);
+            if (isLuceneEnabled) {
+                idList = userSearchDAO.findIds(0, Integer.MAX_VALUE, null, searchBean);
+            } else {
+                idList = userDao.getUserIds(searchBean);
+            }
         }
 
         if (idList != null) {
