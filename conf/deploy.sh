@@ -3,7 +3,12 @@
 set -e
 set -x
 
+mvn help:evaluate -Dexpression=project.version | grep -v '\[.*'
+echo 'Maven preparation complete'
+
 current_version=$(mvn help:evaluate -Dexpression=project.version | grep -v '\[.*')-${CIRCLE_BUILD_NUM}
+echo 'CALCULATED VERSION: ${current_version}'
+
 base_artifactory_url="https://openiam.artifactoryonline.com/openiam/libs-releases-local"
 
 artifact_list=(
@@ -39,7 +44,6 @@ artifact_list=(
 )
 
 mvn deploy -s conf/settings.xml
-mvn help:evaluate -Dexpression=project.version | grep -v '\[.*'
 /bin/sh update_version.sh ${current_version}
 mvn install -s conf/settings.xml
 mvn package spring-boot:repackage -f openiam-esb/pom.xml
