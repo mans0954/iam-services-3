@@ -177,6 +177,19 @@
 			</service>
 		</model>
 
+	<model name="sysPropertiesServiceModel">
+		<service name="systemPropertyDataService">
+			<inbound>
+				<inbound-endpoint address="${webservice.path}SystemPropertyWebService" 		exchange-pattern="request-response">
+					<cxf:jaxws-service />
+				</inbound-endpoint>
+			</inbound>
+			<component>
+				<spring-object bean="systemPropertyWebService" />
+			</component>
+		</service>
+	</model>
+
 		<model name="roleServiceModel">
 			<service name="roleService">
 				<inbound>

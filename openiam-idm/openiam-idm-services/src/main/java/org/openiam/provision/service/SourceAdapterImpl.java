@@ -10,6 +10,8 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.sysprop.dto.SystemPropertyDto;
+import org.openiam.idm.srvc.sysprop.service.SystemPropertyService;
 import org.openiam.provision.dto.srcadapter.SourceAdapterInfoResponse;
 import org.openiam.provision.dto.srcadapter.SourceAdapterRequest;
 import org.openiam.provision.dto.srcadapter.SourceAdapterResponse;
@@ -28,28 +30,11 @@ import java.util.List;
 @Component("sourceAdapter")
 public class SourceAdapterImpl implements SourceAdapter {
 
-    //    @Autowired
-//    private ProvisioningDataService provisioningDataService;
-//    @Autowired
-//    private UserDataWebService userDataService;
-//    @Autowired
-//    private GroupDataWebService groupDataWebService;
-//    @Autowired
-//    private RoleDataWebService roleDataWebService;
-//    @Autowired
-//    private ResourceDataService resourceDataService;
-//    @Autowired
-//    private OrganizationDataService organizationDataService;
-//    @Autowired
-//    private JmsTemplate jmsTemplate;
-//
-//    @Autowired
-//    @Qualifier(value = "sourceAdapterQueue")
-//    private javax.jms.Queue queue;
-
-
     @Autowired
     private MetadataWebService metadataWS;
+    @Autowired
+    private SystemPropertyService systemPropertyService;
+
     @Autowired
     private ManagedSystemWebService managedSysService;
     @Autowired
@@ -61,27 +46,34 @@ public class SourceAdapterImpl implements SourceAdapter {
     @Qualifier("sourceAdapterDispatcher")
     private SourceAdapterDispatcher sourceAdapterDispatcher;
 
-//    private void send(final SourceAdapterRequest request) {
-//        jmsTemplate.send(queue, new MessageCreator() {
-//            public javax.jms.Message createMessage(Session session) throws JMSException {
-//                javax.jms.Message message = session.createObjectMessage(request);
-//                return message;
-//            }
-//        });
-//    }
-
-
-//    final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
-//    final static String WARNING = "Warning! %s.\n";
-//    private String source;
-
     @Override
     public SourceAdapterResponse perform(SourceAdapterRequest request) {
+        List<SystemPropertyDto> propertyDtos = systemPropertyService.getByType("SOURCE_ADAPTER_PROP");
+        if (CollectionUtils.isNotEmpty(propertyDtos)) {
+            for (SystemPropertyDto systemPropertyDto : propertyDtos) {
+                if ("MODE".equalsIgnoreCase(systemPropertyDto.getName())) {
+                    request.setMode(systemPropertyDto.getValue());
+                    continue;
+                }
+                if ("PRE_PROCESSOR".equalsIgnoreCase(systemPropertyDto.getName())) {
+                    request.setPathToPreProcessor(systemPropertyDto.getValue());
+                    continue;
+                }
+            }
+        }
         SourceAdapterResponse response = new SourceAdapterResponse();
+        if ("DISABLE".equalsIgnoreCase(request.getMode())) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setError("Source adapter is disabled");
+            return response;
+        }
         response.setStatus(ResponseStatus.SUCCESS);
         long time = System.currentTimeMillis();
         sourceAdapterDispatcher.pushToQueue(request);
         response.setError("Processing time= " + (System.currentTimeMillis() - time) + "ms");
+        if ("SIMULATION".contentEquals(request.getMode())) {
+            response.setError(response.getError() + " Source adapter in simulation mode! OpenIAM will receive the data and log it, but nothing will be changed");
+        }
         return response;
     }
 

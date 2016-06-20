@@ -285,6 +285,16 @@
            timeToLiveSeconds="1600"
            timeToIdleSeconds="800"
             />
+
+    <cache name="systemProperties"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+           timeToLiveSeconds="1600"
+           timeToIdleSeconds="800"
+    />
+
     <cache name="metadataTypeEntities"
            maxElementsInMemory="100000"
            eternal="false"

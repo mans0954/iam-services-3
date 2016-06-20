@@ -235,7 +235,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
             variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
             variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
-            variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), request.getRequestorUserId());
+        //    variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), request.getRequestorUserId());
             if (identifier.getCustomActivitiAttributes() != null) {
                 variables.putAll(identifier.getCustomActivitiAttributes());
             }
