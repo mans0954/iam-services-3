@@ -4,6 +4,7 @@ package org.openiam.imprt.util;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.criterion.MatchMode;
+import org.openiam.base.ws.MatchType;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
@@ -49,7 +50,7 @@ public class Transformation {
     final List<String> activeStatuses = Arrays.asList("512", "544", "66048", "66080", "262656", "262688", "328192", "328224");
     final String DEFAULT_DATE = "01/01/2020 12:00:00";
     final private String baseDN = "DC=d30,DC=intra";
-    //    final private String baseDN = "OU=AKZO,DC=dev,DC=local";
+//        final private String baseDN = "OU=AKZO,DC=dev,DC=local";
     final byte[] pwd = "90eb79e8-5954-4af1-b0e3-f712e25e1fca".getBytes();
     final byte[] iv = "tu89geji340t89u2".getBytes();
 
@@ -948,7 +949,7 @@ public class Transformation {
         }
 
         this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM",
-                String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", adPath, MatchMode.END.toString())));
+                String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", adPath, MatchType.END_WITH)));
     }
 
     private void getLinkedOrganization(String distinguishedName, String site, String bu, String country, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {

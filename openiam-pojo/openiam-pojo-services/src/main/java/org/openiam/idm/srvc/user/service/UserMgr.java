@@ -182,7 +182,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Value("${org.openiam.usersearch.lucene.enabled}")
     private Boolean isLuceneEnabled;
-    final private Pattern delegationFilterAttributePattern = Pattern.compile("(\".*\");(\".*\");(\".*\")");
+    final private Pattern delegationFilterAttributePattern = Pattern.compile("\"(.*)\";\"(.*)\";\"(.*)\"");
     @Autowired
     @Qualifier("authorizationManagerService")
     private AuthorizationManagerService authorizationManagerService;
