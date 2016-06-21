@@ -10,15 +10,11 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.SearchMode;
-import org.openiam.base.ws.SearchParam;
-import org.openiam.base.ws.SortParam;
+import org.openiam.base.ws.*;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -75,6 +71,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Service interface that clients will access to gain information about users
@@ -184,7 +182,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Value("${org.openiam.usersearch.lucene.enabled}")
     private Boolean isLuceneEnabled;
-
+    final private Pattern delegationFilterAttributePattern = Pattern.compile("(\".*\");(\".*\");(\".*\")");
     @Autowired
     @Qualifier("authorizationManagerService")
     private AuthorizationManagerService authorizationManagerService;
@@ -234,14 +232,16 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return getUser(login.getUserId(), null);
 
     }
+
     @Override
     @Transactional(readOnly = true)
-    public List<String> getUserIDs(int from, int size){
+    public List<String> getUserIDs(int from, int size) {
         return userDao.getUserIdList(from, size);
     }
+
     @Override
     @Transactional(readOnly = true)
-    public Long getTotalNumberOfUsers(){
+    public Long getTotalNumberOfUsers() {
         return userDao.countAll();
     }
 
@@ -577,6 +577,23 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return findBeans(searchBean, 0, 1);
     }
 
+
+    private SearchAttribute parseDelegationFilterAttribute(String param) {
+        SearchAttribute retVal = new SearchAttribute();
+        try {
+            Matcher matcher = delegationFilterAttributePattern.matcher(param.toLowerCase());
+            if (matcher.matches()) {
+                retVal.setAttributeName(matcher.group(1));
+                retVal.setAttributeValue(matcher.group(2));
+                retVal.setMatchType(MatchType.valueOf(matcher.group(3)));
+            }
+        } catch (Exception e) {
+            log.warn("Can't parse Attribute delegation filer=" + param);
+            log.warn(e);
+        }
+        return retVal;
+    }
+
     @Transactional(readOnly = true)
     private List<String> getUserIds(final UserSearchBean searchBean) throws BasicDataServiceException {
         final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
@@ -585,6 +602,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         boolean isGroupFilterSet = false;
         boolean isRoleFilterSet = false;
         boolean isMngReportFilterSet = false;
+        boolean isAttributeFilterSet = false;
 
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             // check and add delegation filter if necessary
@@ -598,6 +616,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
             isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
             isMngReportFilterSet = DelegationFilterHelper.isMngRptFilterSet(requesterAttributes);
+            isAttributeFilterSet = DelegationFilterHelper.isAttributeFilterSet(requesterAttributes);
 
 //            if (isOrgFilterSet) {
             if (CollectionUtils.isEmpty(searchBean.getOrganizationIdSet())) {
@@ -617,6 +636,20 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                 List<String> subordinariesList = userDao.getSubordinatesIds(searchBean.getRequesterId());
                 subordinariesList.add(searchBean.getRequesterId());
                 nonEmptyListOfLists.add(subordinariesList);
+            }
+
+            if (isAttributeFilterSet) {
+                List<String> searchParams = DelegationFilterHelper.getAttributeFilterSet(requesterAttributes);
+                if (searchParams != null) {
+                    List<SearchAttribute> searchAttributeList = searchBean.getAttributeList();
+                    if (searchAttributeList == null) {
+                        searchAttributeList = new ArrayList<>();
+                        searchBean.setAttributeList(searchAttributeList);
+                    }
+                    for (String param : searchParams) {
+                        searchAttributeList.add(this.parseDelegationFilterAttribute(param));
+                    }
+                }
             }
         }
         List<String> idList = null;
@@ -665,7 +698,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
         if (searchBean.getPrincipal() != null) {
             /*
-        	 * DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.
+             * DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.
         	 * Use 4.0 code 
         	 */
             if (isLuceneEnabled && searchBean.getPrincipal().isUseLucene()) {
@@ -1825,8 +1858,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
         List<UserEntity> entityList = userDao.findByIds(userIds);
 
-        if(CollectionUtils.isNotEmpty(entityList)
-                && searchBean.getInitDefaulLoginFlag()){
+        if (CollectionUtils.isNotEmpty(entityList)
+                && searchBean.getInitDefaulLoginFlag()) {
             setDefaultLogin(entityList);
         }
 
@@ -1976,16 +2009,16 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             // update supervisor
             List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getId(), 0, Integer.MAX_VALUE);
             for (UserEntity s : supervisorList) {
-            	if(log.isDebugEnabled()) {
-            		log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
-            	}
+                if (log.isDebugEnabled()) {
+                    log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
+                }
                 if (s.getId().equalsIgnoreCase(supervisorId)) {
                     break;
                 }
                 // this.removeSupervisor(s.getOrgStructureId());
             }
-            if(log.isDebugEnabled()) {
-            	log.debug("adding supervisor: " + supervisorId);
+            if (log.isDebugEnabled()) {
+                log.debug("adding supervisor: " + supervisorId);
             }
             this.addSuperior(supervisorId, newUserEntity.getId());
         }
@@ -2765,7 +2798,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public List<User> getUserDtoBetweenCreateDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserBetweenCreateDate( fromDate, toDate );
+        List<UserEntity> userEntityList = userDao.getUserBetweenCreateDate(fromDate, toDate);
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }
 
@@ -2779,20 +2812,20 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public List<User> getUserDtoBetweenLastDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserBetweenLastDate( fromDate, toDate );
+        List<UserEntity> userEntityList = userDao.getUserBetweenLastDate(fromDate, toDate);
 
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }
 
     @Override
-	@Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public List<User> getUserDtoBySearchBean(AuditLogSearchBean searchBean) {
         List<IdmAuditLog> auditLogs = auditLogService.findBeans(searchBean, -1, -1, true);
         Set<String> userIds = new HashSet<String>();
         for (IdmAuditLog log : auditLogs) {
             String userId = null;
             Set<AuditLogTarget> targets = log.getTargets();
-            if(targets != null) {
+            if (targets != null) {
                 for (AuditLogTarget target : targets) {
                     if (target.getTargetType().equalsIgnoreCase("user")) {
                         userId = target.getTargetId();
@@ -2808,7 +2841,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     }
 
     private UserDataService getProxyService() {
-        UserDataService service = (UserDataService)ac.getBean("userManager");
+        UserDataService service = (UserDataService) ac.getBean("userManager");
         return service;
     }
 
@@ -2819,19 +2852,19 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     }
 
     @Override
-    public List<User> getUserWithoutAnswerDto(){
+    public List<User> getUserWithoutAnswerDto() {
         List<UserEntity> userEntityList = userIdentityAnswerDAO.findUsersWithoutAnswers();
         return userDozerConverter.convertToDTOList(userEntityList, false);
     }
 
     @Override
-    public List<String> getUsersIdsWithoutAnswers(){
+    public List<String> getUsersIdsWithoutAnswers() {
         List<String> idList = userIdentityAnswerDAO.findUsersIdWithoutAnswers();
         return idList;
     }
 
     @Override
-    public List<Map<String,Object>> findUsersWithoutAnswersOnDate(Date fromDate, Date toDate, boolean hasAnswer){
+    public List<Map<String, Object>> findUsersWithoutAnswersOnDate(Date fromDate, Date toDate, boolean hasAnswer) {
         return userIdentityAnswerDAO.findUsersWithoutAnswersOnDate(fromDate, toDate, hasAnswer);
     }
 
