@@ -6,20 +6,21 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import java.util.*;
 
 public class DelegationFilterHelper {
-    public static final String DLG_FLT_APP="DLG_FLT_APP";
-    public static final String DLG_FLT_DEPT="DLG_FLT_DEPT";
-    public static final String DLG_FLT_DIV="DLG_FLT_DIV";
-    public static final String DLG_FLT_GRP="DLG_FLT_GRP";
-    public static final String DLG_FLT_ORG="DLG_FLT_ORG";
-    public static final String DLG_FLT_ROLE="DLG_FLT_ROLE";
-    public static final String DLG_FLT_MNG_RPT="DLG_FLT_MNG_RPT";
-    public static final String DLG_FLT_USE_ORG_INH="DLG_FLT_USE_ORG_INH";
+    public static final String DLG_FLT_APP = "DLG_FLT_APP";
+    public static final String DLG_FLT_DEPT = "DLG_FLT_DEPT";
+    public static final String DLG_FLT_DIV = "DLG_FLT_DIV";
+    public static final String DLG_FLT_GRP = "DLG_FLT_GRP";
+    public static final String DLG_FLT_ORG = "DLG_FLT_ORG";
+    public static final String DLG_FLT_ROLE = "DLG_FLT_ROLE";
+    public static final String DLG_FLT_MNG_RPT = "DLG_FLT_MNG_RPT";
+    public static final String DLG_FLT_PARAM = "DLG_FLT_PARAM";
+    public static final String DLG_FLT_USE_ORG_INH = "DLG_FLT_USE_ORG_INH";
 
-    private static final String DLG_FLT_SEPARATOR=",";
+    private static final String DLG_FLT_SEPARATOR = ",";
 
 
-    public static  boolean isAllowed(String pk,  Set<String> filterData){
-        return filterData==null || filterData.isEmpty() || filterData.contains(pk);
+    public static boolean isAllowed(String pk, Set<String> filterData) {
+        return filterData == null || filterData.isEmpty() || filterData.contains(pk);
     }
 
     public static List<String> getOrgIdFilterFromString(Map<String, UserAttribute> attrMap) {
@@ -29,9 +30,11 @@ public class DelegationFilterHelper {
     public static boolean isOrgFilterSet(Map<String, UserAttribute> attrMap) {
         return isFilerSet(attrMap, DLG_FLT_ORG);
     }
+
     public static List<String> getDeptFilterFromString(Map<String, UserAttribute> attrMap) {
         return getFilterListFromString(attrMap, DLG_FLT_DEPT);
     }
+
     public static boolean isDeptFilterSet(Map<String, UserAttribute> attrMap) {
         return isFilerSet(attrMap, DLG_FLT_DEPT);
     }
@@ -39,6 +42,7 @@ public class DelegationFilterHelper {
     public static List<String> getDivisionFilterFromString(Map<String, UserAttribute> attrMap) {
         return getFilterListFromString(attrMap, DLG_FLT_DIV);
     }
+
     public static boolean isDivisionFilterSet(Map<String, UserAttribute> attrMap) {
         return isFilerSet(attrMap, DLG_FLT_DIV);
     }
@@ -46,6 +50,7 @@ public class DelegationFilterHelper {
     public static List<String> getRoleFilterFromString(Map<String, UserAttribute> attrMap) {
         return getFilterListFromString(attrMap, DLG_FLT_ROLE);
     }
+
     public static boolean isRoleFilterSet(Map<String, UserAttribute> attrMap) {
         return isFilerSet(attrMap, DLG_FLT_ROLE);
     }
@@ -53,6 +58,7 @@ public class DelegationFilterHelper {
     public static List<String> getGroupFilterFromString(Map<String, UserAttribute> attrMap) {
         return getFilterListFromString(attrMap, DLG_FLT_GRP);
     }
+
     public static boolean isGroupFilterSet(Map<String, UserAttribute> attrMap) {
         return isFilerSet(attrMap, DLG_FLT_GRP);
     }
@@ -60,10 +66,27 @@ public class DelegationFilterHelper {
     public static List<String> getAPPFilterFromString(Map<String, UserAttribute> attrMap) {
         return getFilterListFromString(attrMap, DLG_FLT_APP);
     }
+
     public static boolean isAPPFilterSet(Map<String, UserAttribute> attrMap) {
         return isFilerSet(attrMap, DLG_FLT_APP);
     }
 
+    public static boolean isAttributeFilterSet(Map<String, UserAttribute> attrMap) {
+        return isFilerSet(attrMap, DLG_FLT_PARAM);
+    }
+
+    public static List<String> getAttributeFilterSet(Map<String, UserAttribute> attrMap) {
+        List<String> retVal = null;
+        UserAttribute attribute = attrMap.get(DLG_FLT_PARAM);
+        if (attribute != null) {
+            if (attribute.getIsMultivalued()) {
+                retVal = attribute.getValues();
+            } else {
+                retVal = Arrays.asList(attribute.getValue());
+            }
+        }
+        return retVal;
+    }
 
 //    public static List<String> getMngRptFromString(Map<String, UserAttribute> attrMap) {
 //        return getFilterListFromString(attrMap, DLG_FLT_MNG_RPT);
@@ -72,7 +95,7 @@ public class DelegationFilterHelper {
     public static boolean isMngRptFilterSet(Map<String, UserAttribute> attrMap) {
         String filterValue = getFilterValue(attrMap, DLG_FLT_MNG_RPT);
         boolean isFilterSet = false;
-        if(StringUtils.isNotEmpty(filterValue)) {
+        if (StringUtils.isNotEmpty(filterValue)) {
             isFilterSet = new Boolean(filterValue);
         }
         return isFilterSet;
@@ -81,22 +104,22 @@ public class DelegationFilterHelper {
     public static boolean isUseOrgInhFilterSet(Map<String, UserAttribute> attrMap) {
         String filterValue = getFilterValue(attrMap, DLG_FLT_USE_ORG_INH);
         boolean isFilterSet = false;
-        if(StringUtils.isNotEmpty(filterValue)) {
+        if (StringUtils.isNotEmpty(filterValue)) {
             isFilterSet = new Boolean(filterValue);
         }
         return isFilterSet;
     }
 
 
-    public static String getValueFromList(List<String> values){
-        if(values==null)
+    public static String getValueFromList(List<String> values) {
+        if (values == null)
             return null;
-        StringBuilder  buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder();
         int ctr = 0;
         for (String s : values) {
             if (ctr == 0) {
                 buf.append(s);
-            }else {
+            } else {
                 buf.append(DLG_FLT_SEPARATOR).append(s);
             }
             ctr++;
@@ -104,26 +127,27 @@ public class DelegationFilterHelper {
         return buf.toString();
     }
 
-    public static String[] getFilterTypes(){
+    public static String[] getFilterTypes() {
         return new String[]{DelegationFilterHelper.DLG_FLT_APP,
-        					DelegationFilterHelper.DLG_FLT_DEPT,
-                            DelegationFilterHelper.DLG_FLT_DIV,
-                            DelegationFilterHelper.DLG_FLT_GRP,
-                            DelegationFilterHelper.DLG_FLT_ROLE,
-                            DelegationFilterHelper.DLG_FLT_ORG,
-                            DelegationFilterHelper.DLG_FLT_MNG_RPT,
-                            DelegationFilterHelper.DLG_FLT_USE_ORG_INH};
+                DelegationFilterHelper.DLG_FLT_DEPT,
+                DelegationFilterHelper.DLG_FLT_DIV,
+                DelegationFilterHelper.DLG_FLT_GRP,
+                DelegationFilterHelper.DLG_FLT_ROLE,
+                DelegationFilterHelper.DLG_FLT_ORG,
+                DelegationFilterHelper.DLG_FLT_PARAM,
+                DelegationFilterHelper.DLG_FLT_MNG_RPT,
+                DelegationFilterHelper.DLG_FLT_USE_ORG_INH};
     }
 
-    private static boolean isFilerSet(Map<String, UserAttribute> attrMap, String key){
+    private static boolean isFilerSet(Map<String, UserAttribute> attrMap, String key) {
         boolean result = false;
-        if(attrMap!=null){
+        if (attrMap != null) {
             UserAttribute ua = attrMap.get(key);
-            if (ua != null)  {
-                if(ua.getIsMultivalued()) {
-                    result = ua.getValues() != null && ua.getValues().size() >0;
+            if (ua != null) {
+                if (ua.getIsMultivalued()) {
+                    result = ua.getValues() != null && ua.getValues().size() > 0;
                 } else {
-                    String filter =  ua.getValue();
+                    String filter = ua.getValue();
                     result = (filter != null && !filter.trim().isEmpty());
                 }
             }
@@ -132,32 +156,32 @@ public class DelegationFilterHelper {
     }
 
 
-    private static  List<String> getFilterListFromString(Map<String, UserAttribute> attrMap, String key){
+    private static List<String> getFilterListFromString(Map<String, UserAttribute> attrMap, String key) {
         List<String> filterLst = new ArrayList<String>();
         String filter = getFilterValue(attrMap, key);
-        if(StringUtils.isNotEmpty(filter)) {
+        if (StringUtils.isNotEmpty(filter)) {
             StringTokenizer tokenizer = new StringTokenizer(filter, DLG_FLT_SEPARATOR);
-            while ( tokenizer.hasMoreTokens()) {
+            while (tokenizer.hasMoreTokens()) {
                 filterLst.add(tokenizer.nextToken());
             }
         }
         return filterLst;
     }
 
-    private static String getFilterValue(Map<String, UserAttribute> attrMap, String key){
+    private static String getFilterValue(Map<String, UserAttribute> attrMap, String key) {
         StringBuilder value = new StringBuilder();
-        if(attrMap!=null) {
+        if (attrMap != null) {
             UserAttribute ua = attrMap.get(key);
-            if (ua != null)  {
-                if(ua.getIsMultivalued()) {
-                    if(ua.getValue() != null) {
+            if (ua != null) {
+                if (ua.getIsMultivalued()) {
+                    if (ua.getValue() != null) {
                         value.append(ua.getValue()).append(",");
                     }
-                    for(String v : ua.getValues()) {
+                    for (String v : ua.getValues()) {
                         value.append(v);
                     }
                 } else {
-                    if(ua.getValue() != null) {
+                    if (ua.getValue() != null) {
                         value.append(ua.getValue());
                     }
                 }
