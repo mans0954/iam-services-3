@@ -3,6 +3,7 @@ package org.openiam.imprt.util;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.criterion.MatchMode;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
@@ -47,7 +48,8 @@ public class Transformation {
     final String EXCH_MNG_SYS_ID = "2c94b25748eaf9ef01492d5312d3026d";
     final List<String> activeStatuses = Arrays.asList("512", "544", "66048", "66080", "262656", "262688", "328192", "328224");
     final String DEFAULT_DATE = "01/01/2020 12:00:00";
-
+    final private String baseDN = "DC=d30,DC=intra";
+    //    final private String baseDN = "OU=AKZO,DC=dev,DC=local";
     final byte[] pwd = "90eb79e8-5954-4af1-b0e3-f712e25e1fca".getBytes();
     final byte[] iv = "tu89geji340t89u2".getBytes();
 
@@ -906,6 +908,49 @@ public class Transformation {
         }
     }
 
+    final private String globalAdminId = "ADMIN_GL_ROLE_ID";
+    final private String serviceTypeAdminId = "ADMIN_ST_ROLE_ID";
+    final private String buAdminId = "ADMIN_BU_ROLE_ID";
+    final private String siteCodeAdminId = "ADMIN_SITE_ROLE_ID";
+    final private List<String> serviceTypes = Arrays.asList(new String[]{"unity", "unitygsd", "unitymwls"});
+
+    private void addCorrectAdministratorRole(UserEntity user, List<OrganizationEntity> organizationEntities, String adPath) {
+        if (baseDN.equalsIgnoreCase(adPath)) {
+            //global admin
+            this.addRoleId(user, globalAdminId);
+        } else {
+            adPath = adPath.replace(baseDN, "").replace("OU=", "");
+            String[] adPathParts = adPath.split(",");
+            if (adPathParts != null) {
+                if (adPathParts.length == 3) {
+                    //all service type, BU, siteCode is presented
+                    this.addRoleId(user, siteCodeAdminId);
+                } else if (adPathParts.length == 2) {
+                    //possible combiniations site + BU or BU + Service Type
+                    if (serviceTypes.contains(adPathParts[1].toLowerCase())) {
+                        //2nd is serviceType, than 1st is BU -> buAdmin
+                        this.addRoleId(user, buAdminId);
+                    } else {
+                        //so this is site admin
+                        this.addRoleId(user, siteCodeAdminId);
+                    }
+                } else if (adPathParts.length == 1) {
+                    //possible BU or service Type
+                    if (serviceTypes.contains(adPathParts[0].toLowerCase())) {
+                        //2nd is serviceType, than 1st is BU -> buAdmin
+                        this.addRoleId(user, serviceTypeAdminId);
+                    } else {
+                        //so this is site admin
+                        this.addRoleId(user, buAdminId);
+                    }
+                }
+            }
+        }
+
+        this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM",
+                String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", adPath, MatchMode.END.toString())));
+    }
+
     private void getLinkedOrganization(String distinguishedName, String site, String bu, String country, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
         try {
             String adPath = null;
@@ -923,6 +968,11 @@ public class Transformation {
                 return;
             } else {
                 addUserAttribute(user, new UserAttributeEntity("AD_PATH", adPath));
+                //try to understand type of administrator
+                if (distinguishedName.contains("OU=Administrators")) {
+                    this.addCorrectAdministratorRole(user, orgs, adPath);
+                }
+
             }
             if (bu == null) {
                 return;
