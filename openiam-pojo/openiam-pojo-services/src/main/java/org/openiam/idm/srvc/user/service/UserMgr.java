@@ -577,6 +577,11 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return findBeans(searchBean, 0, 1);
     }
 
+
+    private SearchAttribute parseDelegationFilterAtrribute(String param){
+
+    }
+
     @Transactional(readOnly = true)
     private List<String> getUserIds(final UserSearchBean searchBean) throws BasicDataServiceException {
         final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
@@ -585,6 +590,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         boolean isGroupFilterSet = false;
         boolean isRoleFilterSet = false;
         boolean isMngReportFilterSet = false;
+        boolean isAttributeFilterSet = false;
 
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             // check and add delegation filter if necessary
@@ -598,6 +604,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
             isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
             isMngReportFilterSet = DelegationFilterHelper.isMngRptFilterSet(requesterAttributes);
+            isAttributeFilterSet=DelegationFilterHelper.isAttributeFilterSet(requesterAttributes);
 
 //            if (isOrgFilterSet) {
             if (CollectionUtils.isEmpty(searchBean.getOrganizationIdSet())) {
@@ -617,6 +624,20 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                 List<String> subordinariesList = userDao.getSubordinatesIds(searchBean.getRequesterId());
                 subordinariesList.add(searchBean.getRequesterId());
                 nonEmptyListOfLists.add(subordinariesList);
+            }
+
+            if (isAttributeFilterSet){
+                List<String> searchParams= DelegationFilterHelper.getAttributeFilterSet(requesterAttributes);
+                if (searchParams!=null){
+                    List<SearchAttribute> searchAttributeList=  searchBean.getAttributeList();
+                    if (searchAttributeList==null){
+                        searchAttributeList = new ArrayList<>();
+                        searchBean.setAttributeList(searchAttributeList);
+                    }
+                    for (String param:searchParams){
+
+                    }
+                }
             }
         }
         List<String> idList = null;
