@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.continfo.service;
 
 import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 
 import java.util.List;
@@ -16,4 +17,5 @@ import java.util.Map;
  */
 public interface EmailAddressDAO extends BaseDao<EmailAddressEntity, String> {
     public void removeByUserId(final String userId);
+    List<String> getUserIds(final EmailSearchBean esb);
 }

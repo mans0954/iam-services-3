@@ -11,6 +11,7 @@ import org.openiam.base.ws.SearchParam;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -49,6 +50,33 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     private String organizationTypeId;
     @Value("${org.openiam.department.type.id}")
     private String departmentTypeId;
+
+    @Override
+    public List<String> getUserIds(UserSearchBean usb){
+        return this.getExampleCriteria(usb.getLastNameMatchToken()).setProjection(Projections.property("id")).list();
+    }
+
+    private Criteria getExampleCriteria(final SearchParam param){
+        final Criteria criteria = getCriteria();
+
+                if (param != null && param.isValid()) {
+                    final String value = StringUtils.trimToNull(param.getValue());
+                    if (value != null) {
+                        switch (param.getMatchType()) {
+                            case EXACT:
+                                criteria.add(Restrictions.eq("lastName", StringUtils.lowerCase(value)));
+                                break;
+                            case STARTS_WITH:
+                                criteria.add(Restrictions.ilike("lastName", value.toLowerCase(), MatchMode.START));
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+        }
+        criteria.setCacheable(this.cachable());
+        return criteria;
+    }
 
     @Override
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter) {
