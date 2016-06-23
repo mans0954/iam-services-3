@@ -58,7 +58,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
                                 criteria.add(Restrictions.eq("lowerCaseLogin", StringUtils.lowerCase(value)));
                                 break;
                             case STARTS_WITH:
-                                criteria.add(Restrictions.ilike("lowerCaseLogin", value.toLowerCase(), MatchMode.START));
+                                criteria.add(Restrictions.ilike("lowerCaseLogin", value.toLowerCase(), MatchMode.ANYWHERE)); // ANYWHERE - for search by principal without org abbreviation
                                 break;
                             default:
                                 break;

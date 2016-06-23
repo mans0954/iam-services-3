@@ -609,6 +609,16 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             nonEmptyListOfLists.add((CollectionUtils.isNotEmpty(idList)) ? idList : Collections.EMPTY_LIST);
         }
 
+        if (searchBean.getLastNameMatchToken() != null && searchBean.getLastNameMatchToken().isValid()){
+            if (isLuceneEnabled){
+                nonEmptyListOfLists.add(userSearchDAO.findIds(0, Integer.MAX_VALUE, null, searchBean));
+            } else {
+                List<String> userIds = userDao.getUserIds(searchBean);
+                userIds = (userIds != null) ? userIds : Collections.EMPTY_LIST;
+                nonEmptyListOfLists.add(userIds);
+            }
+        }
+
         if (CollectionUtils.isNotEmpty(searchBean.getAttributeList())) {
             nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), -1, -1));
         }
@@ -657,7 +667,13 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         if (searchBean.getEmailAddressMatchToken() != null && searchBean.getEmailAddressMatchToken().isValid()) {
             final EmailSearchBean emailSearchBean = new EmailSearchBean();
             emailSearchBean.setEmailMatchToken(searchBean.getEmailAddressMatchToken());
-            nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0, Integer.MAX_VALUE, emailSearchBean));
+            if (isLuceneEnabled) {
+                nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0, Integer.MAX_VALUE, emailSearchBean));
+            } else {
+                List<String> userIds = emailAddressDao.getUserIds(emailSearchBean);
+                userIds = (userIds != null) ? userIds : Collections.EMPTY_LIST;
+                nonEmptyListOfLists.add(userIds);
+            }
         }
 
         if (StringUtils.isNotBlank(searchBean.getPhoneAreaCd()) || StringUtils.isNotBlank(searchBean.getPhoneNbr())) {
@@ -713,7 +729,9 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
             result = result || checkSearchParam(searchBean.getFirstNameMatchToken())
                     || checkSearchParam(searchBean.getNickNameMatchToken())
+/*
                     || checkSearchParam(searchBean.getLastNameMatchToken())
+*/
                     || checkSearchParam(searchBean.getMaidenNameMatchToken())
                     || checkSearchParam(searchBean.getEmployeeIdMatchToken())
                     || checkSearchParam(searchBean.getUserStatus())

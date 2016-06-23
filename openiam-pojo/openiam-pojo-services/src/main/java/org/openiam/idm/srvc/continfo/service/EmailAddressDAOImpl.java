@@ -10,12 +10,16 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.EmailSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.util.db.Search;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -33,6 +37,40 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
 	public void initSQL() {
 		DELETE_BY_USER_ID = String.format(DELETE_BY_USER_ID, domainClass.getSimpleName());
 	}
+
+    @Override
+    public List<String> getUserIds(EmailSearchBean esb) {
+        return getExampleCriteria(esb).setProjection(Projections.property("parent.id")).list();
+    }
+
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean sb){
+        final Criteria criteria = getCriteria();
+        if (sb != null) {
+            if (sb instanceof EmailSearchBean) {
+                final EmailSearchBean searchBean = (EmailSearchBean) sb;
+                final SearchParam param = searchBean.getEmailMatchToken();
+
+                if (param != null && param.isValid()) {
+                    final String value = StringUtils.trimToNull(param.getValue());
+                    if (value != null) {
+                        switch (param.getMatchType()) {
+                            case EXACT:
+                                criteria.add(Restrictions.eq("emailAddress", StringUtils.lowerCase(value)));
+                                break;
+                            case STARTS_WITH:
+                                criteria.add(Restrictions.ilike("emailAddress", value.toLowerCase(), MatchMode.START));
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        criteria.setCacheable(this.cachable());
+        return criteria;
+    }
 
     @Override
     protected Criteria getExampleCriteria(final EmailAddressEntity email) {
