@@ -922,7 +922,12 @@ public class Transformation {
         } else {
             adPath = adPath.replace("," + baseDN, "").replace("OU=", "");
             String[] adPathParts = adPath.split(",");
-            System.out.println("Parts of name=" + adPathParts);
+            System.out.println("Parts of name=");
+            if (adPathParts != null) {
+                for (String pa : adPathParts) {
+                    System.out.println(pa);
+                }
+            }
             if (adPathParts != null) {
                 if (adPathParts.length == 3) {
                     //all service type, BU, siteCode is presented
