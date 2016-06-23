@@ -33,6 +33,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,6 +84,9 @@ public class LoginDataServiceImpl implements LoginDataService {
     boolean encrypt = true; // default encryption setting
     private static final Log log = LogFactory
             .getLog(LoginDataServiceImpl.class);
+
+    @Value("${org.openiam.usersearch.lucene.enabled}")
+    private Boolean isLuceneEnabled;
 
     @Deprecated
     @Transactional
@@ -214,7 +218,7 @@ public class LoginDataServiceImpl implements LoginDataService {
              * DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735 
              * Use 4.0 code 
              */
-        	if(searchBean.isUseLucene()) {
+        	if(searchBean.isUseLucene() && isLuceneEnabled) {
         		retVal = loginSearchDAO.find(from, size, null, searchBean);
         	} else {
         		retVal = loginDao.getByExampleNoLocalize(searchBean, from, size);
