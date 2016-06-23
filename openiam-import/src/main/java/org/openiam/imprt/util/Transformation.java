@@ -518,7 +518,7 @@ public class Transformation {
         updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
 
         // STAGING
-        //updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
+//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
 
         // lync
         String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
@@ -920,7 +920,7 @@ public class Transformation {
             //global admin
             this.addRoleId(user, globalAdminId);
         } else {
-            adPath = adPath.replace(baseDN, "").replace("OU=", "");
+            adPath = adPath.replace(","+baseDN, "").replace("OU=", "");
             String[] adPathParts = adPath.split(",");
             if (adPathParts != null) {
                 if (adPathParts.length == 3) {
