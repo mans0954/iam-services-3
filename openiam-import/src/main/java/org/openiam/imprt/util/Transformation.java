@@ -920,7 +920,7 @@ public class Transformation {
             //global admin
             this.addRoleId(user, globalAdminId);
         } else {
-            adPath = adPath.replace("," + baseDN, "").replace("OU=", "");
+            adPath = adPath.replace("," + baseDN.toLowerCase(), "").replace("OU=", "");
             String[] adPathParts = adPath.split(",");
             System.out.println("Parts of name=");
             if (adPathParts != null) {
