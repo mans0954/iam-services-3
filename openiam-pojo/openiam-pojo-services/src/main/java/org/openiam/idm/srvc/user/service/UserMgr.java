@@ -587,7 +587,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             if (matcher.matches()) {
                 retVal.setAttributeName(matcher.group(1));
                 retVal.setAttributeValue(matcher.group(2));
-                retVal.setMatchType(MatchType.valueOf(matcher.group(3)));
+                retVal.setMatchType(MatchType.valueOf(matcher.group(3).toUpperCase()));
             }
         } catch (Exception e) {
             log.warn("Can't parse Attribute delegation filer=" + param);
