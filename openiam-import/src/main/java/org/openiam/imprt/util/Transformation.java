@@ -955,7 +955,7 @@ public class Transformation {
         }
 
         this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM",
-                String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", adPath, MatchType.END_WITH)));
+                String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", adPath + ("," + baseDN.toLowerCase()), MatchType.END_WITH)));
     }
 
     private void getLinkedOrganization(String distinguishedName, String site, String bu, String country, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
