@@ -916,13 +916,24 @@ public class Transformation {
     final private List<String> serviceTypes = Arrays.asList(new String[]{"unity", "unitygsd", "unitymwls"});
 
     private void addCorrectAdministratorRole(UserEntity user, List<OrganizationEntity> organizationEntities, String adPath) {
+        if (StringUtils.isBlank(adPath)) {
+            return;
+        }
+        String attributeValue = "";
         if (baseDN.equalsIgnoreCase(adPath)) {
+            attributeValue = adPath;
             //global admin
             this.addRoleId(user, globalAdminId);
+        }
+        if (adPath.toLowerCase().contains("ou=hp,ou=unity,dc=d30,dc=intra".toLowerCase())) {
+            attributeValue = "ou=unity,dc=d30,dc=intra";
+            this.removeRoleId(user, buAdminId);
+            this.removeRoleId(user, globalAdminId);
+            this.removeRoleId(user, siteCodeAdminId);
+            this.addRoleId(user, serviceTypeAdminId);
         } else {
             adPath = adPath.replace("," + baseDN.toLowerCase(), "").replace("OU=", "");
             String[] adPathParts = adPath.split(",");
-            System.out.println("Parts of name=");
             if (adPathParts != null) {
                 for (String pa : adPathParts) {
                     System.out.println(pa);
@@ -952,10 +963,11 @@ public class Transformation {
                     }
                 }
             }
+            attributeValue = adPath + ("," + baseDN.toLowerCase());
         }
 
         this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM",
-                String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", adPath + ("," + baseDN.toLowerCase()), MatchType.END_WITH)));
+                String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", attributeValue, MatchType.END_WITH)));
     }
 
     private void getLinkedOrganization(String distinguishedName, String site, String bu, String country, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
