@@ -931,6 +931,7 @@ public class Transformation {
             this.removeRoleId(user, globalAdminId);
             this.removeRoleId(user, siteCodeAdminId);
             this.addRoleId(user, serviceTypeAdminId);
+            this.addRoleId(user, "HP_ADMIN_ROLE_ID");
         } else {
             adPath = adPath.replace("," + baseDN.toLowerCase(), "").replace("OU=", "");
             String[] adPathParts = adPath.split(",");
