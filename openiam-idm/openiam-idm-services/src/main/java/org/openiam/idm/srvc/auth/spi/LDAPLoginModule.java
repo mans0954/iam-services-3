@@ -216,18 +216,6 @@ public class LDAPLoginModule extends AbstractLoginModule {
             }
         }
 
-        for (ExtensibleAttribute extensibleAttributes : resp.getAttrList()) {
-            switch (extensibleAttributes.getName()) {
-                case "msDS-UserPasswordExpiryTimeComputed":
-                    String pwdExp = extensibleAttributes.getValue();
-                    if (StringUtils.isNotBlank(pwdExp)) {
-                        Date pwdExpDate = converADdateToOIMdate(pwdExp);
-                        lg.setPwdExp(pwdExpDate);
-                    }
-                    break;
-            }
-        }
-
         // now we can change password
         if (changePassword != null) {
             throw changePassword;
