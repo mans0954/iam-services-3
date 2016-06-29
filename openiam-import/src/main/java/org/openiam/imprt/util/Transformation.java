@@ -464,12 +464,12 @@ public class Transformation {
 //        boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
 //        boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
 //
-//        boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
+        boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
 //        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
-//        addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
-//        addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
-//        addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
-//        addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
+        addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
 //
 //        if (isCacheEnabled) {
 //            addUserAttribute(user, new UserAttributeEntity("archieve", "Cached - Laptop"));
@@ -478,16 +478,16 @@ public class Transformation {
 //        } else {
 //            addUserAttribute(user, new UserAttributeEntity("archieve", null));
 //        }
-//        if (isMDM) {
-//            classification = "MDM";
-//        } else if (isPDD) {
-//            classification = "PDD";
-//        }
-//        if (isMDM) {
-//            addRoleId(user, "MDM_ROLE_ID");
-//        } else {
-//            removeRoleId(user, "MDM_ROLE_ID");
-//        }
+        if (isMDM) {
+            classification = "MDM";
+        } else if (isPDD) {
+            classification = "PDD";
+        }
+        if (isMDM) {
+            addRoleId(user, "MDM_ROLE_ID");
+        } else {
+            removeRoleId(user, "MDM_ROLE_ID");
+        }
 //        try {
 //            mergeGroups(memberOf, groupsMapEntities, user);
 //        } catch (Exception e) {
