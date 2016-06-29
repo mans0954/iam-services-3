@@ -133,6 +133,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         attrs.add(new ExtensibleAttribute("Enabled", null));
         attrs.add(new ExtensibleAttribute("AccountExpirationDate", null));
         attrs.add(new ExtensibleAttribute("ChangePasswordAtLogon", null));
+        attrs.add(new ExtensibleAttribute("msDS-UserPasswordExpiryTimeComputed", null));
         if(log.isDebugEnabled()) {
         	log.debug("AD_LOGIN_MODULE. Find in AD. Start");
         }
@@ -252,6 +253,18 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
                     log.error("No auth fail password policy value found");
                     throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
 
+                }
+            }
+
+            for (ExtensibleAttribute extensibleAttributes : resp.getAttrList()) {
+                switch (extensibleAttributes.getName()) {
+                    case "msDS-UserPasswordExpiryTimeComputed":
+                        String pwdExp = extensibleAttributes.getValue();
+                        if (StringUtils.isNotBlank(pwdExp)) {
+                            Date pwdExpDate = converADdateToOIMdate(pwdExp);
+                            lg.setPwdExp(pwdExpDate);
+                        }
+                        break;
                 }
             }
 
