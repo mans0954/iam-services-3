@@ -78,6 +78,11 @@ public class Transformation {
         boolean isNewUser = (user.getId() == null);
         //DistiguishedName
         String distinguishedName = this.getValue(lo.get("distinguishedName"));
+
+        if (distinguishedName.toLowerCase().contains("OU=IAMHolding,OU=Unity,DC=d30,DC=intra".toLowerCase())) {
+            throw new Exception("Default holder user. Skip for sync!!!");
+        }
+
         addUserAttribute(user, new UserAttributeEntity("distinguishedName", distinguishedName));
         //sAMAccoutName
         String samAccountName = this.getValue(lo.get("sAMAccountName"));
@@ -426,60 +431,68 @@ public class Transformation {
         }
         //TODO implement add supervisor to user
         //
+        String mbType = this.getValue(lo.get("msExchRecipientTypeDetails"));
+        System.out.println("mailbox type=" + mbType);
         // Set mailbox
         try {
-            String mailboxSize = mailboxHelper.getBoxSize(homeMDB);
-            System.out.println("MailboxSize=" + mailboxSize);
-            if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
-                addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
+            if ("1".equals(mbType)) {
+                System.out.println("I'm standard mailbox");
+                String mailboxSize = mailboxHelper.getBoxSize(homeMDB);
+                System.out.println("MailboxSize=" + mailboxSize);
+                if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
+                    addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
+                } else if ("2147483648".equals(mbType)) {
+                    System.out.println("I'm remote mailbox");
+                    addUserAttribute(user, new UserAttributeEntity("mailbox", "O365"));
+                }
             }
         } catch (Exception e) {
             System.out.println("Problem with mailbox Definitions");
         }
 
-        // MemberOf
-        Attribute mOfAttr = lo.get("memberOf");
-        String[] memberOf = null;
-        if (mOfAttr != null) {
-            if (mOfAttr.isMultiValued()) {
-                memberOf = mOfAttr.getValueList().toArray(new String[mOfAttr.getValueList().size()]);
-            } else {
-                memberOf = mOfAttr.getValue() == null ? null : mOfAttr.getValue().split("/\\,/");
-            }
-        }
-        boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
-        boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
-        boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
-
-        boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
-        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
-        addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
-        addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
-        addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
-        addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
-
-        if (isCacheEnabled) {
-            addUserAttribute(user, new UserAttributeEntity("archieve", "Cached - Laptop"));
-        } else if (isCacheDisabled) {
-            addUserAttribute(user, new UserAttributeEntity("archieve", "Non-Cached - Desktop"));
-        } else {
-            addUserAttribute(user, new UserAttributeEntity("archieve", null));
-        }
-        if (isMDM) {
-            classification = "MDM";
-        } else if (isPDD) {
-            classification = "PDD";
-        }
-        if (isMDM) {
-            addRoleId(user, "MDM_ROLE_ID");
-        } else {
-            removeRoleId(user, "MDM_ROLE_ID");
-        }
-        try {
-            mergeGroups(memberOf, groupsMapEntities, user);
-        } catch (Exception e) {
-            System.out.println("Problems with merge groups");
-        }
+//        // MemberOf
+//        Attribute mOfAttr = lo.get("memberOf");
+//        String[] memberOf = null;
+//        if (mOfAttr != null) {
+//            if (mOfAttr.isMultiValued()) {
+//                memberOf = mOfAttr.getValueList().toArray(new String[mOfAttr.getValueList().size()]);
+//            } else {
+//                memberOf = mOfAttr.getValue() == null ? null : mOfAttr.getValue().split("/\\,/");
+//            }
+//        }
+//        boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
+//        boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
+//        boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
+//
+//        boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
+//        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
+//        addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
+//        addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
+//        addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
+//        addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
+//
+//        if (isCacheEnabled) {
+//            addUserAttribute(user, new UserAttributeEntity("archieve", "Cached - Laptop"));
+//        } else if (isCacheDisabled) {
+//            addUserAttribute(user, new UserAttributeEntity("archieve", "Non-Cached - Desktop"));
+//        } else {
+//            addUserAttribute(user, new UserAttributeEntity("archieve", null));
+//        }
+//        if (isMDM) {
+//            classification = "MDM";
+//        } else if (isPDD) {
+//            classification = "PDD";
+//        }
+//        if (isMDM) {
+//            addRoleId(user, "MDM_ROLE_ID");
+//        } else {
+//            removeRoleId(user, "MDM_ROLE_ID");
+//        }
+//        try {
+//            mergeGroups(memberOf, groupsMapEntities, user);
+//        } catch (Exception e) {
+//            System.out.println("Problems with merge groups");
+//        }
         //TODO Reveal what is and how to define option: 'longTermAbsence'
         //TODO get Citrix attributes: terminalServiceHomeD...
 
