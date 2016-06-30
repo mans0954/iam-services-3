@@ -175,7 +175,7 @@ public class Transformation {
         addUserAttribute(user, new UserAttributeEntity("serviceType", serviceTypeAttr));
 
         String sbu = this.getValue(lo.get("extensionAttribute5"));
-        addUserAttribute(user, new UserAttributeEntity("ORG_SBU_SHORT_NAME", serviceTypeAttr));
+        addUserAttribute(user, new UserAttributeEntity("ORG_SBU_SHORT_NAME", sbu));
         String msExchExtensionAttribute16 = this.getValue(lo.get("msExchExtensionAttribute16"));
         if ("1".equalsIgnoreCase(msExchExtensionAttribute16)) {
             addUserAttribute(user, new UserAttributeEntity("syncToCloud", "On"));
@@ -413,12 +413,40 @@ public class Transformation {
                     break;
             }
         }
+
+        String mbType = this.getValue(lo.get("msExchRecipientTypeDetails"));
+        System.out.println("mailbox type=" + mbType);
+
+
+
         //Home MDB
         String homeMDB = this.getValue(lo.get("homeMDB"));
+
         if (!isService) {
             boolean isNoMBX = StringUtils.isBlank(homeMDB) || PDD_EMAIL.equalsIgnoreCase(this.getValue(lo.get("mail")));
             mdTypeId = isNoMBX ? "AKZONOBEL_USER_NO_MBX" : "AKZONOBEL_USER_MBX";
         }
+
+        // Set mailbox
+        try {
+            if ("1".equals(mbType)) {
+                System.out.println("I'm standard mailbox");
+                String mailboxSize = mailboxHelper.getBoxSize(homeMDB);
+                System.out.println("MailboxSize=" + mailboxSize);
+                if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
+                    addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
+                    mdTypeId="AKZONOBEL_USER_MBX";
+                }
+            } else if ("2147483648".equals(mbType)) {
+                System.out.println("I'm remote mailbox");
+                addUserAttribute(user, new UserAttributeEntity("mailbox", "O365"));
+                mdTypeId="AKZONOBEL_USER_MBX";
+            }
+        } catch (Exception e) {
+            System.out.println("Problem with mailbox Definitions");
+        }
+
+
         //serviceAccountName
         addUserAttribute(user, new UserAttributeEntity("serviceAccountName", isService ? samAccountName : null));
         attr = this.getValue(lo.get("company"));
@@ -431,24 +459,7 @@ public class Transformation {
         }
         //TODO implement add supervisor to user
         //
-        String mbType = this.getValue(lo.get("msExchRecipientTypeDetails"));
-        System.out.println("mailbox type=" + mbType);
-        // Set mailbox
-        try {
-            if ("1".equals(mbType)) {
-                System.out.println("I'm standard mailbox");
-                String mailboxSize = mailboxHelper.getBoxSize(homeMDB);
-                System.out.println("MailboxSize=" + mailboxSize);
-                if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
-                    addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
-                } else if ("2147483648".equals(mbType)) {
-                    System.out.println("I'm remote mailbox");
-                    addUserAttribute(user, new UserAttributeEntity("mailbox", "O365"));
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Problem with mailbox Definitions");
-        }
+
 
 //        // MemberOf
 //        Attribute mOfAttr = lo.get("memberOf");
