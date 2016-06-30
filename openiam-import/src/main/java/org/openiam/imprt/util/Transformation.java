@@ -269,7 +269,7 @@ public class Transformation {
         }
         attr = this.getValue(lo.get("st"));
         if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("st", attr));
+            addUserAttribute(user, new UserAttributeEntity("STATE", attr));
         }
         attr = this.getValue(lo.get("streetAddress"));
         if (StringUtils.isNotBlank(attr)) {
@@ -277,7 +277,7 @@ public class Transformation {
         }
         attr = this.getValue(lo.get("office"));
         if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("Office", attr));
+            addUserAttribute(user, new UserAttributeEntity("OFFICE_ADDRESS", attr));
         }
 
         // Add Address
@@ -418,7 +418,6 @@ public class Transformation {
         System.out.println("mailbox type=" + mbType);
 
 
-
         //Home MDB
         String homeMDB = this.getValue(lo.get("homeMDB"));
 
@@ -435,12 +434,12 @@ public class Transformation {
                 System.out.println("MailboxSize=" + mailboxSize);
                 if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
                     addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
-                    mdTypeId="AKZONOBEL_USER_MBX";
+                    mdTypeId = "AKZONOBEL_USER_MBX";
                 }
             } else if ("2147483648".equals(mbType)) {
                 System.out.println("I'm remote mailbox");
                 addUserAttribute(user, new UserAttributeEntity("mailbox", "O365"));
-                mdTypeId="AKZONOBEL_USER_MBX";
+                mdTypeId = "AKZONOBEL_USER_MBX";
             }
         } catch (Exception e) {
             System.out.println("Problem with mailbox Definitions");
