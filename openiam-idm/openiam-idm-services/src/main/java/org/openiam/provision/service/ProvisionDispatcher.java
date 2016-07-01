@@ -1,10 +1,7 @@
 package org.openiam.provision.service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,17 +9,14 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
+import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.connection.Message;
-import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.Topic;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component("provDispatcher")
-public class ProvisionDispatcher {
+public class ProvisionDispatcher implements Sweepable {
 
     private static final Log log = LogFactory.getLog(ProvisionDispatcher.class);
 
@@ -34,21 +28,21 @@ public class ProvisionDispatcher {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-    
-    @Autowired
-    private RedisMessageListenerContainer listener;
 
-    @PostConstruct
-    public void init() {
-    	listener.addMessageListener(new MessageListener() {
-			
-			@Override
-			public void onMessage(Message message, byte[] pattern) {
-				final ProvisionDataContainer entity = (ProvisionDataContainer)redisTemplate.getDefaultSerializer().deserialize(message.getBody());
-				provisionTransactionHelper.process(entity);
+	@Override
+	@Scheduled(fixedRate=500, initialDelay=500)
+	public void sweep() {
+		final Long size = redisTemplate.opsForList().size("provQueue");
+		if(size != null) {
+			for(long i = 0; i < size.intValue() ; i++) {
+				final Object key = redisTemplate.opsForList().rightPop("provQueue");
+				if(key != null) {
+					final ProvisionDataContainer entity = (ProvisionDataContainer)key;
+					provisionTransactionHelper.process(entity);
+				}
 			}
-		}, Arrays.asList(new Topic[] { new ChannelTopic("provQueue")}));
-    }
+		}
+	}
 
     /**
      * Update the list of attributes with the correct operation values so that

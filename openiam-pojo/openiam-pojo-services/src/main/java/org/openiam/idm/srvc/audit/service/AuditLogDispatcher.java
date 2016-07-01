@@ -1,27 +1,19 @@
 package org.openiam.idm.srvc.audit.service;
 
-import java.util.Arrays;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.connection.Message;
-import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.Topic;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Component("auditLogDispatcher")
-public class AuditLogDispatcher {
+public class AuditLogDispatcher implements Sweepable {
 
 	private static final Log LOG = LogFactory.getLog(AuditLogDispatcher.class);
 
@@ -31,50 +23,25 @@ public class AuditLogDispatcher {
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
-    
+
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
     
-    @Autowired
-    private RedisMessageListenerContainer listener;
-    
-    @PostConstruct
-    public void init() {
-    	listener.addMessageListener(new MessageListener() {
-			
-			@Override
-			public void onMessage(Message message, byte[] pattern) {
-				final IdmAuditLogEntity log = (IdmAuditLogEntity)redisTemplate.getDefaultSerializer().deserialize(message.getBody());
-				process(log);
+	@Override
+	@Scheduled(fixedRate=500, initialDelay=500)
+	public void sweep() {
+		final Long size = redisTemplate.opsForList().size("logQueue");
+		if(size != null) {
+			for(long i = 0; i < size.intValue() ; i++) {
+				final Object key = redisTemplate.opsForList().rightPop("logQueue");
+				if(key != null) {
+					final IdmAuditLogEntity log = (IdmAuditLogEntity)key;
+					process(log);
+				}
 			}
-		}, Arrays.asList(new Topic[] { new ChannelTopic("logQueue")}));
-    }
+		}
+	}
     
-    
-    private void persist(final List<IdmAuditLogEntity> messageList) {
-    	/*
-    	 * This goes to elastic search as of V4, so we no longer need a transaction
-    	 * 
-    	 * 
-    	 * 
-    	TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-        transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-        Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
-            @Override
-            public Boolean doInTransaction(TransactionStatus status) {
-            	for(final IdmAuditLogEntity message : messageList) {
-                    process(message);
-           	 	}
-                return true;
-            }
-    	});
-    	*/
-    	
-    	for(final IdmAuditLogEntity message : messageList) {
-            process(message);
-   	 	}
-    }
-
     private void process(final IdmAuditLogEntity event) {
         if (StringUtils.isNotEmpty(event.getId())) {
         	final IdmAuditLogEntity srcLog = auditLogService.findById(event.getId());

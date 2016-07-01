@@ -198,7 +198,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 	}
 	
 	 private void send(final IdmAuditLogEntity log) {
-		 redisTemplate.convertAndSend("logQueue", log);
+		 redisTemplate.opsForList().leftPush("logQueue", log);
 	 }
 
 	@Override

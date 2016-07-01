@@ -1,11 +1,8 @@
 package org.openiam.idm.srvc.meta.service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -38,15 +35,12 @@ import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.thread.Sweepable;
 import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.connection.Message;
-import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.Topic;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -58,7 +52,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * Date: 7/22/14.
  */
 @Component("metadataDispatcher")
-public class MetadataDispatcher {
+public class MetadataDispatcher implements Sweepable {
 	private static final Log log = LogFactory.getLog(MetadataDispatcher.class);
     @Autowired
     private UserDataService userManager;
@@ -90,37 +84,38 @@ public class MetadataDispatcher {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
     
-    @Autowired
-    private RedisMessageListenerContainer listener;
-    
-    @PostConstruct
-    public void init() {
-    	listener.addMessageListener(new MessageListener() {
-			
-			@Override
-			public void onMessage(Message message, byte[] pattern) {
-				final MetadataElementEntity entity = (MetadataElementEntity)redisTemplate.getDefaultSerializer().deserialize(message.getBody());
-				final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-                transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-                Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
-                    @Override
-                    public Boolean doInTransaction(TransactionStatus status) {
-                        process(entity);
-                        /*
-                         * I'm keeping this commented out here, in memory of our friends at Minsk
-                         * 
-                        try {
-                            // to give other threads chance to be executed
-                            Thread.sleep(100);
-                        } catch (InterruptedException e1) {
-                            log.warn(e1.getMessage());
-                        }
-						*/
-                        return true;
-                    }});
+	@Override
+	@Scheduled(fixedRate=500, initialDelay=500)
+	public void sweep() {
+		final Long size = redisTemplate.opsForList().size("metaElementQueue");
+		if(size != null) {
+			for(long i = 0; i < size.intValue() ; i++) {
+				final Object key = redisTemplate.opsForList().rightPop("metaElementQueue");
+				if(key != null) {
+					final MetadataElementEntity entity = (MetadataElementEntity)key;
+					final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+	                transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
+	                Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
+	                    @Override
+	                    public Boolean doInTransaction(TransactionStatus status) {
+	                        process(entity);
+	                        /*
+	                         * I'm keeping this commented out here, in memory of our friends at Minsk
+	                         * 
+	                        try {
+	                            // to give other threads chance to be executed
+	                            Thread.sleep(100);
+	                        } catch (InterruptedException e1) {
+	                            log.warn(e1.getMessage());
+	                        }
+							*/
+	                        return true;
+	                    }
+	                });
+				}
 			}
-		}, Arrays.asList(new Topic[] { new ChannelTopic("metaElementQueue")}));
-    }
+		}
+	}
 
     private void process(MetadataElementEntity metadataElementEntity){
         if(metadataElementEntity!=null && metadataElementEntity.isRequired()){

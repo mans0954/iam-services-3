@@ -806,6 +806,13 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
             }
 
             final AbstractSMSOTPModule module = (AbstractSMSOTPModule) scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
+            if(module == null) {
+            	final String errorMessage = String.format("Could not create %s from groovy script %s", AbstractSMSOTPModule.class, authProvider.getSmsOTPGroovyScript());
+            	event.addWarning(errorMessage);
+            	log.error(errorMessage);
+            	throw new BasicDataServiceException(ResponseCode.SMS_OTP_GROOVY_SCRIPT_REQUIRED);
+            }
+            
             final LoginEntity login = getLogin(userId, managedSystem.getId());
             if (login == null) {
                 throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);

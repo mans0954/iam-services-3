@@ -20,6 +20,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.Topic;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
@@ -48,6 +49,7 @@ public class RedisConfig {
 		final RedisTemplate<String, Object> template = new RedisTemplate<String, Object>();
 		template.setConnectionFactory(jedisConnectionFactory());
 		template.setEnableTransactionSupport(false); /* enabling transaction support slows things down considerably */
+		template.setKeySerializer(new StringRedisSerializer()); /* otherwise our keys will have binary data in them, and they will not be referenceable */
 		return template;
 	}
 	

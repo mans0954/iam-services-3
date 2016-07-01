@@ -658,7 +658,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 		Response response = new Response();
 		if (reportSubscription != null) {
 			try {
-				redisTemplate.convertAndSend("subsQueue", reportSubscription);
+				redisTemplate.opsForList().leftPush("subsQueue", reportSubscription);
 				response.succeed();
 			} catch(Throwable e) {
 				log.error("can't add subs queue message", e);
@@ -677,7 +677,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 			if (reportSubscription != null) {
 				try {
-					redisTemplate.convertAndSend("subsQueue", reportSubscription);
+					redisTemplate.opsForList().leftPush("subsQueue", reportSubscription);
 				} catch(Throwable e) {
 					log.error("can't add subs queue message", e);
 				}

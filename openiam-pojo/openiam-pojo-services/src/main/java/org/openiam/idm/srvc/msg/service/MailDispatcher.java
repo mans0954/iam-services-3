@@ -1,38 +1,32 @@
 package org.openiam.idm.srvc.msg.service;
 
-import java.util.Arrays;
-
-import javax.annotation.PostConstruct;
-
+import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.Topic;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component("mailDispatcher")
-public class MailDispatcher {
+public class MailDispatcher implements Sweepable {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
     
     @Autowired
-    private RedisMessageListenerContainer listener;
-    
-    @Autowired
     MailSenderClient mailSenderClient;
-	
-	@PostConstruct
-    public void init() {
-		listener.addMessageListener(new MessageListener() {
-			
-			@Override
-			public void onMessage(org.springframework.data.redis.connection.Message message, byte[] pattern) {
-				final Message entity = (Message)redisTemplate.getDefaultSerializer().deserialize(message.getBody());
-				mailSenderClient.send(entity);
+
+	@Override
+	@Scheduled(fixedRate=500, initialDelay=500)
+	public void sweep() {
+		final Long size = redisTemplate.opsForList().size("mailQueue");
+		if(size != null) {
+			for(long i = 0; i < size.intValue() ; i++) {
+				final Object key = redisTemplate.opsForList().rightPop("mailQueue");
+				if(key != null) {
+					final Message entity = (Message)key;
+					mailSenderClient.send(entity);
+				}
 			}
-		}, Arrays.asList(new Topic[] { new ChannelTopic("mailQueue")}));
+		}
 	}
 }

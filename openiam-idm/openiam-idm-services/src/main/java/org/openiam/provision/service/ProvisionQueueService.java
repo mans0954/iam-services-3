@@ -13,7 +13,7 @@ public class ProvisionQueueService {
     private RedisTemplate<String, Object> redisTemplate;
 
     public void enqueue(final ProvisionDataContainer data) {
-    	redisTemplate.convertAndSend("provQueue", data);
+    	redisTemplate.opsForList().leftPush("provQueue", data);
     }
 
     public void enqueue(final List<ProvisionDataContainer> dataList) {

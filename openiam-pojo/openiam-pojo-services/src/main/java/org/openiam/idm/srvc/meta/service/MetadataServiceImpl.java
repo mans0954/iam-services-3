@@ -18,7 +18,6 @@ import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -32,18 +31,11 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
-
-import javax.jms.Queue;
 
 /**
  * Data service implementation for Metadata.
@@ -82,8 +74,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private JmsTemplate jmsTemplate;
 
 /*    @Autowired
     @Qualifier(value = "metaElementQueue")
@@ -258,7 +248,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
     private void send(final MetadataElementEntity entity) {
-    	redisTemplate.convertAndSend("metaElementQueue", entity);
+    	redisTemplate.opsForList().leftPush("metaElementQueue", entity);
     }
 	
 	private void mergeValidValues(final MetadataElementEntity bean, final MetadataElementEntity dbObject) {
