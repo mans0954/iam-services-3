@@ -2,6 +2,9 @@ package org.openiam.imprt.jdbc;
 
 import org.apache.log4j.Logger;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.query.AddQueryBuilder;
 import org.openiam.imprt.query.SelectQueryBuilder;
@@ -21,6 +24,7 @@ import java.util.*;
  * @author D.Zaporozhec
  * @param <E>
  * - E extends BaseEntity
+ * @param <E>
  * @param <E>
  * @param <E>
  * @param <E>
@@ -219,6 +223,29 @@ public abstract class AbstractJDBCAgent<E> {
         this.disconnect();
         return result;
     }
+
+    //custome
+    protected List<GroupEntity> getGroupsInFormatWithDN() throws SQLException {
+        String sql = "SELECT g.GRP_ID as 'ID', g.GRP_NAME as 'NAME', ga.ATTR_VALUE as 'DN' FROM GRP g JOIN GRP_ATTRIBUTES ga on g.GRP_ID = ga.GRP_ID WHERE ga.NAME ='DistinguishedName'";
+        List<GroupEntity> result = new ArrayList<>();
+        this.connect();
+        ResultSet rs = stmt.executeQuery(sql);
+        while (rs.next()) {
+            GroupEntity gp = new GroupEntity();
+            gp.setAttributes(new HashSet<GroupAttributeEntity>());
+            gp.setName(rs.getString(2));
+            gp.setId(rs.getString(1));
+            GroupAttributeEntity groupAttributeEntity = new GroupAttributeEntity();
+            groupAttributeEntity.setName("DistinguishedName");
+            groupAttributeEntity.setValue(rs.getString(3));
+            gp.getAttributes().add(groupAttributeEntity);
+        }
+        rs.close();
+        rs = null;
+        this.disconnect();
+        return result;
+    }
+
 
     /**
      * Execute SQL query with specify columns

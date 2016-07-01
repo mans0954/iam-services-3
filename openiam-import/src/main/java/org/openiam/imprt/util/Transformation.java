@@ -141,6 +141,9 @@ public class Transformation {
             String prefixLastName = user.getPrefixLastName();
             if (StringUtils.isNotBlank(prefixLastName)) {
                 surname = surname.replace(prefixLastName.trim(), "").trim();
+                if (',' == surname.charAt(surname.length() - 1)) {
+                    surname = surname.substring(0, surname.length() - 1);
+                }
             } else {
                 user.setPrefixLastName(null);
             }
@@ -275,7 +278,7 @@ public class Transformation {
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("STREET_ADDRESS", attr));
         }
-        attr = this.getValue(lo.get("office"));
+        attr = this.getValue(lo.get("physicalDeliveryOfficeName"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("OFFICE_ADDRESS", attr));
         }
@@ -287,7 +290,7 @@ public class Transformation {
             adr.setCountry(this.getValue(lo.get("co")));
             adr.setCity(this.getValue(lo.get("l")));
             adr.setAddress1(this.getValue(lo.get("streetAddress")));
-            adr.setAddress2(this.getValue(lo.get("office")));
+            adr.setAddress2(this.getValue(lo.get("physicalDeliveryOfficeName")));
             adr.setState(this.getValue(lo.get("st")));
             adr.setPostalCd(this.getValue(lo.get("postalCode")));
             MetadataTypeEntity metadataTypeEntity = new MetadataTypeEntity();
@@ -461,18 +464,18 @@ public class Transformation {
 
 
 //        // MemberOf
-//        Attribute mOfAttr = lo.get("memberOf");
-//        String[] memberOf = null;
-//        if (mOfAttr != null) {
-//            if (mOfAttr.isMultiValued()) {
-//                memberOf = mOfAttr.getValueList().toArray(new String[mOfAttr.getValueList().size()]);
-//            } else {
-//                memberOf = mOfAttr.getValue() == null ? null : mOfAttr.getValue().split("/\\,/");
-//            }
-//        }
-//        boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
-//        boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
-//        boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
+        Attribute mOfAttr = lo.get("memberOf");
+        String[] memberOf = null;
+        if (mOfAttr != null) {
+            if (mOfAttr.isMultiValued()) {
+                memberOf = mOfAttr.getValueList().toArray(new String[mOfAttr.getValueList().size()]);
+            } else {
+                memberOf = mOfAttr.getValue() == null ? null : mOfAttr.getValue().split("/\\,/");
+            }
+        }
+        boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
+        boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
+        boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
 //
         boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
 //        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
@@ -481,13 +484,13 @@ public class Transformation {
         addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
 //
-//        if (isCacheEnabled) {
-//            addUserAttribute(user, new UserAttributeEntity("archieve", "Cached - Laptop"));
-//        } else if (isCacheDisabled) {
-//            addUserAttribute(user, new UserAttributeEntity("archieve", "Non-Cached - Desktop"));
-//        } else {
-//            addUserAttribute(user, new UserAttributeEntity("archieve", null));
-//        }
+        if (isCacheEnabled) {
+            addUserAttribute(user, new UserAttributeEntity("archieve", "Cached - Laptop"));
+        } else if (isCacheDisabled) {
+            addUserAttribute(user, new UserAttributeEntity("archieve", "Non-Cached - Desktop"));
+        } else {
+            addUserAttribute(user, new UserAttributeEntity("archieve", null));
+        }
         if (isMDM) {
             classification = "MDM";
         } else if (isPDD) {
@@ -498,11 +501,11 @@ public class Transformation {
         } else {
             removeRoleId(user, "MDM_ROLE_ID");
         }
-//        try {
-//            mergeGroups(memberOf, groupsMapEntities, user);
-//        } catch (Exception e) {
-//            System.out.println("Problems with merge groups");
-//        }
+        try {
+            mergeGroups(memberOf, groupsMapEntities, user);
+        } catch (Exception e) {
+            System.out.println("Problems with merge groups");
+        }
         //TODO Reveal what is and how to define option: 'longTermAbsence'
         //TODO get Citrix attributes: terminalServiceHomeD...
 

@@ -107,6 +107,10 @@ public class GroupEntityParser extends BaseParser<GroupEntity> {
         }
     }
 
+    public List<GroupEntity> getGroupsWithDN() throws Exception{
+        return this.getGroupsInFormatWithDN();
+    }
+
     private String getMetadataTypeValue(MetadataTypeEntity mt) {
         return mt == null ? null : mt.getId();
     }
