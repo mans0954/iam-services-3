@@ -123,10 +123,13 @@ public class IHEAuditEvent implements ExportAuditEvent {
                     if (log.getAction().equalsIgnoreCase("LOGOUT")) {
                         bAry = logout(log);
                     }
+                    if (!log.getAction().equalsIgnoreCase("LOGIN") && !log.getAction().equalsIgnoreCase("LOGOUT")){
+                        bAry = userChange(log);
+                    }
                 }
-                if (auditLogTarget.getTargetType().equalsIgnoreCase("USER")) {
+                /*if (auditLogTarget.getTargetType().equalsIgnoreCase("USER")) {
                     bAry = userChange(log);
-                }
+                }*/
         /*if (auditLogTarget.getTargetType().equalsIgnoreCase("PASSWORD")) {
             bAry = userChange(log);
         }*/
