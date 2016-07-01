@@ -16,9 +16,9 @@ import java.util.Set;
         "middleName", "prefix", "sex", "status", "secondaryStatus", "suffix",
         "title", "nickname", "maidenName", "userTypeId", "startDate", "lastDate",
         "userAttributes", "groups", "roles", "resources", "organizations", "emails", "addresses", "phones",
-        /*"subordinates",*/ "supervisors","alternativeContact", "passwordRequest", "userSubTypeId", "prefixPartnerName", "prefixLastName", "partnerName"})
+        /*"subordinates",*/ "supervisors", "alternativeContact", "passwordRequest", "userSubTypeId", "prefixPartnerName", "prefixLastName", "partnerName"})
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "user",namespace = "http://www.openiam.org/service/provision/dto/srcadapter")
+@XmlRootElement(name = "user", namespace = "http://www.openiam.org/service/provision/dto/srcadapter")
 public class SourceAdapterRequest implements Serializable {
     private SourceAdapterOperationEnum action;
     private SourceAdapterKey key;
@@ -109,6 +109,33 @@ public class SourceAdapterRequest implements Serializable {
             @XmlElement(name = "user-supervisor")}
     )
     private Set<SourceAdapterMemberhipKey> supervisors;
+
+    /**
+     * 0 - disabled
+     * 1 - prod
+     * 2 - simulation
+     */
+    @XmlTransient
+    private String mode = "DISABLE";
+
+    @XmlTransient
+    private String pathToPreProcessor;
+
+    public String getPathToPreProcessor() {
+        return pathToPreProcessor;
+    }
+
+    public void setPathToPreProcessor(String pathToPreProcessor) {
+        this.pathToPreProcessor = pathToPreProcessor;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
 
     //    @XmlElementWrapper(name = "user-subordinates-set")
 //    @XmlElements({

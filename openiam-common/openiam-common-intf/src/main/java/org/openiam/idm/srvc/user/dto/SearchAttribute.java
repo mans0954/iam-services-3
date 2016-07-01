@@ -1,5 +1,8 @@
 package org.openiam.idm.srvc.user.dto;
 
+import org.hibernate.criterion.MatchMode;
+import org.openiam.base.ws.MatchType;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -16,23 +19,26 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "SearchAttribute", propOrder = {
         "attributeName",
         "attributeValue",
-        "attributeElementId"
+        "attributeElementId",
+        "matchType"
 })
 public class SearchAttribute {
-    String attributeName;
-    String attributeValue;
-    String attributeElementId;
-    
-    public SearchAttribute() {}
-    
+    private String attributeName;
+    private String attributeValue;
+    private String attributeElementId;
+    private MatchType matchType = MatchType.EXACT;
+
+    public SearchAttribute() {
+    }
+
     public SearchAttribute(final String name, final String value) {
-    	this(name, value, null);
+        this(name, value, null);
     }
 
     public SearchAttribute(final String name, final String value, final String attributeElementId) {
         this.attributeName = name;
         this.attributeValue = value;
-        this.attributeElementId=attributeElementId;
+        this.attributeElementId = attributeElementId;
     }
 
     public String getAttributeName() {
@@ -59,12 +65,21 @@ public class SearchAttribute {
         this.attributeElementId = attributeElementId;
     }
 
+    public MatchType getMatchType() {
+        return matchType;
+    }
+
+    public void setMatchType(MatchType matchType) {
+        this.matchType = matchType;
+    }
+
     @Override
     public String toString() {
         return "SearchAttribute{" +
                 "attributeName='" + attributeName + '\'' +
                 ", attributeValue='" + attributeValue + '\'' +
                 ", attributeElementId='" + attributeElementId + '\'' +
+                ", matchType='" + matchType + '\'' +
                 '}';
     }
 }

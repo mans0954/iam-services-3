@@ -7,6 +7,7 @@ import org.hibernate.FetchMode;
 import org.hibernate.criterion.*;
 import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -30,7 +31,7 @@ import static org.hibernate.criterion.Projections.rowCount;
  * Data access implementation for domain model class User and UserWS. UserWS is
  * similar to User, however, the interface has been simplified to support usage
  * in a web service.
- * 
+ *
  * @author Suneet Shah
  * @see org.openiam.idm.srvc.user
  */
@@ -50,6 +51,12 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     private String organizationTypeId;
     @Value("${org.openiam.department.type.id}")
     private String departmentTypeId;
+
+    /* DO NOT MERGE INTO 4.0!!!! */
+    @Override
+    public List<String> getUserIds(UserSearchBean searchBean) {
+        return getExampleCriteria(searchBean).setProjection(Projections.property("id")).list();
+    }
 
     @Override
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter) {
@@ -99,7 +106,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     @Override
     public List<String> getUserIdList(int startPos, int count) {
         return (List<String>) getCriteria().setProjection(Projections.property(getPKfieldName())).setFirstResult(startPos).setMaxResults(count)
-                        .list();
+                .list();
     }
 
     @Override
@@ -219,26 +226,26 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.createAlias("emailAddresses", "em");
                 final Disjunction disjunction = Restrictions.disjunction();
                 disjunction.add(getStringCriterion("em.emailAddress", searchBean.getEmailAddressMatchToken().getValue(), ORACLE_INSENSITIVE))
-                                .add(getStringCriterion("email", searchBean.getEmailAddressMatchToken().getValue(), ORACLE_INSENSITIVE));
+                        .add(getStringCriterion("email", searchBean.getEmailAddressMatchToken().getValue(), ORACLE_INSENSITIVE));
                 criteria.add(disjunction);
             }
             if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
                 criteria.createAlias("groups", "g");
                 criteria.add(Restrictions.in("g.id", searchBean.getGroupIdSet()));
             }
-            
+
             SearchParam searchParam = searchBean.getEmployeeIdMatchToken();
-            if(searchParam != null && searchParam.isValid()) {
-            	switch(searchParam.getMatchType()) {
-            		case EXACT:
-            			criteria.add(Restrictions.eq("employeeId", searchParam.getValue()));
-            			break;
-            		case STARTS_WITH:
-            			criteria.add(Restrictions.like("employeeId", searchParam.getValue(), MatchMode.START));
-            			break;
-            		default:
-    					break;
-            	}
+            if (searchParam != null && searchParam.isValid()) {
+                switch (searchParam.getMatchType()) {
+                    case EXACT:
+                        criteria.add(Restrictions.eq("employeeId", searchParam.getValue()));
+                        break;
+                    case STARTS_WITH:
+                        criteria.add(Restrictions.like("employeeId", searchParam.getValue(), MatchMode.START));
+                        break;
+                    default:
+                        break;
+                }
             }
             //if (StringUtils.isNotEmpty(searchBean.getEmployeeId())) {
             //    criteria.add(Restrictions.eq("employeeId", searchBean.getEmployeeId()));
@@ -249,26 +256,38 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
 
             if (StringUtils.isNotEmpty(searchBean.getAttributeElementId())
-                || (searchBean.getAttributeList() != null && !searchBean.getAttributeList().isEmpty())) {
+                    || (searchBean.getAttributeList() != null && !searchBean.getAttributeList().isEmpty())) {
                 criteria.createAlias("userAttributes", "ua");
                 if (searchBean.getAttributeList() != null && !searchBean.getAttributeList().isEmpty()) {
-                    List<String> nameList = new ArrayList<String>();
-                    List<String> valueList = new ArrayList<String>();
                     for (SearchAttribute atr : searchBean.getAttributeList()) {
-                        if (atr.getAttributeName() != null) {
-                            nameList.add(atr.getAttributeName());
+                        if (atr.getAttributeName() == null && atr.getAttributeValue() == null) {
+                            continue;
+                        } else if (atr.getAttributeName() != null && atr.getAttributeValue() == null) {
+                            criteria.add(Restrictions.eq("ua.name", atr.getAttributeName()).ignoreCase());
+                        } else if (atr.getAttributeName() == null && atr.getAttributeValue() != null) {
+                            criteria.add(Restrictions.ilike("ua.value", atr.getAttributeValue(), this.getMatchMode(atr.getMatchType())));
+                        } else if (atr.getAttributeName() != null && atr.getAttributeValue() != null) {
+                            criteria.add(Restrictions.and(Restrictions.eq("ua.name", atr.getAttributeName()).ignoreCase(),
+                                    Restrictions.ilike("ua.value", atr.getAttributeValue(), this.getMatchMode(atr.getMatchType()))));
                         }
-                        if (atr.getAttributeValue() != null) {
-                            valueList.add(atr.getAttributeValue());
-                        }
                     }
-
-                    if (nameList.size() > 0) {
-                        criteria.add(Restrictions.in("ua.name", nameList));
-                    }
-                    if (valueList.size() > 0) {
-                        criteria.add(Restrictions.in("ua.value", valueList));
-                    }
+//                    List<String> nameList = new ArrayList<String>();
+//                    List<String> valueList = new ArrayList<String>();
+//                    for (SearchAttribute atr : searchBean.getAttributeList()) {
+//                        if (atr.getAttributeName() != null) {
+//                            nameList.add(atr.getAttributeName());
+//                        }
+//                        if (atr.getAttributeValue() != null) {
+//                            valueList.add(atr.getAttributeValue());
+//                        }
+//                    }
+//
+//                    if (nameList.size() > 0) {
+//                        criteria.add(Restrictions.in("ua.name", nameList));
+//                    }
+//                    if (valueList.size() > 0) {
+//                        criteria.add(Restrictions.in("ua.value", valueList));
+//                    }
                 }
                 if (StringUtils.isNotEmpty(searchBean.getAttributeElementId())) {
                     criteria.add(Restrictions.eq("ua.metadataElementId", searchBean.getAttributeElementId()));
@@ -279,13 +298,13 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                     || StringUtils.isNotEmpty(searchBean.getLoggedIn())) {
                 criteria.createAlias("principalList", "lg");
                 if (searchBean.getPrincipal() != null) {
-                	final SearchParam param = searchBean.getPrincipal().getLoginMatchToken();
-                	if(param != null && param.isValid()) {
-                		criteria.add(getStringCriterion("lg.login", param.getValue(), ORACLE_INSENSITIVE));
-                	}
-                	if (StringUtils.isNotEmpty(searchBean.getPrincipal().getManagedSysId())) {
-                		criteria.add(Restrictions.eq("lg.managedSysId", searchBean.getPrincipal().getManagedSysId()));
-                	}
+                    final SearchParam param = searchBean.getPrincipal().getLoginMatchToken();
+                    if (param != null && param.isValid()) {
+                        criteria.add(getStringCriterion("lg.login", param.getValue(), ORACLE_INSENSITIVE));
+                    }
+                    if (StringUtils.isNotEmpty(searchBean.getPrincipal().getManagedSysId())) {
+                        criteria.add(Restrictions.eq("lg.managedSysId", searchBean.getPrincipal().getManagedSysId()));
+                    }
                 }
                 if (StringUtils.isNotEmpty(searchBean.getLoggedIn())) {
                     if ("YES".equalsIgnoreCase(searchBean.getLoggedIn())) {
@@ -300,6 +319,28 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return criteria;
     }
 
+
+    private MatchMode getMatchMode(MatchType matchType) {
+        if (matchType == null) {
+            return null;
+        }
+        MatchMode mode = null;
+        switch (matchType) {
+            case EXACT:
+                mode = MatchMode.EXACT;
+                break;
+            case END_WITH:
+                mode = MatchMode.END;
+                break;
+            case STARTS_WITH:
+                mode = MatchMode.START;
+                break;
+            default:
+                break;
+        }
+
+        return mode;
+    }
     // private Criteria getUsersForResourceCriteria(final String resourceId) {
     // return getCriteria().createAlias("resourceUsers",
     // "ru").add(Restrictions.eq("ru.resourceId", resourceId));
@@ -318,7 +359,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             criteria.setMaxResults(size);
         }
 
-        if(CollectionUtils.isNotEmpty(sortParamList)){
+        if (CollectionUtils.isNotEmpty(sortParamList)) {
             addSorting(criteria, sortParamList);
         }
 
@@ -429,7 +470,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     @Override
     public List<UserEntity> getUsersForMSys(final String mSysId) {
         Criteria criteria = getSession().createCriteria(UserEntity.class).createAlias("principalList", "l")
-                        .add(Restrictions.eq("l.managedSysId", mSysId)).setFetchMode("principalList", FetchMode.JOIN);
+                .add(Restrictions.eq("l.managedSysId", mSysId)).setFetchMode("principalList", FetchMode.JOIN);
         return criteria.list();
     }
 
@@ -481,7 +522,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return ((Number) getSubordinatesCriteria(userId).setProjection(rowCount()).uniqueResult()).intValue();
     }
 
-    public List<String> getSubordinatesIds(String userId){
+    public List<String> getSubordinatesIds(String userId) {
         Criteria criteria = getSession().createCriteria(SupervisorEntity.class).setProjection(Projections.property("id.employeeId"))
                 .add(Restrictions.eq("id.supervisorId", userId));
         return criteria.list();
@@ -508,63 +549,59 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private Criteria getSubordinatesCriteria(String userId) {
         Criteria criteria = getSession().createCriteria(SupervisorEntity.class).setProjection(Projections.property("employee"))
-                        .createAlias("supervisor", "supervisor").add(Restrictions.eq("supervisor.id", userId));
+                .createAlias("supervisor", "supervisor").add(Restrictions.eq("supervisor.id", userId));
         return criteria;
     }
 
     public List<String> getAllAttachedSupSubIds(List<String> userIds) {
-        if(CollectionUtils.isEmpty(userIds)){
+        if (CollectionUtils.isEmpty(userIds)) {
             return Collections.EMPTY_LIST;
         }
         DetachedCriteria superiors = DetachedCriteria.forClass(SupervisorEntity.class).setProjection(Projections.property("id.supervisorId"))
-                        .add(Restrictions.in("id.employeeId", userIds));
+                .add(Restrictions.in("id.employeeId", userIds));
 
         DetachedCriteria subordinates = DetachedCriteria.forClass(SupervisorEntity.class).setProjection(Projections.property("id.employeeId"))
-                        .add(Restrictions.in("id.supervisorId", userIds));
+                .add(Restrictions.in("id.supervisorId", userIds));
 
         Disjunction disjunction = Restrictions.disjunction();
         disjunction.add(Subqueries.propertyIn("id", superiors)); // exclude
-                                                                     // existing
-                                                                     // superiors
+        // existing
+        // superiors
         disjunction.add(Subqueries.propertyIn("id", subordinates)); // exclude
-                                                                        // existing
-                                                                        // subordinates
+        // existing
+        // subordinates
         disjunction.add(Restrictions.in("id", userIds)); // exclude itself
 
         final Criteria criteria = getCriteria().setProjection(Projections.property("id")).add(disjunction)
-                        .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
 
         return criteria.list();
     }
 
-    public List<String> getUserIdsForAttributes(final List<SearchAttribute> searchAttributeSet, final int from, final int size){
+    public List<String> getUserIdsForAttributes(final List<SearchAttribute> searchAttributeSet, final int from, final int size) {
         List<String> retVal = null;
 
         if (CollectionUtils.isNotEmpty(searchAttributeSet)) {
             final Criteria criteria = getCriteria().createAlias("userAttributes", "ua").setProjection(Projections.property("id"));
 
-            List<String> nameList = new ArrayList<String>();
-            List<String> valueList = new ArrayList<String>();
             List<String> elementIdList = new ArrayList<String>();
-
             for (SearchAttribute atr : searchAttributeSet) {
-                if (StringUtils.isNotBlank(atr.getAttributeName())) {
-                    nameList.add(atr.getAttributeName());
-                }
-                if (StringUtils.isNotBlank(atr.getAttributeValue())) {
-                    valueList.add(atr.getAttributeValue());
+                if (atr.getAttributeName() == null && atr.getAttributeValue() == null) {
+                    continue;
+                } else if (atr.getAttributeName() != null && atr.getAttributeValue() == null) {
+                    criteria.add(Restrictions.eq("ua.name", atr.getAttributeName()).ignoreCase());
+                } else if (atr.getAttributeName() == null && atr.getAttributeValue() != null) {
+                    criteria.add(Restrictions.ilike("ua.value", atr.getAttributeValue(), this.getMatchMode(atr.getMatchType())));
+                } else if (atr.getAttributeName() != null && atr.getAttributeValue() != null) {
+                    criteria.add(Restrictions.and(Restrictions.eq("ua.name", atr.getAttributeName()).ignoreCase(),
+                            Restrictions.ilike("ua.value", atr.getAttributeValue(), this.getMatchMode(atr.getMatchType()))));
                 }
                 if (StringUtils.isNotBlank(atr.getAttributeElementId())) {
                     elementIdList.add(atr.getAttributeElementId());
                 }
             }
 
-            if (CollectionUtils.isNotEmpty(nameList)) {
-                criteria.add(Restrictions.in("ua.name", nameList));
-            }
-            if (CollectionUtils.isNotEmpty(valueList)) {
-                criteria.add(Restrictions.in("ua.value", valueList));
-            }
+
             if (CollectionUtils.isNotEmpty(elementIdList)) {
                 criteria.createAlias("ua.element", "mt").add(Restrictions.in("mt.id", elementIdList));
             }
@@ -580,6 +617,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         }
         return (retVal != null) ? retVal : Collections.EMPTY_LIST;
     }
+
     @Override
     public List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size) {
         List<String> retVal = null;
@@ -604,7 +642,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(groupIds)) {
             final Criteria criteria = getCriteria().createAlias("groups", "group").add(createInClauseForIds("group", "id", "GRP_ID", new ArrayList<>(groupIds)))
-                            .setProjection(Projections.property("id"));
+                    .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -622,7 +660,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(organizationIds)) {
             final Criteria criteria = getCriteria().createAlias("organizationUser", "af").add(Restrictions.in("af.primaryKey.organization.id", organizationIds))
-                            .setProjection(Projections.property("id"));
+                    .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -640,7 +678,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(resourceIds)) {
             final Criteria criteria = getCriteria().createAlias("resources", "resource").add(createInClauseForIds("resource", "id", "RESOURCE_ID", new ArrayList<>(resourceIds)))
-                            .setProjection(Projections.property("id"));
+                    .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -703,7 +741,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             return null;
     }
 
-    public List<UserEntity> getByEmail(String email){
+    public List<UserEntity> getByEmail(String email) {
         if (email != null) {
             final Criteria criteria = getCriteria();
             criteria.createAlias("emailAddresses", "em").add(Restrictions.eq("em.emailAddress", email));
@@ -712,12 +750,12 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             return null;
     }
 
-    public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean, int from, int size){
-        if(CollectionUtils.isNotEmpty(idCollection)){
+    public List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean, int from, int size) {
+        if (CollectionUtils.isNotEmpty(idCollection)) {
             final Criteria criteria = super.getCriteria();
-            criteria.add(createInClauseForIds(criteria.getAlias(), "id", "USER_ID", idCollection) );
+            criteria.add(createInClauseForIds(criteria.getAlias(), "id", "USER_ID", idCollection));
             criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-            if(CollectionUtils.isNotEmpty(searchBean.getSortBy())){
+            if (CollectionUtils.isNotEmpty(searchBean.getSortBy())) {
                 addSorting(criteria, searchBean.getSortBy());
             }
             if (from > -1 && size > -1) {
@@ -732,7 +770,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public int countByIds(List<String> idCollection) {
         if (CollectionUtils.isNotEmpty(idCollection)) {
             final Criteria criteria = super.getCriteria();
-            criteria.add(createInClauseForIds(criteria.getAlias(), "id", "USER_ID", idCollection) );
+            criteria.add(createInClauseForIds(criteria.getAlias(), "id", "USER_ID", idCollection));
             return ((Number) criteria.setProjection(rowCount())
                     .uniqueResult()).intValue();
         }
@@ -741,22 +779,22 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenCreateDate(Date fromDate, Date toDate) {
-    	if(log.isDebugEnabled()) {
-	        log.debug("--------- created createDate ----------- : " + fromDate);
-	        log.debug("--------- created toDate ----------- : " + toDate);
-    	}
-        if (fromDate != null && toDate != null ) {
+        if (log.isDebugEnabled()) {
+            log.debug("--------- created createDate ----------- : " + fromDate);
+            log.debug("--------- created toDate ----------- : " + toDate);
+        }
+        if (fromDate != null && toDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.ge("createDate",fromDate))
-                    .add(Restrictions.lt("createDate",toDate));
+                    .add(Restrictions.ge("createDate", fromDate))
+                    .add(Restrictions.lt("createDate", toDate));
             return criteria.list();
-        } else if(fromDate != null) {
+        } else if (fromDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.ge("createDate",fromDate));
+                    .add(Restrictions.ge("createDate", fromDate));
             return criteria.list();
-        } else if(toDate != null) {
+        } else if (toDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.lt("createDate",toDate));
+                    .add(Restrictions.lt("createDate", toDate));
             return criteria.list();
         } else
             return null;
@@ -765,22 +803,22 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenStartDate(Date fromDate, Date toDate) {
-    	if(log.isDebugEnabled()) {
-	        log.debug("--------- created startDate ----------- : " + fromDate);
-	        log.debug("--------- created toDate ----------- : " + toDate);
-    	}
-        if (fromDate != null && toDate != null ) {
+        if (log.isDebugEnabled()) {
+            log.debug("--------- created startDate ----------- : " + fromDate);
+            log.debug("--------- created toDate ----------- : " + toDate);
+        }
+        if (fromDate != null && toDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.ge("startDate",fromDate))
-                    .add(Restrictions.lt("startDate",toDate));
+                    .add(Restrictions.ge("startDate", fromDate))
+                    .add(Restrictions.lt("startDate", toDate));
             return criteria.list();
-        } else if(fromDate != null) {
+        } else if (fromDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.ge("startDate",fromDate));
+                    .add(Restrictions.ge("startDate", fromDate));
             return criteria.list();
-        } else if(toDate != null) {
+        } else if (toDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.lt("startDate",toDate));
+                    .add(Restrictions.lt("startDate", toDate));
             return criteria.list();
         } else
             return null;
@@ -788,15 +826,15 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserByIds(Set<String> ids) {
-        if(ids != null && !ids.isEmpty()) {
-            if (ids.size()<2000){
-            final Criteria criteria = getCriteria()
-                    .add(Restrictions.in("id", ids));
-            return criteria.list();}
-            else {
+        if (ids != null && !ids.isEmpty()) {
+            if (ids.size() < 2000) {
+                final Criteria criteria = getCriteria()
+                        .add(Restrictions.in("id", ids));
+                return criteria.list();
+            } else {
                 HibernateTemplate template = getHibernateTemplate();
                 template.setCacheQueries(true);
-                String sql = String.format("FROM UserEntity r where r.id in (\'%s\')",StringUtils.join(ids,"\',\'"));
+                String sql = String.format("FROM UserEntity r where r.id in (\'%s\')", StringUtils.join(ids, "\',\'"));
                 return template.find(sql);
             }
         }
@@ -805,22 +843,22 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenLastDate(Date fromDate, Date toDate) {
-    	if(log.isDebugEnabled()) {
-	        log.debug("--------- lastDate fromDate ----------- : " + fromDate);
-	        log.debug("--------- lastDate toDate ----------- : " + toDate);
-    	}
+        if (log.isDebugEnabled()) {
+            log.debug("--------- lastDate fromDate ----------- : " + fromDate);
+            log.debug("--------- lastDate toDate ----------- : " + toDate);
+        }
         if (fromDate != null && toDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.ge("lastDate",fromDate))
-                    .add(Restrictions.lt("lastDate",toDate));
+                    .add(Restrictions.ge("lastDate", fromDate))
+                    .add(Restrictions.lt("lastDate", toDate));
             return criteria.list();
         } else if (fromDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.ge("lastDate",fromDate));
+                    .add(Restrictions.ge("lastDate", fromDate));
             return criteria.list();
         } else if (toDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.lt("lastDate",toDate));
+                    .add(Restrictions.lt("lastDate", toDate));
             return criteria.list();
         } else
             return null;
@@ -828,20 +866,20 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenUpdatedDate(Date fromDate, Date toDate) {
-    	if(log.isDebugEnabled()) {
-	        log.debug("--------- updated user fromdate ----------- : "+fromDate);
-	        log.debug("--------- updated user todate ----------- : "+toDate);
-    	}
+        if (log.isDebugEnabled()) {
+            log.debug("--------- updated user fromdate ----------- : " + fromDate);
+            log.debug("--------- updated user todate ----------- : " + toDate);
+        }
         if (fromDate != null && toDate != null) {
             final Criteria criteria = getCriteria().add(
                     Restrictions.lt("lastUpdate", toDate)).add(
                     Restrictions.gt("lastUpdate", fromDate));
             return criteria.list();
-        } else if (fromDate != null ) {
+        } else if (fromDate != null) {
             final Criteria criteria = getCriteria().add(
                     Restrictions.gt("lastUpdate", fromDate));
             return criteria.list();
-        } else if (toDate != null ) {
+        } else if (toDate != null) {
             final Criteria criteria = getCriteria().add(
                     Restrictions.lt("lastUpdate", toDate));
             return criteria.list();
@@ -870,38 +908,38 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 //    }
 
     private void addSorting(Criteria criteria, List<SortParam> sortParam) {
-        for (SortParam sort: sortParam){
-            OrderConstants orderDir = (sort.getOrderBy()==null)?OrderConstants.ASC:sort.getOrderBy();
+        for (SortParam sort : sortParam) {
+            OrderConstants orderDir = (sort.getOrderBy() == null) ? OrderConstants.ASC : sort.getOrderBy();
 
-            if("name".equals(sort.getSortBy())){
-                criteria.addOrder(createOrder("firstName",orderDir));
+            if ("name".equals(sort.getSortBy())) {
+                criteria.addOrder(createOrder("firstName", orderDir));
                 criteria.addOrder(createOrder("lastName", orderDir));
-            } else if("phone".equals(sort.getSortBy())){
+            } else if ("phone".equals(sort.getSortBy())) {
                 criteria.createAlias("phones", "p", Criteria.LEFT_JOIN, Restrictions.eq("p.isDefault", true));
                 criteria.addOrder(createOrder("p.countryCd", orderDir));
                 criteria.addOrder(createOrder("p.areaCd", orderDir));
                 criteria.addOrder(createOrder("p.phoneNbr", orderDir));
                 criteria.addOrder(createOrder("p.phoneExt", orderDir));
-            } else if("email".equals(sort.getSortBy())){
+            } else if ("email".equals(sort.getSortBy())) {
                 criteria.createAlias("emailAddresses", "ea", Criteria.LEFT_JOIN, Restrictions.eq("ea.isDefault", true));
                 criteria.addOrder(createOrder("ea.emailAddress", orderDir));
-            }else if("userStatus".equals(sort.getSortBy())){
-                criteria.addOrder(createOrder("status",orderDir));
-            }else if("accountStatus".equals(sort.getSortBy())){
-                criteria.addOrder(createOrder("secondaryStatus",orderDir));
-            }else if("principal".equals(sort.getSortBy())){
+            } else if ("userStatus".equals(sort.getSortBy())) {
+                criteria.addOrder(createOrder("status", orderDir));
+            } else if ("accountStatus".equals(sort.getSortBy())) {
+                criteria.addOrder(createOrder("secondaryStatus", orderDir));
+            } else if ("principal".equals(sort.getSortBy())) {
                 criteria.createAlias("principalList", "l", Criteria.LEFT_JOIN, Restrictions.eq("l.managedSysId", sysConfiguration.getDefaultManagedSysId()));
                 criteria.addOrder(createOrder("l.login", orderDir));
-            }else if("organization".equals(sort.getSortBy())){
+            } else if ("organization".equals(sort.getSortBy())) {
                 criteria.createAlias("organizationUser.primaryKey.organization", "org", Criteria.LEFT_JOIN).add(
                         Restrictions.or(Restrictions.isNull("org.organizationType.id"), Restrictions.eq("org.organizationType.id", organizationTypeId)));
                 criteria.addOrder(createOrder("org.name", orderDir));
-            }else if("department".equals(sort.getSortBy())) {
+            } else if ("department".equals(sort.getSortBy())) {
                 criteria.createAlias("organizationUser.primaryKey.organization", "dep", Criteria.LEFT_JOIN).add(
                         Restrictions.or(Restrictions.isNull("dep.organizationType.id"), Restrictions.eq("dep.organizationType.id", departmentTypeId)));
                 criteria.addOrder(createOrder("dep.name", orderDir));
             } else {
-                criteria.addOrder(createOrder(sort.getSortBy(),orderDir));
+                criteria.addOrder(createOrder(sort.getSortBy(), orderDir));
             }
         }
     }

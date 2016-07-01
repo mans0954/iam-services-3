@@ -3,20 +3,18 @@ package org.openiam.imprt.util;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.criterion.MatchMode;
+import org.openiam.base.ws.MatchType;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
-import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
@@ -28,14 +26,13 @@ import org.openiam.imprt.jdbc.parser.impl.UserAttributeEntityParser;
 import org.openiam.imprt.model.Attribute;
 import org.openiam.imprt.model.LineObject;
 import org.openiam.imprt.query.expression.Column;
-import org.openiam.util.StringUtil;
+import org.openiam.util.encrypt.RijndaelCryptor;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.openiam.util.encrypt.RijndaelCryptor;
 
 public class Transformation {
 
@@ -52,7 +49,8 @@ public class Transformation {
     final String EXCH_MNG_SYS_ID = "2c94b25748eaf9ef01492d5312d3026d";
     final List<String> activeStatuses = Arrays.asList("512", "544", "66048", "66080", "262656", "262688", "328192", "328224");
     final String DEFAULT_DATE = "01/01/2020 12:00:00";
-
+    final private String baseDN = "DC=d30,DC=intra";
+    //        final private String baseDN = "OU=AKZO,DC=dev,DC=local";
     final byte[] pwd = "90eb79e8-5954-4af1-b0e3-f712e25e1fca".getBytes();
     final byte[] iv = "tu89geji340t89u2".getBytes();
 
@@ -80,6 +78,11 @@ public class Transformation {
         boolean isNewUser = (user.getId() == null);
         //DistiguishedName
         String distinguishedName = this.getValue(lo.get("distinguishedName"));
+
+        if (distinguishedName.toLowerCase().contains("OU=IAMHolding,OU=Unity,DC=d30,DC=intra".toLowerCase())) {
+            throw new Exception("Default holder user. Skip for sync!!!");
+        }
+
         addUserAttribute(user, new UserAttributeEntity("distinguishedName", distinguishedName));
         //sAMAccoutName
         String samAccountName = this.getValue(lo.get("sAMAccountName"));
@@ -142,43 +145,6 @@ public class Transformation {
                 user.setPrefixLastName(null);
             }
             user.setLastName(surname);
-
-            /*
-            String[] surnameSplit = surname.trim().split(" ");
-            List<String> snRes = new ArrayList<>();
-            for (String str1 : surnameSplit) {
-                if (str1.trim().length() > 0) {
-                    snRes.add(str1.trim());
-                }
-            }
-            String prefSn = "";
-            String resSn = "";
-            if (snRes.size() == 1) {
-                resSn = snRes.get(0);
-            } else if (snRes.size() == 2) {
-                prefSn = snRes.get(0);
-                resSn = snRes.get(1);
-            } else if (snRes.size() == 3) {
-                if (snRes.get(0).equals(snRes.get(1))) {
-                    prefSn = snRes.get(0);
-                    resSn = snRes.get(2);
-                } else if ((snRes.get(0).length() + snRes.get(1)).length() > 9) {
-                    prefSn = snRes.get(0);
-                    resSn = snRes.get(1) + " " + snRes.get(2);
-                } else {
-                    prefSn = snRes.get(0) + " " + snRes.get(1);
-                    resSn = snRes.get(2);
-                }
-            } else {
-                resSn = surname;
-            }
-
-
-            user.setPrefixLastName(prefSn.length() > 10 ? prefSn.substring(0, 10) : prefSn);
-            if (StringUtils.isNotBlank(resSn)) {
-                user.setLastName(resSn.substring(0, 1).toUpperCase() + resSn.substring(1));
-            }
-            */
         } else {
             user.setLastName(samAccountName);
         }
@@ -208,6 +174,14 @@ public class Transformation {
         String serviceTypeAttr = this.getValue(lo.get("extensionAttribute2"));
         addUserAttribute(user, new UserAttributeEntity("serviceType", serviceTypeAttr));
 
+        String sbu = this.getValue(lo.get("extensionAttribute5"));
+        addUserAttribute(user, new UserAttributeEntity("ORG_SBU_SHORT_NAME", sbu));
+        String msExchExtensionAttribute16 = this.getValue(lo.get("msExchExtensionAttribute16"));
+        if ("1".equalsIgnoreCase(msExchExtensionAttribute16)) {
+            addUserAttribute(user, new UserAttributeEntity("syncToCloud", "On"));
+        } else {
+            addUserAttribute(user, new UserAttributeEntity("syncToCloud", "Off"));
+        }
         // Start Date
         try {
             String str2 = this.getValue(lo.get("whenCreated"));
@@ -254,7 +228,8 @@ public class Transformation {
 
         attr = this.getValue(lo.get("division"));
         if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("division", attr));
+//            addUserAttribute(user, new UserAttributeEntity("division", attr));
+            addUserAttribute(user, new UserAttributeEntity("REGION", attr));
         }
 
         attr = this.getValue(lo.get("department"));
@@ -294,7 +269,7 @@ public class Transformation {
         }
         attr = this.getValue(lo.get("st"));
         if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("st", attr));
+            addUserAttribute(user, new UserAttributeEntity("STATE", attr));
         }
         attr = this.getValue(lo.get("streetAddress"));
         if (StringUtils.isNotBlank(attr)) {
@@ -302,7 +277,7 @@ public class Transformation {
         }
         attr = this.getValue(lo.get("office"));
         if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("Office", attr));
+            addUserAttribute(user, new UserAttributeEntity("OFFICE_ADDRESS", attr));
         }
 
         // Add Address
@@ -364,7 +339,7 @@ public class Transformation {
                 for (String curStr : attr13decr.split(";")) {
                     String[] curPh = curStr.split(":");
                     if (curPh.length == 2) {
-                        if (StringUtils.isNotBlank(curPh[1])&&StringUtils.isNotBlank(curPh[0])) {
+                        if (StringUtils.isNotBlank(curPh[1]) && StringUtils.isNotBlank(curPh[0])) {
                             if ("tablet".equalsIgnoreCase(curPh[0])) {
                                 addPhone(curPh[1].trim(), "tablet", user);
                             } else if ("voice".equalsIgnoreCase(curPh[0])) {
@@ -406,6 +381,7 @@ public class Transformation {
         boolean isService = false;
 
         attr = this.getValue(lo.get("extensionAttribute14"));
+        addUserAttribute(user, new UserAttributeEntity("extensionAttribute14", attr));
         boolean isMDM = "MDM".equalsIgnoreCase(attr);
         String classification = attr == null ? "None" : attr;
         addUserAttribute(user, new UserAttributeEntity("classification", attr));
@@ -437,12 +413,39 @@ public class Transformation {
                     break;
             }
         }
+
+        String mbType = this.getValue(lo.get("msExchRecipientTypeDetails"));
+        System.out.println("mailbox type=" + mbType);
+
+
         //Home MDB
         String homeMDB = this.getValue(lo.get("homeMDB"));
+
         if (!isService) {
             boolean isNoMBX = StringUtils.isBlank(homeMDB) || PDD_EMAIL.equalsIgnoreCase(this.getValue(lo.get("mail")));
             mdTypeId = isNoMBX ? "AKZONOBEL_USER_NO_MBX" : "AKZONOBEL_USER_MBX";
         }
+
+        // Set mailbox
+        try {
+            if ("1".equals(mbType)) {
+                System.out.println("I'm standard mailbox");
+                String mailboxSize = mailboxHelper.getBoxSize(homeMDB);
+                System.out.println("MailboxSize=" + mailboxSize);
+                if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
+                    addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
+                    mdTypeId = "AKZONOBEL_USER_MBX";
+                }
+            } else if ("2147483648".equals(mbType)) {
+                System.out.println("I'm remote mailbox");
+                addUserAttribute(user, new UserAttributeEntity("mailbox", "O365"));
+                mdTypeId = "AKZONOBEL_USER_MBX";
+            }
+        } catch (Exception e) {
+            System.out.println("Problem with mailbox Definitions");
+        }
+
+
         //serviceAccountName
         addUserAttribute(user, new UserAttributeEntity("serviceAccountName", isService ? samAccountName : null));
         attr = this.getValue(lo.get("company"));
@@ -455,45 +458,36 @@ public class Transformation {
         }
         //TODO implement add supervisor to user
         //
-        // Set mailbox
-        try {
-            String mailboxSize = mailboxHelper.getBoxSize(homeMDB);
-            System.out.println("MailboxSize=" + mailboxSize);
-            if (StringUtils.isNotBlank(mailboxSize) || StringUtils.isBlank(homeMDB)) {
-                addUserAttribute(user, new UserAttributeEntity("mailbox", mailboxSize));
-            }
-        } catch (Exception e) {
-            System.out.println("Problem with mailbox Definitions");
-        }
 
-        // MemberOf
-        Attribute mOfAttr = lo.get("memberOf");
-        String[] memberOf = null;
-        if (mOfAttr != null) {
-            if (mOfAttr.isMultiValued()) {
-                memberOf = mOfAttr.getValueList().toArray(new String[mOfAttr.getValueList().size()]);
-            } else {
-                memberOf = mOfAttr.getValue() == null ? null : mOfAttr.getValue().split("/\\,/");
-            }
-        }
-        boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
-        boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
-        boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
 
+//        // MemberOf
+//        Attribute mOfAttr = lo.get("memberOf");
+//        String[] memberOf = null;
+//        if (mOfAttr != null) {
+//            if (mOfAttr.isMultiValued()) {
+//                memberOf = mOfAttr.getValueList().toArray(new String[mOfAttr.getValueList().size()]);
+//            } else {
+//                memberOf = mOfAttr.getValue() == null ? null : mOfAttr.getValue().split("/\\,/");
+//            }
+//        }
+//        boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
+//        boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
+//        boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
+//
         boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
-        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
+//        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
         addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
-
-        if (isCacheEnabled) {
-            addUserAttribute(user, new UserAttributeEntity("archieve", "Cached - Laptop"));
-        } else if (isCacheDisabled) {
-            addUserAttribute(user, new UserAttributeEntity("archieve", "Non-Cached - Desktop"));
-        } else {
-            addUserAttribute(user, new UserAttributeEntity("archieve", null));
-        }
+//
+//        if (isCacheEnabled) {
+//            addUserAttribute(user, new UserAttributeEntity("archieve", "Cached - Laptop"));
+//        } else if (isCacheDisabled) {
+//            addUserAttribute(user, new UserAttributeEntity("archieve", "Non-Cached - Desktop"));
+//        } else {
+//            addUserAttribute(user, new UserAttributeEntity("archieve", null));
+//        }
         if (isMDM) {
             classification = "MDM";
         } else if (isPDD) {
@@ -504,11 +498,11 @@ public class Transformation {
         } else {
             removeRoleId(user, "MDM_ROLE_ID");
         }
-        try {
-            mergeGroups(memberOf, groupsMapEntities, user);
-        } catch (Exception e) {
-            System.out.println("Problems with merge groups");
-        }
+//        try {
+//            mergeGroups(memberOf, groupsMapEntities, user);
+//        } catch (Exception e) {
+//            System.out.println("Problems with merge groups");
+//        }
         //TODO Reveal what is and how to define option: 'longTermAbsence'
         //TODO get Citrix attributes: terminalServiceHomeD...
 
@@ -547,7 +541,7 @@ public class Transformation {
         updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
 
         // STAGING
-        //updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
+//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
 
         // lync
         String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
@@ -575,7 +569,20 @@ public class Transformation {
                 user.setStatus(UserStatusEnum.LEAVE);
             }
         }
+        //here is some extra fields that we should provision
 
+        Attribute proxyAttr = lo.get("proxyAddresses");
+        System.out.println("Proxy address bean=" + proxyAttr);
+        if (proxyAttr != null) {
+            UserAttributeEntity userAttributeEntity = new UserAttributeEntity();
+            userAttributeEntity.setName("proxyAddress");
+            if (proxyAttr.getValueList() != null) {
+                userAttributeEntity.setValue(StringUtils.join(proxyAttr.getValueList(), "\n"));
+            } else {
+                userAttributeEntity.setValue(proxyAttr.getValue());
+            }
+            user.addUserAttribute(userAttributeEntity);
+        }
     }
 
     private void updateLoginAndRole(String login, String managedSystemId, UserEntity user, String roleId) {
@@ -925,6 +932,68 @@ public class Transformation {
         }
     }
 
+    final private String globalAdminId = "ADMIN_GL_ROLE_ID";
+    final private String serviceTypeAdminId = "ADMIN_ST_ROLE_ID";
+    final private String buAdminId = "ADMIN_BU_ROLE_ID";
+    final private String siteCodeAdminId = "ADMIN_SITE_ROLE_ID";
+    final private List<String> serviceTypes = Arrays.asList(new String[]{"unity", "unitygsd", "unitymwls"});
+
+    private void addCorrectAdministratorRole(UserEntity user, List<OrganizationEntity> organizationEntities, String adPath) {
+        if (StringUtils.isBlank(adPath)) {
+            return;
+        }
+        String attributeValue = "";
+        if (baseDN.equalsIgnoreCase(adPath)) {
+            attributeValue = adPath;
+            //global admin
+            this.addRoleId(user, globalAdminId);
+        }
+        if (adPath.toLowerCase().contains("ou=hp,ou=unity,dc=d30,dc=intra".toLowerCase())) {
+            attributeValue = "ou=unity,dc=d30,dc=intra";
+            this.removeRoleId(user, buAdminId);
+            this.removeRoleId(user, globalAdminId);
+            this.removeRoleId(user, siteCodeAdminId);
+            this.addRoleId(user, serviceTypeAdminId);
+            this.addRoleId(user, "HP_ADMIN_ROLE_ID");
+        } else {
+            adPath = adPath.replace("," + baseDN.toLowerCase(), "").replace("OU=", "");
+            String[] adPathParts = adPath.split(",");
+            if (adPathParts != null) {
+                for (String pa : adPathParts) {
+                    System.out.println(pa);
+                }
+            }
+            if (adPathParts != null) {
+                if (adPathParts.length == 3) {
+                    //all service type, BU, siteCode is presented
+                    this.addRoleId(user, siteCodeAdminId);
+                } else if (adPathParts.length == 2) {
+                    //possible combiniations site + BU or BU + Service Type
+                    if (serviceTypes.contains(adPathParts[1].toLowerCase())) {
+                        //2nd is serviceType, than 1st is BU -> buAdmin
+                        this.addRoleId(user, buAdminId);
+                    } else {
+                        //so this is site admin
+                        this.addRoleId(user, siteCodeAdminId);
+                    }
+                } else if (adPathParts.length == 1) {
+                    //possible BU or service Type
+                    if (serviceTypes.contains(adPathParts[0].toLowerCase())) {
+                        //2nd is serviceType, than 1st is BU -> buAdmin
+                        this.addRoleId(user, serviceTypeAdminId);
+                    } else {
+                        //so this is site admin
+                        this.addRoleId(user, buAdminId);
+                    }
+                }
+            }
+            attributeValue = adPath + ("," + baseDN.toLowerCase());
+        }
+
+        this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM",
+                String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", attributeValue, MatchType.END_WITH)));
+    }
+
     private void getLinkedOrganization(String distinguishedName, String site, String bu, String country, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
         try {
             String adPath = null;
@@ -942,6 +1011,11 @@ public class Transformation {
                 return;
             } else {
                 addUserAttribute(user, new UserAttributeEntity("AD_PATH", adPath));
+                //try to understand type of administrator
+                if (distinguishedName.contains("OU=Administrators")) {
+                    this.addCorrectAdministratorRole(user, orgs, adPath);
+                }
+
             }
             if (bu == null) {
                 return;

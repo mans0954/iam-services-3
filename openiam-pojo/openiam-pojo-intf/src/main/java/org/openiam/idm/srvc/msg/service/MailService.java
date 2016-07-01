@@ -1,11 +1,14 @@
 package org.openiam.idm.srvc.msg.service;
 
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.continfo.domain.EmailEntity;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Provides methods to be able to send emails and send direct message to authorized users.
@@ -56,7 +59,6 @@ public interface MailService {
     public void sendEmailByDateTime(String from, String to, String cc, String subject,
                           String msg ,String attachment ,boolean isHtmlFormat, Date executionDateTime);
 
-    
     /**
      * sending a email to one user,cc and having one attachment at time.
      * @param from
@@ -65,13 +67,13 @@ public interface MailService {
      * @param subject
      * @param msg
      * @param attachment
-     * @param isHtmlFormat 
+     * @param isHtmlFormat
      */
     public void sendEmail(String from, String to, String cc, String subject,
-            String msg ,String attachment ,boolean isHtmlFormat);  
-    
+            String msg ,String attachment ,boolean isHtmlFormat);
+
     /**
-     * 
+     *
      * sending a email from one user to multiple user,cc and bcc having multiple attachement at a time.
      * @param from
      * @param to
@@ -105,10 +107,15 @@ public interface MailService {
      * @param msg
      */
     public void tweetPrivateMessage(String userid, String msg);
-    
+
     /**
      * mmethod used to update status over twitter.
      * @param status
      */
     public void tweetMessage(String status);
+    public List<EmailEntity> getEmailsForUser(String userId,int from, int size);
+    public EmailEntity getEmailById(String id);
+
+
+
 }

@@ -261,6 +261,7 @@
                                                org.openiam.idm.srvc.pswd.domain*,
                                                org.openiam.idm.srvc.lang.domain*,
                                                org.openiam.idm.srvc.report.domain*,
+                                                org.openiam.idm.srvc.sysprop.domain*,
                                                org.openiam.idm.srvc.prov*,
                                                org.openiam.idm.srvc.batch.domain*,
                                                org.openiam.idm.srvc.ui*
@@ -289,23 +290,23 @@
     </bean>
 
     <!--<jee:jndi-lookup jndi-name="${datasource.jndi.name}"-->
-                     <!--id="dataSource"/>-->
+    <!--id="dataSource"/>-->
 
     <!--<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
-        <!--<property name="driverClassName" value="${openiam.db.driverClassName}" />-->
-        <!--<property name="url" value="${openiam.db.connection.string}" />-->
-        <!--<property name="username" value="${openiam.db.username}" />-->
-        <!--<property name="password" value="${openiam.db.password}" />-->
+    <!--<property name="driverClassName" value="${openiam.db.driverClassName}" />-->
+    <!--<property name="url" value="${openiam.db.connection.string}" />-->
+    <!--<property name="username" value="${openiam.db.username}" />-->
+    <!--<property name="password" value="${openiam.db.password}" />-->
     <!--</bean>-->
 
 
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
-        <property name="driverClass" value="${openiam.db.driverClassName}" />
-        <property name="jdbcUrl" value="${openiam.db.connection.string}" />
-        <property name="user" value="${openiam.db.username}" />
+        <property name="driverClass" value="${openiam.db.driverClassName}"/>
+        <property name="jdbcUrl" value="${openiam.db.connection.string}"/>
+        <property name="user" value="${openiam.db.username}"/>
         <property name="password" value="${openiam.db.password}"/>
-        <property name="minPoolSize" value="${openiam.db.pool.min}" />
-        <property name="maxPoolSize" value="${openiam.db.pool.max}" />
+        <property name="minPoolSize" value="${openiam.db.pool.min}"/>
+        <property name="maxPoolSize" value="${openiam.db.pool.max}"/>
         <property name="loginTimeout" value="300"/>
     </bean>
 

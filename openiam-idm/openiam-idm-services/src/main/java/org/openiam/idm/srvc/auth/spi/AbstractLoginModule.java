@@ -60,6 +60,8 @@ import javax.naming.CommunicationException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -304,6 +306,29 @@ public abstract class AbstractLoginModule implements LoginModule {
         }
 
         return ldapContext;
+    }
+
+    public Date converADdateToOIMdate(String ADdate1){
+
+        long ADdate = Long.parseLong(ADdate1);
+        long javaTime = ADdate - 0x19db1ded53e8000L;
+
+        javaTime /= 10000;
+
+        Date theDate = new Date(javaTime);
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+
+        String newDateString = formatter.format(theDate);
+        Date finalDate;
+
+        try {
+            finalDate = formatter.parse(newDateString);
+            return finalDate;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 }

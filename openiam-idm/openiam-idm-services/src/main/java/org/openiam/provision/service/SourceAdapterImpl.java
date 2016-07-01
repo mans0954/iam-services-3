@@ -1,62 +1,27 @@
 package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.mule.api.annotations.param.Payload;
-import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.MatchType;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.SearchParam;
-import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.idm.searchbeans.*;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.continfo.dto.Address;
-import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
-import org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
-import org.openiam.provision.dto.*;
-import org.openiam.provision.dto.srcadapter.*;
-import org.openiam.provision.resp.PasswordResponse;
-import org.openiam.provision.resp.ProvisionUserResponse;
-import org.opensaml.xml.encryption.P;
+import org.openiam.idm.srvc.sysprop.dto.SystemPropertyDto;
+import org.openiam.idm.srvc.sysprop.service.SystemPropertyService;
+import org.openiam.provision.dto.srcadapter.SourceAdapterInfoResponse;
+import org.openiam.provision.dto.srcadapter.SourceAdapterRequest;
+import org.openiam.provision.dto.srcadapter.SourceAdapterResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Component;
-import sun.rmi.runtime.Log;
 
-import javax.jms.*;
 import javax.jws.WebService;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by zaporozhec on 10/29/15.
@@ -65,28 +30,11 @@ import java.util.*;
 @Component("sourceAdapter")
 public class SourceAdapterImpl implements SourceAdapter {
 
-    //    @Autowired
-//    private ProvisioningDataService provisioningDataService;
-//    @Autowired
-//    private UserDataWebService userDataService;
-//    @Autowired
-//    private GroupDataWebService groupDataWebService;
-//    @Autowired
-//    private RoleDataWebService roleDataWebService;
-//    @Autowired
-//    private ResourceDataService resourceDataService;
-//    @Autowired
-//    private OrganizationDataService organizationDataService;
-//    @Autowired
-//    private JmsTemplate jmsTemplate;
-//
-//    @Autowired
-//    @Qualifier(value = "sourceAdapterQueue")
-//    private javax.jms.Queue queue;
-
-
     @Autowired
     private MetadataWebService metadataWS;
+    @Autowired
+    private SystemPropertyService systemPropertyService;
+
     @Autowired
     private ManagedSystemWebService managedSysService;
     @Autowired
@@ -98,27 +46,34 @@ public class SourceAdapterImpl implements SourceAdapter {
     @Qualifier("sourceAdapterDispatcher")
     private SourceAdapterDispatcher sourceAdapterDispatcher;
 
-//    private void send(final SourceAdapterRequest request) {
-//        jmsTemplate.send(queue, new MessageCreator() {
-//            public javax.jms.Message createMessage(Session session) throws JMSException {
-//                javax.jms.Message message = session.createObjectMessage(request);
-//                return message;
-//            }
-//        });
-//    }
-
-
-//    final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
-//    final static String WARNING = "Warning! %s.\n";
-//    private String source;
-
     @Override
     public SourceAdapterResponse perform(SourceAdapterRequest request) {
+        List<SystemPropertyDto> propertyDtos = systemPropertyService.getByType("SOURCE_ADAPTER_PROP");
+        if (CollectionUtils.isNotEmpty(propertyDtos)) {
+            for (SystemPropertyDto systemPropertyDto : propertyDtos) {
+                if ("MODE".equalsIgnoreCase(systemPropertyDto.getName())) {
+                    request.setMode(systemPropertyDto.getValue());
+                    continue;
+                }
+                if ("PRE_PROCESSOR".equalsIgnoreCase(systemPropertyDto.getName())) {
+                    request.setPathToPreProcessor(systemPropertyDto.getValue());
+                    continue;
+                }
+            }
+        }
         SourceAdapterResponse response = new SourceAdapterResponse();
+        if ("DISABLE".equalsIgnoreCase(request.getMode())) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setError("Source adapter is disabled");
+            return response;
+        }
         response.setStatus(ResponseStatus.SUCCESS);
         long time = System.currentTimeMillis();
         sourceAdapterDispatcher.pushToQueue(request);
         response.setError("Processing time= " + (System.currentTimeMillis() - time) + "ms");
+        if ("SIMULATION".contentEquals(request.getMode())) {
+            response.setError(response.getError() + " Source adapter in simulation mode! OpenIAM will receive the data and log it, but nothing will be changed");
+        }
         return response;
     }
 
@@ -194,6 +149,4 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
         return sb.toString();
     }
-
-
 }
