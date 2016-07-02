@@ -49,7 +49,7 @@ import java.util.List;
         "userActivateFlag",
         //skip validation
         "resyncMode",
-        "adminsControl"
+        "forceChange"
 })
 public class PasswordSync extends BaseObject {
 
@@ -64,7 +64,7 @@ public class PasswordSync extends BaseObject {
     private String password;
     private String requestorId;
     private boolean sendPasswordToUser = false;
-    private boolean adminsControl = false;
+    private boolean forceChange = false;
     private boolean passThruAttributes = true;
     private List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
     private boolean preventChangeCountIncrement;
@@ -139,10 +139,6 @@ public class PasswordSync extends BaseObject {
         this.sendPasswordToUser = sendPasswordToUser;
     }
 
-    public boolean isAdminsControl() {     return adminsControl;   }
-
-    public void setAdminsControl(boolean adminsControl) {     this.adminsControl = adminsControl;   }
-
     public boolean isPreventChangeCountIncrement() {
         return preventChangeCountIncrement;
     }
@@ -166,5 +162,8 @@ public class PasswordSync extends BaseObject {
     public void setResyncMode(boolean resyncMode) {
         this.resyncMode = resyncMode;
     }
+
+    public boolean getForceChange() {        return forceChange;     }
+    public void setForceChange(boolean forceChange) {         this.forceChange = forceChange;    }
 }
 

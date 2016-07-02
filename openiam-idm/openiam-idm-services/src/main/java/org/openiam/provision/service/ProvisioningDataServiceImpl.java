@@ -2654,8 +2654,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                                 if (ob.getProperties().containsKey("sendPasswordToUser")) {
                                                     pswdSync.setSendPasswordToUser((Boolean) ob.getProperties().get("sendPasswordToUser"));
                                                 }
-                                                if (ob.getProperties().containsKey("adminsControl")) {
-                                                    pswdSync.setAdminsControl((Boolean) ob.getProperties().get("adminsControl"));
+                                                if (ob.getProperties().containsKey("forceChange")) {
+                                                    pswdSync.setForceChange((Boolean) ob.getProperties().get("forceChange"));
                                                 }
                                             }
                                             pswdSync.setUserId(userId);
