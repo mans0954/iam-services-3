@@ -281,36 +281,27 @@ public class ImportProcessor {
 
         if (bindingMap.get("GROUPS_MAP") == null || bindingMap.get("GROUPS_MAP_ENTITY") == null) {
 
-            List<GroupEntity> groups = new ArrayList<>();
-
-//            List<GroupEntity> groups = groupEntityParser.getAll();
-//            if (CollectionUtils.isNotEmpty(groups)) {
-//                for (GroupEntity group : groups) {
-//                    List<GroupAttributeEntity> groupAttributeEntities = groupAttributeEntityParser.get(String.format(getAttributesGroupsSQL, Utils.columnsToSelectFields(groupAttributeColumnList, "ca"), group.getId()), groupAttributeColumnList);
-//                    if (CollectionUtils.isNotEmpty(groupAttributeEntities)) {
-//                        group.setAttributes(new HashSet<GroupAttributeEntity>(groupAttributeEntities));
-//                    }
-//                }
-//            }
+            List<GroupEntity> groups = groupEntityParser.getGroupsWithDN();
 
             System.out.println("All Groups processed");
-
+            System.out.println("Total Groups number=" + groups.size());
             Map<String, GroupEntity> groupsEntitiesMap = new HashMap<String, GroupEntity>();
 //            //Build map <groupName,DistrguishedName>
             Map<String, String> groupsMap = new HashMap<String, String>();
-//            if (CollectionUtils.isNotEmpty(groups)) {
-//                for (GroupEntity g : groups) {
-//                    if (CollectionUtils.isNotEmpty(g.getAttributes())) {
-//                        for (GroupAttributeEntity gae : g.getAttributes()) {
-//                            if ("DistinguishedName".equals(gae.getName())) {
-//                                groupsMap.put(g.getName().toLowerCase(), gae.getValue());
-//                                groupsEntitiesMap.put(gae.getValue().toLowerCase(), g);
-//                                break;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            if (CollectionUtils.isNotEmpty(groups)) {
+                System.out.println("Total Groups number=" + groups.size());
+                for (GroupEntity g : groups) {
+                    if (CollectionUtils.isNotEmpty(g.getAttributes())) {
+                        for (GroupAttributeEntity gae : g.getAttributes()) {
+                            if ("DistinguishedName".equals(gae.getName())) {
+                                groupsMap.put(g.getName().toLowerCase(), gae.getValue());
+                                groupsEntitiesMap.put(gae.getValue().toLowerCase(), g);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 
             bindingMap.put("GROUPS_MAP", groupsMap);
             bindingMap.put("GROUPS_MAP_ENTITY", groupsEntitiesMap);
