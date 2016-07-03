@@ -284,7 +284,7 @@ public class ImportProcessor {
             List<GroupEntity> groups = groupEntityParser.getGroupsWithDN();
 
             System.out.println("All Groups processed");
-
+            System.out.println("Total Groups number=" + groups.size());
             Map<String, GroupEntity> groupsEntitiesMap = new HashMap<String, GroupEntity>();
 //            //Build map <groupName,DistrguishedName>
             Map<String, String> groupsMap = new HashMap<String, String>();

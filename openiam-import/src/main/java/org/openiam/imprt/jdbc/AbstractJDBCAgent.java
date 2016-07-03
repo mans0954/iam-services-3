@@ -56,6 +56,7 @@ import java.util.*;
  * @param <E>
  * @param <E>
  * @param <E>
+ * @param <E>
  */
 /**
  *
@@ -225,7 +226,7 @@ public abstract class AbstractJDBCAgent<E> {
     }
 
     //custome
-    protected List<GroupEntity> getGroupsInFormatWithDN() throws SQLException {
+    protected List<GroupEntity> getGroupsInFormatWithDN() throws Exception {
         String sql = "SELECT g.GRP_ID as 'ID', g.GRP_NAME as 'NAME', ga.ATTR_VALUE as 'DN' FROM GRP g JOIN GRP_ATTRIBUTES ga on g.GRP_ID = ga.GRP_ID WHERE ga.NAME ='DistinguishedName'";
         List<GroupEntity> result = new ArrayList<>();
         this.connect();
@@ -239,6 +240,7 @@ public abstract class AbstractJDBCAgent<E> {
             groupAttributeEntity.setName("DistinguishedName");
             groupAttributeEntity.setValue(rs.getString(3));
             gp.getAttributes().add(groupAttributeEntity);
+            result.add(gp);
         }
         rs.close();
         rs = null;
