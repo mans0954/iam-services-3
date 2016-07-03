@@ -1298,7 +1298,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             for (LoginEntity l : userEntity.getPrincipalList()) {
                 boolean resFound = false;
                 String resId = managedSystemService.getResourceIdByManagedSysId(l.getManagedSysId());
-                if(resId!=null){
+                if (resId != null) {
                     for (Resource r : resourceSet) {
                         if (r.getId().equals(resId)) {
                             resFound = true;
@@ -1690,7 +1690,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             ResponseType resp = resetPassword(requestId,
                                     login, password, managedSysDto,
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildPolicyMapHelper.buildMngSysAttributes(login, "RESET_PASSWORD"), "RESET_PASSWORD");
+                                    buildPolicyMapHelper.buildMngSysAttributes(login, "RESET_PASSWORD"), "RESET_PASSWORD", passwordSync.getForceChange());
                             log.info("============== Connector Reset Password get : " + new Date());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 if (enableOnPassReset(res)) {
@@ -2128,7 +2128,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                     passwordSync.getPassword(),
                                     managedSysDozerConverter.convertToDTO(mSys, false),
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildPolicyMapHelper.buildMngSysAttributes(login, "SET_PASSWORD"), "SET_PASSWORD");
+                                    buildPolicyMapHelper.buildMngSysAttributes(login, "SET_PASSWORD"), "SET_PASSWORD", passwordSync.getForceChange());
 
                             boolean connectorSuccess = false;
                             log.info("============== Connector Set Password get : " + new Date());
@@ -2543,7 +2543,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     ResponseType resp = resetPassword(requestId, loginDTO,
                             passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
                             objectMatchDozerConverter.convertToDTO(matchObj, false),
-                            buildPolicyMapHelper.buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"), "SET_PASSWORD");
+                            buildPolicyMapHelper.buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"), "SET_PASSWORD", passwordSync.getForceChange());
                     if (resp.getStatus() == StatusCodeType.SUCCESS) {
                         // SIA - 20150702: audit as a child
                         childAuditLog.succeed();
