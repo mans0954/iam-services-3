@@ -544,7 +544,7 @@ public class Transformation {
         updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
 
         // STAGING
-//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
+        //updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
 
         // lync
         String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
@@ -848,12 +848,16 @@ public class Transformation {
             for (int i = 1; i < parts.length; i++) {
                 newP += parts[i];
             }
-            ph.setPhoneNbr(newP);
+            ph.setPhoneNbr(fixNull(newP));
             ph.setCountryCd(parts[0]);
         } else {
-            ph.setPhoneNbr(phoneValue);
+            ph.setPhoneNbr(fixNull(phoneValue));
         }
         addPhone(user, ph);
+    }
+
+    private String fixNull(String phoneNumber) {
+        return phoneNumber.replace("(null)", "").replace("null","");
     }
 
     private void addPhone(UserEntity user, PhoneEntity phone) {
