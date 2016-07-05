@@ -60,6 +60,7 @@ import javax.naming.CommunicationException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -244,7 +245,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         return null;
     }
 
-    public LdapContext connect(String userName, String password, ManagedSysDto managedSys) throws NamingException {
+    public LdapContext connect(String userName, String password, ManagedSysDto managedSys) throws NamingException, AuthenticationException {
 
         if (keystore != null && !keystore.isEmpty()) {
             System.setProperty("javax.net.ssl.trustStore", keystore);
@@ -299,6 +300,9 @@ public abstract class AbstractLoginModule implements LoginModule {
             log.error("Throw communication exception.", ce);
 
         } catch (NamingException ne) {
+            if(ne instanceof javax.naming.AuthenticationException){
+                throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+            }
             log.error(ne.toString(), ne);
 
         } catch (Throwable e) {

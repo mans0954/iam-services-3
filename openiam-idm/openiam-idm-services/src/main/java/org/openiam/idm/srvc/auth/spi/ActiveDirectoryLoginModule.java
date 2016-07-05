@@ -20,6 +20,7 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
+import com.sun.jndi.ldap.LdapCtx;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -190,7 +191,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         		log.debug("AD_LOGIN_MODULE Validator throws=" + ae);
         	}
             // we should validate password before change password
-            if (AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
+            if (  AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
                     AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
                 changePassword = ae;
 
@@ -209,9 +210,17 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
                 throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
             }
             // try to login to AD with this user
-            LdapContext ldapCtx = connect(distinguishedName, password, mSys);
+            LdapContext ldapCtx = null;
+            Boolean isContextNotInitialized = true;
+            try {
+                ldapCtx = connect(distinguishedName, password, mSys);
+            }
+            catch ( AuthenticationException ae){
+                if(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET == ae.getErrorCode());
+                isContextNotInitialized = false;
+            }
 
-            if (ldapCtx == null) {
+            if (ldapCtx == null && isContextNotInitialized) {
             	if(log.isDebugEnabled()) {
             		log.debug("AD_LOGIN_MODULE. COntext is null for dn=" + distinguishedName);
             	}
