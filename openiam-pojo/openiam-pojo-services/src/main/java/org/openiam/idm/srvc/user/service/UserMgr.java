@@ -2323,6 +2323,9 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                 origUserEntity.setAlternateContactId(newUserEntity.getAlternateContactId());
             }
         }
+        if (newUserEntity.getResetPasswordType() != null) {
+        	origUserEntity.setResetPasswordType(newUserEntity.getResetPasswordType());
+        }
         setMetadataTypes(origUserEntity);
     }
 
