@@ -65,6 +65,7 @@
 	<test name="integration.user" thread-count="5" parallel="classes">
 		<classes>
 			<class name="org.openiam.service.integration.login.LoginServiceTest" />
+			<class name="org.openiam.service.integration.user.UserServiceTest" />
 <!--
 			<class name="org.openiam.service.integration.provisioning.UserManagmentServiceTest" />
 -->

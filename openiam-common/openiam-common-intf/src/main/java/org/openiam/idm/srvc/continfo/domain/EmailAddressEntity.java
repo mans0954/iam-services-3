@@ -10,6 +10,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
@@ -45,18 +46,18 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
     @Size(max = 100, message = "validator.email.description.toolong")
     private String description;
 
-//    @Fields ({
-//        @Field(analyze = Analyze.YES),
-//        @Field(name = "emailAddress", analyze = Analyze.YES, store = Store.YES)
-//    })
-    /*
-    @ElasticsearchFields(fields = {@ElasticsearchField(name = "emailAddress", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
-                                   @ElasticsearchField(name = "emailAddressTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
-	*/
     @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     @Column(name = "EMAIL_ADDRESS", length = 320)
     @Size(max = 320, message = "validator.email.toolong")
     protected String emailAddress;
+    
+    @Transient
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    private String emailUsername;
+    
+    @Transient
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    private String emailDomain;
 
     @Column(name = "IS_DEFAULT")
     @Type(type = "yes_no")
@@ -147,6 +148,22 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 		this.createDate = createDate;
 	}
 	
+	public String getEmailUsername() {
+		return emailUsername;
+	}
+
+	public void setEmailUsername(String emailUsername) {
+		this.emailUsername = emailUsername;
+	}
+
+	public String getEmailDomain() {
+		return emailDomain;
+	}
+
+	public void setEmailDomain(String emailDomain) {
+		this.emailDomain = emailDomain;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
