@@ -1,26 +1,20 @@
 package org.openiam.config;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.connection.Message;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.data.redis.connection.StringRedisConnection;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.Topic;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
 public class RedisConfig {
@@ -59,5 +53,27 @@ public class RedisConfig {
 		listener.setConnectionFactory(jedisConnectionFactory());
 		listener.setMessageListeners(new HashMap<MessageListener, Collection<? extends Topic>>());
 		return listener;
+	}
+
+	@Bean(name = "listenerTaskExecutor")
+	public TaskExecutor listenerTaskExecutor() {
+		return createDemonTaskExecutor("ListenerTaskExecutor-");
+	}
+
+	@Bean(name = "workerTaskExecutor")
+	public TaskExecutor workerTaskExecutor() {
+		return createDemonTaskExecutor("WorkerTaskExecutor-");
+	}
+
+	private TaskExecutor createDemonTaskExecutor(String prefix){
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(10);
+		executor.setMaxPoolSize(50);
+		executor.setQueueCapacity(100);
+		executor.setDaemon(true);
+		executor.setThreadNamePrefix(prefix);
+		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+		executor.initialize();
+		return executor;
 	}
 }
