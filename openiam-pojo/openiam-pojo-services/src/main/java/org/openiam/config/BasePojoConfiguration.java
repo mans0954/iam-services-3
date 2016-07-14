@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 @Configuration
-@Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class, RedisConfig.class})
+@Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class, RedisConfig.class, PojoMessageListenerConfig.class})
 public class BasePojoConfiguration {
 	
 	@Value("${mail.host}")
