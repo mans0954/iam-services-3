@@ -226,6 +226,13 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
             if (StringUtils.isNotEmpty(searchBean.getNickName())) {
                 if (useMatchType) {
+                    criteria.add(getStringCriterionMatchType("nickname", searchBean.getNickName(), MatchType.STARTS_WITH, ORACLE_INSENSITIVE));
+                } else {
+                    criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
+                }
+            }
+            if (searchBean.getNickNameMatchToken() != null && searchBean.getNickNameMatchToken().isValid()) {
+                if (useMatchType) {
                     criteria.add(getStringCriterionMatchType("nickname", searchBean.getNickNameMatchToken().getValue(), searchBean.getNickNameMatchToken().getMatchType(), ORACLE_INSENSITIVE));
                 } else {
                     criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
