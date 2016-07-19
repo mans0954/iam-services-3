@@ -13,6 +13,8 @@ import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.sysprop.dto.SystemPropertyDto;
+import org.openiam.idm.srvc.sysprop.service.SystemPropertyService;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
@@ -41,6 +43,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     private String dbType;
     @Autowired
     protected SysConfiguration sysConfiguration;
+
+    @Autowired
+    private SystemPropertyService systemPropertyService;
 
     @Override
     protected String getPKfieldName() {
@@ -157,6 +162,28 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return criterion;
     }
 
+    private Criterion getStringCriterionMatchType(String fieldName, String value, MatchType matchType, boolean caseInsensitive) {
+        Criterion criterion = null;
+        MatchMode matchMode = null;
+
+        switch (matchType) {
+            case EXACT:
+                criterion = (caseInsensitive) ? Restrictions.eq(fieldName, value).ignoreCase() : Restrictions.eq(fieldName, value);
+                break;
+            case STARTS_WITH:
+                criterion = Restrictions.ilike(fieldName, value, MatchMode.START);
+                break;
+            case END_WITH:
+                criterion = Restrictions.ilike(fieldName, value, MatchMode.END);
+                break;
+            default:
+                criterion = Restrictions.ilike(fieldName, value, MatchMode.ANYWHERE);
+                break;
+        }
+
+        return criterion;
+    }
+
     private Criteria getExampleCriteria(UserSearchBean searchBean) {
         boolean ORACLE_INSENSITIVE = "ORACLE_INSENSITIVE".equalsIgnoreCase(dbType);
 
@@ -164,17 +191,45 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         if (StringUtils.isNotBlank(searchBean.getKey())) {
             criteria.add(Restrictions.eq(getPKfieldName(), searchBean.getKey()));
         } else {
+            Boolean useMatchType = false;
+
+            List<SystemPropertyDto> propList = systemPropertyService.getByType("USER_SEARCH_PROP");
+            if (CollectionUtils.isNotEmpty(propList)) {
+                for (SystemPropertyDto sysProp : propList) {
+                    if ("USE_MATCH_TYPE".equalsIgnoreCase(sysProp.getName())) {
+                        try {
+                            useMatchType = Boolean.valueOf(sysProp.getValue());
+                        } catch (Exception e) {
+                            log.error("Cann't parse system property : USE_DEFAULT_MATCH_TYPE = " + sysProp.getValue());
+                        }
+                        continue;
+                    }
+                }
+            }
+
             if (searchBean.getShowInSearch() != null) {
                 criteria.add(Restrictions.eq("showInSearch", searchBean.getShowInSearch()));
             }
             if (searchBean.getFirstNameMatchToken() != null && searchBean.getFirstNameMatchToken().isValid()) {
-                criteria.add(getStringCriterion("firstName", searchBean.getFirstNameMatchToken().getValue(), ORACLE_INSENSITIVE));
+                if (useMatchType) {
+                    criteria.add(getStringCriterionMatchType("firstName", searchBean.getFirstNameMatchToken().getValue(),searchBean.getFirstNameMatchToken().getMatchType(), ORACLE_INSENSITIVE));
+                } else {
+                    criteria.add(getStringCriterion("firstName", searchBean.getFirstNameMatchToken().getValue(), ORACLE_INSENSITIVE));
+                }
             }
             if (searchBean.getLastNameMatchToken() != null && searchBean.getLastNameMatchToken().isValid()) {
-                criteria.add(getStringCriterion("lastName", searchBean.getLastNameMatchToken().getValue(), ORACLE_INSENSITIVE));
+                if (useMatchType) {
+                    criteria.add(getStringCriterionMatchType("lastName", searchBean.getLastNameMatchToken().getValue(),searchBean.getLastNameMatchToken().getMatchType(), ORACLE_INSENSITIVE));
+                } else {
+                    criteria.add(getStringCriterion("lastName", searchBean.getLastNameMatchToken().getValue(), ORACLE_INSENSITIVE));
+                }
             }
             if (StringUtils.isNotEmpty(searchBean.getNickName())) {
-                criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
+                if (useMatchType) {
+                    criteria.add(getStringCriterionMatchType("nickname", searchBean.getNickNameMatchToken().getValue(), searchBean.getNickNameMatchToken().getMatchType(), ORACLE_INSENSITIVE));
+                } else {
+                    criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
+                }
             }
             if (StringUtils.isNotEmpty(searchBean.getUserStatus())) {
                 criteria.add(Restrictions.eq("status", UserStatusEnum.valueOf(searchBean.getUserStatus())));

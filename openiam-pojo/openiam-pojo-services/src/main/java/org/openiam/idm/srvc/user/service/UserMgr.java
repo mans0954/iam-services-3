@@ -54,6 +54,7 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.PhoneSearchBeanConverter;
+import org.openiam.idm.srvc.sysprop.service.SystemPropertyService;
 import org.openiam.idm.srvc.user.dao.UserSearchDAO;
 import org.openiam.idm.srvc.user.domain.*;
 import org.openiam.idm.srvc.user.dto.*;
@@ -188,6 +189,9 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Autowired
     @Qualifier("authorizationManagerService")
     private AuthorizationManagerService authorizationManagerService;
+
+    @Autowired
+    private SystemPropertyService systemPropertyService;
 
     private ApplicationContext ac;
 
