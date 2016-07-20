@@ -303,6 +303,7 @@ public class Transformation {
         //Primary Email
 
         attr = this.getValue(lo.get("mail"));
+        addUserAttribute(user, new UserAttributeEntity("Mail", attr));
         String emailAddressValue = "";
         if (StringUtils.isNotBlank(attr)) {
             emailAddressValue = attr;
