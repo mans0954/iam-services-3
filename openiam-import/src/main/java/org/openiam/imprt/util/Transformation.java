@@ -585,7 +585,7 @@ public class Transformation {
             } else {
                 userAttributeEntity.setValue(proxyAttr.getValue());
             }
-            user.addUserAttribute(userAttributeEntity);
+            addUserAttribute(user, userAttributeEntity);
         }
     }
 
@@ -858,7 +858,7 @@ public class Transformation {
     }
 
     private String fixNull(String phoneNumber) {
-        return phoneNumber.replace("(null)", "").replace("null","");
+        return phoneNumber.replace("(null)", "").replace("null", "");
     }
 
     private void addPhone(UserEntity user, PhoneEntity phone) {
