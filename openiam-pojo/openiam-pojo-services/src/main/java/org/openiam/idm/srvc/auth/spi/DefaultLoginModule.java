@@ -76,17 +76,20 @@ public class DefaultLoginModule extends AbstractLoginModule {
         // current date
         final Date curDate = new Date();
 
-        if (user != null && user.getStatus() != null) {
-            if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
-                if (!pendingInitialStartDateCheck(user, curDate)) {
-                    throw new BasicDataServiceException(ResponseCode.RESULT_INVALID_USER_STATUS);
-                }
-            }
-            if (!user.getStatus().equals(UserStatusEnum.ACTIVE)
-                    && !user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN)) {
-                throw new BasicDataServiceException(
-                        ResponseCode.RESULT_INVALID_USER_STATUS);
-            }
+        if (user != null) {
+        	if(user.getStatus() != null) {
+	            if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
+	                if (!pendingInitialStartDateCheck(user, curDate)) {
+	                    throw new BasicDataServiceException(ResponseCode.RESULT_INVALID_USER_STATUS);
+	                }
+	            }
+	            if (!user.getStatus().equals(UserStatusEnum.ACTIVE)
+	                    && !user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN)) {
+	                throw new BasicDataServiceException(
+	                        ResponseCode.RESULT_INVALID_USER_STATUS);
+	            }
+        	}
+        	/* do the secondary status check even if the primary user status is null */
             // check the secondary status
             checkSecondaryStatus(user);
 
