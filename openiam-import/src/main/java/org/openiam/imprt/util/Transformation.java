@@ -10,6 +10,7 @@ import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -542,10 +543,10 @@ public class Transformation {
         String userPrincipalName = this.getValue(lo.get("userPrincipalName"));
 
         // PROD
-        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
+//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
 
         // STAGING
-        //updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
+        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
 
         // lync
         String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
@@ -582,10 +583,39 @@ public class Transformation {
             userAttributeEntity.setName("proxyAddress");
             if (proxyAttr.getValueList() != null) {
                 userAttributeEntity.setValue(StringUtils.join(proxyAttr.getValueList(), "\n"));
+                //process secondary emails
+                processSecondaryEmails(proxyAttr.getValueList(), user);
             } else {
                 userAttributeEntity.setValue(proxyAttr.getValue());
+                processSecondaryEmails(new ArrayList<String>(), user);
             }
             addUserAttribute(user, userAttributeEntity);
+        }
+    }
+
+    private void processSecondaryEmails(List<String> values, UserEntity user) {
+        if (CollectionUtils.isNotEmpty(user.getEmailAddresses())) {
+            for (EmailAddressEntity ea : user.getEmailAddresses()) {
+                if (ea.getMetadataType() == null || "SECONDARY_EMAIL".equalsIgnoreCase(ea.getMetadataType().getId())) {
+                    ea.setDescription("DELETE_FROM_DB");
+                }
+            }
+
+            for (String val : values) {
+                if (val.startsWith("smtp:")) {
+                    String email = val.substring("smtp:".length());
+                    EmailAddressEntity secEmail = new EmailAddressEntity();
+                    secEmail.setName("SECONDARY_EMAIL");
+                    MetadataTypeEntity metadataTypeEntity = new MetadataTypeEntity();
+                    metadataTypeEntity.setId("SECONDARY_EMAIL");
+                    secEmail.setMetadataType(metadataTypeEntity);
+                    secEmail.setIsDefault(false);
+                    secEmail.setIsActive(true);
+                    secEmail.setEmailAddress(email);
+                    user.getEmailAddresses().add(secEmail);
+                }
+
+            }
         }
     }
 
