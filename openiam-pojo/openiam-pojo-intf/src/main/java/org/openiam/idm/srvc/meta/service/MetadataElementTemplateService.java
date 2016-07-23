@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 
 public interface MetadataElementTemplateService {
 
+	MetadataElementPageTemplateEntity findById(String id);
 	List<MetadataElementPageTemplateEntity> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size);
 	int count(final MetadataElementPageTemplateSearchBean searchBean);
 	void save(final MetadataElementPageTemplateEntity template);

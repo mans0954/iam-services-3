@@ -150,6 +150,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     @Value("${org.openiam.user.template.id}")
     private String userTemplateId;
     
+    @Value("${org.openiam.default.group.page.template}")
+    private String defaultGroupPageTemplate;
+    
     private MetadataTemplateFieldJSONWrapper fieldWrapper;
     private URIPatternJSONWrapper patternWrapper;
     
@@ -911,11 +914,17 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 		saveContentProvider(provider);
 		Set<URIPatternEntity> patternSet = createDefaultURIPatterns(provider.getId());
 		
-		patternSet = patternSet.stream().filter(e -> 
+		final Set<URIPatternEntity> userProfilePatterns = patternSet.stream().filter(e -> 
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/selfRegistration") ||
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editProfile") ||
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/newUser")
 		).collect(Collectors.toSet());
+		
+		final Set<URIPatternEntity> groupTemplatePatterns = patternSet.stream().filter(e ->
+			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editGroup") ||
+			StringUtils.startsWithIgnoreCase(e.getPattern(), "/webconsole/editGroup")
+		).collect(Collectors.toSet());
+		
 		MetadataElementPageTemplateEntity template = getTemplate(provider);
 		templateService.save(template);
 		
@@ -953,7 +962,13 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 			template.addField(xref);
 		}
 		
-		template.setUriPatterns(patternSet);
+		template.setUriPatterns(userProfilePatterns);
 		templateService.save(template);
+		
+		final MetadataElementPageTemplateEntity groupTemplate = templateService.findById(defaultGroupPageTemplate);
+		if(groupTemplate != null) {
+			groupTemplate.setUriPatterns(groupTemplatePatterns);
+			templateService.save(template);
+		}
 	}
 }
