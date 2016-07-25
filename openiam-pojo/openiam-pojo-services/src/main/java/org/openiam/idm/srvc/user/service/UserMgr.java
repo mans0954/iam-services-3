@@ -782,8 +782,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Transactional(readOnly = true)
     public List<User> findBeansDto(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException {
         log.debug("current thread: " + Thread.currentThread().getId());
-        log.debug("FROM: " + from);
-        log.debug("SIZE: " + size);
+        log.info("FROM: " + from);
+        log.info("SIZE: " + size);
         List<UserEntity> entityList = null;
         if (StringUtils.isNotBlank(searchBean.getKey())) {
             final UserEntity entity = userDao.findById(searchBean.getKey());
@@ -802,7 +802,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         }
 
         if (CollectionUtils.isNotEmpty(entityList)) {
-            log.debug("UserEntityList size: " + entityList.size());
+            log.info("UserEntityList size: " + entityList.size());
         }
 
         return userDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
