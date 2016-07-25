@@ -1,6 +1,5 @@
 package org.openiam.message.gateway;
 
-import org.openiam.message.dto.OpenIAMMQRequest;
 import org.openiam.message.dto.OpenIAMMQResponse;
 
 /**

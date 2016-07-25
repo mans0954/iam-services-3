@@ -1,14 +1,9 @@
 package org.openiam.message.consumer;
 
-import org.apache.commons.lang.StringUtils;
 import org.openiam.concurrent.OpenIAMSyncronizer;
-import org.openiam.message.constants.OpenIAMAPI;
 import org.openiam.message.constants.OpenIAMQueue;
-import org.openiam.message.dto.AbstractMQMessage;
 import org.openiam.message.dto.OpenIAMMQRequest;
-import org.openiam.message.dto.OpenIAMMQResponse;
-import org.openiam.message.gateway.ServiceGateway;
-import org.openiam.message.processor.AbstractAPIProcessor;
+import org.openiam.message.gateway.AbstractRequestServiceGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +11,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.SynchronousQueue;
 
 /**
  * Created by alexander on 07/07/16.
@@ -33,18 +25,16 @@ public abstract class AbstractRedisMessageListener<Message extends OpenIAMMQRequ
     @Autowired
     @Qualifier("listenerTaskExecutor")
     private TaskExecutor listenerTaskExecutor;
-    @Autowired
-    @Qualifier("workerTaskExecutor")
-    private TaskExecutor workerTaskExecutor;
+
 
     @Value("${org.openiam.message.broker.polling.time}")
     private Long pollingTime;
 
     @Autowired
     @Qualifier("redisRequestServiceGateway")
-    private ServiceGateway serviceGateway;
+    private AbstractRequestServiceGateway serviceGateway;
 
-    private ConcurrentHashMap<OpenIAMAPI, AbstractAPIProcessor> workerMap = new ConcurrentHashMap<OpenIAMAPI, AbstractAPIProcessor>();
+
 
     public AbstractRedisMessageListener(OpenIAMQueue queueToListen) {
         super(queueToListen);
@@ -58,9 +48,9 @@ public abstract class AbstractRedisMessageListener<Message extends OpenIAMMQRequ
             private OpenIAMSyncronizer monitor = new OpenIAMSyncronizer();
             @Override
             public void run() {
-                log.info("MESSAGE Listener started on queue: {}", queueName);
+                log.debug("MESSAGE Listener started on queue: {}", queueName);
                 while(true){
-                    log.info("MESSAGE Listener on queue '{}' is getting messages from queue", queueName);
+//                    log.debug("MESSAGE Listener on queue '{}' is getting messages from queue", queueName);
                     // start pooling redis
                     final Long size = redisTemplate.opsForList().size(queueName);
                     if(size != null) {
@@ -69,11 +59,11 @@ public abstract class AbstractRedisMessageListener<Message extends OpenIAMMQRequ
                             if(key != null && (key.getClass().equals(messageClazz))) {
                                 Message message = (Message)key;
                                 log.debug("GOT MESSAGE in {} queue: {}", queueName, message);
-                                onMessage(message);
+//                                onMessage(message);
                             }
                         }
                     }
-                    log.info("MESSAGE Listener on queue '{}' is waiting", queueName);
+//                    log.debug("MESSAGE Listener on queue '{}' is waiting", queueName);
                     monitor.doWait(pollingTime);
 //                    try {
 //                        Thread.sleep(pollingTime);
@@ -101,35 +91,7 @@ public abstract class AbstractRedisMessageListener<Message extends OpenIAMMQRequ
         this.listenerTaskExecutor = listenerTaskExecutor;
     }
 
-    public TaskExecutor getWorkerTaskExecutor() {
-        return workerTaskExecutor;
-    }
 
-    public void setWorkerTaskExecutor(TaskExecutor workerTaskExecutor) {
-        this.workerTaskExecutor = workerTaskExecutor;
-    }
-
-    protected void addTask(AbstractAPIProcessor processor, Message message, OpenIAMAPI apiName,  boolean isAsync) throws Exception {
-        if(isAsync){
-            // get(or run it id necessary) worker by API name
-            AbstractAPIProcessor currentWorker = workerMap.get(apiName);
-            if(currentWorker==null || !currentWorker.isRunning()){
-                currentWorker = (AbstractAPIProcessor)processor.cloneTask();
-                workerMap.put(apiName, currentWorker);
-                workerTaskExecutor.execute(currentWorker);
-            }
-            // add to queue
-            currentWorker.pushToQueue(message);
-        } else {
-            final AbstractAPIProcessor task = (AbstractAPIProcessor)processor.cloneTask();
-            workerTaskExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    task.processRequest(message);
-                }
-            });
-        }
-    }
 
     private Class<Message> getMessageType()   {
         Type type = getClass().getGenericSuperclass();
@@ -149,14 +111,5 @@ public abstract class AbstractRedisMessageListener<Message extends OpenIAMMQRequ
         return result;
     }
 
-    private  void  onMessage(Message message){
-        try {
-           doOnMessage(message);
-        } catch (Exception e) {
-            log.warn("Cannot process message now. pus it back to queue: {}", e);
-            serviceGateway.send(this.getQueueToListen().getQueueName(), message);
-        }
-    }
 
-    protected abstract void doOnMessage(Message message) throws Exception;
 }

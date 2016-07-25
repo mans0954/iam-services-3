@@ -40,15 +40,12 @@ import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
@@ -86,14 +83,16 @@ import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.message.constants.OpenIAMAPI;
+import org.openiam.message.constants.OpenIAMQueue;
+import org.openiam.message.dto.OpenIAMMQRequest;
+import org.openiam.message.dto.OpenIAMMQResponse;
+import org.openiam.message.gateway.AbstractRequestServiceGateway;
 import org.openiam.util.AttributeUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.PageRequest;
@@ -221,6 +220,10 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     private AuthorizationManagerService authorizationManagerService;
 
     private ApplicationContext ac;
+
+    @Autowired
+    @Qualifier("redisRequestServiceGateway")
+    private AbstractRequestServiceGateway serviceGateway;
 
 
     public void setApplicationContext(final ApplicationContext ac) throws BeansException {
@@ -1962,7 +1965,11 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     }
 
     private void setMetadataTypes(final UserEntity userEntity) {
+        OpenIAMMQRequest<String> request = new OpenIAMMQRequest<>();
+        request.setRequestApi(OpenIAMAPI.MetadataTypeGet);
     	if(userEntity.getEmployeeType() != null && StringUtils.isNotBlank(userEntity.getEmployeeType().getId())) {
+            request.setRequestBody(userEntity.getEmployeeType().getId());
+            OpenIAMMQResponse resp = serviceGateway.sendAndReceive(OpenIAMQueue.MetadataQueue, request);
     		userEntity.setEmployeeType(metadataTypeDAO.findById(userEntity.getEmployeeType().getId()));
         } else {
         	userEntity.setEmployeeType(null);
