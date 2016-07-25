@@ -321,7 +321,7 @@ public class Transformation {
             addUserAttribute(user, new UserAttributeEntity("OfficePhone", attr));
             addPhone(attr, "OFFICE_PHONE", user);
         }
-        attr = this.getValue(lo.get("mobile"));
+        attr = this.getValue(lo.get("msExchExtensionAttribute17"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("MobilePhone", attr));
             addPhone(attr, "CELL_PHONE", user);
@@ -543,10 +543,10 @@ public class Transformation {
         String userPrincipalName = this.getValue(lo.get("userPrincipalName"));
 
         // PROD
-        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
+//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
 
         // STAGING
-//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
+        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
 
         // lync
         String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
