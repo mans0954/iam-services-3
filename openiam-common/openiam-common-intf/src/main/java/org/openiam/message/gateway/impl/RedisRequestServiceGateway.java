@@ -1,8 +1,9 @@
-package org.openiam.message.gateway;
+package org.openiam.message.gateway.impl;
 
 import org.openiam.concurrent.OpenIAMSyncronizer;
 import org.openiam.message.dto.OpenIAMMQRequest;
 import org.openiam.message.dto.OpenIAMMQResponse;
+import org.openiam.message.gateway.AbstractRequestServiceGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,15 +11,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
+import java.util.UUID;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Created by alexander on 06/07/16.
  */
-@Service("redisRequestServiceGateway")
+@Component("redisRequestServiceGateway")
 public class RedisRequestServiceGateway extends AbstractRequestServiceGateway {
     protected Logger log = LoggerFactory.getLogger(this.getClass());
     @Autowired
@@ -30,7 +32,7 @@ public class RedisRequestServiceGateway extends AbstractRequestServiceGateway {
 
     @Value("${org.openiam.message.broker.reply.timeout}")
     private Long replyTimeout;
-    @Value("${org.openiam.message.broker.polling.time}")
+    @Value("${org.openiam.message.broker.reply.polling.time}")
     private Long pollingTime;
 
     @Override
@@ -41,7 +43,8 @@ public class RedisRequestServiceGateway extends AbstractRequestServiceGateway {
     @Override
     protected OpenIAMMQResponse doSendAndReceive(String queueName, final OpenIAMMQRequest request) {
         //this is sync message and has to be processed asap
-
+        request.setReplyTo(getReplyQuequeName(queueName));
+        request.setCorrelationID(this.generateCorrelationId());
         final SynchronousQueue<OpenIAMMQResponse> replyHandoff = new SynchronousQueue<OpenIAMMQResponse>();
         SynchrousListener listener = new SynchrousListener(request, replyHandoff);
         taskExecutor.execute(listener);
@@ -57,6 +60,12 @@ public class RedisRequestServiceGateway extends AbstractRequestServiceGateway {
                     request.getReplyTo());
         }
         return reply;
+    }
+
+    protected String getReplyQuequeName(String queueName) {
+        String callbackName = queueName+".callback." + System.currentTimeMillis()
+                + UUID.randomUUID().toString();
+        return callbackName;
     }
 
     private class SynchrousListener implements Runnable{

@@ -1,5 +1,6 @@
 package org.openiam.message.gateway;
 
+import org.openiam.message.constants.OpenIAMQueue;
 import org.openiam.message.dto.OpenIAMMQRequest;
 import org.openiam.message.dto.OpenIAMMQResponse;
 
@@ -10,9 +11,10 @@ public abstract class AbstractRequestServiceGateway extends AbstractServiceGatew
 
 
     @Override
-    public OpenIAMMQResponse sendAndReceive(String queueName, OpenIAMMQRequest request) {
-        return doSendAndReceive(queueName, request);
+    public OpenIAMMQResponse sendAndReceive(OpenIAMQueue queue, OpenIAMMQRequest request) {
+        request.setCorrelationID(generateCorrelationId());
+        return doSendAndReceive(queue, request);
     }
 
-    protected abstract OpenIAMMQResponse doSendAndReceive(String queueName, OpenIAMMQRequest request);
+    protected abstract OpenIAMMQResponse doSendAndReceive(OpenIAMQueue queue, OpenIAMMQRequest request);
 }

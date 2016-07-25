@@ -5,10 +5,11 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.concurrent.AbstractBaseDaemonBackgroundTask;
 import org.openiam.concurrent.IBaseRunnableBackgroundTask;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.message.gateway.ServiceGateway;
+import org.openiam.message.gateway.AbstractResponseServiceGateway;
 import org.openiam.message.constants.OpenIAMAPI;
 import org.openiam.message.dto.OpenIAMMQRequest;
 import org.openiam.message.dto.OpenIAMMQResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.ParameterizedType;
@@ -20,8 +21,9 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Created by alexander on 07/07/16.
  */
 public abstract class AbstractAPIProcessor<RequestBody, ResponseBody extends Response> extends AbstractBaseDaemonBackgroundTask implements IBaseRunnableBackgroundTask,APIProcessor<RequestBody, ResponseBody> {
-    protected ServiceGateway serviceGateway;
-    protected ResponseBody apiResponse;
+
+    @Autowired
+    private AbstractResponseServiceGateway serviceGateway;
     private OpenIAMAPI apiName;
     private boolean isRunning = false;
 
