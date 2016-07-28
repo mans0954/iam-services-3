@@ -76,6 +76,9 @@ public interface PasswordWebService {
     ValidatePasswordResetTokenResponse validatePasswordResetToken(
             @WebParam(name = "token", targetNamespace = "") String token);
 
-
+    @WebMethod
     Policy getPasswordPolicy(String principal, String msysId);
+    
+    @WebMethod
+    public String getPasswordResetToken(PasswordResetTokenRequest request);
 }
