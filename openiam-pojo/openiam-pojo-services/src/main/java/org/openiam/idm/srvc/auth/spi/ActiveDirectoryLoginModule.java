@@ -233,7 +233,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
         setResultCode(lg, sub, curDate, null);
 
-        // send message into to audit log
+        // send mq into to audit log
 
 //        log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
 //                user.getId(), principal, null, null, clientIP, nodeIP);

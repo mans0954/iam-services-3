@@ -5,10 +5,9 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.message.processor.AbstractAPIProcessor;
+import org.openiam.mq.processor.AbstractAPIProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by alexander on 14/07/16.

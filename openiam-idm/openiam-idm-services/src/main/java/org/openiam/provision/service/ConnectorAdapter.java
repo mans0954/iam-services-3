@@ -209,7 +209,7 @@ public class ConnectorAdapter {
                 if (resp.getStatus() == StatusCodeType.SUCCESS
                         || resp.getObjectList().size() > 0) {
                     if (resp.getErrorMessage().size() > 0) {
-                        log.debug("Connector Search: error message = "
+                        log.debug("Connector Search: error mq = "
                                 + resp.getErrorMsgAsStr());
                     }
                     log.debug("Connector Search:"

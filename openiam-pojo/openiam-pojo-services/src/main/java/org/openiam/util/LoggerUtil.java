@@ -12,14 +12,14 @@ package org.openiam.util;
 public class LoggerUtil {
 	
 	/*
-	 * Log INFO level message. Checks if info is enabled.
+	 * Log INFO level mq. Checks if info is enabled.
 	 */
 	static public void info(org.apache.log4j.Logger log, String message) {
 		if (log.isInfoEnabled())
 			log.info(message);
 	}
 	/*
-	 * Log DEBUG level message. Checks if debug is enabled.
+	 * Log DEBUG level mq. Checks if debug is enabled.
 	 */
 	static public void debug(org.apache.log4j.Logger log, String message) {
 		if (log.isDebugEnabled())

@@ -191,17 +191,12 @@
         <redis.scheduler.version>1.0.0-SNAPSHOT</redis.scheduler.version>
         <guava.version>19.0</guava.version>
 		<skipTests>true</skipTests>
-		<spring.kafka.version>1.0.2.RELEASE</spring.kafka.version>
-		<kafka.version>0.9.0.1</kafka.version>
+		<spring.amqp.version>1.6.1.RELEASE</spring.amqp.version>
+		<rabbitmq.client.version>3.6.3</rabbitmq.client.version>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>org.apache.kafka</groupId>
-				<artifactId>kafka-clients</artifactId>
-				<version>${kafka.version}</version>
-			</dependency>
 			<!-- Spring Dependencies -->
 			<dependency>
 	            <!-- Import dependency management from Spring Boot -->
@@ -247,16 +242,38 @@
         		<version>${spring.data.redis.version}</version>
     		</dependency>
 			<dependency>
-				<groupId>org.springframework.kafka</groupId>
-				<artifactId>spring-kafka</artifactId>
-				<version>${spring.kafka.version}</version>
+				<groupId>org.springframework.amqp</groupId>
+				<artifactId>spring-amqp</artifactId>
+				<version>${spring.amqp.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.springframework</groupId>
+						<artifactId>spring-core</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.kafka</groupId>
-				<artifactId>spring-kafka-test</artifactId>
-				<version>${spring.kafka.version}</version>
-				<scope>compile</scope>
+				<groupId>org.springframework.amqp</groupId>
+				<artifactId>spring-rabbit</artifactId>
+				<version>${spring.amqp.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.springframework</groupId>
+						<artifactId>spring-tx</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.rabbitmq</groupId>
+						<artifactId>amqp-client</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
+			<dependency>
+				<groupId>com.rabbitmq</groupId>
+				<artifactId>amqp-client</artifactId>
+				<version>${rabbitmq.client.version}</version>
+			</dependency>
+
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-data-jpa</artifactId>

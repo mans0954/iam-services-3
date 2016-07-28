@@ -100,8 +100,8 @@ public class SourceAdapterImpl implements SourceAdapter {
 //    private void send(final SourceAdapterRequest request) {
 //        jmsTemplate.send(queue, new MessageCreator() {
 //            public javax.jms.Message createMessage(Session session) throws JMSException {
-//                javax.jms.Message message = session.createObjectMessage(request);
-//                return message;
+//                javax.jms.Message mq = session.createObjectMessage(request);
+//                return mq;
 //            }
 //        });
 //    }
