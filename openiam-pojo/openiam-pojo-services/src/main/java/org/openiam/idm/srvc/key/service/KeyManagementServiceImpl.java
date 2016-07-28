@@ -908,7 +908,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
                         throw new RuntimeException(e);
                     }
                 } else {
-                    log.warn("Key management was already setup.  Doing nothing.  This message is normal; it will show on every server startup");
+                    log.warn("Key management was already setup.  Doing nothing.  This mq is normal; it will show on every server startup");
                 }
                 return null;
             }

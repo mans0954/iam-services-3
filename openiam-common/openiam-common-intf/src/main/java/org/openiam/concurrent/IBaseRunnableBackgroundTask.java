@@ -6,7 +6,7 @@ package org.openiam.concurrent;
  */
 public interface IBaseRunnableBackgroundTask extends IBaseBackgroundTask, Runnable {
 
-    public IBaseRunnableBackgroundTask cloneTask() throws Exception;
+    public IBaseRunnableBackgroundTask cloneTask() throws CloneNotSupportedException;
     public boolean isDaemon();
 
 }

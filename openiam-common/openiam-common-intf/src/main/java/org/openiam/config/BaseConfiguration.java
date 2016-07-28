@@ -2,24 +2,16 @@ package org.openiam.config;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.util.CustomJacksonMapper;
+import org.openiam.mq.processor.BaseBackgroundProcessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.annotation.ProxyCachingConfiguration;
-import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -31,8 +23,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestTemplate;
-
-import com.hazelcast.spring.cache.HazelcastCacheManager;
 
 @Configuration
 @EnableAsync
@@ -70,8 +60,27 @@ public class BaseConfiguration implements SchedulingConfigurer {
 	/* this is for @Async stuff */
 	@Bean(name="taskExecutor")
 	public ThreadPoolTaskExecutor taskExecutor() {
-		final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(100);
+		return createTaskExecutor(100, 200, 300, "TaskExecutor-");
+	}
+
+	@Bean(name = "workerTaskExecutor")
+	public ThreadPoolTaskExecutor workerTaskExecutor() {
+		return createTaskExecutor(20, 50, 100, "WorkerTaskExecutor-");
+	}
+
+	@Bean
+	public BaseBackgroundProcessorService baseBackgroundProcessorService(){
+		return new BaseBackgroundProcessorService(taskExecutor(), workerTaskExecutor());
+	}
+
+	private ThreadPoolTaskExecutor createTaskExecutor(int corePoolSize, int maxPoolSize, int queueCapacity, String prefix){
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(corePoolSize);
+		executor.setMaxPoolSize(maxPoolSize);
+		executor.setQueueCapacity(queueCapacity);
+		executor.setThreadNamePrefix(prefix);
+		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+		executor.initialize();
 		return executor;
 	}
 

@@ -468,7 +468,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
                     }
                 }
-                // send message to provisioning service asynchronously
+                // send mq to provisioning service asynchronously
                 asyncProvisionService.modifyUser(pUser);
             }
         } catch (BasicDataServiceException e) {

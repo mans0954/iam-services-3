@@ -1,4 +1,4 @@
-package org.openiam.message.constants;
+package org.openiam.mq.constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,13 +8,15 @@ import java.util.Map;
  */
 public enum OpenIAMQueue {
 //    MetaElementQueue("metaElementQueue"),
-    MetadataQueue("metadataQueue", OpenIAMAPI.MetadataTypeGet);
+    MetadataQueue(OpenIAMAPI.MetadataTypeGet);
 
-    private String queueName;
+    private String queueName=this.name();
+    // this is to support kafka
     private OpenIAMAPI[] openIAMAPIs;
+    private RabbitMqExchange exchange = RabbitMqExchange.COMMON_EXCHANGE;
+
 
     private static Map<OpenIAMQueue, HashMap<OpenIAMAPI, Integer>> map = new HashMap<OpenIAMQueue, HashMap<OpenIAMAPI, Integer>>();
-
     static {
         for (OpenIAMQueue pEnum : OpenIAMQueue.values()) {
             if(!map.containsKey(pEnum)){
@@ -26,14 +28,20 @@ public enum OpenIAMQueue {
             }
         }
     }
+    private OpenIAMQueue(OpenIAMAPI... openIAMAPIs){
+        this(RabbitMqExchange.COMMON_EXCHANGE, openIAMAPIs);
+    }
 
-    private OpenIAMQueue(String queueName, OpenIAMAPI... openIAMAPIs){
-        this.queueName=queueName;
+    private OpenIAMQueue(RabbitMqExchange exchange, OpenIAMAPI... openIAMAPIs){
+        this.exchange=exchange;
         this.openIAMAPIs=openIAMAPIs;
     }
 
-    public String getQueueName(){
+    public String getName(){
         return this.queueName;
+    }
+    public RabbitMqExchange getExchange() {
+        return exchange;
     }
 
     public int getPartitionId(OpenIAMAPI api){

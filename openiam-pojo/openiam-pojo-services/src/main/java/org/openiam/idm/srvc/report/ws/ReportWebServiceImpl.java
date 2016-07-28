@@ -661,7 +661,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 				redisTemplate.opsForList().leftPush("subsQueue", reportSubscription);
 				response.succeed();
 			} catch(Throwable e) {
-				log.error("can't add subs queue message", e);
+				log.error("can't add subs queue mq", e);
 				response.fail();
 			}
 		}
@@ -679,7 +679,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 				try {
 					redisTemplate.opsForList().leftPush("subsQueue", reportSubscription);
 				} catch(Throwable e) {
-					log.error("can't add subs queue message", e);
+					log.error("can't add subs queue mq", e);
 				}
 			}
 		}

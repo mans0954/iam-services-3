@@ -83,11 +83,11 @@ import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.message.constants.OpenIAMAPI;
-import org.openiam.message.constants.OpenIAMQueue;
-import org.openiam.message.dto.OpenIAMMQRequest;
-import org.openiam.message.dto.OpenIAMMQResponse;
-import org.openiam.message.gateway.AbstractRequestServiceGateway;
+import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.dto.MQRequest;
+import org.openiam.mq.dto.MQResponse;
+import org.openiam.mq.gateway.RequestServiceGateway;
 import org.openiam.util.AttributeUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -222,8 +222,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     private ApplicationContext ac;
 
     @Autowired
-    @Qualifier("redisRequestServiceGateway")
-    private AbstractRequestServiceGateway serviceGateway;
+    @Qualifier("rabbitRequestServiceGateway")
+    private RequestServiceGateway serviceGateway;
 
 
     public void setApplicationContext(final ApplicationContext ac) throws BeansException {
@@ -1965,11 +1965,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     }
 
     private void setMetadataTypes(final UserEntity userEntity) {
-        OpenIAMMQRequest<String> request = new OpenIAMMQRequest<>();
-        request.setRequestApi(OpenIAMAPI.MetadataTypeGet);
     	if(userEntity.getEmployeeType() != null && StringUtils.isNotBlank(userEntity.getEmployeeType().getId())) {
-            request.setRequestBody(userEntity.getEmployeeType().getId());
-            OpenIAMMQResponse resp = serviceGateway.sendAndReceive(OpenIAMQueue.MetadataQueue, request);
     		userEntity.setEmployeeType(metadataTypeDAO.findById(userEntity.getEmployeeType().getId()));
         } else {
         	userEntity.setEmployeeType(null);

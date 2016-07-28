@@ -1,15 +1,16 @@
-package org.openiam.message.processor;
+package org.openiam.mq.processor;
 
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.concurrent.AbstractBaseDaemonBackgroundTask;
+import org.openiam.concurrent.AbstractBaseRunnableBackgroundTask;
 import org.openiam.concurrent.IBaseRunnableBackgroundTask;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.message.gateway.AbstractResponseServiceGateway;
-import org.openiam.message.constants.OpenIAMAPI;
-import org.openiam.message.dto.OpenIAMMQRequest;
-import org.openiam.message.dto.OpenIAMMQResponse;
+import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.dto.MQRequest;
+import org.openiam.mq.dto.MQResponse;
+import org.openiam.mq.gateway.ResponseServiceGateway;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.ParameterizedType;
@@ -20,14 +21,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by alexander on 07/07/16.
  */
-public abstract class AbstractAPIProcessor<RequestBody, ResponseBody extends Response> extends AbstractBaseDaemonBackgroundTask implements IBaseRunnableBackgroundTask,APIProcessor<RequestBody, ResponseBody> {
+public abstract class AbstractAPIProcessor<RequestBody, ResponseBody extends Response> extends AbstractBaseRunnableBackgroundTask implements IBaseRunnableBackgroundTask,APIProcessor<RequestBody, ResponseBody> {
 
     @Autowired
-    private AbstractResponseServiceGateway serviceGateway;
+    @Qualifier("rabbitResponseServiceGateway")
+    private ResponseServiceGateway responseServiceGateway;
     private OpenIAMAPI apiName;
     private boolean isRunning = false;
 
-    private BlockingQueue<OpenIAMMQRequest<RequestBody>> requestQueue = new LinkedBlockingQueue<OpenIAMMQRequest<RequestBody>>();
+    private BlockingQueue<MQRequest<RequestBody>> requestQueue = new LinkedBlockingQueue<MQRequest<RequestBody>>();
 
     public AbstractAPIProcessor() {
     }
@@ -37,13 +39,13 @@ public abstract class AbstractAPIProcessor<RequestBody, ResponseBody extends Res
     }
 
     @Override
-    public void pushToQueue(OpenIAMMQRequest<RequestBody> apiRequest) {
+    public void pushToQueue(MQRequest<RequestBody> apiRequest) {
         log.debug("adding API Request {} to queue - starting", apiRequest);
         requestQueue.add(apiRequest);
         log.debug("adding API Request {} to queue - finished", apiRequest);
     }
     @Override
-    public OpenIAMMQRequest<RequestBody> pullFromQueue() throws InterruptedException {
+    public MQRequest<RequestBody> pullFromQueue() throws InterruptedException {
         return requestQueue.take();
     }
 
@@ -51,7 +53,7 @@ public abstract class AbstractAPIProcessor<RequestBody, ResponseBody extends Res
     public void run() {
         try {
             isRunning = true;
-            OpenIAMMQRequest<RequestBody> apiRequest = null;
+            MQRequest<RequestBody> apiRequest = null;
             while ((apiRequest = pullFromQueue()) != null) {
                 log.debug("processing API Request {} - starting", apiRequest);
                 processRequest(apiRequest);
@@ -65,13 +67,13 @@ public abstract class AbstractAPIProcessor<RequestBody, ResponseBody extends Res
         }
     }
 
-    public void processRequest(OpenIAMMQRequest<RequestBody> apiRequest){
+    public void processRequest(MQRequest<RequestBody> apiRequest){
         try {
             ResponseBody apiResponse = this.getResponseInstance();
 
-            String correlationId = apiRequest.getCorrelationID();
+            byte[] correlationId = apiRequest.getCorrelationId();
 
-            OpenIAMMQResponse<ResponseBody> response = new OpenIAMMQResponse<ResponseBody>();
+            MQResponse<ResponseBody> response = new MQResponse<ResponseBody>();
             long startTime = System.currentTimeMillis();
             log.debug("Processing {} API ...", apiRequest.getRequestApi().name());
             try {
@@ -96,10 +98,11 @@ public abstract class AbstractAPIProcessor<RequestBody, ResponseBody extends Res
         }
     }
 
-    protected void sendResponse(String getReplyTo, OpenIAMMQResponse<ResponseBody> response,  String correlationId) {
-        if (StringUtils.hasText(getReplyTo))
-            response.setCorrelationID(correlationId);
-        serviceGateway.send(getReplyTo, response);
+    protected void sendResponse(String getReplyTo, MQResponse<ResponseBody> response, byte[] correlationId) {
+        if (StringUtils.hasText(getReplyTo)) {
+            response.setCorrelationId(correlationId);
+            responseServiceGateway.send(getReplyTo, response, correlationId);
+        }
     }
 
     private ResponseBody getResponseInstance() throws IllegalAccessException, InstantiationException {

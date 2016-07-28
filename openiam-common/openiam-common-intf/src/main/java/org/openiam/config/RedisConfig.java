@@ -54,26 +54,4 @@ public class RedisConfig {
 		listener.setMessageListeners(new HashMap<MessageListener, Collection<? extends Topic>>());
 		return listener;
 	}
-
-	@Bean(name = "listenerTaskExecutor")
-	public TaskExecutor listenerTaskExecutor() {
-		return createDemonTaskExecutor("ListenerTaskExecutor-");
-	}
-
-	@Bean(name = "workerTaskExecutor")
-	public TaskExecutor workerTaskExecutor() {
-		return createDemonTaskExecutor("WorkerTaskExecutor-");
-	}
-
-	private TaskExecutor createDemonTaskExecutor(String prefix){
-		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(10);
-		executor.setMaxPoolSize(50);
-		executor.setQueueCapacity(100);
-		executor.setDaemon(true);
-		executor.setThreadNamePrefix(prefix);
-		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-		executor.initialize();
-		return executor;
-	}
 }

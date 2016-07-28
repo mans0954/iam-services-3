@@ -405,10 +405,10 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
         }
         try {
             DirectMessage message = getTwitterInstance().sendDirectMessage(userid, msg);
-            log.info("Direct message successfully sent to " + message.getRecipientScreenName());
+            log.info("Direct mq successfully sent to " + message.getRecipientScreenName());
         } catch (TwitterException te) {
             //te.printStackTrace();
-            log.error("Failed to send a direct message: ", te);
+            log.error("Failed to send a direct mq: ", te);
         }
     }
 

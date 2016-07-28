@@ -13,8 +13,7 @@ public abstract class AbstractBaseRunnableBackgroundTask extends  AbstractBaseBa
     }
     
     @Override
-    public IBaseRunnableBackgroundTask cloneTask() throws Exception {
+    public IBaseRunnableBackgroundTask cloneTask() throws CloneNotSupportedException {
         return (IBaseRunnableBackgroundTask) super.clone();
     }
-
 }
