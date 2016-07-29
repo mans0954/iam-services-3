@@ -265,18 +265,18 @@ public class UserEntity extends KeyEntity {
     private Date dateITPolicyApproved;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<UserNoteEntity> userNotes = new HashSet<UserNoteEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @MapKeyColumn(name = "name")
     @JoinColumn(name="USER_ID")
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, UserAttributeEntity> userAttributes = new HashMap<String, UserAttributeEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
     /*
@@ -291,7 +291,7 @@ public class UserEntity extends KeyEntity {
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<EmailAddressEntity> emailAddresses = new HashSet<EmailAddressEntity>(0);
 
     @Column(name = "SYSTEM_FLAG",length = 1)
@@ -301,7 +301,7 @@ public class UserEntity extends KeyEntity {
     @OneToMany(orphanRemoval = true, cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)

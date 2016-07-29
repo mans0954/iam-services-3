@@ -351,6 +351,14 @@ public class PasswordServiceImpl implements PasswordService {
         loginManager.updateLogin(l);
         return resp;
     }
+    
+    @Override
+    @Transactional(readOnly=true)
+    public String getPasswordResetToken(PasswordResetTokenRequest request) {
+    	final LoginEntity l = loginManager.getLoginByManagedSys(request.getPrincipal(), request.getManagedSysId());
+    	return (l != null) ? l.getPswdResetToken() : null;
+    }
+    
     @Override
     public ValidatePasswordResetTokenResponse validatePasswordResetToken(
             String token) {
