@@ -2,79 +2,44 @@ package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.*;
-import org.openiam.exception.BasicDataServiceException;
-import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
-import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
-import org.openiam.idm.srvc.org.service.OrganizationAttributeDAO;
-import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.res.service.ResourcePropDAO;
-import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.service.RoleAttributeDAO;
-import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.*;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.dto.common.UserSearchKey;
+import org.openiam.provision.dto.common.UserSearchKeyEnum;
+import org.openiam.provision.dto.common.UserSearchMemberhipKey;
 import org.openiam.provision.dto.srcadapter.*;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.thread.Sweepable;
-import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jms.core.BrowserCallback;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PostConstruct;
-import javax.jms.*;
-import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.OutputKeys;
@@ -83,8 +48,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.beans.XMLEncoder;
-import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -822,7 +785,7 @@ public class SourceAdapterDispatcher implements Runnable {
 
     private void fillAlternativeContact(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
             Exception {
-        SourceAdapterKey alternativeContact = request.getAlternativeContact();
+        UserSearchKey alternativeContact = request.getAlternativeContact();
         if (alternativeContact == null || alternativeContact.getName() == null || StringUtils.isBlank(alternativeContact.getValue())) {
             return;
         }
@@ -850,7 +813,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 pUser.setSuperiors(new HashSet<User>(superiorsFromDB));
             }
             List<User> result = new ArrayList<User>();
-            for (SourceAdapterMemberhipKey superUser : request.getSupervisors()) {
+            for (UserSearchMemberhipKey superUser : request.getSupervisors()) {
                 if (superUser.getValue() == null || "NULL".equalsIgnoreCase(superUser.getValue())) {
                     warnings.append(this.getWarning("Supervisor has NULL identifier value."));
                     continue;
@@ -1166,7 +1129,7 @@ public class SourceAdapterDispatcher implements Runnable {
         return (source == null || "NULL".equals(source)) ? null : source;
     }
 
-    private User getUser(SourceAdapterKey keyPair, SourceAdapterRequest request) throws Exception {
+    private User getUser(UserSearchKey keyPair, SourceAdapterRequest request) throws Exception {
         if (keyPair == null && SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
             //create
             return new User();
@@ -1175,7 +1138,7 @@ public class SourceAdapterDispatcher implements Runnable {
             return new User();
         } else if (keyPair != null && keyPair.getName() == null && StringUtils.isNotBlank(keyPair.getValue())) {
             User u = null;
-            for (SourceAdapterKeyEnum keyEnum : SourceAdapterKeyEnum.values()) {
+            for (UserSearchKeyEnum keyEnum : UserSearchKeyEnum.values()) {
                 u = this.findByKey(keyEnum, keyPair.getValue(), request);
                 if (u != null) {
                     break;
@@ -1191,19 +1154,19 @@ public class SourceAdapterDispatcher implements Runnable {
     }
 
 
-    private User findByKey(SourceAdapterKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request) throws Exception {
+    private User findByKey(UserSearchKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request) throws Exception {
         UserSearchBean searchBean = new UserSearchBean();
-        if (SourceAdapterKeyEnum.USERID.equals(matchAttrName)) {
+        if (UserSearchKeyEnum.USERID.equals(matchAttrName)) {
             searchBean.setKey(matchAttrValue);
             searchBean.setUserId(matchAttrValue);
-        } else if (SourceAdapterKeyEnum.PRINCIPAL.equals(matchAttrName)) {
+        } else if (UserSearchKeyEnum.PRINCIPAL.equals(matchAttrName)) {
             LoginSearchBean lsb = new LoginSearchBean();
             lsb.setLoginMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
             lsb.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
             searchBean.setPrincipal(lsb);
-        } else if (SourceAdapterKeyEnum.EMAIL.equals(matchAttrName)) {
+        } else if (UserSearchKeyEnum.EMAIL.equals(matchAttrName)) {
             searchBean.setEmailAddressMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
-        } else if (SourceAdapterKeyEnum.EMPLOYEE_ID.equals(matchAttrName)) {
+        } else if (UserSearchKeyEnum.EMPLOYEE_ID.equals(matchAttrName)) {
             searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         }
         searchBean.setDeepCopy(true);

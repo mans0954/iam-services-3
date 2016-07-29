@@ -1,6 +1,5 @@
 package org.openiam.service.integration.sourceadapter;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,9 +10,9 @@ import org.testng.annotations.Test;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.srcadapter.SourceAdapterAttributeRequest;
-import org.openiam.provision.dto.srcadapter.SourceAdapterKey;
-import org.openiam.provision.dto.srcadapter.SourceAdapterKeyEnum;
-import org.openiam.provision.dto.srcadapter.SourceAdapterMemberhipKey;
+import org.openiam.provision.dto.common.UserSearchKey;
+import org.openiam.provision.dto.common.UserSearchKeyEnum;
+import org.openiam.provision.dto.common.UserSearchMemberhipKey;
 import org.openiam.provision.dto.srcadapter.SourceAdapterOperationEnum;
 import org.openiam.provision.dto.srcadapter.SourceAdapterRequest;
 import org.openiam.provision.dto.srcadapter.SourceAdapterResponse;
@@ -46,13 +45,13 @@ public class SourceAdapterIntegrationTest extends AbstractServiceTest {
 		request.setSuffix(getRandomName(2));
 		request.setTitle(getRandomName());
 		
-		final SourceAdapterKey requestor = new SourceAdapterKey();
+		final UserSearchKey requestor = new UserSearchKey();
 		requestor.setValue("3000");
-		requestor.setName(SourceAdapterKeyEnum.USERID);
+		requestor.setName(UserSearchKeyEnum.USERID);
 		request.setRequestor(requestor);
-		final Set<SourceAdapterMemberhipKey> supervisors = new HashSet<SourceAdapterMemberhipKey>();
-		final SourceAdapterMemberhipKey supervisor = new SourceAdapterMemberhipKey();
-		supervisor.setName(SourceAdapterKeyEnum.USERID);
+		final Set<UserSearchMemberhipKey> supervisors = new HashSet<UserSearchMemberhipKey>();
+		final UserSearchMemberhipKey supervisor = new UserSearchMemberhipKey();
+		supervisor.setName(UserSearchKeyEnum.USERID);
 		supervisor.setValue("3000");
 		supervisors.add(supervisor);
 		request.setSupervisors(supervisors);

@@ -1,16 +1,15 @@
-package org.openiam.provision.dto.srcadapter;
+package org.openiam.provision.dto.common;
 
 import org.openiam.base.AttributeOperationEnum;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Created by zaporozhec on 10/29/15.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterMemberhipKey extends SourceAdapterKey {
+public class UserSearchMemberhipKey extends UserSearchKey {
     private AttributeOperationEnum operation;
 
     public AttributeOperationEnum getOperation() {

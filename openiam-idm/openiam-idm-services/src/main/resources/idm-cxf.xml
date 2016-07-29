@@ -7,4 +7,7 @@
 
     <jaxws:endpoint id="sourceAdapterEndpoint" implementor="#sourceAdapter"
                     address="/SourceAdapterService"/>
+
+    <jaxws:endpoint id="userAccessControlEndpoint" implementor="#userAccessControlService"
+                    address="/UserAccessControlService"/>
 </beans>
