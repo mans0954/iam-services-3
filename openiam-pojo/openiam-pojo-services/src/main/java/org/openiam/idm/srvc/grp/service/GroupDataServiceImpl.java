@@ -162,7 +162,6 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     private ApproverAssociationDAO approverAssociationDao;
     private ApplicationContext ac;
 
-
     public void setApplicationContext(final ApplicationContext ac) throws BeansException {
         this.ac = ac;
     }
@@ -872,7 +871,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             for (final GroupAttributeEntity beanProp : beanProps) {
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     dbProp.setValue(beanProp.getValue());
-                    dbProp.setElement(getEntity(beanProp.getElement()));
+                    dbProp.setMetadataElementId(beanProp.getMetadataElementId());
                     dbProp.setName(beanProp.getName());
                     dbProp.setIsMultivalued(beanProp.getIsMultivalued());
                     contains = true;
@@ -901,7 +900,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
             if (!contains) {
                 beanProp.setGroup(bean);
-                beanProp.setElement(getEntity(beanProp.getElement()));
+                beanProp.setMetadataElementId(beanProp.getMetadataElementId());
                 auditLogAddAttribute(bean, beanProp, requesterId);
                 toAdd.add(beanProp);
             }
@@ -942,14 +941,6 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
         auditLog.put(groupAttr.getName(), groupAttr.getValue());
         auditLogService.enqueue(auditLog);
-    }
-
-	private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
-    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
-    		return metadataElementDAO.findById(bean.getId());
-    	} else {
-    		return null;
-    	}
     }
 
 	@Override

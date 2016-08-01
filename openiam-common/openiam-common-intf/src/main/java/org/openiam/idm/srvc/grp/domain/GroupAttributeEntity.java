@@ -73,7 +73,7 @@ public class GroupAttributeEntity extends AbstractAttributeEntity {
 		int result = 1;
 		result = prime * result + ((group == null) ? 0 : group.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((element == null) ? 0 : element.hashCode());
+        result = prime * result + ((getMetadataElementId() == null) ? 0 : getMetadataElementId().hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
         result = prime * result + (isMultivalued ? 1231 : 1237);
@@ -99,10 +99,10 @@ public class GroupAttributeEntity extends AbstractAttributeEntity {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-        if (element == null) {
-            if (other.element != null)
+        if (getMetadataElementId() == null) {
+            if (other.getMetadataElementId() != null)
                 return false;
-        } else if (!element.equals(other.element))
+        } else if (!getMetadataElementId().equals(other.getMetadataElementId()))
             return false;
 		if (name == null) {
 			if (other.name != null)

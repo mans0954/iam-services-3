@@ -9,5 +9,6 @@ import org.openiam.mq.dto.MQResponse;
  */
 public interface RequestServiceGateway {
     MQResponse sendAndReceive(OpenIAMQueue queue, final MQRequest request);
-    void send(OpenIAMQueue queue, final MQRequest response)throws Exception;
+    void send(OpenIAMQueue queue, final MQRequest response);
+    void send(String exchange, String routingKey, final MQRequest request) ;
 }

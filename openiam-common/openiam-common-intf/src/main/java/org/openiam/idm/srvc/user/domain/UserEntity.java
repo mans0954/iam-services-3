@@ -837,7 +837,7 @@ public class UserEntity extends KeyEntity {
     	if(entity != null && this.userAttributes != null) {
     		final UserAttributeEntity attribute = this.userAttributes.get(entity.getName());
     		if(attribute != null) {
-    			attribute.setElement(entity.getElement());
+    			attribute.setMetadataElementId(entity.getMetadataElementId());
     			attribute.setValue(entity.getValue());
     		}
     	}

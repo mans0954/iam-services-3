@@ -21,7 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by alexander on 07/07/16.
  */
-public abstract class AbstractAPIProcessor<RequestBody, ResponseBody extends Response> extends AbstractBaseRunnableBackgroundTask implements IBaseRunnableBackgroundTask,APIProcessor<RequestBody, ResponseBody> {
+public abstract class AbstractAPIDispatcher<RequestBody, ResponseBody extends Response> extends AbstractBaseRunnableBackgroundTask implements IBaseRunnableBackgroundTask,APIProcessor<RequestBody, ResponseBody> {
 
     @Autowired
     @Qualifier("rabbitResponseServiceGateway")
@@ -29,9 +29,12 @@ public abstract class AbstractAPIProcessor<RequestBody, ResponseBody extends Res
     private OpenIAMAPI apiName;
     private boolean isRunning = false;
 
+    private Class<ResponseBody> responseBodyClass;
+
     private BlockingQueue<MQRequest<RequestBody>> requestQueue = new LinkedBlockingQueue<MQRequest<RequestBody>>();
 
-    public AbstractAPIProcessor() {
+    public AbstractAPIDispatcher(Class<ResponseBody> responseBodyClass) {
+        this.responseBodyClass = responseBodyClass;
     }
 
     public synchronized boolean isRunning() {
@@ -106,23 +109,10 @@ public abstract class AbstractAPIProcessor<RequestBody, ResponseBody extends Res
     }
 
     private ResponseBody getResponseInstance() throws IllegalAccessException, InstantiationException {
-        Type type = getClass().getGenericSuperclass();
-        ParameterizedType paramType = (ParameterizedType) type;
-        Class<ResponseBody> result = null;
-        if (paramType.getActualTypeArguments()[paramType
-                .getActualTypeArguments().length - 1] instanceof Class) {
-            result = (Class<ResponseBody>) paramType.getActualTypeArguments()[paramType
-                    .getActualTypeArguments().length - 1];
-
-        } else if (paramType.getActualTypeArguments()[paramType
-                .getActualTypeArguments().length - 1] instanceof ParameterizedType) {
-            result = (Class<ResponseBody>) ((ParameterizedType) paramType
-                    .getActualTypeArguments()[paramType
-                    .getActualTypeArguments().length - 1]).getRawType();
-        }
-        return result.newInstance();
+        return responseBodyClass.newInstance();
     }
-    protected abstract void processingApiRequest(RequestBody requestBody, String languageId, ResponseBody responseBody) throws BasicDataServiceException;
+
+    protected abstract void processingApiRequest(final RequestBody requestBody, String languageId, ResponseBody responseBody) throws BasicDataServiceException;
     protected void rollbackTaransaction() {
         log.debug("There is no data which should be rollbacked");
     }

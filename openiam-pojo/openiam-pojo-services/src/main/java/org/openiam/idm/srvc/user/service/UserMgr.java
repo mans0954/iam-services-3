@@ -542,7 +542,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                 newList.add(incomingEntity);
             } else { /* exists - modify */
                 // existingEntity.setUser(userEntity);
-                existingEntity.setElement(incomingEntity.getElement());
+                existingEntity.setMetadataElementId(incomingEntity.getMetadataElementId());
                 existingEntity.setName(incomingEntity.getName());
                 existingEntity.setValue(incomingEntity.getValue());
                 existingEntity.setIsMultivalued(incomingEntity.getIsMultivalued());
@@ -861,11 +861,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         UserEntity userEntity = userDao.findById(attribute.getUser().getId());
         attribute.setUser(userEntity);
 
-        MetadataElementEntity element = null;
-        if (attribute.getElement() != null && StringUtils.isNotEmpty(attribute.getElement().getId())) {
-            element = metadataElementDAO.findById(attribute.getElement().getId());
-        }
-        attribute.setElement(element);
+        attribute.setMetadataElementId(attribute.getMetadataElementId());
 
         userAttributeDao.save(attribute);
     }
@@ -883,7 +879,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         if (userAttribute != null) {
             UserEntity userEntity = userDao.findById(attribute.getUser().getId());
             attribute.setUser(userEntity);
-            attribute.setElement(userAttribute.getElement());
+            attribute.setMetadataElementId(userAttribute.getMetadataElementId());
             userAttributeDao.merge(attribute);
         }
     }

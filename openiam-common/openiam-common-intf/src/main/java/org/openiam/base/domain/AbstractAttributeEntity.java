@@ -23,19 +23,28 @@ import java.util.List;
 public abstract class AbstractAttributeEntity extends AbstractKeyNameValueEntity {
 
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
-    @JoinColumn(name = "METADATA_ID", insertable = true, updatable = true, nullable=true)
-    @Internationalized
-    protected MetadataElementEntity element;
+//    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+//    @JoinColumn(name = "METADATA_ID", insertable = true, updatable = true, nullable=true)
+//    @Internationalized
+//    protected MetadataElementEntity element;
+	@Column(name = "METADATA_ID", nullable = true)
+	private String metadataElementId;
 
-	public MetadataElementEntity getElement() {
-		return element;
+//	public MetadataElementEntity getElement() {
+//		return element;
+//	}
+//
+//	public void setElement(MetadataElementEntity element) {
+//		this.element = element;
+//	}
+
+	public String getMetadataElementId() {
+		return metadataElementId;
 	}
 
-	public void setElement(MetadataElementEntity element) {
-		this.element = element;
+	public void setMetadataElementId(String metadataElementId) {
+		this.metadataElementId = metadataElementId;
 	}
-
 
 	public abstract boolean getIsMultivalued();
 
@@ -48,7 +57,7 @@ public abstract class AbstractAttributeEntity extends AbstractKeyNameValueEntity
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((element == null) ? 0 : element.hashCode());
+		result = prime * result + ((metadataElementId == null) ? 0 : metadataElementId.hashCode());
 		return result;
 	}
 
@@ -61,10 +70,10 @@ public abstract class AbstractAttributeEntity extends AbstractKeyNameValueEntity
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractAttributeEntity other = (AbstractAttributeEntity) obj;
-		if (element == null) {
-			if (other.element != null)
+		if (metadataElementId == null) {
+			if (other.metadataElementId != null)
 				return false;
-		} else if (!element.equals(other.element))
+		} else if (!metadataElementId.equals(other.metadataElementId))
 			return false;
 		return true;
 	}
@@ -72,7 +81,7 @@ public abstract class AbstractAttributeEntity extends AbstractKeyNameValueEntity
 	@Override
 	public String toString() {
 		return String.format(
-				"AbstractAttributeEntity [element=%s, toString()=%s]", element,
+				"AbstractAttributeEntity [metadataElementId=%s, toString()=%s]", (metadataElementId == null) ? "null" : metadataElementId,
 				super.toString());
 	}
 

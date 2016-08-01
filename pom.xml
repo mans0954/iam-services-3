@@ -185,9 +185,9 @@
         <posgres.version>9.3-1102-jdbc41</posgres.version>
         <jtds.version>1.3.1</jtds.version>
         <commons.beanutils.version>1.9.2</commons.beanutils.version>
-        <spring.data.redis.version>1.6.4.RELEASE</spring.data.redis.version>
+        <!--<spring.data.redis.version>1.6.4.RELEASE</spring.data.redis.version>-->
         <apache.commons.pool.version>2.2</apache.commons.pool.version>
-        <redis.client.version>2.7.3</redis.client.version>
+        <!--<redis.client.version>2.7.3</redis.client.version>-->
         <redis.scheduler.version>1.0.0-SNAPSHOT</redis.scheduler.version>
         <guava.version>19.0</guava.version>
 		<skipTests>true</skipTests>
@@ -236,11 +236,11 @@
 				<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
 				<version>${spring.boot.version}</version>
 			</dependency>
-			<dependency>
-        		<groupId>org.springframework.data</groupId>
-        		<artifactId>spring-data-redis</artifactId>
-        		<version>${spring.data.redis.version}</version>
-    		</dependency>
+			<!--<dependency>-->
+        		<!--<groupId>org.springframework.data</groupId>-->
+        		<!--<artifactId>spring-data-redis</artifactId>-->
+        		<!--<version>${spring.data.redis.version}</version>-->
+    		<!--</dependency>-->
 			<dependency>
 				<groupId>org.springframework.amqp</groupId>
 				<artifactId>spring-amqp</artifactId>
@@ -435,11 +435,11 @@
 				<version>${xstream.version}</version>
 			</dependency>
 			
-			<dependency>
-				<groupId>redis.clients</groupId>
-				<artifactId>jedis</artifactId>
-				<version>${redis.client.version}</version>
-			</dependency>
+			<!--<dependency>-->
+				<!--<groupId>redis.clients</groupId>-->
+				<!--<artifactId>jedis</artifactId>-->
+				<!--<version>${redis.client.version}</version>-->
+			<!--</dependency>-->
 
 			<dependency>
     			<groupId>org.apache.commons</groupId>

@@ -1,6 +1,6 @@
 package org.openiam.mq;
 
-import org.openiam.idm.srvc.meta.service.MetadataTypeGetProcessor;
+import org.openiam.idm.srvc.meta.service.MetadataTypeGetDispatcher;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.exception.RejectMessageException;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MetaDataListener extends AbstractRabbitMQListener {
     @Autowired
-    private MetadataTypeGetProcessor metadataTypeGetProcessor;
+    private MetadataTypeGetDispatcher metadataTypeGetDispatcher;
 
     public MetaDataListener(OpenIAMQueue queueToListen) {
         super(queueToListen);
@@ -32,7 +32,7 @@ public class MetaDataListener extends AbstractRabbitMQListener {
         OpenIAMAPI apiName = message.getRequestApi();
         switch (apiName){
             case MetadataTypeGet:
-                addTask(metadataTypeGetProcessor, correlationId, message, apiName, isAsync);
+                addTask(metadataTypeGetDispatcher, correlationId, message, apiName, isAsync);
                 break;
             default:
                 break;

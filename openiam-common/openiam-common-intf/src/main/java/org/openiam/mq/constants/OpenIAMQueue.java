@@ -1,5 +1,7 @@
 package org.openiam.mq.constants;
 
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,48 +9,33 @@ import java.util.Map;
  * Created by alexander on 06/07/16.
  */
 public enum OpenIAMQueue {
-//    MetaElementQueue("metaElementQueue"),
-    MetadataQueue(OpenIAMAPI.MetadataTypeGet);
+    MetadataQueue,
+    UserAttributeQueue,
+    RoleAttributeQueue,
+    GroupAttributeQueue,
+    ResourceAttributeQueue,
+    OrganizationAttributeQueue,
+    MailQueue,
+    AuditLog, ProvisionQueue;
 
-    private String queueName=this.name();
-    // this is to support kafka
-    private OpenIAMAPI[] openIAMAPIs;
-    private RabbitMqExchange exchange = RabbitMqExchange.COMMON_EXCHANGE;
-
-
-    private static Map<OpenIAMQueue, HashMap<OpenIAMAPI, Integer>> map = new HashMap<OpenIAMQueue, HashMap<OpenIAMAPI, Integer>>();
-    static {
-        for (OpenIAMQueue pEnum : OpenIAMQueue.values()) {
-            if(!map.containsKey(pEnum)){
-                map.put(pEnum, new HashMap<OpenIAMAPI, Integer>());
-            }
-            HashMap<OpenIAMAPI, Integer> indexMap = map.get(pEnum);
-            for(int i=0; i< pEnum.openIAMAPIs.length;i++){
-                indexMap.put(pEnum.openIAMAPIs[i], i);
-            }
-        }
+    private String routingKey=this.name();
+    private RabbitMqExchange exchange;
+    private OpenIAMQueue(){
+        this(RabbitMqExchange.COMMON_EXCHANGE);
     }
-    private OpenIAMQueue(OpenIAMAPI... openIAMAPIs){
-        this(RabbitMqExchange.COMMON_EXCHANGE, openIAMAPIs);
-    }
-
-    private OpenIAMQueue(RabbitMqExchange exchange, OpenIAMAPI... openIAMAPIs){
+    private OpenIAMQueue(RabbitMqExchange exchange){
         this.exchange=exchange;
-        this.openIAMAPIs=openIAMAPIs;
+    }
+    private OpenIAMQueue(RabbitMqExchange exchange, String routingKey){
+        this.exchange=exchange;
+        this.routingKey=routingKey;
     }
 
-    public String getName(){
-        return this.queueName;
+    public String getRoutingKey(){
+        return this.routingKey;
     }
     public RabbitMqExchange getExchange() {
         return exchange;
     }
 
-    public int getPartitionId(OpenIAMAPI api){
-        return map.get(this).get(api);
-    }
-
-    public int getPartitionNumber(){
-        return (this.openIAMAPIs==null || this.openIAMAPIs.length==0)? 1: this.openIAMAPIs.length;
-    }
 }

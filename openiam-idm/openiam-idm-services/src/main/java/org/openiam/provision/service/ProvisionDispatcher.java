@@ -6,43 +6,28 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.ws.Response;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
+import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component("provDispatcher")
-public class ProvisionDispatcher implements Sweepable {
+public class ProvisionDispatcher extends AbstractAPIDispatcher<ProvisionDataContainer, Response> {
 
     private static final Log log = LogFactory.getLog(ProvisionDispatcher.class);
-
     @Autowired
     protected ProvisionConnectorService connectorService;
 
     @Autowired
     protected ProvisionDispatcherTransactionHelper provisionTransactionHelper;
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
-	@Override
-	@Scheduled(fixedRate=500, initialDelay=500)
-	public void sweep() {
-		final Long size = redisTemplate.opsForList().size("provQueue");
-		if(size != null) {
-			for(long i = 0; i < size.intValue() ; i++) {
-				final Object key = redisTemplate.opsForList().rightPop("provQueue");
-				if(key != null) {
-					final ProvisionDataContainer entity = (ProvisionDataContainer)key;
-					provisionTransactionHelper.process(entity);
-				}
-			}
-		}
-	}
+    public ProvisionDispatcher() {
+        super(Response.class);
+    }
 
     /**
      * Update the list of attributes with the correct operation values so that
@@ -104,4 +89,8 @@ public class ProvisionDispatcher implements Sweepable {
         return extObject;
     }
 
+    @Override
+    protected void processingApiRequest(final ProvisionDataContainer entity, String languageId, Response response) throws BasicDataServiceException {
+        provisionTransactionHelper.process(entity);
+    }
 }

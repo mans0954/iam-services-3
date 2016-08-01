@@ -4,7 +4,7 @@ import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.processor.AbstractAPIProcessor;
+import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.openiam.mq.processor.BaseBackgroundProcessorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ public abstract class AbstractMessageListener {
     @Autowired
     private BaseBackgroundProcessorService baseBackgroundProcessorService;
 
-    private ConcurrentHashMap<OpenIAMAPI, AbstractAPIProcessor> workerMap = new ConcurrentHashMap<OpenIAMAPI, AbstractAPIProcessor>();
+    private ConcurrentHashMap<OpenIAMAPI, AbstractAPIDispatcher> workerMap = new ConcurrentHashMap<OpenIAMAPI, AbstractAPIDispatcher>();
 
     public AbstractMessageListener(OpenIAMQueue queueToListen){
         this.queueToListen=queueToListen;
@@ -42,7 +42,7 @@ public abstract class AbstractMessageListener {
         this.workerTaskExecutor = workerTaskExecutor;
     }
 
-    protected void addTask(AbstractAPIProcessor processor, byte[] correlationId, MQRequest message, OpenIAMAPI apiName,  boolean isAsync) throws RejectMessageException, CloneNotSupportedException  {
+    protected void addTask(AbstractAPIDispatcher processor, byte[] correlationId, MQRequest message, OpenIAMAPI apiName, boolean isAsync) throws RejectMessageException, CloneNotSupportedException  {
         if(message.getCorrelationId()==null){
             message.setCorrelationId(correlationId);
         }

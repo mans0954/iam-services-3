@@ -341,22 +341,6 @@
 			<a>validValues</a>
 			<b>validValues</b>
 		</field-exclude>
-		<field-exclude>
-			<a>userAttributes</a>
-			<b>userAttributes</b>
-		</field-exclude>
-		<field-exclude>
-			<a>organizationAttributes</a>
-			<b>organizationAttributes</b>
-		</field-exclude>
-		<field-exclude>
-			<a>groupAttributes</a>
-			<b>groupAttributes</b>
-		</field-exclude>
-		<field-exclude>
-			<a>resourceAttributes</a>
-			<b>resourceAttributes</b>
-		</field-exclude>
 	</mapping>
 
 	<mapping>

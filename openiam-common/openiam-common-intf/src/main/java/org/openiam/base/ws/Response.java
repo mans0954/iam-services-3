@@ -58,7 +58,10 @@ public class Response implements Serializable {
     protected String errorText;
     protected Map<String, String> fieldMappings;
     private String stacktraceText;
-
+    /**
+     * Use inherited classes to return expected value to the caller
+     */
+    @Deprecated
     protected Object responseValue;
     private List<EsbErrorToken> errorTokenList;
 
