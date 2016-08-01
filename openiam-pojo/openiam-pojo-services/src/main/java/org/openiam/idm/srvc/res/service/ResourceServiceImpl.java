@@ -313,7 +313,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             for (final ResourcePropEntity beanProp : beanProps) {
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     dbProp.setValue(beanProp.getValue());
-                    dbProp.setElement(getEntity(beanProp.getElement()));
+                    dbProp.setMetadataElementId(beanProp.getMetadataElementId());
                     dbProp.setName(beanProp.getName());
                     dbProp.setIsMultivalued(beanProp.getIsMultivalued());
                     //renewedProperties.add(dbProp);
@@ -342,7 +342,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
             if (!contains) {
                 beanProp.setResource(bean);
-                beanProp.setElement(getEntity(beanProp.getElement()));
+                beanProp.setMetadataElementId(beanProp.getMetadataElementId());
                 toAdd.add(beanProp);
             }
         }
@@ -351,14 +351,6 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         bean.setResourceProps(dbProps);
     }
     
-    private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
-    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
-    		return elementDAO.findById(bean.getId());
-    	} else {
-    		return null;
-    	}
-    }
-
     @Override
     @Transactional(readOnly = true)
     public ResourceEntity findResourceById(String resourceId) {
@@ -1025,5 +1017,14 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
                                                        final ResourceSearchBean searchBean, Language language) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForUserByType(userId, resourceTypeId, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, true);
+    }
+    @Override
+    @Transactional
+    public void saveAttribute(final ResourcePropEntity attribute) {
+        if(StringUtils.isNotBlank(attribute.getId())) {
+            resourcePropDao.update(attribute);
+        } else {
+            resourcePropDao.save(attribute);
+        }
     }
 }

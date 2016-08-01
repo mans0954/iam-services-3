@@ -163,5 +163,6 @@ public interface OrganizationService {
     public List<OrganizationAttribute> getOrgAttributesDtoList(String orgId);
     public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge);
     public OrganizationEntity getOrganizationLocalized(String orgId, String requesterId, final LanguageEntity langauge);
+    public void saveAttribute(final OrganizationAttributeEntity attribute);
 
     }

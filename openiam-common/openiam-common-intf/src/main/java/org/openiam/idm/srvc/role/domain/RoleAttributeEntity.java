@@ -50,13 +50,13 @@ public class RoleAttributeEntity extends AbstractAttributeEntity {
 		this.role = role;
 	}
 
-    public MetadataElementEntity getElement() {
-        return element;
-    }
-
-    public void setElement(MetadataElementEntity element) {
-        this.element = element;
-    }
+//    public MetadataElementEntity getElement() {
+//        return element;
+//    }
+//
+//    public void setElement(MetadataElementEntity element) {
+//        this.element = element;
+//    }
 
     public List<String> getValues() {
         return values;

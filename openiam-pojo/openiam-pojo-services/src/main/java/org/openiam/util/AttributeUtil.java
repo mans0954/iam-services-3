@@ -24,7 +24,7 @@ public class AttributeUtil {
         attribute.setUser(user);
 
         if(metadataElementEntity!=null){
-            attribute.setElement(metadataElementEntity);
+            attribute.setMetadataElementId(metadataElementEntity.getId());
             attribute.setName(metadataElementEntity.getAttributeName());
             attribute.setValue(StringUtils.isNotBlank(metadataElementEntity.getStaticDefaultValue()) ? metadataElementEntity.getStaticDefaultValue():null);
         }
@@ -35,7 +35,7 @@ public class AttributeUtil {
     public static RoleAttributeEntity buildRoleAttribute(RoleEntity role, MetadataElementEntity metadataElementEntity){
         RoleAttributeEntity attribute = new RoleAttributeEntity();
         attribute.setRole(role);
-        attribute.setElement(metadataElementEntity);
+        attribute.setMetadataElementId(metadataElementEntity.getId());
         attribute.setName(metadataElementEntity.getAttributeName());
         attribute.setValue(metadataElementEntity.getStaticDefaultValue());
         return attribute;
@@ -44,7 +44,7 @@ public class AttributeUtil {
     public static GroupAttributeEntity buildGroupAttribute(GroupEntity group, MetadataElementEntity metadataElementEntity) {
         GroupAttributeEntity attribute = new GroupAttributeEntity();
         attribute.setGroup(group);
-        attribute.setElement(metadataElementEntity);
+        attribute.setMetadataElementId(metadataElementEntity.getId());
         attribute.setName(metadataElementEntity.getAttributeName());
         attribute.setValue(metadataElementEntity.getStaticDefaultValue());
         return attribute;
@@ -53,7 +53,7 @@ public class AttributeUtil {
                                                           MetadataElementEntity metadataElementEntity) {
         OrganizationAttributeEntity attribute = new OrganizationAttributeEntity();
         attribute.setOrganization(org);
-        attribute.setElement(metadataElementEntity);
+        attribute.setMetadataElementId(metadataElementEntity.getId());
         attribute.setName(metadataElementEntity.getAttributeName());
         attribute.setValue(metadataElementEntity.getStaticDefaultValue());
         return attribute;
@@ -61,7 +61,7 @@ public class AttributeUtil {
     public static ResourcePropEntity buildResAttribute(ResourceEntity res, MetadataElementEntity metadataElementEntity) {
         ResourcePropEntity attribute = new ResourcePropEntity();
         attribute.setResource(res);
-        attribute.setElement(metadataElementEntity);
+        attribute.setMetadataElementId(metadataElementEntity.getId());
         attribute.setName(metadataElementEntity.getAttributeName());
         attribute.setValue(metadataElementEntity.getStaticDefaultValue());
         return attribute;

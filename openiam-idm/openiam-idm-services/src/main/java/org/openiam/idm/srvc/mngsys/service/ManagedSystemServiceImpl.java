@@ -623,14 +623,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         }
     }
 
-    private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
-        if (bean != null && StringUtils.isNotBlank(bean.getId())) {
-            return elementDAO.findById(bean.getId());
-        } else {
-            return null;
-        }
-    }
-
     @Override
     @Transactional
     @CacheKeyEviction(
@@ -661,7 +653,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                 for (final ResourcePropEntity transientAttribute : entity.getResource().getResourceProps()) {
                     for (final ResourcePropEntity persistentAttribute : resource.getResourceProps()) {
                         if (StringUtils.equals(transientAttribute.getId(), persistentAttribute.getId())) {
-                            persistentAttribute.setElement(getEntity(transientAttribute.getElement()));
+                            persistentAttribute.setMetadataElementId(transientAttribute.getMetadataElementId());
                             persistentAttribute.setIsMultivalued(transientAttribute.getIsMultivalued());
                             persistentAttribute.setName(transientAttribute.getName());
                             persistentAttribute.setValue(transientAttribute.getValue());
@@ -673,7 +665,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                 //add  new
                 for (final ResourcePropEntity transientAttribute : entity.getResource().getResourceProps()) {
                     if (StringUtils.isBlank(transientAttribute.getId())) {
-                        transientAttribute.setElement(getEntity(transientAttribute.getElement()));
+                        transientAttribute.setMetadataElementId(transientAttribute.getMetadataElementId());
                         transientAttribute.setResource(resource);
                         resource.getResourceProps().add(transientAttribute);
                     }

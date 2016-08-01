@@ -5,5 +5,6 @@ package org.openiam.mq.constants;
  */
 public enum OpenIAMAPI {
     MetadataTypeGet,
-    ;
+    UpdateAttributesByMetadata,
+    SendEmail, AuditLogSave, UserProvisioning;
 }

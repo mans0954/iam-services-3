@@ -22,7 +22,7 @@ public abstract class AbstractBackgroundProcessorService {
     protected ThreadPoolTaskExecutor workerTaskExecutor;
     protected ThreadPoolTaskExecutor taskExecutor;
 
-    private ConcurrentHashMap<OpenIAMAPI, AbstractAPIProcessor> workerMap = new ConcurrentHashMap<OpenIAMAPI, AbstractAPIProcessor>();
+    private ConcurrentHashMap<OpenIAMAPI, AbstractAPIDispatcher> workerMap = new ConcurrentHashMap<OpenIAMAPI, AbstractAPIDispatcher>();
 
     @PostConstruct
     public void init() {
@@ -34,13 +34,13 @@ public abstract class AbstractBackgroundProcessorService {
         });
     }
 
-    public void addTask(AbstractAPIProcessor processor, MQRequest message, OpenIAMAPI apiName, boolean isAsync)
+    public void addTask(AbstractAPIDispatcher processor, MQRequest message, OpenIAMAPI apiName, boolean isAsync)
             throws RejectMessageException, CloneNotSupportedException {
         if(isAsync){
             // get(or run if it is necessary) worker by API name
-            AbstractAPIProcessor currentWorker = workerMap.get(apiName);
+            AbstractAPIDispatcher currentWorker = workerMap.get(apiName);
             if(currentWorker==null || !currentWorker.isRunning()){
-                currentWorker = (AbstractAPIProcessor)processor.cloneTask();
+                currentWorker = (AbstractAPIDispatcher)processor.cloneTask();
                 workerMap.put(apiName, currentWorker);
                 log.info("Add async worker {}", processor.getClass().getName());
                 workerTaskExecutor.execute(currentWorker);
@@ -51,7 +51,7 @@ public abstract class AbstractBackgroundProcessorService {
         } else {
             if(!isFull()){
                 log.info("Add task {}", processor.getClass().getName());
-                final AbstractAPIProcessor task = (AbstractAPIProcessor)processor.cloneTask();
+                final AbstractAPIDispatcher task = (AbstractAPIDispatcher)processor.cloneTask();
                 taskExecutor.execute(new AbstractBaseRunnableBackgroundTask() {
                     @Override
                     public void run() {

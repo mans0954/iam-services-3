@@ -51,16 +51,16 @@ public class RabbitMQAdminUtils {
         AbstractExchange exchange;
 
         for (OpenIAMQueue queue : queues) {
-            rabbitQueue = new Queue(queue.getName(), false, false, false, null);
+            rabbitQueue = new Queue(queue.name(), false, false, false, null);
             amqpAdmin.declareQueue(rabbitQueue);
-            amqpAdmin.purgeQueue(queue.getName(), false);
+            amqpAdmin.purgeQueue(queue.name(), false);
             switch (queue.getExchange().getType()) {
                 case DIRECT:
 
                     exchange = new DirectExchange(queue.getExchange().name());
                     amqpAdmin.declareExchange(exchange);
                     amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue)
-                            .to((DirectExchange) exchange).withQueueName());
+                            .to((DirectExchange) exchange).with(queue.getRoutingKey()));
                     break;
                 case FANOUT:
                     exchange = new FanoutExchange(queue.getExchange().name());
@@ -73,7 +73,7 @@ public class RabbitMQAdminUtils {
                     exchange = new TopicExchange(queue.getExchange().name());
                     amqpAdmin.declareExchange(exchange);
                     amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue)
-                            .to((TopicExchange) exchange).with(queue.getName()));
+                            .to((TopicExchange) exchange).with(queue.getRoutingKey()));
                     break;
             }
         }
@@ -91,12 +91,13 @@ public class RabbitMQAdminUtils {
         bindQueues(rabbitMqQueue);
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.setQueueNames(rabbitMqQueue.getName());
+        container.setQueueNames(rabbitMqQueue.name());
         container.setMessageListener(new MessageListenerAdapter(listener));
         container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         container.setTaskExecutor(new SimpleAsyncTaskExecutor(
                 taskExecutorPrefix));
         container.setConcurrentConsumers(concurrentConsumer);
+        container.setPrefetchCount(1);
         container.setErrorHandler(new ErrorHandler() {
             protected Logger log = LoggerFactory.getLogger(this.getClass());
             @Override

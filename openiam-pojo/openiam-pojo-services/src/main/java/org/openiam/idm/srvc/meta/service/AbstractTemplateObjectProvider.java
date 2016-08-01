@@ -48,7 +48,7 @@ public abstract class AbstractTemplateObjectProvider<Entity, DTO extends KeyDTO>
         final Map<String, List<AbstractAttributeEntity>> metadataId2UserAttributeMap = new HashMap<>();
         if(CollectionUtils.isNotEmpty(attributes)) {
             for(final AbstractAttributeEntity attribute : attributes) {
-                final String elementId = attribute.getElement().getId();
+                final String elementId = attribute.getMetadataElementId();
                 if(!metadataId2UserAttributeMap.containsKey(elementId)) {
                     metadataId2UserAttributeMap.put(elementId, new LinkedList<AbstractAttributeEntity>());
                 }

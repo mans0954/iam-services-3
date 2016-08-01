@@ -24,7 +24,6 @@ import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 import org.openiam.idm.srvc.report.service.ReportDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -40,9 +39,6 @@ import org.springframework.stereotype.Service;
 @Service("reportWS")
 public class ReportWebServiceImpl implements ReportWebService {
 	
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
 	private static final Log log = LogFactory
 			.getLog(ReportWebServiceImpl.class);
 
@@ -657,13 +653,13 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 		Response response = new Response();
 		if (reportSubscription != null) {
-			try {
+			/*try {
 				redisTemplate.opsForList().leftPush("subsQueue", reportSubscription);
 				response.succeed();
 			} catch(Throwable e) {
 				log.error("can't add subs queue mq", e);
 				response.fail();
-			}
+			}*/
 		}
 		response.setStatus(ResponseStatus.FAILURE);
 		return response;
@@ -676,11 +672,11 @@ public class ReportWebServiceImpl implements ReportWebService {
 		for(final ReportSubscriptionDto reportSubscription : reportSubscriptions) {
 
 			if (reportSubscription != null) {
-				try {
+			/*	try {
 					redisTemplate.opsForList().leftPush("subsQueue", reportSubscription);
 				} catch(Throwable e) {
 					log.error("can't add subs queue mq", e);
-				}
+				}*/
 			}
 		}
 		return new Response(ResponseStatus.SUCCESS);

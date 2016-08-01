@@ -343,7 +343,7 @@ public class RoleDataServiceImpl implements RoleDataService {
             for (final RoleAttributeEntity beanProp : beanProps) {
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     dbProp.setValue(beanProp.getValue());
-                    dbProp.setElement(getEntity(beanProp.getElement()));
+                    dbProp.setMetadataElementId(beanProp.getMetadataElementId());
                     dbProp.setName(beanProp.getName());
                     dbProp.setIsMultivalued(beanProp.getIsMultivalued());
                     contains = true;
@@ -372,7 +372,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 
             if (!contains) {
                 beanProp.setRole(bean);
-                beanProp.setElement(getEntity(beanProp.getElement()));
+                beanProp.setMetadataElementId(beanProp.getMetadataElementId());
                 auditLogAddAttribute(bean, beanProp, requestorId);
                 toAdd.add(beanProp);
             }
@@ -411,14 +411,6 @@ public class RoleDataServiceImpl implements RoleDataService {
         auditLogService.enqueue(auditLog);
     }
 
-	private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
-    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
-    		return metadataElementDAO.findById(bean.getId());
-    	} else {
-    		return null;
-    	}
-    }
-	
 	private ApproverAssociationEntity createDefaultApproverAssociations(final RoleEntity entity, final String requestorId) {
 		if(requestorId != null) {
 			final ApproverAssociationEntity association = new ApproverAssociationEntity();
@@ -775,11 +767,6 @@ public class RoleDataServiceImpl implements RoleDataService {
         RoleEntity roleEntity = roleDao.findById(attribute.getRole().getId());
         attribute.setRole(roleEntity);
 
-        MetadataElementEntity element = null;
-        if (attribute.getElement() != null && StringUtils.isNotEmpty(attribute.getElement().getId())) {
-            element = metadataElementDAO.findById(attribute.getElement().getId());
-        }
-        attribute.setElement(element);
 
         roleAttributeDAO.save(attribute);
     }
@@ -798,7 +785,7 @@ public class RoleDataServiceImpl implements RoleDataService {
         if (roleAttribute != null) {
             RoleEntity roleEntity = roleDao.findById(attribute.getRole().getId());
             attribute.setRole(roleEntity);
-            attribute.setElement(roleAttribute.getElement());
+            attribute.setMetadataElementId(roleAttribute.getMetadataElementId());
 
             roleAttributeDAO.merge(attribute);
         }

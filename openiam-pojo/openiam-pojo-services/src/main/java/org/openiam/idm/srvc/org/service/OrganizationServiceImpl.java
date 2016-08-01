@@ -50,6 +50,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -877,7 +878,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                     if (StringUtils.isBlank(noa.getId())) {
                         //add
                         noa.setOrganization(curEntity);
-                        noa.setElement(getEntity(noa.getElement()));
+                        noa.setMetadataElementId(noa.getMetadataElementId());
                         toAdd.add(noa);
 
                     } else if (currIds.contains(noa.getId())) {
@@ -886,7 +887,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                         for (OrganizationAttributeEntity oae : curEntity.getAttributes()) {
                             if (StringUtils.equals(oae.getId(), noa.getId())) {
                                 oae.setValue(noa.getValue());
-                                oae.setElement(getEntity(noa.getElement()));
+                                oae.setMetadataElementId(noa.getMetadataElementId());
                                 oae.setName(noa.getName());
                                 oae.setIsMultivalued(noa.getIsMultivalued());
                                 oae.setValues(noa.getValues());
@@ -910,22 +911,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
 	}
     
-    private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
-    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
-    		return metadataElementDAO.findById(bean.getId());
-    	} else {
-    		return null;
-    	}
-    }
-    
-    private void setMetadataTypeOnOrgAttribute(final OrganizationAttributeEntity bean) {
-    	if(bean.getElement() != null && bean.getElement().getId() != null) {
-    		bean.setElement(metadataElementDAO.findById(bean.getElement().getId()));
-		} else {
-			bean.setElement(null);
-		}
-    }
-
     @Override
     @Transactional
     @CacheKeyEvictions({
@@ -1668,5 +1653,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private OrganizationService getProxyService() {
         OrganizationService service = (OrganizationService) ac.getBean("organizationService");
         return service;
+    }
+
+    @Override
+    @Transactional
+    public void saveAttribute(final OrganizationAttributeEntity attribute) {
+        if(StringUtils.isNotBlank(attribute.getId())) {
+            orgAttrDao.update(attribute);
+        } else {
+            orgAttrDao.save(attribute);
+        }
     }
 }
