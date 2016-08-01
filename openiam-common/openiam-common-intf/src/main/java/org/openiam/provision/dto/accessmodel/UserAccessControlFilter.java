@@ -1,7 +1,6 @@
 package org.openiam.provision.dto.accessmodel;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.*;
 import java.util.List;
 import java.util.Set;
 
@@ -11,14 +10,34 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class UserAccessControlFilter {
     //name of managed system
+    @XmlElementWrapper(name = "managed-systems")
+    @XmlElements({
+            @XmlElement(name = "value")}
+    )
     private List<String> managedSystemNames;
     //name of roles metadata types
+    @XmlElementWrapper(name = "role-metadatas")
+    @XmlElements({
+            @XmlElement(name = "value")}
+    )
     private List<String> roleMetadataTypes;
     //name of group metadatatypes
+    @XmlElementWrapper(name = "group-metadatas")
+    @XmlElements({
+            @XmlElement(name = "value")}
+    )
     private List<String> groupMetadataTypes;
     //name of group metadatatypes
+    @XmlElementWrapper(name = "resource-metadatas")
+    @XmlElements({
+            @XmlElement(name = "value")}
+    )
     private List<String> resourceMetadataTypes;
     //name of resource types
+    @XmlElementWrapper(name = "resource-types")
+    @XmlElements({
+            @XmlElement(name = "value")}
+    )
     private List<String> resourceTypes;
 
 
