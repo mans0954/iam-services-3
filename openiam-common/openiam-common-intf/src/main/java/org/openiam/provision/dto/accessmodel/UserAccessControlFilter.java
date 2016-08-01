@@ -2,6 +2,7 @@ package org.openiam.provision.dto.accessmodel;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -10,44 +11,54 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class UserAccessControlFilter {
     //name of managed system
-    private Set<String> managedSystemNames;
+    private List<String> managedSystemNames;
     //name of roles metadata types
-    private Set<String> roleMetadataTypes;
+    private List<String> roleMetadataTypes;
     //name of group metadatatypes
-    private Set<String> groupMetadataTypes;
+    private List<String> groupMetadataTypes;
+    //name of group metadatatypes
+    private List<String> resourceMetadataTypes;
     //name of resource types
-    private Set<String> resourceTypes;
+    private List<String> resourceTypes;
 
 
-    public Set<String> getManagedSystemNames() {
+    public List<String> getManagedSystemNames() {
         return managedSystemNames;
     }
 
-    public void setManagedSystemNames(Set<String> managedSystemNames) {
+    public void setManagedSystemNames(List<String> managedSystemNames) {
         this.managedSystemNames = managedSystemNames;
     }
 
-    public Set<String> getRoleMetadataTypes() {
+    public List<String> getRoleMetadataTypes() {
         return roleMetadataTypes;
     }
 
-    public void setRoleMetadataTypes(Set<String> roleMetadataTypes) {
+    public void setRoleMetadataTypes(List<String> roleMetadataTypes) {
         this.roleMetadataTypes = roleMetadataTypes;
     }
 
-    public Set<String> getGroupMetadataTypes() {
+    public List<String> getGroupMetadataTypes() {
         return groupMetadataTypes;
     }
 
-    public void setGroupMetadataTypes(Set<String> groupMetadataTypes) {
+    public void setGroupMetadataTypes(List<String> groupMetadataTypes) {
         this.groupMetadataTypes = groupMetadataTypes;
     }
 
-    public Set<String> getResourceTypes() {
+    public List<String> getResourceTypes() {
         return resourceTypes;
     }
 
-    public void setResourceTypes(Set<String> resourceTypes) {
+    public void setResourceTypes(List<String> resourceTypes) {
         this.resourceTypes = resourceTypes;
+    }
+
+    public List<String> getResourceMetadataTypes() {
+        return resourceMetadataTypes;
+    }
+
+    public void setResourceMetadataTypes(List<String> resourceMetadataTypes) {
+        this.resourceMetadataTypes = resourceMetadataTypes;
     }
 }
