@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -129,6 +130,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	private static final Log LOG = LogFactory.getLog(MetadataElementTemplateServiceImpl.class);
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<MetadataElementPageTemplateEntity> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size) {
 		List<MetadataElementPageTemplateEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
@@ -140,6 +142,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public int count(final MetadataElementPageTemplateSearchBean searchBean) {
 		int count = 0;
 		if(searchBean.hasMultipleKeys()) {
@@ -458,6 +461,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public void validate(BaseRequestModel request) throws Exception {
 		final PageTempate pageTemplate = request.getPageTemplate();
 		final String objectId = (request.getTargetObject() != null) ? request.getTargetObject().getId() : null;
@@ -792,21 +796,26 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public MetadataTemplateTypeEntity getTemplateType(String id) {
 		return templateTypeDAO.findById(id);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<MetadataTemplateTypeEntity> findTemplateTypes(
 			MetadataTemplateTypeSearchBean searchBean, int from, int size) {
 		return templateTypeDAO.getByExample(searchBean, from, size);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size) {
 		return uiFieldDAO.getByExample(searchBean, from, size);
 	}
+	
     @Override
+    @Transactional(readOnly=true)
     public Integer countUIFields(final MetadataTemplateTypeFieldSearchBean searchBean){
         return uiFieldDAO.count(searchBean);
     }
@@ -825,5 +834,11 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 			}
 		}
 		return element;
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public MetadataElementPageTemplateEntity findById(String id) {
+		return pageTemplateDAO.findById(id);
 	}
 }

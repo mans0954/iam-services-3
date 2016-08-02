@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.common.lang3.StringUtils;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.elasticsearch.dao.EmailElasticSearchRepositoryCustom;
 import org.openiam.idm.searchbeans.EmailSearchBean;
@@ -11,6 +13,7 @@ import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.stereotype.Repository;
@@ -32,10 +35,43 @@ public class EmailElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 		if(searchBean != null) {
 			final SearchParam param = searchBean.getEmailMatchToken();
 			if(param != null && param.isValid()) {
-				query = new CriteriaQuery(getWhereCriteria("emailAddress", param.getValue(), param.getMatchType()));
+				String emailUsername = null;
+				String emailDomain = null;
+				final String[] value = StringUtils.split(param.getValue(), "@");
+				if(value == null || value.length == 0) {
+					emailUsername = StringUtils.trimToNull(param.getValue());
+				} else {
+					emailUsername = StringUtils.trimToNull(value[0]);
+					if(value.length > 1) {
+						emailDomain = StringUtils.trimToNull(value[1]);
+					}
+				}
+				if(emailUsername != null) {
+					final Criteria criteria = getWhereCriteria("emailUsername", emailUsername, param.getMatchType());
+					query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+				}
+				if(emailDomain != null) {
+					final Criteria criteria = startsWith("emailDomain", emailDomain);
+					query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+				}
 			}
 		}
 		return query;
+	}
+	
+	@Override
+	public void prepare(final EmailAddressEntity entity) {
+		if(entity != null) {
+			if(entity.getEmailAddress() != null) {
+				final String[] emailSplit = StringUtils.split(entity.getEmailAddress(), "@");
+				if(emailSplit != null && emailSplit.length > 0) {
+					entity.setEmailUsername(StringUtils.trimToNull(emailSplit[0]));
+					if(emailSplit.length > 1) {
+						entity.setEmailDomain(StringUtils.trimToNull(emailSplit[1]));
+					}
+				}
+			}
+		}
 	}
 
 	@Override

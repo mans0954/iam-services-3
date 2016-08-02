@@ -74,4 +74,9 @@ public class PasswordWebServiceImpl implements PasswordWebService {
     public Policy getPasswordPolicy(String principal, String msysId) {
         return passwordDS.getPasswordPolicy(principal, msysId);
     }
+
+	@Override
+	public String getPasswordResetToken(PasswordResetTokenRequest request) {
+		return passwordDS.getPasswordResetToken(request);
+	}
 }

@@ -175,4 +175,5 @@ public interface PasswordService {
 
     Policy getPasswordPolicy(LoginEntity lg);
 
+    String getPasswordResetToken(PasswordResetTokenRequest request);
 }

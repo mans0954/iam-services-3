@@ -76,6 +76,10 @@ implements AbstractCustomElasticSearchRepository<S, ID>{
 		return getWhereCriteria(term, value, MatchType.EXACT);
 	}
 	
+	protected Criteria startsWith(final String term, final String value) {
+		return getWhereCriteria(term, value, MatchType.STARTS_WITH);
+	}
+	
 	private List<String> parse(final String str) {
 		final List<String> query;
 		if (str == null) {

@@ -45,6 +45,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -321,12 +322,26 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected User createUser() {
+		return createUser(null);
+	}
+	
+	protected User createUser(final String email) {
 		User user = new User();
 		user.setFirstName(getRandomName());
 		user.setLastName(getRandomName());
 		user.setLogin(getRandomName(10));
 		user.setPassword(getRandomName());
 		user.setNotifyUserViaEmail(false);
+		
+		if(StringUtils.isNotBlank(email)) {
+			user.setEmailAddresses(new HashSet<EmailAddress>());
+			final EmailAddress addr = new EmailAddress();
+			addr.setDescription(getRandomName());
+			addr.setName(getRandomName());
+			addr.setMdTypeId("HOME_EMAIL");
+			addr.setEmailAddress(email);
+			user.getEmailAddresses().add(addr);
+		}
 
 		final Login login = new Login();
 		login.setLogin(getRandomName(10));
