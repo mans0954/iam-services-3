@@ -27,5 +27,7 @@
 			"dependencies":false
 		},
 		"db_type" : "mariadb"
-	} 
+	},
+	"artifactory_username": "kitchen_test",
+	"artifactory_password": "k%t4en"
 }
