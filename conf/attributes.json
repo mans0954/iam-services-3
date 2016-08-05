@@ -5,6 +5,7 @@
 		}
 	},
 	"openiam" : {
+		"user" : "ubuntu",
 		"datasource" : {
 			"esb" : {
 				"openiam" : {
