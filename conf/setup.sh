@@ -13,7 +13,7 @@ sudo cp client.rb /etc/chef/client.rb
 sudo cp client.pem /etc/chef/client.pem
 sudo cp attributes.json /etc/chef/attributes.json
 sudo chmod 777 /opt/openiam/webapps
-sudo chef-client -o openiam-devops-openiamapp::java8
+sudo chef-client -o openiam-devops-app::java8
 sudo chef-client -o openiam-devops-properties::datasource -j /etc/chef/attributes.json
 sudo chef-client -o openiam-devops-properties::securityconf -j /etc/chef/attributes.json
 sudo chef-client -o openiam-devops-properties::service-urls -j /etc/chef/attributes.json
