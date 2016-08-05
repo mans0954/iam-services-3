@@ -83,11 +83,6 @@ import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.dto.MQResponse;
-import org.openiam.mq.gateway.RequestServiceGateway;
 import org.openiam.util.AttributeUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -220,11 +215,6 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     private AuthorizationManagerService authorizationManagerService;
 
     private ApplicationContext ac;
-
-    @Autowired
-    @Qualifier("rabbitRequestServiceGateway")
-    private RequestServiceGateway serviceGateway;
-
 
     public void setApplicationContext(final ApplicationContext ac) throws BeansException {
         this.ac = ac;
