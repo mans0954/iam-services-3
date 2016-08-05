@@ -2,7 +2,7 @@ machine:
   java:
     version: oraclejdk8
   services:
-    - rabbitmq
+    - rabbitmq-server
 dependencies:
   pre:
     - sudo apt-get install dos2unix
