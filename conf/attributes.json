@@ -23,7 +23,8 @@
 			"openiam.service_base" : "localhost:9080"
 		},
 		"automanage":{
-				"selinux":false
+			"selinux":false,
+			"dependencies":false
 		},
 		"db_type" : "mariadb"
 	} 
