@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class RabbitMQConfig {
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
     @Value("${org.openiam.rabbitmq.hosts}")
     private String brokersAddress;
     @Value("${org.openiam.rabbitmq.VirtualHost}")
@@ -49,6 +50,9 @@ public class RabbitMQConfig {
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
 
+        logger.info("RabbitMQ user: {}", userName);
+        logger.info("RabbitMQ pass: {}", password);
+        logger.info("RabbitMQ vhost: {}", virtualHost);
         connectionFactory.setAddresses(brokersAddress);
         connectionFactory.setUsername(userName);
         connectionFactory.setPassword(password);
