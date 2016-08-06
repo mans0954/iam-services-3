@@ -29,6 +29,10 @@
 		},
 		"db_type" : "mariadb"
 	},
+	"rabbitmq":{
+		"user":"openiam",
+		"password":"passwd00"
+	},
 	"artifactory_username": "kitchen_test",
 	"artifactory_password": "k%t4en"
 }
