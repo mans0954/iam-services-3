@@ -64,7 +64,12 @@ public class ProvisionUserResponse extends Response{
 	}
 
 
-
+	@Override
+	public String toString() {
+		return "ProvisionUserResponse [user=" + user + ", status=" + status
+				+ ", errorCode=" + errorCode + ", errorText=" + errorText
+				+ ", responseValue=" + responseValue + "]";
+	}
 
 	
 	
