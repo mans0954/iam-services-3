@@ -623,7 +623,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 										if (attribute == null) { /* add new attribute */
 											attribute = templateProvider.getNewAttributeInstance(element.getAttributeName(), entity);
 											final MetadataElementEntity metadataElement = getMetadataElement(userTypeId, element);
-											attribute.setElement(metadataElement);
+											attribute.setMetadataElementId(metadataElement.getId());
 											attribute.setIsMultivalued(isMultiSelect);
 											if (isMultiSelect) {
 												attribute.setValues(values);
@@ -633,9 +633,9 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 												saveList.add(attribute);
 										} else { /* update, if possible */
 											final MetadataElementEntity metadataElement = getMetadataElement(userTypeId, element);
-											boolean isChanged = (metadataElement == null) ? attribute.getElement() != null
-													: metadataElement.equals(attribute.getElement());
-											attribute.setElement(metadataElement);
+											boolean isChanged = (metadataElement == null) ? attribute.getMetadataElementId() != null
+													: metadataElement.equals(attribute.getMetadataElementId());
+											attribute.setMetadataElementId(attribute.getMetadataElementId());
 											if (isMultiSelect) {
 												/* only update if the values changed - optimization */
 												if(!attribute.getIsMultivalued() || !values.equals(attribute.getValues())) {

@@ -8,7 +8,7 @@ import javax.jws.WebService;
 import java.util.Date;
 
 /**
- * Provides methods to be able to send emails and send direct message to authorized users.
+ * Provides methods to be able to send emails and send direct mq to authorized users.
  *
  * @author suneet
  */
@@ -100,7 +100,7 @@ public interface MailService {
     void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime);
 
     /**
-     *  sending out direct private message to authorized user on twitter.
+     *  sending out direct private mq to authorized user on twitter.
      * @param userid
      * @param msg
      */

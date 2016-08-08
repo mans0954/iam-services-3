@@ -101,7 +101,7 @@ public class UserEntity extends KeyEntity {
     private String employeeId;
 
 //    @Column(name = "EMPLOYEE_TYPE", length = 20)
-//    @Size(max = 20, message = "validator.user.employee.type.toolong")
+//    @Size(max = 20, mq = "validator.user.employee.type.toolong")
 //    @Field(index=Index.UN_TOKENIZED, name="employeeType", store=Store.YES)
 //    private String employeeType;
 
@@ -125,7 +125,7 @@ public class UserEntity extends KeyEntity {
     private String firstName;
 
 //    @Column(name = "JOB_CODE", length = 50)
-//    @Size(max = 50, message = "validator.user.job.code.toolong")
+//    @Size(max = 50, mq = "validator.user.job.code.toolong")
 //    private String jobCode;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
@@ -837,7 +837,7 @@ public class UserEntity extends KeyEntity {
     	if(entity != null && this.userAttributes != null) {
     		final UserAttributeEntity attribute = this.userAttributes.get(entity.getName());
     		if(attribute != null) {
-    			attribute.setElement(entity.getElement());
+    			attribute.setMetadataElementId(entity.getMetadataElementId());
     			attribute.setValue(entity.getValue());
     		}
     	}

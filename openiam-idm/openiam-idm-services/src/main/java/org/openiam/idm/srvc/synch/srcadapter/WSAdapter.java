@@ -424,7 +424,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
         MimeHeaders headers = soapMessage.getMimeHeaders();
         headers.addHeader("SOAPAction", serverURI + operation);
         soapMessage.saveChanges();
-        /* Print the request message */
+        /* Print the request mq */
         System.out.print("Request SOAP Message:");
         soapMessage.writeTo(System.out);
         System.out.println();

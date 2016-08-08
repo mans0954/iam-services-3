@@ -41,8 +41,6 @@ import java.util.Set;
         "dataType",
         "defaultValueLanguageMap",
         "resourceId",
-        "userAttributes",
-        "organizationAttributes",
         "isPublic",
         "displayName",
 		"dataModelUrl"
@@ -66,10 +64,8 @@ public class MetadataElement extends KeyNameDTO {
     private Set<MetadataValidValue> validValues;
     private String staticDefaultValue;
     private Map<String, LanguageMapping> defaultValueLanguageMap;
-    private Set<UserAttribute> userAttributes;
     private String resourceId;
     private boolean isPublic = true;
-    private Set<OrganizationAttribute> organizationAttributes;
     private String displayName;
 	private String dataModelUrl;
 
@@ -209,23 +205,6 @@ public class MetadataElement extends KeyNameDTO {
 		this.defaultValueLanguageMap = defaultValueLanguageMap;
 	}
 	
-	public Set<UserAttribute> getUserAttributes() {
-		return userAttributes;
-	}
-
-	public void setUserAttributes(Set<UserAttribute> userAttributes) {
-		this.userAttributes = userAttributes;
-	}
-	
-	public Set<OrganizationAttribute> getOrganizationAttributes() {
-		return organizationAttributes;
-	}
-
-	public void setOrganizationAttributes(
-			Set<OrganizationAttribute> organizationAttributes) {
-		this.organizationAttributes = organizationAttributes;
-	}
-
 	public boolean getIsPublic() {
 		return isPublic;
 	}

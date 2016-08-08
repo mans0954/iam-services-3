@@ -78,7 +78,7 @@ public class EsbErrorToken implements Serializable {
         return "EsbErrorToken{" +
                 "className='" + className + '\'' +
                 ", fieldName='" + fieldName + '\'' +
-                ", message='" + message + '\'' +
+                ", mq='" + message + '\'' +
                 ", lengthConstraint=" + lengthConstraint +
                 ", value=" + value +
                 '}';

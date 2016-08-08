@@ -17,7 +17,7 @@ public class FileTouchTest extends AbstractTestNGSpringContextTests {
 
 	@Test
 	public void touchFileTest() {
-		fileWebService.saveFile("test.txt", "Test message write");
+		fileWebService.saveFile("test.txt", "Test mq write");
 		fileWebService.getFile("test.txt");
 	}
 }

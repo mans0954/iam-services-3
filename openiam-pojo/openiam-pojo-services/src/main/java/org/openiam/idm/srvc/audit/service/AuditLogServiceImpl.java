@@ -29,11 +29,14 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.dto.MQRequest;
+import org.openiam.mq.gateway.RequestServiceGateway;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,7 +67,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     protected SysConfiguration sysConfiguration;
     
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RequestServiceGateway  requestServiceGateway;
     
     @Autowired
     private LoginElasticSearchRepository loginDAO;
@@ -198,7 +201,10 @@ public class AuditLogServiceImpl implements AuditLogService {
 	}
 	
 	 private void send(final IdmAuditLogEntity log) {
-		 redisTemplate.opsForList().leftPush("logQueue", log);
+         MQRequest<IdmAuditLogEntity> request = new MQRequest<>();
+         request.setRequestBody(log);
+         request.setRequestApi(OpenIAMAPI.AuditLogSave);
+         requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
 	 }
 
 	@Override

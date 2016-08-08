@@ -138,4 +138,6 @@ public interface ResourceService {
 	//public void addRoleToResourceWeb(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
 	public void removeRoleToResource(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
+
+	public void saveAttribute(final ResourcePropEntity attribute);
 }

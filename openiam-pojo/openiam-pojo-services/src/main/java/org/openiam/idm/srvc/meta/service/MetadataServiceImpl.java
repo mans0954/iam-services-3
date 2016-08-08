@@ -9,6 +9,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.request.UpdateAttributeByMetadataRequest;
 import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.cache.CacheKeyEvict;
@@ -30,10 +31,15 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.RabbitMqExchange;
+import org.openiam.mq.constants.RabbitMqExchangeType;
+import org.openiam.mq.dto.MQRequest;
+import org.openiam.mq.gateway.RequestServiceGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,8 +78,11 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Value("${org.openiam.resource.type.ui.widget}")
     private String uiWidgetResourceType;
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+//    @Autowired
+//    private RedisTemplate<String, Object> redisTemplate;
+
+	@Autowired
+	private RequestServiceGateway requestServiceGateway;
 
 /*    @Autowired
     @Qualifier(value = "metaElementQueue")
@@ -217,7 +226,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			} else {
 				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
 				//entity.setValidValues(dbEntity.getValidValues());
-				entity.setUserAttributes(dbEntity.getUserAttributes());
+//				entity.setUserAttributes(dbEntity.getUserAttributes());
 				
 				mergeValidValues(entity, dbEntity);
 
@@ -228,10 +237,10 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 				if(entity.getResource() != null) {
 					entity.getResource().setCoorelatedName(entity.getAttributeName());
 				}
-				entity.setOrganizationAttributes(dbEntity.getOrganizationAttributes());
-                entity.setGroupAttributes(dbEntity.getGroupAttributes());
-                entity.setUserAttributes(dbEntity.getUserAttributes());
-                entity.setResourceAttributes(dbEntity.getResourceAttributes());
+//				  entity.setOrganizationAttributes(dbEntity.getOrganizationAttributes());
+//                entity.setGroupAttributes(dbEntity.getGroupAttributes());
+//                entity.setUserAttributes(dbEntity.getUserAttributes());
+//                entity.setResourceAttributes(dbEntity.getResourceAttributes());
     			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
     				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
     					validValue.setEntity(entity);
@@ -248,7 +257,43 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
     private void send(final MetadataElementEntity entity) {
-    	redisTemplate.opsForList().leftPush("metaElementQueue", entity);
+		UpdateAttributeByMetadataRequest request = new UpdateAttributeByMetadataRequest();
+		request.setMetadataElementId(entity.getId());
+		request.setDefaultValue(entity.getStaticDefaultValue());
+		request.setName(entity.getAttributeName());
+		request.setRequired(entity.isRequired());
+		request.setMetadataTypeId(entity.getMetadataType().getId());
+		request.setMetadataTypeGrouping(entity.getMetadataType().getGrouping());
+
+		MQRequest<UpdateAttributeByMetadataRequest> mqRequest = new MQRequest<>();
+		mqRequest.setRequestBody(request);
+		mqRequest.setRequestApi(OpenIAMAPI.UpdateAttributesByMetadata);
+
+		OpenIAMQueue queue = null;
+		switch(entity.getMetadataType().getGrouping()){
+			case USER_OBJECT_TYPE:
+				queue = OpenIAMQueue.UserAttributeQueue;
+				break;
+			case ROLE_TYPE:
+				queue = OpenIAMQueue.RoleAttributeQueue;
+				break;
+			case GROUP_TYPE:
+				queue = OpenIAMQueue.GroupAttributeQueue;
+				break;
+			case ORG_TYPE:
+				queue = OpenIAMQueue.OrganizationAttributeQueue;
+				break;
+			case RESOURCE_TYPE:
+				queue = OpenIAMQueue.ResourceAttributeQueue;
+				break;
+			default:
+				return;
+		}
+		try {
+			requestServiceGateway.send(queue, mqRequest);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
     }
 	
 	private void mergeValidValues(final MetadataElementEntity bean, final MetadataElementEntity dbObject) {

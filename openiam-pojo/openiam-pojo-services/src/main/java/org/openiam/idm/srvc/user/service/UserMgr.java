@@ -40,15 +40,12 @@ import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
@@ -91,9 +88,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.PageRequest;
@@ -221,7 +215,6 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     private AuthorizationManagerService authorizationManagerService;
 
     private ApplicationContext ac;
-
 
     public void setApplicationContext(final ApplicationContext ac) throws BeansException {
         this.ac = ac;
@@ -539,7 +532,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                 newList.add(incomingEntity);
             } else { /* exists - modify */
                 // existingEntity.setUser(userEntity);
-                existingEntity.setElement(incomingEntity.getElement());
+                existingEntity.setMetadataElementId(incomingEntity.getMetadataElementId());
                 existingEntity.setName(incomingEntity.getName());
                 existingEntity.setValue(incomingEntity.getValue());
                 existingEntity.setIsMultivalued(incomingEntity.getIsMultivalued());
@@ -858,11 +851,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         UserEntity userEntity = userDao.findById(attribute.getUser().getId());
         attribute.setUser(userEntity);
 
-        MetadataElementEntity element = null;
-        if (attribute.getElement() != null && StringUtils.isNotEmpty(attribute.getElement().getId())) {
-            element = metadataElementDAO.findById(attribute.getElement().getId());
-        }
-        attribute.setElement(element);
+        attribute.setMetadataElementId(attribute.getMetadataElementId());
 
         userAttributeDao.save(attribute);
     }
@@ -880,7 +869,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         if (userAttribute != null) {
             UserEntity userEntity = userDao.findById(attribute.getUser().getId());
             attribute.setUser(userEntity);
-            attribute.setElement(userAttribute.getElement());
+            attribute.setMetadataElementId(userAttribute.getMetadataElementId());
             userAttributeDao.merge(attribute);
         }
     }

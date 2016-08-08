@@ -113,18 +113,6 @@ public class MetadataElementEntity extends AbstractKeyNameEntity {
     @Transient
     private String defaultValue;
     
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
-    private Set<UserAttributeEntity> userAttributes;
-    
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
-    private Set<OrganizationAttributeEntity> organizationAttributes;
-
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
-    private Set<GroupAttributeEntity> groupAttributes;
-
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
-    private Set<ResourcePropEntity> resourceAttributes;
-
 	@OneToMany(mappedBy = "referenceId")
 	private Set<LanguageMappingEntity> languageMappings;
 
@@ -260,40 +248,6 @@ public class MetadataElementEntity extends AbstractKeyNameEntity {
 	public void setResource(ResourceEntity resource) {
 		this.resource = resource;
 	}
-
-	public Set<UserAttributeEntity> getUserAttributes() {
-		return userAttributes;
-	}
-
-	public void setUserAttributes(Set<UserAttributeEntity> userAttributes) {
-		this.userAttributes = userAttributes;
-	}
-
-	public Set<OrganizationAttributeEntity> getOrganizationAttributes() {
-		return organizationAttributes;
-	}
-
-    public Set<GroupAttributeEntity> getGroupAttributes() {
-        return groupAttributes;
-    }
-
-	public void setGroupAttributes(
-			Set<GroupAttributeEntity> groupAttributes) {
-		this.groupAttributes = groupAttributes;
-	}
-	
-    public Set<ResourcePropEntity> getResourceAttributes() {
-		return resourceAttributes;
-	}
-
-	public void setResourceAttributes(Set<ResourcePropEntity> resourceAttributes) {
-		this.resourceAttributes = resourceAttributes;
-	}
-
-	public void setOrganizationAttributes(
-            Set<OrganizationAttributeEntity> organizationAttributes) {
-        this.organizationAttributes = organizationAttributes;
-    }
 
 	public boolean getIsPublic() {
 		return isPublic;

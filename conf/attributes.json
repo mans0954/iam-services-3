@@ -5,6 +5,7 @@
 		}
 	},
 	"openiam" : {
+		"user" : "ubuntu",
 		"datasource" : {
 			"esb" : {
 				"openiam" : {
@@ -22,6 +23,16 @@
 		"service_urls_props" : {
 			"openiam.service_base" : "localhost:9080"
 		},
+		"automanage":{
+			"selinux":false,
+			"dependencies":false
+		},
 		"db_type" : "mariadb"
-	} 
+	},
+	"rabbitmq":{
+		"user":"openiam",
+		"password":"passwd00"
+	},
+	"artifactory_username": "kitchen_test",
+	"artifactory_password": "k%t4en"
 }

@@ -100,7 +100,7 @@ public class OneTimePasswordAlgorithm {
      * in this case SHA1 is the hash algorithm used.
      *
      * @param keyBytes   the bytes to use for the HMAC-SHA-1 key
-     * @param text       the message or text to be authenticated.
+     * @param text       the mq or text to be authenticated.
      *
      * @throws NoSuchAlgorithmException if no provider makes
      *       either HmacSHA1 or HMAC-SHA-1

@@ -126,9 +126,9 @@ public class MailSenderClient {
             mp.addBodyPart(mbp1);
             if (msg.getAttachments().size() > 0) {
                 for (String fileName : msg.getAttachments()) {
-                    // create the second message part
+                    // create the second mq part
                     MimeBodyPart mbpFile = new MimeBodyPart();
-                    // attach the file to the message
+                    // attach the file to the mq
                     FileDataSource fds = new FileDataSource(fileName);
                     mbpFile.setDataHandler(new DataHandler(fds));
                     mbpFile.setFileName(fds.getName());
@@ -136,7 +136,7 @@ public class MailSenderClient {
                     mp.addBodyPart(mbpFile);
                 }
             }
-            // add the Multipart to the message
+            // add the Multipart to the mq
             message.setContent(mp);
 
             if (username != null && !username.isEmpty()) {
