@@ -15,6 +15,8 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.EmailEntity;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.sysprop.dto.SystemPropertyDto;
+import org.openiam.idm.srvc.sysprop.service.SystemPropertyService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -33,6 +35,7 @@ import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
 import javax.jws.WebService;
+import java.sql.ResultSet;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,6 +64,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     @Value("${org.openiam.email.validation.regexp}")
     private String MAIL_REGEXP;
+
+    @Autowired
+    private SystemPropertyService systemPropertyService;
 
     @Autowired
     protected UserDataService userManager;
@@ -128,6 +134,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             log.error("can't send email", e);
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
+        } finally {
+            storeEmailBody(message, null);
         }
         auditLogService.enqueue(idmAuditLog);
     }
@@ -150,12 +158,13 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         idmAuditLog.setAuditDescription("Send email to :" + to + "  subject: " + subject + "   -  principal:" + principal);
         try {
             mailSender.send(message);
-            storeEmailBody(message, userId);
             idmAuditLog.succeed();
         } catch (Throwable e) {
             log.error("can't send email", e);
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
+        } finally {
+            storeEmailBody(message, userId);
         }
         auditLogService.enqueue(idmAuditLog);
     }
@@ -178,7 +187,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
         if (cc != null) {
             idmAuditLog.setAuditDescription("Send email to :" + Arrays.toString(to) + " and CC :" + Arrays.toString(cc) + " with subject: " + subject);
-        }  else {
+        } else {
             idmAuditLog.setAuditDescription("Send email to :" + Arrays.toString(to) + " with subject: " + subject);
         }
         try {
@@ -188,6 +197,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             log.error(e.toString());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
+        }finally {
+            storeEmailBody(message, null);
         }
         auditLogService.enqueue(idmAuditLog);
     }
@@ -207,12 +218,14 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         try {
             mailSender.send(message);
-            storeEmailBody(message, userId);
             idmAuditLog.succeed();
         } catch (Exception e) {
             log.error(e.toString());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
+        } finally {
+            storeEmailBody(message, userId);
+
         }
         auditLogService.enqueue(idmAuditLog);
     }
@@ -378,6 +391,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             log.debug(String.format("sendNotification userId = %s", req.getUserId()));
         }
         // get the user object
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
+
         if (req.getUserId() == null) {
             log.warn("UserID is null");
             return false;
@@ -385,8 +401,15 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         UserEntity usr = userManager.getUser(req.getUserId());
         if (usr == null) {
             log.warn(String.format("Can't find user with id '%s", req.getUserId()));
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(String.format("Can't find user with id '%s", req.getUserId()));
+            auditLogService.enqueue(idmAuditLog);
             return false;
         }
+        String targetPrincipal = loginManager.getPrimaryIdentity(usr.getId()).getLogin();
+        idmAuditLog.setTargetUser(usr.getUserOwnerId(), targetPrincipal);
+        idmAuditLog.setPrincipal(targetPrincipal);
+
         if (log.isDebugEnabled()) {
             log.debug(String.format("Email address=%s", usr.getEmail()));
         }
@@ -394,18 +417,32 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         if (StringUtils.isBlank(usr.getEmail())) {
 
             log.error(String.format("Send notification failed. Email was null for userId=%s", usr.getId()));
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(String.format("Send notification failed. Email was null for userId=%s", usr.getId()));
+            auditLogService.enqueue(idmAuditLog);
             return false;
         }
 
         if (!isEmailValid(usr.getEmail())) {
             log.error(String.format("Send notfication failed. Email was is not valid for userId=%s - %s", usr.getId(),
                     usr.getEmail()));
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(String.format("Send notfication failed. Email was is not valid for userId=%s - %s", usr.getId(),
+                    usr.getEmail()));
+            auditLogService.enqueue(idmAuditLog);
             return false;
         }
         String[] emailDetails = fetchEmailDetails(req.getNotificationType());
         if (emailDetails == null) {
             log.warn(String.format("Email details were null for notification type '%s'", req.getNotificationType()));
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(String.format("Email details were null for notification type '%s'", req.getNotificationType()));
+            auditLogService.enqueue(idmAuditLog);
             return false;
+
+
+
+
         }
 
         if (CollectionUtils.isEmpty(req.getParamList())) {
@@ -440,6 +477,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             return true;
         }
         log.warn("Email not sent - failure occurred");
+        idmAuditLog.fail();
+        idmAuditLog.setFailureReason("Email not sent - failure occurred");
+        auditLogService.enqueue(idmAuditLog);
         return false;
     }
 
@@ -565,11 +605,15 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
     }
 
     private boolean storeEmailBody(Message message, String userId) {
-//        UserEntity usr = userDAO.findById(userId);
-//        if (usr == null) {
-//            log.warn(String.format("Can't find user with id '%s", userId));
-//            return false;
-//        }
+        if (userId == null) {
+            List<SystemPropertyDto> propertyDtos = systemPropertyService.getByType("STORE_EMAIL_PROP");
+            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(propertyDtos))
+                for (SystemPropertyDto systemPropertyDto : propertyDtos) {
+                    if ("DEFAULT_EMAIL_HOLDER".equalsIgnoreCase(systemPropertyDto.getName()))
+                        userId = systemPropertyDto.getValue();
+
+                }
+        }
         String emailBody = message.getBody();
         emailBody = keyManagementWS.encryptData(emailBody);
         if ((message.getTo()).isEmpty()) {
