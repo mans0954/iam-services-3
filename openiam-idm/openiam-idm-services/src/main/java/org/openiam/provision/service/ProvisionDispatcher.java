@@ -9,6 +9,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
+import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -90,7 +91,7 @@ public class ProvisionDispatcher extends AbstractAPIDispatcher<ProvisionDataCont
     }
 
     @Override
-    protected void processingApiRequest(final ProvisionDataContainer entity, String languageId, Response response) throws BasicDataServiceException {
+    protected void processingApiRequest(final OpenIAMAPI openIAMAPI, final ProvisionDataContainer entity, Response response) throws BasicDataServiceException {
         provisionTransactionHelper.process(entity);
     }
 }

@@ -16,7 +16,11 @@ public enum OpenIAMQueue {
     ResourceAttributeQueue,
     OrganizationAttributeQueue,
     MailQueue,
-    AuditLog, ProvisionQueue;
+    AuditLog,
+    ProvisionQueue,
+
+
+    LanguageServiceQueue;
 
     private String routingKey=this.name();
     private RabbitMqExchange exchange;

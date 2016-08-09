@@ -1,18 +1,19 @@
-package org.openiam.idm.srvc.lang.service;
-
-import java.util.List;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
+package org.openiam.api.language;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import java.util.List;
+
+/**
+ * Created by alexander on 08/08/16.
+ */
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/lang/service", name = "LanguageWebService")
 public interface LanguageWebService {
-
     @WebMethod
     List<Language> getUsedLanguages(final @WebParam(name = "language", targetNamespace = "") Language language);
 
@@ -28,5 +29,4 @@ public interface LanguageWebService {
 
     @WebMethod
     Response save(final @WebParam(name = "language", targetNamespace = "") Language language);
-
 }

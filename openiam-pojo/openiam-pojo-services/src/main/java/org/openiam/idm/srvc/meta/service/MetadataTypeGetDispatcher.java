@@ -1,10 +1,12 @@
 package org.openiam.idm.srvc.meta.service;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 14/07/16.
  */
 @Component
-public class MetadataTypeGetDispatcher extends AbstractAPIDispatcher<String, Response> {
+public class MetadataTypeGetDispatcher extends AbstractAPIDispatcher<IdServiceRequest, Response> {
     @Autowired
     private MetadataService metadataService;
 
@@ -22,11 +24,11 @@ public class MetadataTypeGetDispatcher extends AbstractAPIDispatcher<String, Res
     }
 
     @Override
-    protected void processingApiRequest(final  String id, String languageId, Response response) throws BasicDataServiceException {
-        if(StringUtils.isBlank(id)){
+    protected void processingApiRequest(final OpenIAMAPI openIAMAPI, final  IdServiceRequest idServiceRequest, Response response) throws BasicDataServiceException {
+        if(StringUtils.isBlank(idServiceRequest.getId())){
             throw new BasicDataServiceException(ResponseCode.METADATA_TYPE_ID_REQUIRED);
         }
-        MetadataType type = metadataService.findById(id);
+        MetadataType type = metadataService.findById(idServiceRequest.getId());
         response.setResponseValue(type);
     }
 

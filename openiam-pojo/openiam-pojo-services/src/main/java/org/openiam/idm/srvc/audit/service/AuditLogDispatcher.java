@@ -3,17 +3,19 @@ package org.openiam.idm.srvc.audit.service;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.request.IdmAuditLogRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component("auditLogDispatcher")
-public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogEntity, Response> {
+public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogRequest, Response> {
 
 	private static final Log LOG = LogFactory.getLog(AuditLogDispatcher.class);
 
@@ -24,7 +26,8 @@ public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogEntity,
         super(Response.class);
     }
 
-    private void process(final IdmAuditLogEntity event) {
+    private void process(final IdmAuditLogRequest request) {
+        IdmAuditLogEntity event = request.getLogEntity();
         if (StringUtils.isNotEmpty(event.getId())) {
         	final IdmAuditLogEntity srcLog = auditLogService.findById(event.getId());
             if (srcLog != null) {
@@ -53,7 +56,7 @@ public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogEntity,
     }
 
     @Override
-    protected void processingApiRequest(final IdmAuditLogEntity idmAuditLogEntity, String languageId, Response response) throws BasicDataServiceException {
-        process(idmAuditLogEntity);
+    protected void processingApiRequest(final OpenIAMAPI openIAMAPI, final IdmAuditLogRequest idmAuditLogRequest, Response response) throws BasicDataServiceException {
+        process(idmAuditLogRequest);
     }
 }

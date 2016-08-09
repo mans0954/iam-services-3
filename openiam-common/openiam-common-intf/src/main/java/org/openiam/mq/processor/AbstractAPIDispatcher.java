@@ -1,5 +1,6 @@
 package org.openiam.mq.processor;
 
+import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.concurrent.AbstractBaseRunnableBackgroundTask;
@@ -13,15 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by alexander on 07/07/16.
  */
-public abstract class AbstractAPIDispatcher<RequestBody, ResponseBody extends Response> extends AbstractBaseRunnableBackgroundTask implements IBaseRunnableBackgroundTask,APIProcessor<RequestBody, ResponseBody> {
+public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceRequest, ResponseBody extends Response> extends AbstractBaseRunnableBackgroundTask implements IBaseRunnableBackgroundTask,APIProcessor<RequestBody, ResponseBody> {
 
     @Autowired
     @Qualifier("rabbitResponseServiceGateway")
@@ -80,7 +79,7 @@ public abstract class AbstractAPIDispatcher<RequestBody, ResponseBody extends Re
             long startTime = System.currentTimeMillis();
             log.debug("Processing {} API ...", apiRequest.getRequestApi().name());
             try {
-                processingApiRequest(apiRequest.getRequestBody(),apiRequest.getLanguageId(), apiResponse);
+                processingApiRequest(apiRequest.getRequestApi(),apiRequest.getRequestBody(), apiResponse);
             } catch (BasicDataServiceException ex) {
                 log.error(ex.getCode().name(), ex);
                 apiResponse.setErrorCode(ex.getCode());
@@ -112,7 +111,7 @@ public abstract class AbstractAPIDispatcher<RequestBody, ResponseBody extends Re
         return responseBodyClass.newInstance();
     }
 
-    protected abstract void processingApiRequest(final RequestBody requestBody, String languageId, ResponseBody responseBody) throws BasicDataServiceException;
+    protected abstract void processingApiRequest(final OpenIAMAPI openIAMAPI, final RequestBody requestBody, ResponseBody responseBody) throws BasicDataServiceException;
     protected void rollbackTaransaction() {
         log.debug("There is no data which should be rollbacked");
     }

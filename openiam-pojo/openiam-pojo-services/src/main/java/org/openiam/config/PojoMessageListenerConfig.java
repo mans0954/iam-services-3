@@ -68,4 +68,12 @@ public class PojoMessageListenerConfig {
         return rabbitMQAdminUtils.createMessageListenerContainer("auditLogListenerContainer",
                 OpenIAMQueue.AuditLog,  listener, connectionFactory, String.format("AMQP-%s-", OpenIAMQueue.AuditLog.name()));
     }
+
+    @Bean
+    @Autowired
+    public SimpleMessageListenerContainer languageListenerContainer(LanguageListener listener, ConnectionFactory connectionFactory) {
+        return rabbitMQAdminUtils.createMessageListenerContainer("languageListenerContainer",
+                OpenIAMQueue.LanguageServiceQueue,  listener, connectionFactory, String.format("AMQP-%s-", OpenIAMQueue.LanguageServiceQueue.name()));
+    }
+
 }

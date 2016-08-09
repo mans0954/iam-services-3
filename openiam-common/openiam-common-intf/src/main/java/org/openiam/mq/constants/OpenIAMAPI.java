@@ -6,5 +6,5 @@ package org.openiam.mq.constants;
 public enum OpenIAMAPI {
     MetadataTypeGet,
     UpdateAttributesByMetadata,
-    SendEmail, AuditLogSave, UserProvisioning;
+    SendEmail, AuditLogSave, UserProvisioning, GetUsedLanguages, FindLanguages, CountLanguages, SaveLanguage;
 }

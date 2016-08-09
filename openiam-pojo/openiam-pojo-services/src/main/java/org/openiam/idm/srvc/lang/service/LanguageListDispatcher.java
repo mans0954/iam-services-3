@@ -1,0 +1,42 @@
+package org.openiam.idm.srvc.lang.service;
+
+import org.openiam.base.request.BaseSearchServiceRequest;
+import org.openiam.base.response.LanguageListResponse;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.LanguageSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.processor.AbstractAPIDispatcher;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+/**
+ * Created by alexander on 09/08/16.
+ */
+@Component
+public class LanguageListDispatcher extends AbstractAPIDispatcher<BaseSearchServiceRequest<LanguageSearchBean>, LanguageListResponse> {
+    @Autowired
+    private LanguageDataService languageDataService;
+
+    public LanguageListDispatcher() {
+        super(LanguageListResponse.class);
+    }
+
+    @Override
+    protected void processingApiRequest(final OpenIAMAPI openIAMAPI,  BaseSearchServiceRequest<LanguageSearchBean> request, LanguageListResponse languageListResponse) throws BasicDataServiceException {
+        Language language = new Language();
+        language.setId(request.getLanguageId());
+        switch (openIAMAPI){
+            case GetUsedLanguages:
+                languageListResponse.setLanguageList(languageDataService.getUsedLanguages(language));
+                break;
+            case FindLanguages:
+                languageListResponse.setLanguageList(languageDataService.findBeans(request.getSearchBean(), request.getFrom(), request.getSize(), language));
+                break;
+            default:
+                break;
+        }
+    }
+}

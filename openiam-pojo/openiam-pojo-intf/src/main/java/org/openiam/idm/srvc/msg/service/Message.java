@@ -31,12 +31,13 @@ import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.request.BaseServiceRequest;
 
 /**
  * @author suneet
  *
  */
-public class Message implements Serializable {
+public class Message extends BaseServiceRequest implements Serializable {
 
 	public enum BodyType {
         PLAIN_TEXT,
