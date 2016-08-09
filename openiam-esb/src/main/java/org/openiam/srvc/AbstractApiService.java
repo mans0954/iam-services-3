@@ -1,4 +1,4 @@
-package org.openiam.api;
+package org.openiam.srvc;
 
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.ws.Response;

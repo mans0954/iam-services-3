@@ -1,4 +1,4 @@
-package org.openiam.api.language;
+package org.openiam.srvc.language;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LanguageSearchBean;

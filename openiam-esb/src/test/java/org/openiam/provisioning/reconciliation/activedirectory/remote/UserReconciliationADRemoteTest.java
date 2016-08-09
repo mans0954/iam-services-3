@@ -9,7 +9,7 @@ import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.joda.time.DateTime;
 import org.junit.runner.RunWith;
 import org.openiam.am.srvc.constants.SearchScopeType;
-import org.openiam.api.language.LanguageWebService;
+import org.openiam.srvc.language.LanguageWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService;
 import org.openiam.idm.srvc.auth.dto.Login;

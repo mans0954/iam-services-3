@@ -109,6 +109,7 @@
 		<module>openiam-idm</module>
 		<module>openiam-am</module>
 		<module>openiam-esb</module>
+		<module>openiam-esb-intf</module>
         <!--<module>openiam-esb-ear</module>-->
 		<module>openiam-bpm</module>
 		<module>openiam-km</module>
@@ -871,6 +872,11 @@
         		</dependency>
 
 
+			<dependency>
+				<groupId>org.openiam</groupId>
+				<artifactId>openiam-esb-intf</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
                		<dependency>
                     		<groupId>org.openiam</groupId>
