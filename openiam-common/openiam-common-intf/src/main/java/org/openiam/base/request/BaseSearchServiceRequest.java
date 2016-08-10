@@ -18,9 +18,7 @@ public class BaseSearchServiceRequest<SearchBeanData extends AbstractSearchBean>
     public BaseSearchServiceRequest(SearchBeanData searchBean, int from, int size) {
         this(searchBean, from, size, (String)null);
     }
-    public BaseSearchServiceRequest(SearchBeanData searchBean, int from, int size, Language language) {
-        this(searchBean, from, size, (language!=null)?language.getId():null);
-    }
+
     public BaseSearchServiceRequest(SearchBeanData searchBean, int from, int size, String languageId) {
         this.searchBean = searchBean;
         this.from = from;
@@ -28,6 +26,13 @@ public class BaseSearchServiceRequest<SearchBeanData extends AbstractSearchBean>
         if(StringUtils.isNotBlank(languageId)){
             setLanguageId(languageId);
         }
+    }
+
+    public BaseSearchServiceRequest(SearchBeanData searchBean, int from, int size, Language language) {
+        this.searchBean = searchBean;
+        this.from = from;
+        this.size = size;
+        setLanguage(language);
     }
 
     public SearchBeanData getSearchBean() {

@@ -31,7 +31,7 @@ public class LanguageWebServiceImpl extends AbstractApiService implements Langua
     @Override
     public List<Language> getUsedLanguages(Language language) {
         BaseSearchServiceRequest<LanguageSearchBean> request = new BaseSearchServiceRequest<LanguageSearchBean>();
-        request.setLanguageId(language.getId());
+        request.setLanguage(language);
         LanguageListResponse response = this.manageApiRequest(OpenIAMAPI.GetUsedLanguages, request, LanguageListResponse.class);
         return response.getLanguageList();
     }
