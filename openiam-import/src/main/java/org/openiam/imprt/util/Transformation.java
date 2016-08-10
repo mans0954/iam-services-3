@@ -4,6 +4,7 @@ package org.openiam.imprt.util;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.criterion.MatchMode;
+import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.base.ws.MatchType;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -17,6 +18,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.sysprop.domain.SystemPropertyEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -75,8 +77,6 @@ public class Transformation {
         Map<String, GroupEntity> groupsMapEntities = (Map<String, GroupEntity>) bindingMap.get("GROUPS_MAP_ENTITY");
         List<LocationEntity> locations = (List<LocationEntity>) bindingMap.get("LOCATIONS");
 
-        boolean changeDisplayName = false;
-        boolean isNewUser = (user.getId() == null);
         //DistiguishedName
         String distinguishedName = this.getValue(lo.get("distinguishedName"));
 
@@ -136,28 +136,13 @@ public class Transformation {
             user.setFirstName("Admin");
         }
 
-        //Last Name
-        String surname = this.getValue(lo.get("sn"));
-        if (StringUtils.isNotBlank(surname)) {
-            String prefixLastName = user.getPrefixLastName();
-            if (StringUtils.isNotBlank(prefixLastName)) {
-                surname = surname.replace(prefixLastName.trim(), "").trim();
-                if (',' == surname.charAt(surname.length() - 1)) {
-                    surname = surname.substring(0, surname.length() - 1);
-                }
-            } else {
-                user.setPrefixLastName(null);
-            }
-            user.setLastName(surname);
-        } else {
-            user.setLastName(samAccountName);
-        }
 
         //Initials
         String initials = this.getValue(lo.get("initials"));
         if (StringUtils.isBlank(initials) || "null".equalsIgnoreCase(initials)) {
             initials = user.getFirstName().substring(0, 1);
         }
+        initials = initials.replace(" ", "");
         user.setMiddleInit(initials);
 
         //displayName
@@ -169,6 +154,13 @@ public class Transformation {
         //NickName
         user.setNickname(displayName);
         addUserAttribute(user, new UserAttributeEntity("displayName", displayName));
+        //Last Name
+        String surname = this.getValue(lo.get("sn"));
+        if (StringUtils.isNotBlank(surname)) {
+            this.processLastName(user, surname, displayName);
+        } else {
+            user.setLastName(samAccountName);
+        }
         //Title
         user.setTitle(this.getValue(lo.get("title")));
         // Bu Code (extenstionAttribute15)
@@ -1130,4 +1122,82 @@ public class Transformation {
 
     }
 
+
+    private void processLastName(UserEntity user, String surname, String displayName) {
+        System.out.println("Surname=" + surname);
+        List<String> formatValues = Arrays.asList("00", "0", "50", "51", "52", "53");
+        UserAttributeEntity a = this.getUserAttributeByName(user, "USER_DISPLAY_NAME");
+        UserAttributeEntity savedFormat = this.getUserAttributeByName(user, "USER_SAVED_NAME");
+        String savedFormatString = savedFormat == null ? null : savedFormat.getValue();
+        String format = null;
+        if (a != null && a.getValue() != null) {
+            format = a.getValue();
+            System.out.println("Format from USER_DISPLAY_NAME=" + format);
+        } else if (savedFormatString != null) {
+            format = savedFormatString;
+            System.out.println("Format from savedFormatString=" + format);
+        } else {
+            format = "50";
+        }
+        if (!formatValues.contains(format)) {
+            format = savedFormatString;
+            if (!formatValues.contains(format)) {
+                format = "50";
+            }
+        }
+        System.out.println("Format=" + format);
+        if ("51".equals(format.trim())) { //LastName + "-" + partnerInfix + " "+partnerName +", " + infix
+            String[] snParts = surname.split("-");
+            if (snParts != null) {
+                if (snParts.length > 1) {
+                    user.setLastName(snParts[0]);
+                } else {
+                    proceessDefaultNameFormatIndicator(surname, user);
+                }
+            }
+        } else if ("53".equals(format.trim())) { //partnerName + "-" + infix+" " + LastName + ", " + partnerPrefix
+            String[] snParts = surname.split("-");
+            if (snParts != null && snParts.length > 1) {
+                String partName = snParts[1];
+                if (snParts.length > 2) {
+                    partName = surname.replace(user.getPartnerName() + "-", "");
+                }
+                String[] sn2Parrs = partName.split(" ");
+                if (sn2Parrs != null) {
+                    for (String s : sn2Parrs) {
+                        if (s.contains(",")) {
+                            if (',' == s.charAt(s.length() - 1)) {
+                                user.setLastName(s.substring(0, s.length() - 1));
+                                break;
+                            }
+                        }
+                    }
+                }
+
+            }
+        } else {
+            proceessDefaultNameFormatIndicator(surname, user);
+        }
+        this.addUserAttribute(user, new UserAttributeEntity("USER_DISPLAY_NAME", displayName));
+        this.addUserAttribute(user, new UserAttributeEntity("USER_SAVED_NAME", format));
+    }
+
+
+    private void proceessDefaultNameFormatIndicator(String surname, UserEntity user) {
+        String prefixLastName = user.getPrefixLastName();
+        if (StringUtils.isNotBlank(prefixLastName)) {
+            surname = surname.replace(prefixLastName.trim(), "").trim();
+            if (',' == surname.charAt(surname.length() - 1)) {
+                surname = surname.substring(0, surname.length() - 1);
+                user.setLastName(surname);
+            }
+        } else {
+            user.setPrefixLastName(null);
+        }
+    }
+
+    private UserAttributeEntity getUserAttributeByName(UserEntity user, String attrName) {
+        UserAttributeEntity attr = user.getUserAttributes().get(attrName);
+        return attr;
+    }
 }
