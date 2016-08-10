@@ -57,7 +57,7 @@ public interface ChallengeResponseWebService {
 	List<IdentityQuestion> findQuestionBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean,
 											 @WebParam(name = "from", targetNamespace = "") int from,
 											 @WebParam(name = "size", targetNamespace = "") int size,
-											 @WebParam(name = "language", targetNamespace = "") final Language language);
+											 @WebParam(name = "lang", targetNamespace = "") final Language language);
 	
 	@WebMethod
 	Response saveQuestion(@WebParam(name = "question", targetNamespace = "") final IdentityQuestion question);
@@ -68,7 +68,7 @@ public interface ChallengeResponseWebService {
 	@WebMethod
 	IdentityQuestion getQuestion(
 			@WebParam(name = "questionId", targetNamespace = "") final String questionId,
-			@WebParam(name = "language", targetNamespace = "") final Language language);
+			@WebParam(name = "lang", targetNamespace = "") final Language language);
 	
 	@WebMethod
 	List<UserIdentityAnswer> findAnswerBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityAnswerSearchBean searchBean,

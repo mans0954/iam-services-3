@@ -1,4 +1,4 @@
-package org.openiam.am.srvc.uriauth.dto;
+package org.openiam.base.response;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

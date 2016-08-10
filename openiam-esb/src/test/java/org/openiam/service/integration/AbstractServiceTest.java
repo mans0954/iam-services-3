@@ -27,7 +27,7 @@ import org.openiam.am.srvc.dto.ContentProviderServer;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.am.srvc.ws.AuthProviderWebService;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
-import org.openiam.srvc.language.LanguageWebService;
+import org.openiam.srvc.lang.LanguageWebService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;

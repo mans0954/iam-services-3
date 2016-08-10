@@ -1148,7 +1148,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 /*    @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language) {
+    public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity lang) {
         List<GroupEntity> groupEntities = groupDao.findGroupsByAttributeValue(attrName, attrValue);
         return groupDozerConverter.convertToDTOList(groupEntities, true);
     }*/

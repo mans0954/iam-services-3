@@ -21,7 +21,7 @@ public class LanguageResponse extends Response{
     public String toString() {
         final StringBuffer sb = new StringBuffer("LanguageResponse{");
         sb.append(super.toString());
-        sb.append(", language=").append(language);
+        sb.append(", lang=").append(language);
         sb.append('}');
         return sb.toString();
     }

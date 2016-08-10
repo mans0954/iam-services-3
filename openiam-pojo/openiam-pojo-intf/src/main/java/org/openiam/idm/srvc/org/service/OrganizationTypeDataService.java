@@ -14,16 +14,16 @@ import java.util.List;
 public interface OrganizationTypeDataService {
 
 	OrganizationType findByIdLocalized(final @WebParam(name = "id", targetNamespace = "") String id,
-									   final @WebParam(name = "language", targetNamespace = "") Language language);
+									   final @WebParam(name = "lang", targetNamespace = "") Language language);
 	
 	List<OrganizationType> findAllowedChildrenByDelegationFilterLocalized(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-																		  final @WebParam(name = "language", targetNamespace = "") Language language);
+																		  final @WebParam(name = "lang", targetNamespace = "") Language language);
 	
 	@WebMethod
 	List<OrganizationType> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
 									 final @WebParam(name = "from", targetNamespace = "") int from,
 									 final @WebParam(name = "size", targetNamespace = "") int size,
-									 final @WebParam(name = "language", targetNamespace = "") Language language);
+									 final @WebParam(name = "lang", targetNamespace = "") Language language);
 	
 	@WebMethod
 	int count(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean);
@@ -45,5 +45,5 @@ public interface OrganizationTypeDataService {
     @WebMethod
 	List<OrganizationType> getAllowedParents(final @WebParam(name = "organizationTypeId", targetNamespace = "") String organizationTypeId,
 											 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-											 final @WebParam(name = "language", targetNamespace = "") Language language);
+											 final @WebParam(name = "lang", targetNamespace = "") Language language);
 }

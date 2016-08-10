@@ -28,7 +28,7 @@ public abstract class OrderDaoImpl<T, PrimaryKey extends Serializable> extends B
                     if (StringUtils.isNotBlank(lsb.getLanguageId()))
                         criteria.add(Restrictions.eq("lm.languageId", lsb.getLanguageId()));
                     else
-                        //by default language english
+                        //by default lang english
                         criteria.add(Restrictions.eq("lm.languageId", "1"));
 
                     if (StringUtils.isNotBlank(lsb.getReferenceType()))

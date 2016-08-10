@@ -32,7 +32,7 @@ public interface MetadataWebService {
     @WebMethod
     MetadataType getByNameGrouping(final @WebParam(name = "name", targetNamespace = "") String name,
                                    final @WebParam(name = "grouping", targetNamespace = "") MetadataTypeGrouping grouping,
-                                   final @WebParam(name = "language", targetNamespace = "") Language language);
+                                   final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     String getElementIdByAttrNameAndTypeId(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
@@ -41,16 +41,16 @@ public interface MetadataWebService {
     @WebMethod
     MetadataElement getElementByAttrNameAndTypeId(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
                                                   final @WebParam(name = "typeId", targetNamespace = "") String typeId,
-                                                  final @WebParam(name = "language", targetNamespace = "") Language language);
+                                                  final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     List<MetadataElement> findElementBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataElementSearchBean searchBean,
                                            final @WebParam(name = "from", targetNamespace = "") int from,
                                            final @WebParam(name = "size", targetNamespace = "") int size,
-                                           final @WebParam(name = "language", targetNamespace = "") Language language);
+                                           final @WebParam(name = "lang", targetNamespace = "") Language language);
     @WebMethod
     MetadataElement getMetadataElementById(final @WebParam(name = "id", targetNamespace = "") String id,
-                                           final @WebParam(name = "language", targetNamespace = "") Language language);
+                                           final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     MetadataType getMetadataTypeById(final @WebParam(name = "id", targetNamespace = "") String id);
@@ -59,7 +59,7 @@ public interface MetadataWebService {
     List<MetadataType> findTypeBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTypeSearchBean searchBean,
                                      final @WebParam(name = "from", targetNamespace = "") int from,
                                      final @WebParam(name = "size", targetNamespace = "") int size,
-                                     final @WebParam(name = "language", targetNamespace = "") Language language);
+                                     final @WebParam(name = "lang", targetNamespace = "") Language language);
     
     @WebMethod
     int countElementBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataElementSearchBean searchBean);

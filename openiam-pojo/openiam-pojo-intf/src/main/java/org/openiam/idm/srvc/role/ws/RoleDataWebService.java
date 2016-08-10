@@ -42,7 +42,7 @@ public interface RoleDataWebService {
     @WebMethod
     Role getRoleLocalized(@WebParam(name = "roleId", targetNamespace = "") String roleId,
                  		  @WebParam(name="requesterId", targetNamespace="") String requesterId,
-                 		  @WebParam(name="language", targetNamespace="") Language language);
+                 		  @WebParam(name="lang", targetNamespace="") Language language);
 
     @WebMethod
     List<RoleAttribute> getRoleAttributes(@WebParam(name = "roleId", targetNamespace = "") String roleId);

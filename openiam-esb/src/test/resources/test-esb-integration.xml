@@ -171,12 +171,12 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}MetadataElementTemplateWebService" />
     </bean>
 
-    <bean id="languageServiceClient" class="org.openiam.idm.srvc.lang.service.LanguageWebService"
+    <bean id="languageServiceClient" class="org.openiam.srvc.lang.LanguageWebService"
           factory-bean="languageServiceClientFactory" factory-method="create" />
 
     <bean id="languageServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.idm.srvc.lang.service.LanguageWebService" />
+                  value="org.openiam.srvc.lang.LanguageWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}LanguageWebService" />
     </bean>
@@ -310,7 +310,7 @@
     </bean>
 
     <jaxws:client id="uriFederationServiceClient"
-                  serviceClass="org.openiam.am.srvc.ws.URIFederationWebService"
+                  serviceClass="org.openiam.srvc.am.URIFederationWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}URIFederationWebService" />
 
     <jaxws:client id="activitiClient"

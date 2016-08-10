@@ -1,21 +1,14 @@
-package org.openiam.am.srvc.uriauth.dto;
+package org.openiam.base.response;
 
-import java.io.Serializable;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-import org.openiam.am.srvc.dto.ContentProvider;
-import org.openiam.am.srvc.dto.ContentProviderServer;
 import org.openiam.am.srvc.dto.RoundRobinServer;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 
 /**
@@ -238,6 +231,18 @@ public class URIFederationResponse extends Response {
 
 	public void setConfigured(boolean configured) {
 		this.configured = configured;
+	}
+
+	public void setErrorMappingList(List<URIPatternErrorMappingToken> errorMappingList) {
+		this.errorMappingList = errorMappingList;
+	}
+
+	public void setSubstitutionList(List<URISubstitutionToken> substitutionList) {
+		this.substitutionList = substitutionList;
+	}
+
+	public void setRuleTokenList(List<URIPatternRuleToken> ruleTokenList) {
+		this.ruleTokenList = ruleTokenList;
 	}
 
 	@Override

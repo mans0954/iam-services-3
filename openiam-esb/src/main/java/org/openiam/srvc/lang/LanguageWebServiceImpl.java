@@ -1,7 +1,6 @@
-package org.openiam.srvc.language;
+package org.openiam.srvc.lang;
 
 import org.openiam.srvc.AbstractApiService;
-import org.openiam.srvc.language.LanguageWebService;
 import org.openiam.base.request.BaseGrudServiceRequest;
 import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.response.CountResponse;
@@ -20,7 +19,7 @@ import java.util.List;
 /**
  * Created by alexander on 08/08/16.
  */
-@WebService(endpointInterface = "org.openiam.srvc.language.LanguageWebService",
+@WebService(endpointInterface = "org.openiam.srvc.lang.LanguageWebService",
             targetNamespace = "urn:idm.openiam.org/srvc/lang/service", portName = "LanguageWebServicePort", serviceName = "LanguageWebService")
 @Service("languageWebService")
 public class LanguageWebServiceImpl extends AbstractApiService implements LanguageWebService {

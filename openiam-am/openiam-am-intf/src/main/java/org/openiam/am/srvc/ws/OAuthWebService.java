@@ -25,7 +25,7 @@ public interface OAuthWebService extends Sweepable {
     @WebMethod
     OAuthScopesResponse getScopesForAuthrorization(@WebParam(name = "clientId", targetNamespace = "") String clientId,
                                               @WebParam(name = "userId", targetNamespace = "") String userId,
-                                              @WebParam(name = "language", targetNamespace = "")  Language language);
+                                              @WebParam(name = "lang", targetNamespace = "")  Language language);
 
     @WebMethod
     Response saveClientScopeAuthorization(@WebParam(name = "providerId", targetNamespace = "") String providerId,
@@ -50,7 +50,7 @@ public interface OAuthWebService extends Sweepable {
     @WebMethod
     List<Resource> getAuthorizedScopes(@WebParam(name = "clientId", targetNamespace = "") String clientId,
                                        @WebParam(name = "userId", targetNamespace = "") String userId,
-                                       @WebParam(name = "language", targetNamespace = "")  Language language);
+                                       @WebParam(name = "lang", targetNamespace = "")  Language language);
     
     public AuthProvider getCachedOAuthProviderById(final String id);
     public AuthProvider getCachedOAuthProviderByName(final String name);

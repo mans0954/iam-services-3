@@ -35,7 +35,7 @@ public interface OrganizationDataService {
     @WebMethod
     public Organization getOrganizationLocalized(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
                                         final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                        final @WebParam(name = "language", targetNamespace = "") Language language);
+                                        final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     @Deprecated
@@ -55,7 +55,7 @@ public interface OrganizationDataService {
                                                       final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                       final @WebParam(name = "from", targetNamespace = "") int from,
                                                       final @WebParam(name = "size", targetNamespace = "") int size,
-                                                      final @WebParam(name = "language", targetNamespace = "") Language language);
+                                                      final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     @Deprecated
@@ -66,7 +66,7 @@ public interface OrganizationDataService {
     public List<Organization> getOrganizationsForUserByTypeLocalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
                                                       		final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                       		final @WebParam(name="organizationTypeId", targetNamespace = "") String organizationTypeId,
-                                                      		final @WebParam(name = "language", targetNamespace = "") Language language);
+                                                      		final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     /**
@@ -84,7 +84,7 @@ public interface OrganizationDataService {
     									final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                         final @WebParam(name = "from", targetNamespace = "") int from,
                                         final @WebParam(name = "size", targetNamespace = "") int size,
-                                        final @WebParam(name = "language", targetNamespace = "") Language language);
+                                        final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     @Deprecated
@@ -99,7 +99,7 @@ public interface OrganizationDataService {
     												 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                      final @WebParam(name = "from", targetNamespace = "") int from,
                                                      final @WebParam(name = "size", targetNamespace = "") int size,
-                                                     final @WebParam(name = "language", targetNamespace = "") Language language);
+                                                     final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     @Deprecated
@@ -114,7 +114,7 @@ public interface OrganizationDataService {
     												final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                     final @WebParam(name = "from", targetNamespace = "") int from,
                                                     final @WebParam(name = "size", targetNamespace = "") int size,
-                                                    final @WebParam(name = "language", targetNamespace = "") Language language);
+                                                    final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     int count(@WebParam(name="searchBean", targetNamespace="") OrganizationSearchBean searchBean,
@@ -233,7 +233,7 @@ public interface OrganizationDataService {
     @WebMethod
     public List<Organization> getAllowedParentOrganizationsForTypeLocalized(final @WebParam(name = "orgTypeId", targetNamespace = "") String orgTypeId,
                                                                    final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                                                   final @WebParam(name = "language", targetNamespace = "") Language language);
+                                                                   final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     /*@WebMethod
     @Deprecated
@@ -242,7 +242,7 @@ public interface OrganizationDataService {
     /*@WebMethod
     public List<Organization> findOrganizationsByAttributeValueLocalized(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
                                                                 final @WebParam(name = "attrValue", targetNamespace = "") String attrValue,
-                                                                final @WebParam(name = "language", targetNamespace = "") Language language);*/
+                                                                final @WebParam(name = "lang", targetNamespace = "") Language lang);*/
 
 
     @WebMethod
@@ -293,7 +293,7 @@ public interface OrganizationDataService {
                                                         @WebParam(name = "from", targetNamespace = "") int from,
                                                         @WebParam(name = "size", targetNamespace = "") int size,
                                                         @WebParam(name = "requesterId", targetNamespace = "") final String requesterId,
-                                                        @WebParam(name = "language", targetNamespace = "") final Language language);
+                                                        @WebParam(name = "lang", targetNamespace = "") final Language language);
     @WebMethod
     public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId);
 

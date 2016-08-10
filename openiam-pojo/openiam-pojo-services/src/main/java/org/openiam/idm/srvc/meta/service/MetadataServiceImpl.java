@@ -171,7 +171,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
 	/* AM-851 */
-	//@Cacheable(value="metadataTypeEntities", key="{ #searchBean, #from, #size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
+	//@Cacheable(value="metadataTypeEntities", key="{ #searchBean, #from, #size,#lang}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language){
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {

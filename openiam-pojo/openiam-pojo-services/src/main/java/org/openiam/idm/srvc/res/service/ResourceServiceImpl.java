@@ -404,7 +404,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @Cacheable(value = "resources", key = "{ #searchBean, #from, #size, #language}")
     public List<Resource> findBeansLocalizedDto(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        //List<ResourceEntity> resourceEntityList = this.findBeansLocalized(searchBean, from, size, language);
+        //List<ResourceEntity> resourceEntityList = this.findBeansLocalized(searchBean, from, size, lang);
 
         //ResourceService bean = (ResourceService)ac.getBean("resourceService");
         List<ResourceEntity> resourceEntityList = this.getProxyService().findBeansLocalized(searchBean, from, size, language);
@@ -1005,7 +1005,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     /* AM-851 */
-    //@Cacheable(value = "resourceEntities", key = "{ #searchBean,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
+    //@Cacheable(value = "resourceEntities", key = "{ #searchBean,#from,#size,#lang}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
         return resourceDao.getByExample(searchBean, from, size);
     }

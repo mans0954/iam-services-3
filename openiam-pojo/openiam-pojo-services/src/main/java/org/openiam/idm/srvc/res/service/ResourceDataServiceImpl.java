@@ -793,8 +793,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 /*    @Override
     //@LocalizedServiceGet
     //@Transactional(readOnly=true)
-    public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size, final Language language) {
-        return resourceService.findResourceTypesDto(searchBean, from, size, language);
+    public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size, final Language lang) {
+        return resourceService.findResourceTypesDto(searchBean, from, size, lang);
     }*/
 
     @Override

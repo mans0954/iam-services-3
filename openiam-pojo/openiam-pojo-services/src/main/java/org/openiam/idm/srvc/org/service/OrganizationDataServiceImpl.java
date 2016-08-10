@@ -213,8 +213,8 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 /*    @Override
     //@LocalizedServiceGet
     //@Transactional(readOnly = true)
-    public List<Organization> findOrganizationsByAttributeValueLocalized(String attrName, String attrValue, final Language language) {
-        return organizationService.findOrganizationsDtoByAttributeValue(attrName, attrValue, languageConverter.convertToEntity(language, false));
+    public List<Organization> findOrganizationsByAttributeValueLocalized(String attrName, String attrValue, final Language lang) {
+        return organizationService.findOrganizationsDtoByAttributeValue(attrName, attrValue, languageConverter.convertToEntity(lang, false));
     }*/
 
 

@@ -237,7 +237,7 @@ public class TransformCSVUserSrcRecord extends AbstractTransformScript {
 			pUser.title = attrVal.getValue();
 		}	
 		
-		attrVal = columnMap.get("preferred language");
+		attrVal = columnMap.get("preferred lang");
 		if (attrVal != null) {
 			addAttribute(pUser, attrVal);
 		}	

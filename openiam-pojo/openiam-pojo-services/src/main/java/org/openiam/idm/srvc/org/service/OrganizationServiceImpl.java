@@ -275,7 +275,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 /*    @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity language) {
+    public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity lang) {
         List<OrganizationEntity> organizationEntityList = orgDao.findOrganizationsByAttributeValue(attrName, attrValue);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, true);
     }*/
@@ -301,7 +301,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     /*AM-851 */
-    //@Cacheable(value = "organizationEntities", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
+    //@Cacheable(value = "organizationEntities", key = "{ #searchBean,#requesterId,#from,#size,#lang}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
         Set<String> filter = getDelegationFilter(requesterId, false);
         if(searchBean != null) {

@@ -7,7 +7,6 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.security.cert.X509Certificate;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,9 +15,7 @@ import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
-import org.openiam.am.srvc.uriauth.dto.URIAuthLevelAttribute;
-import org.openiam.am.srvc.uriauth.dto.URIAuthLevelToken;
-import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
+import org.openiam.base.response.URIFederationResponse;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;

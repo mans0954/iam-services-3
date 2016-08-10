@@ -1,4 +1,4 @@
-package org.openiam.srvc.language;
+package org.openiam.srvc.lang;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
@@ -15,18 +15,18 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/lang/service", name = "LanguageWebService")
 public interface LanguageWebService {
     @WebMethod
-    List<Language> getUsedLanguages(final @WebParam(name = "language", targetNamespace = "") Language language);
+    List<Language> getUsedLanguages(final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     List<Language> findBeans(
             final @WebParam(name = "searchBean", targetNamespace = "") LanguageSearchBean searchBean,
             final @WebParam(name = "from", targetNamespace = "") int from,
             final @WebParam(name = "size", targetNamespace = "") int size,
-            final @WebParam(name = "language", targetNamespace = "") Language language);
+            final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     int count(final @WebParam(name = "searchBean", targetNamespace = "") LanguageSearchBean searchBean);
 
     @WebMethod
-    Response save(final @WebParam(name = "language", targetNamespace = "") Language language);
+    Response save(final @WebParam(name = "lang", targetNamespace = "") Language language);
 }

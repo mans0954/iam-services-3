@@ -20,7 +20,7 @@ public enum OpenIAMQueue {
     ProvisionQueue,
 
 
-    LanguageServiceQueue;
+    LanguageServiceQueue, URIFederationQueue;
 
     private String routingKey=this.name();
     private RabbitMqExchange exchange;

@@ -60,7 +60,7 @@ public interface OrganizationService {
 
     public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity language);
 
-   // public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language);
+   // public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity lang);
 
     //public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size);
 
@@ -70,9 +70,9 @@ public interface OrganizationService {
 
     public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language);
 
-    //public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity language);
+    //public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity lang);
 
-   // public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language);
+   // public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity lang);
 
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
     public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language);
@@ -86,7 +86,7 @@ public interface OrganizationService {
 
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity language);
 
-    /*public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity language);
+    /*public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity lang);
 
     public int getNumOfOrganizationsForUser(final String userId, final String requesterId);
 
