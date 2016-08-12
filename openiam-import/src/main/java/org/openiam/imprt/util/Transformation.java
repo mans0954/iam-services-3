@@ -44,6 +44,8 @@ public class Transformation {
     private final String PDD_EMAIL = "PDDUser@cog.akzonobel.com";
 
     final String ARCHIVE_CACHE_ENABLED = "g_gss_eus_maas_vaultcache_enabled - vv";
+    final String g_GSS_MDMUsers = "g_GSS_MDMUsers".toLowerCase();
+    final String g_GSS_MDMEmailWMS = "g_GSS_MDMEmailWMS".toLowerCase();
     final String ARCHIVE_CACHE_DISABLED = "g_gss_eus_maas_vaultcache_disabled - vv";
     final String INTERNET_GROUP_MASK = "a_.*_internetaccess";
 
@@ -379,7 +381,6 @@ public class Transformation {
 
         attr = this.getValue(lo.get("extensionAttribute14"));
         addUserAttribute(user, new UserAttributeEntity("extensionAttribute14", attr));
-        boolean isMDM = "MDM".equalsIgnoreCase(attr);
         String classification = attr == null ? "None" : attr;
         addUserAttribute(user, new UserAttributeEntity("classification", attr));
         if (samAccountName.length() > 4) {
@@ -467,6 +468,9 @@ public class Transformation {
                 memberOf = mOfAttr.getValue() == null ? null : mOfAttr.getValue().split("/\\,/");
             }
         }
+
+        boolean isMDM = containsNameGroup(memberOf, groupsMap, g_GSS_MDMEmailWMS)
+                || containsNameGroup(memberOf, groupsMap, g_GSS_MDMUsers);
         boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
         boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
         boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
@@ -474,7 +478,7 @@ public class Transformation {
         boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
 //        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
-        addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
+        //  addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
         addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
 //
@@ -485,9 +489,7 @@ public class Transformation {
         } else {
             addUserAttribute(user, new UserAttributeEntity("archieve", null));
         }
-        if (isMDM) {
-            classification = "MDM";
-        } else if (isPDD) {
+        if (isPDD) {
             classification = "PDD";
         }
         if (isMDM) {
