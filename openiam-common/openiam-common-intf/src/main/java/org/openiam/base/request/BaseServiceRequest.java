@@ -2,11 +2,19 @@ package org.openiam.base.request;
 
 import org.openiam.idm.srvc.lang.dto.Language;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 
 /**
  * Created by alexander on 08/08/16.
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "BaseServiceRequest", propOrder = {
+        "requesterId",
+        "language"
+})
 public class BaseServiceRequest implements Serializable{
     private static final long serialVersionUID = 1L;
 

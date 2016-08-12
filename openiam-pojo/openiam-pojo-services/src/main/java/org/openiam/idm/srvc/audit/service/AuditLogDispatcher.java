@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.request.IdmAuditLogRequest;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
@@ -56,7 +57,8 @@ public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogRequest
     }
 
     @Override
-    protected void processingApiRequest(final OpenIAMAPI openIAMAPI, final IdmAuditLogRequest idmAuditLogRequest, Response response) throws BasicDataServiceException {
+    protected Response processingApiRequest(final OpenIAMAPI openIAMAPI, final IdmAuditLogRequest idmAuditLogRequest) throws BasicDataServiceException {
         process(idmAuditLogRequest);
+        return new Response(ResponseStatus.SUCCESS);
     }
 }

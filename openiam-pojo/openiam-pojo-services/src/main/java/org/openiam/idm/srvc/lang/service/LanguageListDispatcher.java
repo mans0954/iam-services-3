@@ -25,7 +25,8 @@ public class LanguageListDispatcher extends AbstractAPIDispatcher<BaseSearchServ
     }
 
     @Override
-    protected void processingApiRequest(final OpenIAMAPI openIAMAPI,  BaseSearchServiceRequest<LanguageSearchBean> request, LanguageListResponse languageListResponse) throws BasicDataServiceException {
+    protected LanguageListResponse processingApiRequest(final OpenIAMAPI openIAMAPI,  BaseSearchServiceRequest<LanguageSearchBean> request) throws BasicDataServiceException {
+        LanguageListResponse languageListResponse = new LanguageListResponse();
         switch (openIAMAPI){
             case GetUsedLanguages:
                 languageListResponse.setLanguageList(languageDataService.getUsedLanguages(request.getLanguage()));
@@ -36,5 +37,6 @@ public class LanguageListDispatcher extends AbstractAPIDispatcher<BaseSearchServ
             default:
                 break;
         }
+        return languageListResponse;
     }
 }

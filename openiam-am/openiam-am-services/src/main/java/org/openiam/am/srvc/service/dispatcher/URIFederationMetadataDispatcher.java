@@ -22,26 +22,7 @@ public class URIFederationMetadataDispatcher extends AbstractAPIDispatcher<URIFe
     }
 
     @Override
-    protected void processingApiRequest(OpenIAMAPI openIAMAPI, URIFederationServiceRequest uriFederationServiceRequest, URIFederationResponse uriFederationResponse) throws BasicDataServiceException {
-        URIFederationResponse response = uriFederationService.getMetadata(uriFederationServiceRequest.getProxyURI(), uriFederationServiceRequest.getMethod());
-
-        uriFederationResponse.setErrorMappingList(response.getErrorMappingList());
-        uriFederationResponse.setSubstitutionList(response.getSubstitutionList());
-        uriFederationResponse.setAuthLevelTokenList(response.getAuthLevelTokenList());
-        uriFederationResponse.setRuleTokenList(response.getRuleTokenList());
-        uriFederationResponse.setServer(response.getServer());
-        uriFederationResponse.setPatternId(response.getPatternId());
-        uriFederationResponse.setCpId(response.getCpId());
-        uriFederationResponse.setLoginURL(response.getLoginURL());
-        uriFederationResponse.setPostbackURLParamName(response.getPostbackURLParamName());
-        uriFederationResponse.setAuthProviderId(response.getAuthProviderId());
-        uriFederationResponse.setAuthCookieName(response.getAuthCookieName());
-        uriFederationResponse.setAuthCookieDomain(response.getAuthCookieDomain());
-        uriFederationResponse.setMethodId(response.getMethodId());
-        uriFederationResponse.setRedirectTo(response.getRedirectTo());
-        uriFederationResponse.setCacheable(response.isCacheable());
-        uriFederationResponse.setCacheTTL(response.getCacheTTL());
-        uriFederationResponse.setConfigured(response.isConfigured());
-
+    protected URIFederationResponse processingApiRequest(OpenIAMAPI openIAMAPI, URIFederationServiceRequest uriFederationServiceRequest) throws BasicDataServiceException {
+        return uriFederationService.getMetadata(uriFederationServiceRequest.getProxyURI(), uriFederationServiceRequest.getMethod());
     }
 }

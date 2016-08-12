@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.mq.constants.OpenIAMAPI;
@@ -91,7 +92,8 @@ public class ProvisionDispatcher extends AbstractAPIDispatcher<ProvisionDataCont
     }
 
     @Override
-    protected void processingApiRequest(final OpenIAMAPI openIAMAPI, final ProvisionDataContainer entity, Response response) throws BasicDataServiceException {
+    protected Response processingApiRequest(final OpenIAMAPI openIAMAPI, final ProvisionDataContainer entity) throws BasicDataServiceException {
         provisionTransactionHelper.process(entity);
+        return new Response(ResponseStatus.SUCCESS);
     }
 }

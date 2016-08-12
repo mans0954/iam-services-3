@@ -19,8 +19,10 @@
 /**
  *
  */
-package org.openiam.base.ws;
+package org.openiam.base.response;
 
+
+import org.openiam.base.ws.Response;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -36,7 +38,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "BooleanResponse", propOrder = {
         "value"
 })
-public class BooleanResponse {
+public class BooleanResponse  extends Response {
 
     @XmlAttribute(required = true)
     protected Boolean value;
@@ -58,5 +60,12 @@ public class BooleanResponse {
         this.value = value;
     }
 
-
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("BooleanResponse{");
+        sb.append(super.toString());
+        sb.append(", value=").append(value);
+        sb.append('}');
+        return sb.toString();
+    }
 }

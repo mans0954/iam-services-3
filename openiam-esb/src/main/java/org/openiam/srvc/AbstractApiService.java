@@ -36,6 +36,12 @@ public abstract class AbstractApiService {
         if (rabbitMqResponse == null){
             return getFailedResponse(apiResponseClass);
         }
+        if(rabbitMqResponse.isFailure()){
+            ApiResponse response = getFailedResponse(apiResponseClass);
+            response.setErrorCode(rabbitMqResponse.getErrorCode());
+            response.setErrorText(rabbitMqResponse.getErrorText());
+            return response;
+        }
         return rabbitMqResponse.getResponseBody();
     }
 

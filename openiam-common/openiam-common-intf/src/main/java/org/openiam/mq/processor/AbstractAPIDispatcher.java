@@ -79,11 +79,10 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
             long startTime = System.currentTimeMillis();
             log.debug("Processing {} API ...", apiRequest.getRequestApi().name());
             try {
-                processingApiRequest(apiRequest.getRequestApi(),apiRequest.getRequestBody(), apiResponse);
+                apiResponse = processingApiRequest(apiRequest.getRequestApi(),apiRequest.getRequestBody());
             } catch (BasicDataServiceException ex) {
                 log.error(ex.getCode().name(), ex);
                 apiResponse.setErrorCode(ex.getCode());
-
             } catch (Exception ex) {
                 log.error(ex.getMessage(), ex);
                 apiResponse.setErrorCode(ResponseCode.INTERNAL_ERROR);
@@ -111,7 +110,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
         return responseBodyClass.newInstance();
     }
 
-    protected abstract void processingApiRequest(final OpenIAMAPI openIAMAPI, final RequestBody requestBody, ResponseBody responseBody) throws BasicDataServiceException;
+    protected abstract ResponseBody processingApiRequest(final OpenIAMAPI openIAMAPI, final RequestBody requestBody) throws BasicDataServiceException;
     protected void rollbackTaransaction() {
         log.debug("There is no data which should be rollbacked");
     }

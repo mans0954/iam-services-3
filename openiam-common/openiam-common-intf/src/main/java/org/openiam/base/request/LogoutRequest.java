@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.auth.dto;
+package org.openiam.base.request;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlType;
         "userId",
         "patternId"
 })
-public class LogoutRequest {
+public class LogoutRequest  extends BaseServiceRequest  {
     private String userId;
     private String patternId;
 

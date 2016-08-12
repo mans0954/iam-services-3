@@ -14,5 +14,5 @@ public enum OpenIAMAPI {
     CountLanguages,
     SaveLanguage,
     URIFederationMetadata,
-    CachedContentProviderGet, CachedURIPatternGet;
+    CachedContentProviderGet, CachedURIPatternGet, GlobalLogoutRequest, Authenticate, ClearOTPActiveStatus, SendOTPToken, ConfirmOTPToken, GetOTPSecretKey, RenewToken, FindAuthState, IsOTPActive, SaveAuthState;
 }

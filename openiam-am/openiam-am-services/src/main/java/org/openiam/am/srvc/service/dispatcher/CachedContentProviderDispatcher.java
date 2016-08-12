@@ -22,7 +22,9 @@ public class CachedContentProviderDispatcher extends AbstractAPIDispatcher<IdSer
     }
 
     @Override
-    protected void processingApiRequest(OpenIAMAPI openIAMAPI, IdServiceRequest idServiceRequest, ContentProviderResponse contentProviderResponse) throws BasicDataServiceException {
+    protected ContentProviderResponse processingApiRequest(OpenIAMAPI openIAMAPI, IdServiceRequest idServiceRequest) throws BasicDataServiceException {
+        ContentProviderResponse contentProviderResponse = new ContentProviderResponse();
         contentProviderResponse.setProvider(uriFederationService.getCachedContentProvider(idServiceRequest.getId()));
+        return contentProviderResponse;
     }
 }

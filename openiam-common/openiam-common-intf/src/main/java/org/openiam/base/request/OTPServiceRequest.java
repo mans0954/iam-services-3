@@ -1,10 +1,11 @@
-package org.openiam.idm.srvc.auth.dto;
+package org.openiam.base.request;
+
+import org.openiam.idm.srvc.auth.dto.OTPRequestType;
+import org.openiam.idm.srvc.continfo.dto.Phone;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.idm.srvc.continfo.dto.Phone;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SMSOTPRequest", propOrder = {
@@ -15,7 +16,7 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
         "requestType",
         "secret"
 })
-public class OTPServiceRequest {
+public class OTPServiceRequest extends BaseServiceRequest {
 	private String userId;
 	private Phone phone;
 	private String patternId;

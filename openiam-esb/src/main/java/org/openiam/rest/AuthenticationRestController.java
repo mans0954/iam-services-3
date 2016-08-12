@@ -1,9 +1,9 @@
 package org.openiam.rest;
 
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.base.request.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
-import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.base.response.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

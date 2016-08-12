@@ -22,7 +22,9 @@ public class CachedURIPatternDispatcher extends AbstractAPIDispatcher<IdServiceR
     }
 
     @Override
-    protected void processingApiRequest(OpenIAMAPI openIAMAPI, IdServiceRequest idServiceRequest, URIPatternResponse uriPatternResponse) throws BasicDataServiceException {
+    protected URIPatternResponse processingApiRequest(OpenIAMAPI openIAMAPI, IdServiceRequest idServiceRequest) throws BasicDataServiceException {
+        URIPatternResponse uriPatternResponse = new URIPatternResponse();
         uriPatternResponse.setUriPattern(uriFederationService.getCachedURIPattern(idServiceRequest.getId()));
+        return uriPatternResponse;
     }
 }

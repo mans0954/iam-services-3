@@ -21,22 +21,15 @@
  */
 package org.openiam.idm.srvc.pswd.ws;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import org.openiam.base.ws.BooleanResponse;
-import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.ws.PolicyResponse;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -21,11 +21,8 @@
  */
 package org.openiam.idm.srvc.pswd.ws;
 
-import org.openiam.base.ws.BooleanResponse;
-import org.openiam.base.ws.Response;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.ws.PolicyResponse;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;

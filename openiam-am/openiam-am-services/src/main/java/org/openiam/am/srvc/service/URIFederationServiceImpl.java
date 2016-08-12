@@ -63,7 +63,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.base.request.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;

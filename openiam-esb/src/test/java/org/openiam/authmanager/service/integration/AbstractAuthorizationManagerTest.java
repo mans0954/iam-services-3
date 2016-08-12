@@ -1,25 +1,14 @@
 package org.openiam.authmanager.service.integration;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.activiti.engine.impl.cmd.AddCommentCmd;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.access.dto.AccessRight;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;

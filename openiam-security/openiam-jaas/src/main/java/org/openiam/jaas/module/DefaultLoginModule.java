@@ -7,24 +7,20 @@ import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.base.request.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
-import org.openiam.jaas.callback.TokenCallback;
+import org.openiam.base.response.AuthenticationResponse;
 import org.openiam.jaas.util.ServiceLookupHelper;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;

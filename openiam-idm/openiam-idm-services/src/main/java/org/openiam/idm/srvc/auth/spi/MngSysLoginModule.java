@@ -1,43 +1,10 @@
 package org.openiam.idm.srvc.auth.spi;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openiam.base.id.UUIDGen;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.request.PasswordRequest;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
-import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
-import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.ProvisionSelectedResourceHelper;
-import org.openiam.provision.type.ExtensibleUser;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Vitaly on 2/9/2015.

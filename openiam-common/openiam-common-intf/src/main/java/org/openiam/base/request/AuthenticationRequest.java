@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.auth.dto;
+package org.openiam.base.request;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
         "authPolicyId",
         "skipPasswordCheck"
 })
-public class AuthenticationRequest {
+public class AuthenticationRequest  extends BaseServiceRequest  {
 	private String languageId;
     private String principal;
     private String password;

@@ -24,12 +24,14 @@ public class MetadataTypeGetDispatcher extends AbstractAPIDispatcher<IdServiceRe
     }
 
     @Override
-    protected void processingApiRequest(final OpenIAMAPI openIAMAPI, final  IdServiceRequest idServiceRequest, Response response) throws BasicDataServiceException {
+    protected Response processingApiRequest(final OpenIAMAPI openIAMAPI, final  IdServiceRequest idServiceRequest) throws BasicDataServiceException {
+        Response response = new Response();
         if(StringUtils.isBlank(idServiceRequest.getId())){
             throw new BasicDataServiceException(ResponseCode.METADATA_TYPE_ID_REQUIRED);
         }
         MetadataType type = metadataService.findById(idServiceRequest.getId());
         response.setResponseValue(type);
+        return response;
     }
 
 }

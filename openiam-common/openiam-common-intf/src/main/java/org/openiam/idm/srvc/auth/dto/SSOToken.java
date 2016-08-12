@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -25,7 +26,7 @@ import java.util.Date;
         "userId",
         "expireOnBrowserClose"
 })
-public class SSOToken {
+public class SSOToken implements Serializable {
 
 	private String userId;
     private String tokenType;

@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.openiam.idm.srvc.auth.ws;
+package org.openiam.base.response;
 
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
@@ -27,7 +27,6 @@ import org.openiam.idm.srvc.auth.dto.Subject;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
 

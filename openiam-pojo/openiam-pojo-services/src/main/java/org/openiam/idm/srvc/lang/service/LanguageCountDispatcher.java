@@ -24,7 +24,9 @@ public class LanguageCountDispatcher extends AbstractAPIDispatcher<BaseSearchSer
     }
 
     @Override
-    protected void processingApiRequest(final OpenIAMAPI openIAMAPI,  BaseSearchServiceRequest<LanguageSearchBean> request, CountResponse response) throws BasicDataServiceException {
+    protected CountResponse processingApiRequest(final OpenIAMAPI openIAMAPI,  BaseSearchServiceRequest<LanguageSearchBean> request) throws BasicDataServiceException {
+        CountResponse response = new CountResponse();
         response.setRowCount(languageDataService.count(request.getSearchBean()));
+        return response;
     }
 }

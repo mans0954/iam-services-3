@@ -54,7 +54,7 @@ import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.LogoutRequest;
+import org.openiam.base.request.LogoutRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;

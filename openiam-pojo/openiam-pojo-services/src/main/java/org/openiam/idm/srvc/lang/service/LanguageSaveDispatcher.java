@@ -26,7 +26,9 @@ public class LanguageSaveDispatcher extends AbstractAPIDispatcher<BaseGrudServic
     }
 
     @Override
-    protected void processingApiRequest(final OpenIAMAPI openIAMAPI,  BaseGrudServiceRequest<Language> request, IdServiceResponse response) throws BasicDataServiceException {
+    protected IdServiceResponse processingApiRequest(final OpenIAMAPI openIAMAPI,  BaseGrudServiceRequest<Language> request) throws BasicDataServiceException {
+        IdServiceResponse response = new IdServiceResponse();
         response.setId(languageDataService.save(request.getObject()));
+        return response;
     }
 }
