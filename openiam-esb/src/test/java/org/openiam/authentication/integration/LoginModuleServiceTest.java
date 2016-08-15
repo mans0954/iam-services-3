@@ -9,7 +9,7 @@ import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.base.ws.Response;
 import org.openiam.base.request.AuthenticationRequest;
 import org.openiam.base.response.AuthenticationResponse;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.base.response.LoginResponse;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.service.integration.AbstractServiceTest;
 import org.springframework.beans.factory.annotation.Value;

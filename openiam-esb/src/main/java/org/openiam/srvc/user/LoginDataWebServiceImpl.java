@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.auth.ws;
+package org.openiam.srvc.user;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -13,6 +13,8 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.base.response.LoginListResponse;
+import org.openiam.base.response.LoginResponse;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -30,7 +32,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-@WebService(endpointInterface = "org.openiam.idm.srvc.auth.ws.LoginDataWebService", 
+@WebService(endpointInterface = "org.openiam.srvc.user.LoginDataWebService",
 		targetNamespace = "urn:idm.openiam.org/srvc/auth/service", 
 		serviceName = "LoginDataWebService",
 		portName = "LoginDataWebServicePort")
@@ -127,7 +129,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#decryptPassword(java.lang.String)
+	 * @see org.openiam.srvc.user.LoginDataWebService#decryptPassword(java.lang.String)
 	 */
     @Override
 	public Response decryptPassword(String userId, String password) {
@@ -149,7 +151,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#encryptPassword(java.lang.String)
+	 * @see org.openiam.srvc.user.LoginDataWebService#encryptPassword(java.lang.String)
 	 */
     @Override
 	public Response encryptPassword(String userId, String password) {
@@ -170,7 +172,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLoginByDomain(java.lang.String)
+	 * @see org.openiam.srvc.user.LoginDataWebService#getLoginByDomain(java.lang.String)
 	 */
 //    @Override
 //	public LoginListResponse getLoginByDomain(String domainId) {
@@ -185,7 +187,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 //	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLoginByManagedSys(java.lang.String, java.lang.String, java.lang.String)
+	 * @see org.openiam.srvc.user.LoginDataWebService#getLoginByManagedSys(java.lang.String, java.lang.String, java.lang.String)
 	 */
     @Override
 	public LoginResponse getLoginByManagedSys(String principal, String sysId) {
@@ -216,7 +218,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
     }
 
     /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLoginByUser(java.lang.String)
+      * @see org.openiam.srvc.user.LoginDataWebService#getLoginByUser(java.lang.String)
       */
     @Override
 	public LoginListResponse getLoginByUser(String userId) {
@@ -234,7 +236,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getPassword(java.lang.String, java.lang.String, java.lang.String)
+	 * @see org.openiam.srvc.user.LoginDataWebService#getPassword(java.lang.String, java.lang.String, java.lang.String)
 	 */
     @Override
 	public Response getPassword(String principal, String managedSysId) throws Exception {
@@ -250,7 +252,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#lockLogin(java.lang.String, java.lang.String, java.lang.String)
+	 * @see org.openiam.srvc.user.LoginDataWebService#lockLogin(java.lang.String, java.lang.String, java.lang.String)
 	 */
     @Override
 	public Response lockLogin(String principal,
@@ -305,7 +307,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
     }
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#bulkUnLock(org.openiam.idm.srvc.user.dto.UserStatusEnum)
+	 * @see org.openiam.srvc.user.LoginDataWebService#bulkUnLock(org.openiam.idm.srvc.user.dto.UserStatusEnum)
 	 */
     @Override
 	public Response bulkUnLock(UserStatusEnum status) {
@@ -378,7 +380,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
     }
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#setPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 * @see org.openiam.srvc.user.LoginDataWebService#setPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
     /*
 	public Response setPassword(String domainId, String principal,
@@ -395,7 +397,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	*/
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#unLockLogin(java.lang.String, java.lang.String, java.lang.String)
+	 * @see org.openiam.srvc.user.LoginDataWebService#unLockLogin(java.lang.String, java.lang.String, java.lang.String)
 	 */
     @Override
 	public Response unLockLogin(String principal, String managedSysId) {
@@ -446,7 +448,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getUserManagedSysIdentityEntity(java.lang.String)
+	 * @see org.openiam.srvc.user.LoginDataWebService#getUserManagedSysIdentityEntity(java.lang.String)
 	 */
     @Override
 	public LoginResponse getPrimaryIdentity(String userId) {
@@ -478,7 +480,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
     }
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#bulkResetPasswordChangeCount()
+	 * @see org.openiam.srvc.user.LoginDataWebService#bulkResetPasswordChangeCount()
 	 */
     @Override
 	public Response bulkResetPasswordChangeCount() {
@@ -490,7 +492,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLockedUserSince(java.util.Date)
+	 * @see org.openiam.srvc.user.LoginDataWebService#getLockedUserSince(java.util.Date)
 	 */
     @Override
 	public LoginListResponse getLockedUserSince(Date lastExecTime) {
@@ -507,7 +509,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getInactiveUsers(int, int)
+	 * @see org.openiam.srvc.user.LoginDataWebService#getInactiveUsers(int, int)
 	 */
     @Override
 	public LoginListResponse getInactiveUsers(int startDays, int endDays) {
@@ -524,7 +526,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getUserNearPswdExpiration(int)
+	 * @see org.openiam.srvc.user.LoginDataWebService#getUserNearPswdExpiration(int)
 	 */
     @Override
 	public LoginListResponse getUserNearPswdExpiration(int expDays) {

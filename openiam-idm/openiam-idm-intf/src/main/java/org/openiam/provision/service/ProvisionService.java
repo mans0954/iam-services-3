@@ -32,7 +32,7 @@ import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
+import org.openiam.base.response.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;

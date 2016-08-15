@@ -1,13 +1,12 @@
-package org.openiam.idm.srvc.pswd.dto;
+package org.openiam.base.response;
 import java.util.LinkedList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.pswd.rule.PasswordRuleException;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordValidationResponse", propOrder = {
         "responseValues",

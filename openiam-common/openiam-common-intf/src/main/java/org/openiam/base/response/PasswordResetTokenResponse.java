@@ -10,7 +10,7 @@
  *   OpenIAM is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   Lesser GNU General Public License for more details.
+ *   GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with OpenIAM.  If not, see <http://www.gnu.org/licenses/>. *
@@ -19,45 +19,48 @@
 /**
  *
  */
-package org.openiam.idm.srvc.auth.ws;
+package org.openiam.base.response;
 
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.auth.dto.Login;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * Response object for a web service operation that returns a role.
+ * Object representing a password in OpenIAM
  *
  * @author suneet
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "LoginResponse", propOrder = {
-        "principal"
+@XmlType(name = "PasswordResetTokenResponse", propOrder = {
+        "passwordResetToken"
 })
-public class LoginResponse extends Response {
+public class PasswordResetTokenResponse extends Response {
 
-    protected Login principal;
+    protected String passwordResetToken;
 
-    public LoginResponse() {
+
+
+    public PasswordResetTokenResponse() {
         super();
     }
 
-    public LoginResponse(ResponseStatus s) {
+    public PasswordResetTokenResponse(ResponseStatus s) {
         super(s);
     }
 
-    public Login getPrincipal() {
-        return principal;
+    public PasswordResetTokenResponse(ResponseStatus s, String passwordResetToken) {
+        super(s);
+        this.passwordResetToken = passwordResetToken;
     }
 
-    public void setPrincipal(Login principal) {
-        this.principal = principal;
+    public String getPasswordResetToken() {
+        return passwordResetToken;
     }
 
-
+    public void setPasswordResetToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
+    }
 }

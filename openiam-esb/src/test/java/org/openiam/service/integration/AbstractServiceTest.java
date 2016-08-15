@@ -43,7 +43,7 @@ import org.openiam.srvc.audit.IdmAuditLogWebDataService;
 import org.openiam.base.request.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.base.response.AuthenticationResponse;
-import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
+import org.openiam.srvc.user.LoginDataWebService;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.srvc.am.GroupDataWebService;

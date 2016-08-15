@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.openiam.idm.srvc.pswd.service;
+package org.openiam.srvc.user;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;

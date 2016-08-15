@@ -21,7 +21,7 @@ import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
+import org.openiam.base.response.PasswordValidationResponse;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.dto.Role;

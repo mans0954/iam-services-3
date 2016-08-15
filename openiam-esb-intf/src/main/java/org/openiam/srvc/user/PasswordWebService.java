@@ -19,15 +19,14 @@
 /**
  *
  */
-package org.openiam.idm.srvc.pswd.ws;
+package org.openiam.srvc.user;
 
-import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.base.request.PasswordResetTokenRequest;
+import org.openiam.base.response.PasswordResetTokenResponse;
+import org.openiam.base.response.PasswordValidationResponse;
+import org.openiam.base.response.ValidatePasswordResetTokenResponse;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
-import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -47,9 +46,7 @@ public interface PasswordWebService {
      * @return
      */
     @WebMethod
-    PasswordValidationResponse isPasswordValid(
-            @WebParam(name = "pswd", targetNamespace = "") Password pswd)
-            throws ObjectNotFoundException;
+    PasswordValidationResponse isPasswordValid(@WebParam(name = "pswd", targetNamespace = "") Password pswd);
 
     /**
      * Generates a temporary token that can be used as part of Secure challenge

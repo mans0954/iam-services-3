@@ -26,9 +26,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.request.PasswordResetTokenRequest;
+import org.openiam.base.response.PasswordResetTokenResponse;
+import org.openiam.base.response.PasswordValidationResponse;
+import org.openiam.base.response.ValidatePasswordResetTokenResponse;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
@@ -38,18 +41,13 @@ import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
-import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.policy.service.PolicyDAO;
-import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.*;
-import org.openiam.idm.srvc.pswd.rule.PasswordRuleException;
-import org.openiam.idm.srvc.pswd.rule.PasswordRuleViolation;
+import org.openiam.exception.PasswordRuleException;
 import org.openiam.idm.srvc.pswd.rule.PasswordValidator;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -122,8 +120,7 @@ public class PasswordServiceImpl implements PasswordService {
      * openiam.idm.srvc.policy.dto.Password)
      */
     @Override
-    public PasswordValidationResponse isPasswordValid(Password pswd)
-            throws ObjectNotFoundException {
+    public PasswordValidationResponse isPasswordValid(Password pswd)  {
         PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
         Policy pswdPolicy = getPasswordPolicyUsingContentProvider(
                 pswd.getPrincipal(), pswd.getManagedSysId(), null);

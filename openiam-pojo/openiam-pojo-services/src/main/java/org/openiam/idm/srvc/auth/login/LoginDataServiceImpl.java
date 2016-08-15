@@ -8,6 +8,7 @@ import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
@@ -112,6 +113,17 @@ public class LoginDataServiceImpl implements LoginDataService {
         return loginDao.getRecord(login, sysId);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Login getLoginDtoByManagedSys(String principal, String sysId){
+        LoginEntity entity = this.getLoginByManagedSys(principal, sysId);
+
+        if (entity != null ) {
+            return loginDozerConverter.convertToDTO(entity, false);
+        }else {
+            return null;
+        }
+    }
     @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getLoginDetailsByManagedSys(String principalName,
@@ -601,6 +613,17 @@ public class LoginDataServiceImpl implements LoginDataService {
 
         return getByUserIdManagedSys(userId,
                 sysConfiguration.getDefaultManagedSysId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Login getPrimaryIdentityDto(String userId) {
+        LoginEntity lg = this.getPrimaryIdentity(userId);
+        if (lg == null ) {
+            return null;
+        }else {
+            return loginDozerConverter.convertToDTO(lg, false);
+        }
     }
 
     @Override

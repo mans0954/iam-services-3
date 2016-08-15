@@ -3,12 +3,9 @@ package org.openiam.provision.service;
 import org.openiam.base.ws.Response;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.base.response.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.LookupUserResponse;
@@ -19,7 +16,6 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by anton on 13.08.15.

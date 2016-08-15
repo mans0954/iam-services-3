@@ -24,7 +24,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.base.response.AuthenticationResponse;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.base.response.LoginResponse;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.srvc.am.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;

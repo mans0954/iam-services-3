@@ -46,7 +46,6 @@ import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -67,7 +66,7 @@ import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.prov.request.dto.OperationBean;
 import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
+import org.openiam.base.response.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
@@ -91,8 +90,6 @@ import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -1994,23 +1991,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             pswd.setPassword(passwordSync.getPassword());
 
             if (!passwordSync.getResyncMode()) {
-                try {
                     response = passwordManager.isPasswordValid(pswd);
                     if (response.isFailure()) {
                         idmAuditLog.fail();
                         idmAuditLog.setFailureReason("Invalid Password");
                         return response;
                     }
-                } catch (ObjectNotFoundException oe) {
-                	if(log.isDebugEnabled()) {
-                		log.debug("Object not found", oe); //SIA 2015-08-01
-                	}
-                    log.error(oe.getStackTrace()); //SIA 2015-08-01
-                    idmAuditLog.setException(oe);
-                    idmAuditLog.setFailureReason(oe.getMessage());
-                    idmAuditLog.fail();
-                    return response;
-                }
             } else {
                 log.warn("Password Validation Skipped. In Resync Mode system pushes the same passwords!");
                 idmAuditLog.addAttribute(AuditAttributeName.WARNING, "Password Validation Skipped. " +

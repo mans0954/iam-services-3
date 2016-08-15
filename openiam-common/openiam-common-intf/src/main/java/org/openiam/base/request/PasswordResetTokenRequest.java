@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.openiam.idm.srvc.pswd.dto;
+package org.openiam.base.request;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlType;
         "managedSysId",
         "contentProviderId"
 })
-public class PasswordResetTokenRequest {
+public class PasswordResetTokenRequest extends BaseServiceRequest {
 
     protected String principal;
     protected String managedSysId;

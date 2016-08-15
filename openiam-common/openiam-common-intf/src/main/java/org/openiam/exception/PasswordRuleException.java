@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.pswd.rule;
+package org.openiam.exception;
 
 import java.util.LinkedList;
 import java.util.List;

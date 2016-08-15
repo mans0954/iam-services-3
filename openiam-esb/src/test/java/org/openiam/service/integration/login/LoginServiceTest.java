@@ -6,7 +6,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
+import org.openiam.srvc.user.LoginDataWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.service.integration.AbstractKeyServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;

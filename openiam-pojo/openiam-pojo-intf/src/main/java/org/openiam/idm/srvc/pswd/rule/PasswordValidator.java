@@ -20,14 +20,13 @@
  */
 package org.openiam.idm.srvc.pswd.rule;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.exception.PasswordRuleException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordRule;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
+
 import java.io.IOException;
 import java.util.List;
 /**

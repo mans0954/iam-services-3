@@ -10,7 +10,7 @@
  *   OpenIAM is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   Lesser GNU General Public License for more details.
+ *   GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with OpenIAM.  If not, see <http://www.gnu.org/licenses/>. *
@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.openiam.idm.srvc.auth.ws;
+package org.openiam.base.response;
 
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
@@ -28,36 +28,35 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import java.util.List;
 
 /**
- * Response object for a web service operation that returns a list of group objects
+ * Object representing a password in OpenIAM
  *
  * @author suneet
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "LoginListResponse", propOrder = {
-        "principalList"
+@XmlType(name = "ValidatePasswordResetTokenResponse", propOrder = {
+        "principal"
 })
-public class LoginListResponse extends Response {
+public class ValidatePasswordResetTokenResponse extends Response {
 
-    protected List<Login> principalList;
+    protected Login principal;
 
-    public LoginListResponse() {
+
+
+    public ValidatePasswordResetTokenResponse() {
         super();
     }
 
-    public LoginListResponse(ResponseStatus s) {
+    public ValidatePasswordResetTokenResponse(ResponseStatus s) {
         super(s);
     }
 
-    public List<Login> getPrincipalList() {
-        return principalList;
+    public Login getPrincipal() {
+        return principal;
     }
 
-    public void setPrincipalList(List<Login> principalList) {
-        this.principalList = principalList;
+    public void setPrincipal(Login principal) {
+        this.principal = principal;
     }
-
-
 }

@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.PasswordRuleException;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordRuleViolation", propOrder = { 

@@ -119,13 +119,13 @@
     </bean>
 
 
-    <bean id="loginServiceClient" class="org.openiam.idm.srvc.auth.ws.LoginDataWebService"
+    <bean id="loginServiceClient" class="org.openiam.srvc.user.LoginDataWebService"
           factory-bean="loginServiceFactory" factory-method="create" />
 
 
     <bean id="loginServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.idm.srvc.auth.ws.LoginDataWebService" />
+                  value="org.openiam.srvc.user.LoginDataWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}LoginDataWebService" />
     </bean>
@@ -149,13 +149,13 @@
                   value="${openiam.service_host}${openiam.connector.ws.path}AuthenticationService" />
     </bean>
 
-    <bean id="passwordServiceClient" class="org.openiam.idm.srvc.pswd.ws.PasswordWebService"
+    <bean id="passwordServiceClient" class="org.openiam.srvc.user.PasswordWebService"
           factory-bean="passwordServiceFactory" factory-method="create" />
 
 
     <bean id="passwordServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.idm.srvc.pswd.ws.PasswordWebService" />
+                  value="org.openiam.srvc.user.PasswordWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}PasswordWebService" />
     </bean>
@@ -247,13 +247,13 @@
     </bean>
 
     <bean id="challengeResponseServiceClient"
-          class="org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService"
+          class="org.openiam.srvc.user.ChallengeResponseWebService"
           factory-bean="challengeResponseServiceFactory" factory-method="create" />
 
 
     <bean id="challengeResponseServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService" />
+                  value="org.openiam.srvc.user.ChallengeResponseWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}ChallengeResponseWebService" />
     </bean>

@@ -20,7 +20,7 @@ import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
+import org.openiam.srvc.user.LoginDataWebService;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;

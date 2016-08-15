@@ -18,7 +18,7 @@
 /**
  * 
  */
-package org.openiam.idm.srvc.pswd.service;
+package org.openiam.srvc.user;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -39,6 +39,7 @@ import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
+import org.openiam.idm.srvc.pswd.service.ChallengeResponseService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,7 +52,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service("challengeResponse")
-@WebService(endpointInterface = "org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "ChallengeResponseWebServicePort", serviceName = "ChallengeResponseWebService")
+@WebService(endpointInterface = "org.openiam.srvc.user.ChallengeResponseWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "ChallengeResponseWebServicePort", serviceName = "ChallengeResponseWebService")
 public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebService {
 
 	@Autowired

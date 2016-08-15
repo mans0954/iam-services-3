@@ -35,8 +35,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.base.response.LoginResponse;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
@@ -101,8 +100,6 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     @Autowired
     @Qualifier("provisionConnectorWebService")
     private ProvisionConnectorWebService connectorService;
-    @Autowired
-    private LoginDataWebService loginDataWebService;
 	@Autowired
 	private LoginDataService loginManager;
     @Autowired
@@ -487,10 +484,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                     newUser.setSrcSystemId(mSys.getId());
                     // ADD Target user principal
                     newUser.getPrincipalList().add(l);
-                    LoginResponse loginResponse = loginDataWebService.getLoginByManagedSys(targetUserPrincipal,
-							BaseReconciliationCommand.OPENIAM_MANAGED_SYS_ID);
-                    if (loginResponse.isSuccess()) {
-                        newUser.getPrincipalList().add(loginResponse.getPrincipal());
+                    Login login = loginManager.getLoginDtoByManagedSys(targetUserPrincipal, BaseReconciliationCommand.OPENIAM_MANAGED_SYS_ID);
+                    if (login!=null) {
+                        newUser.getPrincipalList().add(login);
                     }
 
                     if(log.isDebugEnabled()) {

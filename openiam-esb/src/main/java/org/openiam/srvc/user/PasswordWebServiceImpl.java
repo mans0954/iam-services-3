@@ -19,18 +19,18 @@
 /**
  *
  */
-package org.openiam.idm.srvc.pswd.ws;
+package org.openiam.srvc.user;
 
 import javax.jws.WebService;
 
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
-import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
+import org.openiam.base.request.PasswordResetTokenRequest;
+import org.openiam.base.response.PasswordResetTokenResponse;
+import org.openiam.base.response.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
-import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
+import org.openiam.base.response.ValidatePasswordResetTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,26 +40,23 @@ import org.springframework.stereotype.Service;
  * @author suneet
  */
 @Service("passwordWS")
-@WebService(endpointInterface = "org.openiam.idm.srvc.pswd.ws.PasswordWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "PasswordWebServicePort", serviceName = "PasswordWebService")
+@WebService(endpointInterface = "org.openiam.srvc.user.PasswordWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "PasswordWebServicePort", serviceName = "PasswordWebService")
 public class PasswordWebServiceImpl implements PasswordWebService {
 
     @Autowired
     private PasswordService passwordDS;
 
-    public PasswordValidationResponse isPasswordValid(Password pswd)
-            throws ObjectNotFoundException {
+    public PasswordValidationResponse isPasswordValid(Password pswd) {
         return passwordDS.isPasswordValid(pswd);
     }
 
     @Override
-    public PasswordResetTokenResponse generatePasswordResetToken(
-            PasswordResetTokenRequest request) {
+    public PasswordResetTokenResponse generatePasswordResetToken(PasswordResetTokenRequest request) {
         return passwordDS.generatePasswordResetToken(request);
     }
 
     @Override
-    public ValidatePasswordResetTokenResponse validatePasswordResetToken(
-            String token) {
+    public ValidatePasswordResetTokenResponse validatePasswordResetToken(String token) {
         return passwordDS.validatePasswordResetToken(token);
     }
 

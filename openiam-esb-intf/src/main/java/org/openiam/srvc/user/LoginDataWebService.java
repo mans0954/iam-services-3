@@ -1,5 +1,7 @@
-package org.openiam.idm.srvc.auth.ws;
+package org.openiam.srvc.user;
 
+import org.openiam.base.response.LoginListResponse;
+import org.openiam.base.response.LoginResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.dto.Login;
