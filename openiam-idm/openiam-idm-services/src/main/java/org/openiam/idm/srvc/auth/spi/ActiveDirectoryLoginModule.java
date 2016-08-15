@@ -30,6 +30,7 @@ import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -123,6 +124,9 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         }
         if (lg.getIsLocked() != 0) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_LOCKED);
+        }
+        if (LoginStatusEnum.INACTIVE.equals(lg.getStatus())) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_DISABLED);
         }
         // checking if User is valid
         UserEntity user = userManager.getUser(lg.getUserId());
