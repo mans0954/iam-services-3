@@ -288,6 +288,18 @@ public class LdapV3 implements Directory {
         }
     }
 
+    @Override
+    public String readAttributeValue(ExtensibleObject extObject, String attributeName) {
+        if (extObject != null && CollectionUtils.isNotEmpty(extObject.getAttributes())) {
+            for(final ExtensibleAttribute attr : extObject.getAttributes()) {
+                if (attr.getName().equalsIgnoreCase(attributeName)) {
+                    return attr.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
     public void setAttributes(String name, Object obj) {
         objectMap.put(name, obj);
     }

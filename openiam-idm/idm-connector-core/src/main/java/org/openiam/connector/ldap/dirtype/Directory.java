@@ -58,4 +58,6 @@ public interface Directory {
 
     void updateSupervisorMembership(ManagedSysEntity managedSys, List<BaseAttribute> supervisorMembershipList, String identity, String identityDN,
                                     ManagedSystemObjectMatch matchObj, LdapContext ldapctx, ExtensibleObject obj);
+
+    String readAttributeValue(final ExtensibleObject extObject, final String attributeName);
 }
