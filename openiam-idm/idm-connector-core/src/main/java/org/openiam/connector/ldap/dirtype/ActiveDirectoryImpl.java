@@ -399,7 +399,7 @@ public class ActiveDirectoryImpl implements Directory {
         return readAttributeValue(extObject, PASSWORD_ATTRIBUTE);
     }
 
-    protected String readAttributeValue(final ExtensibleObject extObject, final String attributeName) {
+    public String readAttributeValue(final ExtensibleObject extObject, final String attributeName) {
         if (extObject != null && CollectionUtils.isNotEmpty(extObject.getAttributes())) {
             for(final ExtensibleAttribute attr : extObject.getAttributes()) {
                 if (attr.getName().equalsIgnoreCase(attributeName)) {
