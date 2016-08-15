@@ -121,11 +121,21 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         if (lg == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
-
+        if (lg.getIsLocked() != 0) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_LOCKED);
+        }
         // checking if User is valid
         UserEntity user = userManager.getUser(lg.getUserId());
         if (user == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
+        }
+
+        if (UserStatusEnum.DISABLED.equals(user.getSecondaryStatus())) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_DISABLED);
+        }
+
+        if (UserStatusEnum.LEAVE.equals(user.getStatus())) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
         }
 
         // Find user in target system
