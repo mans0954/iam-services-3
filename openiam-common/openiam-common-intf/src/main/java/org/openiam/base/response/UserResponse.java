@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.openiam.idm.srvc.user.ws;
+package org.openiam.base.response;
 
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
@@ -44,12 +44,10 @@ public class UserResponse extends Response {
 
     public UserResponse() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     public UserResponse(ResponseStatus s) {
         super(s);
-        // TODO Auto-generated constructor stub
     }
 
     public User getUser() {

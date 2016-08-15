@@ -43,7 +43,7 @@ import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
@@ -55,7 +55,7 @@ import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -124,8 +124,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     protected AttributeMapDozerConverter attributeMapDozerConverter;
 
     @Autowired
-    @Qualifier("groupWS")
-    private GroupDataWebService groupDataWebService;
+    private GroupDataService groupManager;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -145,7 +144,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     protected ConnectorAdapter connectorAdapter;
 
     @Autowired
-    protected ResourceDataService resourceDataService;
+    private ResourceService resourceService;
 
     @Autowired
     protected UserDataService userDataService;
@@ -186,10 +185,10 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             response = transactionTemplate.execute(new TransactionCallback<Response>() {
                 @Override
                 public Response doInTransaction(TransactionStatus status) {
-                    Group group = groupDataWebService.getGroup(identityDto.getReferredObjectId(), systemUserId);
+                    Group group = groupManager.getGroupDTO(identityDto.getReferredObjectId());
                     ProvisionGroup pGroup = new ProvisionGroup(group);
                     ManagedSysDto managedSys = managedSystemService.getManagedSys(identityDto.getManagedSysId());
-                    Resource res = resourceDataService.getResource(managedSys.getResourceId(), null);
+                    Resource res = resourceService.getResourceDTO(managedSys.getResourceId());
                     return provisioningIdentity(identityDto, pGroup, managedSys, res, false);
                 }
             });
@@ -910,7 +909,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             return response;
         }
 
-        Group groupDto = groupDataWebService.getGroup(groupId, null);
+        Group groupDto = groupManager.getGroupDTO(groupId);
 
         ProvisionGroup pGroup = new ProvisionGroup(groupDto);
         // SET PRE ATTRIBUTES FOR DEFAULT SYS SCRIPT
@@ -963,7 +962,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if (status == UserStatusEnum.REMOVE) {
             identityService.deleteIdentity(identityDto.getId());
             try {
-                groupDataWebService.deleteGroup(groupId,requesterId);
+                groupManager.deleteGroup(groupId);
             } catch (Exception e) {
                 e.printStackTrace();
                 response.setStatus(ResponseStatus.FAILURE);
@@ -974,7 +973,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             groupDto.setStatus(status.getValue());
             groupDto.setLastUpdatedBy(requesterId);
             groupDto.setLastUpdate(new Date(System.currentTimeMillis()));
-            groupDataWebService.saveGroup(groupDto, null);
+            groupManager.saveGroup(groupDto, null);
         }
         // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
 
@@ -1011,7 +1010,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         }
         // pre-processing
         String resourceId = mSys.getResourceId();
-        Resource res = resourceDataService.getResource(resourceId, null);
+        Resource res = resourceService.findResourceDtoById(resourceId, null);
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES, res);
 
         bindingMap.put("operation", "DELETE");
@@ -1231,7 +1230,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
 	@Override
 	public Response addResourceToGroup(final ProvisionGroup pGroup, String resourceId) {
-		final Resource res = resourceDataService.getResource(resourceId, null);
+		final Resource res = resourceService.getResourceDTO(resourceId);
 		res.setOperation(AttributeOperationEnum.ADD);
 		final Response response = new Response();
 		try {

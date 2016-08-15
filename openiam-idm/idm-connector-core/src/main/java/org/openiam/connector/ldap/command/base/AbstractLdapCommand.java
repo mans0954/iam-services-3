@@ -17,7 +17,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     public static final int PAGE_SIZE = 100;
 
     @Autowired
-    private ResourceDataService resourceDataService;
+    private ResourceService resourceDataService;
     protected String patternForCTRLCHAR = "[\u0000-\u001F]";
     public static final String DN_IDENTITY_MATCH_REGEXP = "{0}=(.*?)(?:,.*)*$";
     public static final String OU_ATTRIBUTE = "ou";
@@ -69,7 +69,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     }
 
     public Set<ResourceProp> getResourceAttributes(String resId) {
-        Resource r = resourceDataService.getResource(resId, null);
+        Resource r = resourceDataService.findResourceDtoById(resId, null);
         if (r != null) {
             return r.getResourceProps();
         }

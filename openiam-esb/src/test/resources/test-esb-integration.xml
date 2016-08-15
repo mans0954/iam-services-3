@@ -76,13 +76,13 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerWebService" />
     </bean>
 
-    <bean id="userServiceClient" class="org.openiam.idm.srvc.user.ws.UserDataWebService"
+    <bean id="userServiceClient" class="org.openiam.srvc.user.UserDataWebService"
           factory-bean="userServiceFactory" factory-method="create" />
 
 
     <bean id="userServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.idm.srvc.user.ws.UserDataWebService" />
+                  value="org.openiam.srvc.user.UserDataWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}UserDataService" />
     </bean>
@@ -108,12 +108,12 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}GroupProvisionService" />
     </bean>
 
-    <bean id="resourceServiceClient" class="org.openiam.idm.srvc.res.service.ResourceDataService"
+    <bean id="resourceServiceClient" class="org.openiam.srvc.am.ResourceDataService"
           factory-bean="resourceServiceFactory" factory-method="create" />
 
     <bean id="resourceServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.idm.srvc.res.service.ResourceDataService" />
+                  value="org.openiam.srvc.am.ResourceDataService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}ResourceDataWebService" />
     </bean>
@@ -208,13 +208,13 @@
     </bean>
 
     <!-- Audit Service -->
-    <bean id="auditServiceClient" class="org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService"
+    <bean id="auditServiceClient" class="org.openiam.srvc.audit.IdmAuditLogWebDataService"
           factory-bean="auditServiceFactory" factory-method="create" />
 
 
     <bean id="auditServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService" />
+                  value="org.openiam.srvc.audit.IdmAuditLogWebDataService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}AuditService" />
     </bean>
@@ -350,7 +350,7 @@
                   address="${openiam.service_host}${openiam.idm.ws.path}IdentityWebService" />
 
     <jaxws:client id="groupServiceClient"
-                  serviceClass="org.openiam.idm.srvc.grp.ws.GroupDataWebService"
+                  serviceClass="org.openiam.srvc.am.GroupDataWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}GroupDataWebService" />
 
     <jaxws:client id="sourceAdapterClient"

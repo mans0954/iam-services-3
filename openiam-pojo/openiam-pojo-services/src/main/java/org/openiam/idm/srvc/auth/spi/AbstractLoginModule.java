@@ -70,7 +70,6 @@ import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -124,9 +123,6 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     @Autowired
     @Qualifier("cryptor")
     protected Cryptor cryptor;
-
-    @Autowired
-    protected ResourceDataService resourceService;
 
     @Autowired
     protected PasswordService passwordManager;

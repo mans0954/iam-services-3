@@ -12,7 +12,6 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +21,10 @@ public class RemoveSupervisor extends AbstractActivitiJob {
 	
 	@Autowired
 	private UserDataService userDataService;
-	
+
 	@Autowired
-	@Qualifier("userWS")
-	private UserDataWebService userDataWebService;
+	@Qualifier("userManager")
+	private UserDataService userManager;
 	
 	@Autowired
 	@Qualifier("defaultProvision")
@@ -47,7 +46,7 @@ public class RemoveSupervisor extends AbstractActivitiJob {
         try {
 			if(superior != null && subordinate != null) {
 				final ProvisionUser pUser = new ProvisionUser(subordinate);
-				final List<User> superiors = userDataWebService.getSuperiors(subordinateId, -1, -1);
+				final List<User> superiors = userManager.getSuperiorsDto(subordinateId, -1, -1);
 				if(CollectionUtils.isNotEmpty(superiors)) {
 					superior.setOperation(AttributeOperationEnum.DELETE);
 					pUser.addSuperior(superior);

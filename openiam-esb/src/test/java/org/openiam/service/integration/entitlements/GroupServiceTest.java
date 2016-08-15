@@ -7,7 +7,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.srvc.am.GroupDataWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.service.integration.AbstractAttributeServiceTest;

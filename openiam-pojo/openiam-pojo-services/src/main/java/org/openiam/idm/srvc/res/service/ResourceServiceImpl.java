@@ -1,7 +1,6 @@
 package org.openiam.idm.srvc.res.service;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,7 +18,6 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.cache.CacheKeyEvictions;
-import org.openiam.cache.ResourceToResourcePropKeyGenerator;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
@@ -32,6 +30,7 @@ import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -48,7 +47,6 @@ import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
@@ -71,10 +69,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
-import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -150,11 +145,14 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     private RoleDataService roleService;
 
     @Autowired
+    protected AuditLogService auditLogService;
+
+    @Autowired
     private AccessRightDAO accessRightDAO;
     @Value("${org.openiam.ui.admin.right.id}")
     private String adminRightId;
 
-    private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
+    private static final Log log = LogFactory.getLog(ResourceServiceImpl.class);
 
     private ApplicationContext ac;
 
@@ -1026,5 +1024,379 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         } else {
             resourcePropDao.save(attribute);
         }
+    }
+    @Override
+    public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId,
+                                       final Set<String> rightIds, final Date startDate, final Date endDate){
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
+        Group group = groupDataService.getGroupDTO(groupId);
+        idmAuditLog.setTargetGroup(groupId, group.getName());
+        Resource resource = findResourceDtoById(resourceId, null);
+        idmAuditLog.setTargetResource(resourceId, resource.getName());
+
+        idmAuditLog.setAuditDescription(String.format("Add group: %s to resource: %s", groupId, resourceId));
+        try {
+            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
+            }
+
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+
+            this.addResourceGroup(resourceId, groupId, rightIds, startDate, endDate);
+            idmAuditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("Can't add group to resource resource", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
+        idmAuditLog.setAuditDescription(String.format("Remove group: %s from resource: %s", groupId, resourceId));
+
+        try {
+            final GroupEntity groupEntity = groupDataService.getGroup(groupId);
+            final ResourceEntity resourceEntity = this.findResourceById(resourceId);
+            if(groupEntity == null || resourceEntity == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+
+            idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+            idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+
+            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
+            }
+
+            this.deleteResourceGroup(resourceId, groupId);
+            idmAuditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("Can't delete group from resource", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response addUserToResource(final String resourceId, final String userId, final String requesterId,
+                                      final Set<String> rightIds, final Date startDate, final Date endDate) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
+        UserEntity userEntity = userDataService.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        ResourceEntity resourceEntity = this.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+
+        idmAuditLog.setAuditDescription(String.format("Add user %s to resource: %s", userId, resourceId));
+        try {
+            if (resourceId == null || userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
+            }
+
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+
+            userDataService.addUserToResource(userId, resourceId, rightIds, startDate, endDate);
+            idmAuditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("Can't add user to resource", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeUserFromResource(final String resourceId, final String userId, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
+        UserEntity userEntity = userDataService.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        ResourceEntity resourceEntity = this.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+
+        idmAuditLog.setAuditDescription(String.format("Remove user %s from resource: %s", userId, resourceId));
+        try {
+            if (resourceId == null || userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
+            }
+            userDataService.removeUserFromResource(userId, resourceId);
+            idmAuditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("Can't delete resource", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId,
+                                      final Set<String> rightIds, final Date startDate, final Date endDate) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
+
+        idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
+        try {
+            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
+            }
+
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+
+            final RoleEntity roleEntity = roleService.getRoleLocalized(roleId, requesterId, null);
+            if(roleEntity == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+
+            idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+            final ResourceEntity resourceEntity  = this.findResourceById(resourceId);
+            if(resourceEntity == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+            idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+
+            this.addResourceToRole(resourceId, roleId, rightIds, startDate, endDate);
+            idmAuditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("Can't add role to  resource", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
+        RoleEntity roleEntity = roleService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        ResourceEntity resourceEntity = this.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+        idmAuditLog.setAuditDescription(String.format("Remove role: %s from resource: %s", roleId, resourceId));
+        try {
+            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
+            }
+            this.deleteResourceRole(resourceId, roleId);
+            idmAuditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("Can't delete resource", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+    @Override
+    public Response addChildResource(final String resourceId,
+                                     final String childResourceId,
+                                     final String requesterId,
+                                     final Set<String> rights,
+                                     final Date startDate,
+                                     final Date endDate) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.ADD_CHILD_RESOURCE.value());
+        ResourceEntity resourceEntity = this.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+        ResourceEntity resourceEntityChild = this.findResourceById(childResourceId);
+        idmAuditLog.setTargetResource(childResourceId, resourceEntityChild.getName());
+
+        idmAuditLog.setAuditDescription(
+                String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
+        try {
+            this.validateResource2ResourceAddition(resourceId, childResourceId, rights, startDate, endDate);
+            this.addChildResource(resourceId, childResourceId, rights, startDate, endDate);
+            idmAuditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setResponseValue(e.getResponseValue());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("Can't add child resource", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.REMOVE_CHILD_RESOURCE.value());
+        ResourceEntity resourceEntity = this.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+        ResourceEntity resourceEntityChild = this.findResourceById(memberResourceId);
+        idmAuditLog.setTargetResource(memberResourceId, resourceEntityChild.getName());
+
+        idmAuditLog.setAuditDescription(
+                String.format("Remove child resource: %s from resource: %s", memberResourceId, resourceId));
+
+        try {
+            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(memberResourceId)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
+                        "Parent ResourceId or Child ResourceId is null");
+            }
+
+            this.deleteChildResource(resourceId, memberResourceId);
+            idmAuditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("Can't delete resource", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+
+    @Override
+    public Response deleteResource(final String resourceId, final String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (resourceId == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Resource ID is not specified");
+            }
+
+            this.validateResourceDeletion(resourceId);
+            this.deleteResource(resourceId);
+            //resourceService.deleteResourceWeb(resourceId, requesterId);
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setResponseValue(e.getResponseValue());
+        } catch (Throwable e) {
+            log.error("Can't delete resource", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response saveResourceWeb(final Resource resource, final String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+          /*resourceService.validate(resource);
+            final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
+            resourceService.save(entity, requesterId);*/
+
+            final ResourceEntity entity = this.saveResource(resource, requesterId);
+            response.setResponseValue(entity.getId());
+        } catch (BasicDataServiceException e) {
+            response.fail();
+            response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+        } catch (Throwable e) {
+            log.error("Can't save or update resource", e);
+            response.setErrorText(e.getMessage());
+            response.fail();
+        }
+        return response;
     }
 }

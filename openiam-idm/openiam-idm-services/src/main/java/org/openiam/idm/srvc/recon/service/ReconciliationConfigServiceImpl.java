@@ -23,55 +23,35 @@ package org.openiam.idm.srvc.recon.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.dozer.converter.ReconciliationConfigDozerConverter;
 import org.openiam.dozer.converter.ReconciliationSituationDozerConverter;
 import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
-import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
 import org.openiam.idm.searchbeans.ReconConfigSearchBean;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 import org.openiam.idm.srvc.recon.domain.ReconciliationSituationEntity;
 import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
-import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
-import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
-import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultRow;
-import org.openiam.idm.srvc.recon.result.dto.ReconcliationFieldComparatorByField;
-import org.openiam.idm.srvc.recon.util.Serializer;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.PrePostExecutor;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author suneet
@@ -89,7 +69,7 @@ public class ReconciliationConfigServiceImpl implements ReconciliationConfigServ
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
-    protected ResourceDataService resourceDataService;
+    protected ResourceService resourceService;
     @Autowired
     protected ManagedSystemObjectMatchDozerConverter objectMatchDozerConverter;
     @Autowired

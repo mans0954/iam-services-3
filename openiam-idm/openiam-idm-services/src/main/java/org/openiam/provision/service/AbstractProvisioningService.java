@@ -52,7 +52,6 @@ import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -103,7 +102,6 @@ import org.openiam.idm.srvc.pswd.service.PasswordPolicyProvider;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -200,8 +198,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     protected GroupDataService groupManager;
     @Autowired
     protected SysConfiguration sysConfiguration;
-    @Autowired
-    protected ResourceDataService resourceDataService;
     @Autowired
     protected OrganizationDataService orgManager;
     @Autowired
@@ -1726,7 +1722,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             for (final UserToResourceMembershipXref xref : pUser.getResources()) {
                 final AttributeOperationEnum operation = xref.getOperation();
                 final String resourceId = xref.getEntityId();
-                final Resource r = resourceDataService.getResource(resourceId, null);
+                final Resource r = resourceService.findResourceDtoById(resourceId, null);
                 if (operation == null) {
                     continue;
                 } else if (operation == AttributeOperationEnum.ADD) {

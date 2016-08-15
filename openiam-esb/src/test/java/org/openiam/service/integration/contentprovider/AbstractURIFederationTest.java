@@ -21,7 +21,7 @@ import org.openiam.am.srvc.dto.URIPatternSubstitution;
 import org.openiam.base.response.URIFederationResponse;
 import org.openiam.am.srvc.ws.AuthResourceAttributeWebService;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.srvc.am.ResourceDataService;
 import org.openiam.service.integration.AbstractServiceTest;
 import org.openiam.srvc.am.URIFederationWebService;
 import org.springframework.beans.factory.annotation.Autowired;

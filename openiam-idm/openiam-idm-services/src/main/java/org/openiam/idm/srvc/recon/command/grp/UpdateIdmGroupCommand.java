@@ -5,10 +5,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.service.ObjectProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -28,11 +28,10 @@ public class UpdateIdmGroupCommand extends BaseReconciliationGroupCommand {
     private ObjectProvisionService<ProvisionGroup> provisionService;
 
     @Autowired
-    @Qualifier("groupWS")
-    private GroupDataWebService groupDataService;
+    private GroupDataService groupDataService;
 
     @Autowired
-    private ResourceDataService resourceDataService;
+    private ResourceService resourceDataService;
 
     public UpdateIdmGroupCommand() {
     }

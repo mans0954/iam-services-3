@@ -10,7 +10,7 @@ import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -32,8 +32,7 @@ public class CreateIdmGroupCommand  extends BaseReconciliationGroupCommand {
     private ObjectProvisionService<ProvisionGroup> provisionService;
 
     @Autowired
-    @Qualifier("groupWS")
-    private GroupDataWebService groupDataWebService;
+    private GroupDataService groupManager;
 
     @Autowired
     @Qualifier("identityManager")
@@ -61,7 +60,7 @@ public class CreateIdmGroupCommand  extends BaseReconciliationGroupCommand {
 				pGroup.setSrcSystemId(mSysID);
 				int retval = executeScript(config.getScript(), attributes, pGroup);
                 if(retval == 0) {
-                    Response saveGroupResponse = groupDataWebService.saveGroup(pGroup, DEFAULT_REQUESTER_ID);
+                    Response saveGroupResponse = groupManager.saveGroup(pGroup, DEFAULT_REQUESTER_ID);
                     String groupId = (String)saveGroupResponse.getResponseValue();
                     IdentityDto identity = new IdentityDto();
                     identity.setIdentity(principal);
@@ -76,7 +75,7 @@ public class CreateIdmGroupCommand  extends BaseReconciliationGroupCommand {
                         for(String memberPrincipal : pGroup.getMembersIds()) {
                             UserEntity user = userManager.getUserByPrincipal(memberPrincipal, mSysID, false);
                             if(user != null) {
-                                Response response = groupDataWebService.addUserToGroup(groupId, user.getId(), DEFAULT_REQUESTER_ID, null, null, null);
+                                Response response = groupManager.addUserToGroup(groupId, user.getId(), DEFAULT_REQUESTER_ID, null, null, null);
                                 if(log.isDebugEnabled()) {
                                 	log.debug("User Member with principal = "+memberPrincipal+" was added to Group = "+identity.getIdentity() + " Managed Sys = "+identity.getManagedSysId() + ". \nResponse = "+response);
                                 }

@@ -23,13 +23,12 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -41,7 +40,7 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
     @Autowired
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     @Autowired
-    protected ResourceDataService resourceDataService;
+    protected ResourceService resourceDataService;
     @Autowired
     protected ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
@@ -140,7 +139,7 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
                 throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
                         "ResourceID is not defined in the ManagedSys Object");
 
-            final Resource res = resourceDataService.getResource(managedSys.getResource().getId(), null);
+            final Resource res = resourceDataService.findResourceDtoById(managedSys.getResource().getId(), null);
             if (res == null)
                 throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
                         "No resource for managed resource found");

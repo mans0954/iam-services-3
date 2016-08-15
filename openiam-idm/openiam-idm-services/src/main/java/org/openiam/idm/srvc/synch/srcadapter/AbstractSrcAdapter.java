@@ -1,7 +1,5 @@
 package org.openiam.idm.srvc.synch.srcadapter;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +10,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.SynchReviewDozerConverter;
@@ -24,11 +21,9 @@ import org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity;
 import org.openiam.idm.srvc.synch.domain.SynchReviewRecordValueEntity;
 import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.service.*;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
@@ -55,7 +50,8 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemAccount;
     @Autowired
-    protected UserDataWebService userDataWebService;
+    @Qualifier("userManager")
+    protected UserDataService userManager;
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
@@ -177,7 +173,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
     protected void setCurrentSuperiors(ProvisionUser pUser) {
         if (StringUtils.isNotEmpty(pUser.getId())) {
-            List<User> superiors = userDataWebService.getSuperiors(pUser.getId(), -1, -1);
+            List<User> superiors = userManager.getSuperiorsDto(pUser.getId(), -1, -1);
             if (CollectionUtils.isNotEmpty(superiors)) {
                 pUser.setSuperiors(new HashSet<User>(superiors));
             }

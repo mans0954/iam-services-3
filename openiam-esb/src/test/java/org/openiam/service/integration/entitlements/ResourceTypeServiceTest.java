@@ -6,7 +6,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.res.dto.ResourceType;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.srvc.am.ResourceDataService;
 import org.openiam.service.integration.AbstractKeyServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -19,7 +19,7 @@
 /**
  * 
  */
-package org.openiam.idm.srvc.user.ws;
+package org.openiam.srvc.user;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,8 +31,6 @@ import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -77,6 +75,9 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
+import org.openiam.base.response.UserResponse;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -88,13 +89,11 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  */
 @Service("userWS")
-@WebService(endpointInterface = "org.openiam.idm.srvc.user.ws.UserDataWebService",
+@WebService(endpointInterface = "org.openiam.srvc.user.UserDataWebService",
             targetNamespace = "urn:idm.openiam.org/srvc/user/service",
             serviceName = "UserDataWebService",
             portName = "UserDataWebServicePort")
-public class UserDataWebServiceImpl implements UserDataWebService {
-
-	private static final Log log = LogFactory.getLog(UserDataWebServiceImpl.class);
+public class UserDataWebServiceImpl extends AbstractApiService implements UserDataWebService {
 
     @Autowired
     private UserDataService userDataService;
@@ -142,6 +141,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Autowired
     private AccessRightProcessor accessRightProcessor;
+
+    public UserDataWebServiceImpl() {
+        super(OpenIAMQueue.UserQueue);
+    }
 
     @Override
     public Response addAddress(final Address val) {

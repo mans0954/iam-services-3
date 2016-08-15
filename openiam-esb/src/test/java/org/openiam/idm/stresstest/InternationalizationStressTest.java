@@ -3,16 +3,13 @@ package org.openiam.idm.stresstest;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.Resource;
-
 import org.apache.commons.lang.time.StopWatch;
-import org.junit.Assert;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.srvc.am.GroupDataWebService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.srvc.user.UserDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;

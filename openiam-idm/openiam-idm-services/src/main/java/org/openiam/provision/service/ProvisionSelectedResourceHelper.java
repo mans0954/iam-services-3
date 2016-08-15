@@ -96,7 +96,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                             for (String resId : resourceList) {
                                 // skip provisioning for resource if it in NotProvisioning
                                 // set
-                                Resource res = resourceDataService.getResource(resId, null);
+                                Resource res = resourceService.findResourceDtoById(resId, null);
                                 try {
                                     Map<String, Object> bindingMap = new HashMap<>();
                                     bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
@@ -125,7 +125,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                     sb.setFindInCache(true);
                                     sb.setResourceId(res.getId());
                                     sb.setName("ON_DELETE");
-                                    final List<ResourceProp> props = resourceDataService.findResourceProps(sb, 0, Integer.MAX_VALUE);
+                                    final List<ResourceProp> props = resourceService.findBeansDTO(sb, 0, Integer.MAX_VALUE);
                                     String onDeleteProp = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
                                     if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
                                         ProvisionDataContainer enableData = provisionResource(res, userEntity, new ProvisionUser(user), bindingMap,
@@ -217,7 +217,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             sb.setFindInCache(true);
             sb.setResourceId(res.getId());
             sb.setName("ON_DELETE");
-            final List<ResourceProp> props = resourceDataService.findResourceProps(sb, 0, Integer.MAX_VALUE);
+            final List<ResourceProp> props = resourceService.findBeansDTO(sb, 0, Integer.MAX_VALUE);
             String onDeleteProp = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
             if (StringUtils.isEmpty(onDeleteProp)) {
                 onDeleteProp = "DELETE";

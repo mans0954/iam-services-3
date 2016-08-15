@@ -16,7 +16,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.SupervisorDAO;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,9 +44,10 @@ public class AttestationInitializer {
 	
 	@Value("${org.openiam.idm.system.user.id}")
 	private String systemUserId;
-	
+
 	@Autowired
-	private UserDataWebService userService;
+	@Qualifier("userManager")
+	private UserDataService userManager;
 
 	public void initializeAttestation() {
 		final StopWatch sw = new StopWatch();
@@ -54,8 +55,8 @@ public class AttestationInitializer {
 		final Set<String> employeeIds = supervisorDAO.getUniqueEmployeeIds();
 		if(CollectionUtils.isNotEmpty(employeeIds)) {
 			for(final String employeeId : employeeIds) {
-				final User user = userService.getUserWithDependent(employeeId,systemUserId,false);
-				final List<User> supervisords = userService.getSuperiors(employeeId, 0, Integer.MAX_VALUE);
+				final User user = userManager.getUserDto(employeeId, systemUserId, false);
+				final List<User> supervisords = userManager.getSuperiorsDto(employeeId, 0, Integer.MAX_VALUE);
 				final Set<String> supervisorIds = new HashSet<String>();
 				if(CollectionUtils.isEmpty(supervisords)) {
 					LOG.info(String.format("Employee %s has no supervisor", employeeId));

@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.user.ws;
+package org.openiam.srvc.user;
 
 import java.util.Date;
 import java.util.List;
@@ -8,6 +8,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.openiam.base.response.UserResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
@@ -20,10 +21,6 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.dto.*;
-
-//import org.openiam.idm.srvc.continfo.service.AddressDAO;
-//import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
-//import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 
 /**
  * WebService interface that clients will access to gain information about users
@@ -127,7 +124,7 @@ public interface UserDataWebService {
      * @return a UserAttribute object, or null if not found
      */
     @WebMethod
-    public UserAttribute getAttribute(@WebParam(name = "id", targetNamespace = "") String attrId);
+    public UserAttribute getAttribute(@WebParam(name = "id", targetNamespace = "") String id);
 
     /**
      * Removes a UserAttribute with the specified ID
@@ -137,7 +134,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response removeAttribute(@WebParam(name = "attr", targetNamespace = "") String attrId);
+    public Response removeAttribute(@WebParam(name = "id", targetNamespace = "") String id);
 
     /**
      * gets all UserAttributes associated with this User
@@ -286,7 +283,7 @@ public interface UserDataWebService {
     /**
      * Get a Phone record by it's ID
      * 
-     * @param addressId
+     * @param phoneId
      *            - the ID of the phone
      * @return the Phone record, or null if not found
      */

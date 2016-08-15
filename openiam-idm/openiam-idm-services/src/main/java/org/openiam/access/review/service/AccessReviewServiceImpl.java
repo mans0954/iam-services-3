@@ -28,12 +28,11 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
 import org.openiam.idm.srvc.res.dto.ResourceType;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -50,7 +49,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     @Autowired
     private ManagedSystemService managedSystemService;
     @Autowired
-    private ResourceDataService resourceService;
+    private ResourceService resourceService;
     @Autowired
     @Qualifier("activitiBPMService")
     private ActivitiService activitiService;
@@ -184,7 +183,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
 
     private Map<String, ResourceType> getResourceTypeMap(final Language language){
         Map<String, ResourceType> resourceTypeMap = new HashMap<String, ResourceType>();
-        final List<org.openiam.idm.srvc.res.dto.ResourceType> resourceTypeList = resourceService.getAllResourceTypes(language);
+        final List<org.openiam.idm.srvc.res.dto.ResourceType> resourceTypeList = resourceService.getAllResourceTypesDto(language);
 
         if (CollectionUtils.isNotEmpty(resourceTypeList)) {
             for(ResourceType resourceType : resourceTypeList){

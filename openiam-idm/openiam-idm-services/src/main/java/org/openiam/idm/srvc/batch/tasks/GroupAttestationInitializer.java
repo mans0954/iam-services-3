@@ -5,7 +5,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.SetStringResponse;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.ActivitiService;
 import org.openiam.bpm.dto.BasicWorkflowResponse;
@@ -14,7 +13,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,9 +43,6 @@ public class GroupAttestationInitializer {
 
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
-
-    @Autowired
-    private UserDataWebService userService;
 
     @Autowired
     @Qualifier("groupManager")

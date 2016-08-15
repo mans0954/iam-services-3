@@ -11,7 +11,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,8 +19,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class AddSupervisor extends AbstractActivitiJob {
 	
 	@Autowired
-	@Qualifier("userWS")
-	private UserDataWebService userDataWebService;
+	@Qualifier("userManager")
+	private UserDataService userManager;
+
 	
 	public AddSupervisor() {
 		super();
@@ -39,7 +40,7 @@ public class AddSupervisor extends AbstractActivitiJob {
 			if(superior != null && subordinate != null) {
 				idmAuditLog.setTargetUser(subordinate.getId(), null);
 				final ProvisionUser pUser = new ProvisionUser(subordinate);
-				List<User> superiors = userDataWebService.getSuperiors(subordinateId, -1, -1);
+				List<User> superiors = userManager.getSuperiorsDto(subordinateId, -1, -1);
 				superiors = (superiors != null) ? superiors : new LinkedList<User>();
 				superior.setOperation(AttributeOperationEnum.ADD);
 				superiors.add(superior);

@@ -7,13 +7,13 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class SaveResourceDelegate extends AbstractActivitiJob {
 	
 	@Autowired
-	private ResourceDataService resourceService;
+	private ResourceService resourceService;
 	
 	public SaveResourceDelegate() {
 		super();
@@ -31,7 +31,7 @@ public class SaveResourceDelegate extends AbstractActivitiJob {
             idmAuditLog.setAuditDescription("Edit resource");
         }
         try {
-            final Response response = resourceService.saveResource(resource, getRequestorId(execution));
+            final Response response = resourceService.saveResourceWeb(resource, getRequestorId(execution));
             if (response.isSuccess()) {
                 String resourceId = (String) response.getResponseValue();
                 idmAuditLog.setTargetResource(resourceId, resource.getName());

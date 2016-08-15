@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.audit.ws;
+package org.openiam.srvc.audit;
 
 import java.util.List;
 

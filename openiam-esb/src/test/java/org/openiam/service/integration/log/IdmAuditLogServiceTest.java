@@ -7,10 +7,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService;
 import org.openiam.service.integration.AbstractServiceTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.annotations.Test;
 
 public class IdmAuditLogServiceTest extends AbstractServiceTest {

@@ -1,23 +1,19 @@
 package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.openiam.access.review.model.AccessViewResponse;
-import org.openiam.access.review.service.AccessReviewService;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class DeleteResourceDelegate extends AbstractActivitiJob {
 	
 	@Autowired
-	private ResourceDataService resourceService;
+	private ResourceService resourceService;
 
 	public DeleteResourceDelegate() {
 		super();

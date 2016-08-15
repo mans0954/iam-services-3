@@ -18,7 +18,7 @@ import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.pswd.ws.PasswordWebService;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.srvc.am.ResourceDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.PasswordSync;

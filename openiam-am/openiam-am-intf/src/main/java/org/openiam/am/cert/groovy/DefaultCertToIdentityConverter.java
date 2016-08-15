@@ -14,9 +14,10 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class DefaultCertToIdentityConverter {
 	
@@ -28,9 +29,10 @@ public class DefaultCertToIdentityConverter {
 	
 	@Autowired
 	protected LoginDataWebService loginDataWebService;
-	
+
 	@Autowired
-	protected UserDataWebService userDataService;
+	@Qualifier("userManager")
+	protected UserDataService userManager;
 	
 	@Autowired
 	protected SysConfiguration sysConfiguration;

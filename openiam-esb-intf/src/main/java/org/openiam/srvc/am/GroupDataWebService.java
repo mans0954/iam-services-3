@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.grp.ws;
+package org.openiam.srvc.am;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;

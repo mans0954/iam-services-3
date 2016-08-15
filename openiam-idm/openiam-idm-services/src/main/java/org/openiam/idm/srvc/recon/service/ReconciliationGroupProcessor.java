@@ -22,12 +22,11 @@ import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -42,7 +41,7 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
@@ -66,7 +65,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     private static final Log log = LogFactory.getLog(ReconciliationGroupProcessor.class);
 
     @Autowired
-    private ResourceDataService resourceDataService;
+    private ResourceService resourceDataService;
 
     @Autowired
     @Qualifier("managedSysService")
@@ -81,8 +80,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     private ScriptIntegration scriptRunner;
 
     @Autowired
-    @Qualifier("groupWS")
-    private GroupDataWebService groupDataWebService;
+    private GroupDataService groupDataWebService;
 
     @Autowired
     private ConnectorAdapter connectorAdapter;
@@ -118,7 +116,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 	        log.debug("Reconciliation started for configId=" + config.getId() + " - resource="
 	                + config.getResourceId());
     	}
-        Resource res = resourceDataService.getResource(config.getResourceId(), null);
+        Resource res = resourceDataService.findResourceDtoById(config.getResourceId(), null);
 
         ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
 		if (mSys == null) {
@@ -178,7 +176,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         List<String> processedGroupIds = new ArrayList<String>();
 
         if (searchBean != null) {
-            List<Group> idmGroups = groupDataWebService.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
+            List<Group> idmGroups = groupDataWebService.findDtoBeans(searchBean, null, 0, Integer.MAX_VALUE);
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Starting processing '" + idmGroups.size()
                     + "' users from Repository to " + mSys.getName());
             int counter = 0;
@@ -482,7 +480,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                     // processed
                     return targetGroupPrincipal;
                 }
-                Group gr = groupDataWebService.getGroup(grp.getId(), null);
+                Group gr = groupDataWebService.getGroupDTOLocalize(grp.getId(), null);
 
                 IdentityDto identityDto = identityService.getIdentityByManagedSys(gr.getId(), mSys.getId());
                 if (identityDto == null) {

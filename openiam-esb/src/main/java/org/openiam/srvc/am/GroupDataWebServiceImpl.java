@@ -1,17 +1,15 @@
-package org.openiam.idm.srvc.grp.ws;
+package org.openiam.srvc.am;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -20,21 +18,17 @@ import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.GroupAttributeDozerConverter;
 import org.openiam.dozer.converter.GroupDozerConverter;
-import org.openiam.dozer.converter.LanguageDozerConverter;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
-import org.openiam.idm.srvc.grp.dto.GroupOwner;
 import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -46,6 +40,9 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.srvc.AbstractApiService;
+import org.openiam.srvc.audit.IdmAuditLogWebDataService;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,9 +60,9 @@ import org.springframework.transaction.annotation.Transactional;
  * @version 2.0
  */
 
-@WebService(endpointInterface = "org.openiam.idm.srvc.grp.ws.GroupDataWebService", targetNamespace = "urn:idm.openiam.org/srvc/grp/service", portName = "GroupDataWebServicePort", serviceName = "GroupDataWebService")
+@WebService(endpointInterface = "org.openiam.srvc.am.GroupDataWebService", targetNamespace = "urn:idm.openiam.org/srvc/grp/service", portName = "GroupDataWebServicePort", serviceName = "GroupDataWebService")
 @Service("groupWS")
-public class GroupDataWebServiceImpl extends AbstractBaseService implements GroupDataWebService {
+public class GroupDataWebServiceImpl extends AbstractApiService implements GroupDataWebService {
     @Autowired
     private GroupDataService groupManager;
 
@@ -81,8 +78,6 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Autowired
     private GroupAttributeDozerConverter groupAttributeDozerConverter;
 
-    private static final Log log = LogFactory.getLog(GroupDataWebServiceImpl.class);
-
     @Autowired
     protected SysConfiguration sysConfiguration;
 
@@ -95,11 +90,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Autowired
     private AccessRightProcessor accessRightProcessor;
     @Autowired
-    @Qualifier("groupEntityValidator")
-    private EntityValidator groupEntityValidator;
+    private IdmAuditLogWebDataService auditLogService;
 
     public GroupDataWebServiceImpl() {
-
+        super(OpenIAMQueue.GroupQueue);
     }
 
     protected Language getDefaultLanguage() {
@@ -166,31 +160,12 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 			}
 		}
 
-        entityValidator.isValid(groupDozerConverter.convertToEntity(entity, true));
+        groupManager.isValid(groupDozerConverter.convertToEntity(entity, true));
     }
 
     @Override
     public Response saveGroup(final Group group, final String requesterId) {
-
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            validate(group);
-            final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
-            groupManager.saveGroup(entity, group.getOwner(), requesterId);
-            response.setResponseValue(entity.getId());
-        } catch (BasicDataServiceException e) {
-            log.error("Error save", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-            response.setErrorTokenList(e.getErrorTokenList());
-        } catch (Throwable e) {
-            log.error("Can't save", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
-            response.addErrorToken(new EsbErrorToken(e.getMessage()));
-        }
-        return response;
+        return groupManager.saveGroup(group, requesterId);
     }
 
     @Override
@@ -306,43 +281,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     							   final Set<String> rightIds,
     							   final Date startDate,
     							   final Date endDate) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-        auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
-        UserEntity user = userManager.getUser(userId);
-        LoginEntity userPrimaryIdentity =  UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
-        auditLog.setTargetUser(userId,userPrimaryIdentity.getLogin());
-        GroupEntity groupEntity = groupManager.getGroup(groupId);
-        auditLog.setTargetGroup(groupId, groupEntity.getName());
-        auditLog.setRequestorUserId(requesterId);
-        auditLog.setAuditDescription(String.format("Add user %s to group: %s", userId, groupId));
-        try {
-            if (groupId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
-            }
-            
-            if(startDate != null && endDate != null && startDate.after(endDate)) {
-            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
-            }
-
-            userManager.addUserToGroup(userId, groupId, rightIds, startDate, endDate);
-            auditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-            auditLog.fail();
-            auditLog.setFailureReason(e.getCode());
-            auditLog.setException(e);
-        } catch (Throwable e) {
-            log.error("Error while adding user to group", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            auditLog.fail();
-            auditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(auditLog);
-        }
-        return response;
+        return groupManager.addUserToGroup(groupId, userId, requesterId, rightIds, startDate, endDate);
     }
 
     @Override
@@ -378,7 +317,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             auditLog.fail();
             auditLog.setException(e);
         } finally {
-            auditLogService.enqueue(auditLog);
+            auditLogService.addLog(auditLog);
         }
         return response;
     }
@@ -416,7 +355,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             auditLog.fail();
             auditLog.setException(e);
         } finally {
-            auditLogService.enqueue(auditLog);
+            auditLogService.addLog(auditLog);
         }
         return response;
     }
@@ -446,7 +385,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             auditLog.fail();
             auditLog.setException(e);
         } finally {
-            auditLogService.enqueue(auditLog);
+            auditLogService.addLog(auditLog);
         }
         return response;
     }
@@ -581,95 +520,14 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     							  final Set<String> rights,
     							  final Date startDate,
    							   	  final Date endDate) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-        auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
-        //GroupEntity groupEntity = groupManager.getGroup(groupId);
-        //auditLog.setTargetGroup(groupId, groupEntity.getName());
-        //GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
-        //auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
-        auditLog.setRequestorUserId(requesterId);
-        auditLog.setAuditDescription(String.format("Add child group: %s to group: %s", childGroupId, groupId));
 
-        try {
-        	if(startDate != null && endDate != null && startDate.after(endDate)) {
-            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
-            }
-        	
-        	GroupEntity groupEntity = groupManager.getGroupLocalize(groupId, null);
-        	GroupEntity groupEntityChild = groupManager.getGroupLocalize(childGroupId, null);
-        	if(groupEntity == null || groupEntityChild == null) {
-        		throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-        	}
-        	
-        	auditLog.setTargetGroup(groupId, groupEntity.getName());
-            auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
-        	
-            if (groupId == null || childGroupId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or child groupId is null");
-            }
-
-            if (groupId.equals(childGroupId)) {
-                throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD,
-                        "Cannot add group itself as child");
-            }
-
-            groupManager.validateGroup2GroupAddition(groupId, childGroupId, rights, startDate, endDate);
-            groupManager.addChildGroup(groupId, childGroupId, rights, startDate, endDate);
-            auditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-            auditLog.fail();
-            auditLog.setFailureReason(e.getCode());
-            auditLog.setException(e);
-        } catch (Throwable e) {
-            log.error("can't add child group", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            auditLog.fail();
-            auditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(auditLog);
-        }
-        return response;
+        return groupManager.addChildGroup(groupId, childGroupId, requesterId, rights, startDate, endDate);
     }
 
     @Override
     @WebMethod
     public Response removeChildGroup(final String groupId, final String childGroupId, final String requesterId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-        auditLog.setAction(AuditAction.REMOVE_CHILD_GROUP.value());
-        Group groupDto = groupManager.getGroupDTO(groupId);
-        auditLog.setTargetGroup(groupId, groupDto.getName());
-        Group groupChild = groupManager.getGroupDTO(childGroupId);
-        auditLog.setTargetGroup(childGroupId, groupChild.getName());
-        auditLog.setRequestorUserId(requesterId);
-        auditLog.setAuditDescription(String.format("Remove child group: %s from group: %s", childGroupId, groupId));
-
-        try {
-            if (groupId == null || childGroupId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or child groupId is null");
-            }
-
-            groupManager.removeChildGroup(groupId, childGroupId);
-            auditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-            auditLog.fail();
-            auditLog.setFailureReason(e.getCode());
-            auditLog.setException(e);
-        } catch (Throwable e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            auditLog.fail();
-            auditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(auditLog);
-        }
-        return response;
+        return groupManager.removeChildGroup(groupId, childGroupId, requesterId);
     }
 
     @Override
@@ -791,7 +649,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         }finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogService.addLog(idmAuditLog);
         }
         return response;
     }

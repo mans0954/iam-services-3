@@ -1,14 +1,12 @@
-package org.openiam.idm.srvc.res.service;
+package org.openiam.srvc.am;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,20 +14,17 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.cache.CacheKeyEvict;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -37,27 +32,27 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.dto.ResourceType;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.srvc.AbstractApiService;
+import org.openiam.srvc.audit.IdmAuditLogWebDataService;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("resourceDataService")
-@WebService(endpointInterface = "org.openiam.idm.srvc.res.service.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
-public class ResourceDataServiceImpl extends AbstractBaseService implements ResourceDataService {
+@WebService(endpointInterface = "org.openiam.srvc.am.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
+public class ResourceDataServiceImpl extends AbstractApiService implements ResourceDataService {
 
     @Autowired
     private ResourceDozerConverter resourceConverter;
@@ -85,7 +80,15 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Autowired
     private AccessRightProcessor accessRightProcessor;
 
+
+    @Autowired
+    private IdmAuditLogWebDataService auditLogService;
+
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
+
+    public ResourceDataServiceImpl() {
+        super(OpenIAMQueue.ResourceQueue);
+    }
 
     @Override
     public List<ResourceProp> findResourceProps(final ResourcePropSearchBean sb, final int from, final int size) {
@@ -209,25 +212,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     public Response saveResourceType(ResourceType resourceType, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setAction(AuditAction.SAVE_RESOURCE.value());
-        idmAuditLog.setRequestorUserId(requesterId);
-        if (StringUtils.isBlank(resourceType.getId())) {
-            idmAuditLog.setAction(AuditAction.ADD_RESOURCE.value());
-        }
         try {
             final ResourceTypeEntity entity = resourceTypeConverter.convertToEntity(resourceType, false);
             resourceService.save(entity);
             response.setResponseValue(entity.getId());
-            idmAuditLog.succeed();
         } catch (Throwable e) {
             log.error("Can't save or update resource Type", e);
             response.setErrorText(e.getMessage());
             response.setStatus(ResponseStatus.FAILURE);
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -276,7 +268,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogService.addLog(idmAuditLog);
         }
         return response;
     }
@@ -290,43 +282,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                                       final Set<String> rightIds,
                                       final Date startDate,
                                       final Date endDate) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
-        UserEntity userEntity = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
-        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
-        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-
-        idmAuditLog.setAuditDescription(String.format("Add user %s to resource: %s", userId, resourceId));
-        try {
-            if (resourceId == null || userId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
-            }
-
-            if(startDate != null && endDate != null && startDate.after(endDate)) {
-                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
-            }
-
-            userDataService.addUserToResource(userId, resourceId, rightIds, startDate, endDate);
-            idmAuditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
-        } catch (Throwable e) {
-            log.error("Can't add user to resource", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
-        return response;
+        return resourceService.addUserToResource(resourceId, userId, requesterId, rightIds, startDate, endDate);
     }
 
     @Override
@@ -348,26 +304,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     public Response deleteResource(final String resourceId, final String requesterId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (resourceId == null) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Resource ID is not specified");
-            }
-
-            resourceService.validateResourceDeletion(resourceId);
-            resourceService.deleteResource(resourceId);
-            //resourceService.deleteResourceWeb(resourceId, requesterId);
-
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setResponseValue(e.getResponseValue());
-        } catch (Throwable e) {
-            log.error("Can't delete resource", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
+        return resourceService.deleteResource(resourceId, requesterId);
     }
 
     @Override
@@ -396,7 +333,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogService.addLog(idmAuditLog);
         }
         return response;
     }
@@ -445,166 +382,23 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     								 final Set<String> rights,
     								 final Date startDate,
    								  	 final Date endDate) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.ADD_CHILD_RESOURCE.value());
-        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-        ResourceEntity resourceEntityChild = resourceService.findResourceById(childResourceId);
-        idmAuditLog.setTargetResource(childResourceId, resourceEntityChild.getName());
-
-        idmAuditLog.setAuditDescription(
-                        String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
-        try {
-            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights, startDate, endDate);
-            resourceService.addChildResource(resourceId, childResourceId, rights, startDate, endDate);
-            idmAuditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setResponseValue(e.getResponseValue());
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
-        } catch (Throwable e) {
-            log.error("Can't add child resource", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
-        return response;
+        return resourceService.addChildResource(resourceId, childResourceId, requesterId, rights, startDate, endDate);
     }
 
     @Override
     public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.REMOVE_CHILD_RESOURCE.value());
-        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-        ResourceEntity resourceEntityChild = resourceService.findResourceById(memberResourceId);
-        idmAuditLog.setTargetResource(memberResourceId, resourceEntityChild.getName());
-
-        idmAuditLog.setAuditDescription(
-                        String.format("Remove child resource: %s from resource: %s", memberResourceId, resourceId));
-
-        try {
-            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(memberResourceId)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
-                        "Parent ResourceId or Child ResourceId is null");
-            }
-
-            resourceService.deleteChildResource(resourceId, memberResourceId);
-            idmAuditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
-        } catch (Throwable e) {
-            log.error("Can't delete resource", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
-        return response;
+        return resourceService.deleteChildResource(resourceId, memberResourceId, requesterId);
     }
 
     @Override
-    public Response addGroupToResource(final String resourceId, 
-    								   final String groupId, 
-    								   final String requesterId, 
-    								   final Set<String> rightIds,
-    								   final Date startDate,
-     								   final Date endDate) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
-        Group group = groupDataService.getGroupDTO(groupId);
-        idmAuditLog.setTargetGroup(groupId, group.getName());
-        Resource resource = getResource(resourceId, null);
-        idmAuditLog.setTargetResource(resourceId, resource.getName());
-
-        idmAuditLog.setAuditDescription(String.format("Add group: %s to resource: %s", groupId, resourceId));
-        try {
-            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
-            }
-            
-            if(startDate != null && endDate != null && startDate.after(endDate)) {
-            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
-            }
-
-            resourceService.addResourceGroup(resourceId, groupId, rightIds, startDate, endDate);
-            idmAuditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
-        } catch (Throwable e) {
-            log.error("Can't add group to resource resource", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
-        return response;
+    public Response addGroupToResource(final String resourceId, final String groupId,  final String requesterId,
+    								   final Set<String> rightIds, final Date startDate, final Date endDate) {
+        return resourceService.addGroupToResource(resourceId, groupId, requesterId, rightIds, startDate, endDate);
     }
 
     @Override
     public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
-        idmAuditLog.setAuditDescription(String.format("Remove group: %s from resource: %s", groupId, resourceId));
-
-        try {
-            final GroupEntity groupEntity = groupDataService.getGroup(groupId);
-            final ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
-            if(groupEntity == null || resourceEntity == null) {
-            	throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-            
-            idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
-            idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-        	
-            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
-            }
-
-            resourceService.deleteResourceGroup(resourceId, groupId);
-            idmAuditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
-        } catch (Throwable e) {
-            log.error("Can't delete group from resource", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
-        return response;
+        return resourceService.removeGroupToResource(resourceId, groupId, requesterId);
     }
 
     @Override
@@ -614,51 +408,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     								  final Set<String> rightIds,
     								  final Date startDate,
     								  final Date endDate) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
-        
-        idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
-        try {
-            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
-            }
-            
-            if(startDate != null && endDate != null && startDate.after(endDate)) {
-            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
-            }
-            
-            final RoleEntity roleEntity = roleService.getRoleLocalized(roleId, requesterId, null);
-            if(roleEntity == null) {
-            	throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-            
-            idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-            final ResourceEntity resourceEntity  = resourceService.findResourceById(resourceId);
-            if(resourceEntity == null) {
-            	throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-            idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
 
-            resourceService.addResourceToRole(resourceId, roleId, rightIds, startDate, endDate);
-            idmAuditLog.succeed();
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
-        } catch (Throwable e) {
-            log.error("Can't add role to  resource", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
-        return response;
+        return resourceService.addRoleToResource(resourceId, roleId, requesterId, rightIds, startDate, endDate);
     }
 
     @Override
@@ -691,7 +442,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogService.addLog(idmAuditLog);
         }
         return response;
     }

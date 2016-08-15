@@ -2,79 +2,42 @@ package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.*;
-import org.openiam.exception.BasicDataServiceException;
-import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
-import org.openiam.idm.srvc.grp.service.GroupDAO;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
-import org.openiam.idm.srvc.org.service.OrganizationAttributeDAO;
-import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.res.service.ResourcePropDAO;
-import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.service.RoleAttributeDAO;
-import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.srcadapter.*;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.thread.Sweepable;
-import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jms.core.BrowserCallback;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PostConstruct;
-import javax.jms.*;
-import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.OutputKeys;
@@ -83,8 +46,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.beans.XMLEncoder;
-import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -101,13 +62,14 @@ public class SourceAdapterDispatcher implements Runnable {
     @Autowired
     private ProvisioningDataService provisioningDataService;
     @Autowired
-    private UserDataWebService userDataService;
+    @Qualifier("userManager")
+    protected UserDataService userManager;
     @Autowired
-    private GroupDataWebService groupDataWebService;
+    private GroupDataService groupDataService;
     @Autowired
     private RoleDataWebService roleDataWebService;
     @Autowired
-    private ResourceDataService resourceDataService;
+    private ResourceService resourceDataService;
     @Autowired
     private OrganizationDataService organizationDataService;
     @Autowired
@@ -419,7 +381,7 @@ public class SourceAdapterDispatcher implements Runnable {
             sp.setValue(request.getEmployeeId());
             usb.setEmployeeIdMatchToken(sp);
             usb.setDeepCopy(true);
-            List<User> users = userDataService.findBeans(usb, 0, 2);
+            List<User> users = userManager.findBeansDto(usb, 0, 2);
             if (CollectionUtils.isNotEmpty(users)) {
                 if (users.size() == 1) {
                     u = users.get(0);
@@ -583,7 +545,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     GroupSearchBean gsb = new GroupSearchBean();
                     gsb.setName(group.getName());
                     gsb.setManagedSysId(group.getManagedSystemId());
-                    List<Group> dbGroups = groupDataWebService.findBeans(gsb, requestorId, -1, -1);
+                    List<Group> dbGroups = groupDataService.findDtoBeans(gsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbGroups)) {
                         if (dbGroups.size() > 1) {
                             warnings.append(this.getWarning("Not unique name. Skip it. Group Name=" + group.getName()));
@@ -844,7 +806,7 @@ public class SourceAdapterDispatcher implements Runnable {
             boolean isFound = false;
             List<User> superiorsFromDB = null;
             if (pUser.getId() != null) {
-                superiorsFromDB = userDataService.getSuperiors(pUser.getId(), 0, Integer.MAX_VALUE);
+                superiorsFromDB = userManager.getSuperiorsDto(pUser.getId(), 0, Integer.MAX_VALUE);
             }
             if (CollectionUtils.isNotEmpty(superiorsFromDB)) {
                 pUser.setSuperiors(new HashSet<User>(superiorsFromDB));
@@ -966,7 +928,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 if (!isFound) {
                     ResourceSearchBean rsb = new ResourceSearchBean();
                     rsb.setName(resource.getName());
-                    List<Resource> dbResource = resourceDataService.findBeans(rsb, -1, -1, null);
+                    List<Resource> dbResource = resourceDataService.findBeansLocalizedDto(rsb, -1, -1, null);
                     if (CollectionUtils.isNotEmpty(dbResource)) {
                         if (dbResource.size() > 1) {
                             warnings.append(this.getWarning("Not unique name. Skip it. Resource Name=" + resource.getName()));
@@ -1207,7 +1169,7 @@ public class SourceAdapterDispatcher implements Runnable {
             searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         }
         searchBean.setDeepCopy(true);
-        List<User> userList = userDataService.findBeans(searchBean, 0, Integer.MAX_VALUE);
+        List<User> userList = userManager.findBeansDto(searchBean, 0, Integer.MAX_VALUE);
         if (CollectionUtils.isNotEmpty(userList)) {
             if (userList.size() > 1) {
                 throw new Exception("Identifier not unique=" + matchAttrName + ":" + matchAttrValue);

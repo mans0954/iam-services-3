@@ -2,11 +2,9 @@ package org.openiam.service.integration.provisioning;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.UserSearchBean;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.srvc.am.GroupDataWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;

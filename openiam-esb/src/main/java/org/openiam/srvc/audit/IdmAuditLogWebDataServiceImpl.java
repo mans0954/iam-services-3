@@ -18,7 +18,7 @@
 /**
  * 
  */
-package org.openiam.idm.srvc.audit.ws;
+package org.openiam.srvc.audit;
 
 import java.util.List;
 
@@ -34,6 +34,8 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,16 +43,20 @@ import org.springframework.stereotype.Service;
  * @author suneet
  *
  */
-@WebService(endpointInterface = "org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService", targetNamespace = "urn:idm.openiam.org/srvc/audit/service", portName = "AuditWebServicePort", serviceName = "AuditService")
+@WebService(endpointInterface = "org.openiam.srvc.audit.IdmAuditLogWebDataService", targetNamespace = "urn:idm.openiam.org/srvc/audit/service", portName = "AuditWebServicePort", serviceName = "AuditService")
 @Service("auditWS")
-public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService {
+public class IdmAuditLogWebDataServiceImpl extends AbstractApiService implements IdmAuditLogWebDataService {
 	
 	@Autowired
 	private AuditLogService auditLogService;
 
 	private static final Log LOG = LogFactory.getLog(IdmAuditLogWebDataServiceImpl.class);
 
-    @Override
+	public IdmAuditLogWebDataServiceImpl() {
+		super(OpenIAMQueue.AuditLog);
+	}
+
+	@Override
     public Response addLog(IdmAuditLogEntity record) {
         final Response resp = new Response(ResponseStatus.SUCCESS);
         try {

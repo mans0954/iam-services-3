@@ -26,7 +26,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.srvc.user.UserDataWebService;
 import org.openiam.provision.dto.ProvisionActionEnum;
 import org.openiam.provision.dto.ProvisionActionEvent;
 import org.openiam.provision.dto.ProvisionActionTypeEnum;

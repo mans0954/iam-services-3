@@ -6,6 +6,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -19,6 +20,8 @@ import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
+import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
@@ -31,6 +34,8 @@ import org.openiam.idm.srvc.user.dto.ProfilePicture;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.validator.EntityValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,7 +48,7 @@ import java.util.List;
 @Service("userProfileService")
 @Transactional
 public class UserProfileServiceImpl implements UserProfileService {
-
+	protected Logger log = LoggerFactory.getLogger(this.getClass());
 	@Autowired
     @Qualifier("userManager")
 	private UserDataService userManager;
@@ -78,6 +83,33 @@ public class UserProfileServiceImpl implements UserProfileService {
 	
     @Autowired
     private SysConfiguration sysConfiguration;
+
+	@Override
+	public SaveTemplateProfileResponse saveUserProfileWrapper(final UserProfileRequestModel request) {
+		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
+		try {
+			if (request == null || request.getUser() == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			this.saveUserProfile(request);
+
+		} catch (PageTemplateException e) {
+			response.setCurrentValue(e.getCurrentValue());
+			response.setElementName(e.getElementName());
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (BasicDataServiceException e) {
+			response.setErrorTokenList(e.getErrorTokenList());
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			log.error("Can't perform operation", e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
 
 	@Override
 	public void saveUserProfile(UserProfileRequestModel request) throws Exception {

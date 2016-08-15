@@ -140,4 +140,27 @@ public interface ResourceService {
 	public void removeRoleToResource(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
 	public void saveAttribute(final ResourcePropEntity attribute);
+
+	public Response addGroupToResource(final String resourceId, final String groupId,  final String requesterId,
+									   final Set<String> rightIds, final Date startDate, final Date endDate);
+
+	public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId);
+
+	public Response addUserToResource(final String resourceId, final String userId, final String requesterId,
+									  final Set<String> rightIds, final Date startDate, final Date endDate);
+
+	public Response removeUserFromResource(final String resourceId, final String userId, String requesterId);
+
+	public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId,
+									  final Set<String> rightIds, final Date startDate, final Date endDate);
+
+	public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId);
+
+	public Response addChildResource(final String resourceId, final String childResourceId, final String requesterId,
+									 final Set<String> rights, final Date startDate, final Date endDate);
+	public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId);
+
+	public Response deleteResource(final String resourceId, final String requesterId);
+
+	public Response saveResourceWeb(final Resource resource, final String requesterId);
 }

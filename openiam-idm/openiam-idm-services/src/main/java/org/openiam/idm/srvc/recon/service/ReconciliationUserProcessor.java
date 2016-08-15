@@ -21,6 +21,7 @@ import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
@@ -36,7 +37,7 @@ import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -57,7 +58,7 @@ import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultRow;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultUtil;
 import org.openiam.idm.srvc.recon.util.Serializer;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
@@ -66,7 +67,6 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.UserUtils;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.service.AbstractProvisioningService;
@@ -92,7 +92,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     @Autowired
     private ReconciliationCommandFactory commandFactory;
     @Autowired
-    protected ResourceDataService resourceDataService;
+    protected ResourceService resourceService;
     @Value("${iam.files.location}")
     private String absolutePath;
     @Autowired
@@ -121,14 +121,10 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     @Qualifier("matchRuleFactory")
     private MatchRuleFactory matchRuleFactory;
     @Autowired
-    @Qualifier("groupWS")
-    protected GroupDataWebService groupDataWebService;
+    protected GroupDataService groupDataWebService;
     @Autowired
     @Qualifier("userManager")
     private UserDataService userManager;
-	@Autowired
-	@Qualifier("userWS")
-	private UserDataWebService userDataWebService;
 	@Autowired
 	ReconciliationConfigService reconConfigService;
 
@@ -141,7 +137,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     public ReconciliationResponse startReconciliation(final ReconciliationConfig config, final IdmAuditLogEntity idmAuditLog) throws IOException, ScriptEngineException {
         Date startDate = new Date();
 
-        Resource res = resourceDataService.getResource(config.getResourceId(), null);
+        Resource res = resourceService.findResourceDtoById(config.getResourceId(), null);
 
         ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
         if (mSys == null) {
@@ -653,7 +649,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             sb.setDeepCopy(false);
             
             
-            final List<org.openiam.idm.srvc.grp.dto.Group> curGroupList =groupDataWebService.findBeansLocalize(sb, null, -1, -1, null);
+            final List<org.openiam.idm.srvc.grp.dto.Group> curGroupList =groupDataWebService.findBeansDtoLocalize(sb, null, -1, -1, null);
 
             String decPassword;
 			if (StringUtils.isEmpty(identity.getUserId())) {
@@ -705,7 +701,12 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         searchBean.setShowInSearch(0);
         searchBean.setMaxResultSize(1);
 		searchBean.setDeepCopy(true);
-        List<User> idmUsers = userDataWebService.findBeans(searchBean, 0, 1);
+        List<User> idmUsers = null;
+        try {
+            idmUsers = userManager.findBeansDto(searchBean, 0, 1);
+        } catch (BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+        }
         if (CollectionUtils.isEmpty(idmUsers)) {
             return null;
         } else {
