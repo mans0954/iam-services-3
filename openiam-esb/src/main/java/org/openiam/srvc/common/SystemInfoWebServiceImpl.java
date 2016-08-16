@@ -1,6 +1,7 @@
-package org.openiam.util;
+package org.openiam.srvc.common;
 
 import org.openiam.base.SysConfiguration;
+import org.openiam.util.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.ServletContextAware;
@@ -9,7 +10,7 @@ import javax.jws.WebService;
 import javax.servlet.ServletContext;
 
 @Service("systemInfoWS")
-@WebService(endpointInterface = "org.openiam.util.SystemInfoWebService",
+@WebService(endpointInterface = "org.openiam.srvc.common.SystemInfoWebService",
         targetNamespace = "urn:idm.openiam.org/util/service", portName = "SystemInfoWebServicePort",
         serviceName = "SystemInfoWebService")
 public class SystemInfoWebServiceImpl implements SystemInfoWebService, ServletContextAware {
@@ -68,6 +69,6 @@ public class SystemInfoWebServiceImpl implements SystemInfoWebService, ServletCo
 	public String getProjectVersion() {
 		return getWarManifestInfo("Openiam-Version");
 	}
-	
-	
+
+
 }

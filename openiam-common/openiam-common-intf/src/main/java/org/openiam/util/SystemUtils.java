@@ -31,7 +31,7 @@ public class SystemUtils {
 
     public static String getWarManifestInfo(ServletContext context, String attrName) {
         if (context != null) {
-            return getManifestInfo(context, null, attrName);
+            return getManifestInfoInternal(context, null, attrName, null);
         } else {
             return "unknown";
         }
@@ -39,13 +39,16 @@ public class SystemUtils {
 
     public static String getJarManifestInfo(String resName, String attrName) {
         if (StringUtils.isNotEmpty(resName)) {
-            return getManifestInfo(null, attrName, attrName);
+            return getManifestInfoInternal(null, attrName, attrName, null);
         } else {
             return "unknown";
         }
     }
+    public static String getManifestInfo(Class clazz, String attrName) {
+        return getManifestInfoInternal(null, null, attrName, clazz);
+    }
 
-    private static String getManifestInfo(ServletContext context, String resName, String attrName) {
+    private static String getManifestInfoInternal(ServletContext context, String resName, String attrName, Class clazz) {
         InputStream is = null;
         if (StringUtils.isEmpty(resName) && context != null) {
             is = context.getResourceAsStream("/" + JarFile.MANIFEST_NAME);
@@ -63,6 +66,20 @@ public class SystemUtils {
             } catch (IOException e) {
                 return "";
             }
+        } else if(clazz!=null){
+            String className = clazz.getSimpleName() + ".class";
+            String classPath = clazz.getResource(className).toString();
+            String manifestPath = JarFile.MANIFEST_NAME;
+            if (!classPath.startsWith("jar")) {
+                manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
+                        "/META-INF/MANIFEST.MF";
+            }
+            Manifest manifest = null;
+            try {
+               is=new URL(manifestPath).openStream();
+            } catch (IOException e) {
+                return "unknown";
+            }
         }
         if (is != null) {
             try {
@@ -77,6 +94,7 @@ public class SystemUtils {
         }
         return "unknown";
     }
+
 
     public static String getOsInfo(String param) {
         if (param.equalsIgnoreCase("name")) return org.apache.commons.lang.SystemUtils.OS_NAME;

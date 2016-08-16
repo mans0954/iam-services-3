@@ -1,4 +1,4 @@
-package org.openiam.elasticsearch.ws;
+package org.openiam.srvc.search;
 
 import java.util.Set;
 

@@ -16,7 +16,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
@@ -72,10 +72,6 @@ public class SourceAdapterDispatcher implements Runnable {
     private ResourceService resourceDataService;
     @Autowired
     private OrganizationDataService organizationDataService;
-    @Autowired
-    private MetadataWebService metadataWS;
-    @Autowired
-    private ManagedSystemWebService managedSysService;
     @Autowired
     protected SysConfiguration sysConfiguration;
 

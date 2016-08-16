@@ -13,7 +13,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.policy.dto.*;
-import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.srvc.common.PolicyDataService;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.base.response.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;

@@ -18,7 +18,7 @@
 /**
  *
  */
-package org.openiam.idm.srvc.policy.service;
+package org.openiam.srvc.common;
 
 import java.util.List;
 
@@ -33,25 +33,16 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.ITPolicyDozerConverter;
-import org.openiam.dozer.converter.PolicyDefParamDozerConverter;
-import org.openiam.dozer.converter.PolicyDozerConverter;
-import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.PolicySearchBean;
-import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
-import org.openiam.idm.srvc.batch.service.BatchService;
-import org.openiam.idm.srvc.policy.domain.*;
 import org.openiam.idm.srvc.policy.dto.ITPolicy;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.dto.*;
 
-import org.openiam.util.ws.collection.StringUtil;
+import org.openiam.idm.srvc.policy.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 // TODO: Auto-generated Javadoc
 
@@ -64,7 +55,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  */
 
-@WebService(endpointInterface = "org.openiam.idm.srvc.policy.service.PolicyDataService", targetNamespace = "urn:idm.openiam.org/srvc/policy/service", portName = "PolicyWebServicePort", serviceName = "PolicyWebService")
+@WebService(endpointInterface = "org.openiam.srvc.common.PolicyDataService", targetNamespace = "urn:idm.openiam.org/srvc/policy/service", portName = "PolicyWebServicePort", serviceName = "PolicyWebService")
 @Service("policyDataService")
 public class PolicyDataServiceImpl implements PolicyDataService {
 

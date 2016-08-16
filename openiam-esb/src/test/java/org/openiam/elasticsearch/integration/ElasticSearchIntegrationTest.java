@@ -1,7 +1,7 @@
 package org.openiam.elasticsearch.integration;
 
 import org.openiam.base.ws.Response;
-import org.openiam.elasticsearch.ws.ElasticSearchWebService;
+import org.openiam.srvc.search.ElasticSearchWebService;
 import org.openiam.service.integration.AbstractServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

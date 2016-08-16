@@ -20,7 +20,7 @@
  * policies is handled through policy specific services and policy enforcement
  * points.
  */
-package org.openiam.idm.srvc.policy.service;
+package org.openiam.srvc.common;
 
 import java.util.List;
 

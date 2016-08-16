@@ -18,7 +18,7 @@
 /**
  *
  */
-package org.openiam.idm.srvc.meta.ws;
+package org.openiam.srvc.common;
 
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +52,7 @@ import org.springframework.stereotype.Service;
  * @author suneet
  * @version 2.1
  */
-@WebService(endpointInterface = "org.openiam.idm.srvc.meta.ws.MetadataWebService", targetNamespace = "urn:idm.openiam.org/srvc/meta/service", portName = "MetadataWebServicePort", serviceName = "MetadataWebService")
+@WebService(endpointInterface = "org.openiam.srvc.common.MetadataWebService", targetNamespace = "urn:idm.openiam.org/srvc/meta/service", portName = "MetadataWebServicePort", serviceName = "MetadataWebService")
 @Service("metadataWS")
 public class MetadataWebServiceImpl implements MetadataWebService {
     @Autowired

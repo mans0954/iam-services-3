@@ -1,50 +1,40 @@
-/**
- * @author zaporozhec
- */
-package org.openiam.idm.srvc.file.ws;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
+package org.openiam.idm.srvc.file;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-@WebService(endpointInterface = "org.openiam.idm.srvc.file.ws.FileWebService", targetNamespace = "urn:idm.openiam.org/srvc/file/ws", portName = "FileWebServicePort", serviceName = "FileWebService")
-@Service("fileWebService")
-public class FileWebServiceImpl implements FileWebService {
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 
+/**
+ * Created by alexander on 16/08/16.
+ */
+@Service
+public class FileServiceImpl implements FileService {
+    private static final Log log = LogFactory.getLog(FileServiceImpl.class);
     @Value("${iam.files.location}")
     private String absolutePath;
 
-    private static final Log log = LogFactory.getLog(FileWebServiceImpl.class);
-
     @Override
-    public String getFile(
-            @WebParam(name = "fileName", targetNamespace = "") String fName) {
+    public String getFile(String fName) {
         try {
             return this.get(fName);
         } catch (Exception e) {
-        	log.error("getFile", e);
+            log.error("getFile", e);
 
         }
         return null;
     }
 
     @Override
-    public File saveFile(
-            @WebParam(name = "fileName", targetNamespace = "") String fName,
-            @WebParam(name = "fileContent", targetNamespace = "") String value) {
+    public File saveFile(String fName, String value) {
         try {
             return this.save(fName, value);
         } catch (Exception e) {
-        	log.error("Error in saveFile", e);
+            log.error("Error in saveFile", e);
 
         }
         return null;
@@ -82,5 +72,4 @@ public class FileWebServiceImpl implements FileWebService {
 
         return new File(absolutePath + fName);
     }
-
 }

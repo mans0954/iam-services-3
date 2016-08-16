@@ -9,7 +9,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyConstants;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
-import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.srvc.common.PolicyDataService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

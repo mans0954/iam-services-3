@@ -1,9 +1,6 @@
 package org.openiam.service.integration.meta;
 
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.dto.URIPattern;
@@ -13,18 +10,14 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
-import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
-import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplateXref;
 import org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXref;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.dto.pk.MetadataElementPageTemplateXrefId;
-import org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService;
-import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.srvc.common.MetadataElementTemplateWebService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

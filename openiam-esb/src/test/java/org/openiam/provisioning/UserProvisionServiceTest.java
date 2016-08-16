@@ -16,7 +16,7 @@ import org.openiam.idm.srvc.lang.dto.Language;
 //import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.srvc.common.MetadataWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;

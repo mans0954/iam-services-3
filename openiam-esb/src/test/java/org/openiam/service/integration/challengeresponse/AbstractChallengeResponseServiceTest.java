@@ -4,7 +4,7 @@ import org.openiam.base.KeyDTO;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.srvc.common.PolicyDataService;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.srvc.user.ChallengeResponseWebService;
 import org.openiam.service.integration.AbstractKeyServiceTest;

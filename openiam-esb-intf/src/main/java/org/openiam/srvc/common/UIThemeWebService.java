@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.ui.theme;
+package org.openiam.srvc.common;
 
 import java.util.List;
 

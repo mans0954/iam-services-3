@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.property.ws;
+package org.openiam.srvc.common;
 
 
 import java.util.List;

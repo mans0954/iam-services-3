@@ -1,4 +1,4 @@
-package org.openiam.util;
+package org.openiam.srvc.common;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;

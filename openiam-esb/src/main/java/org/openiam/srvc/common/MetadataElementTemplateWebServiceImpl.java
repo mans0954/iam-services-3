@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.meta.ws;
+package org.openiam.srvc.common;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("metadataElementTemplateWebService")
-@WebService(endpointInterface = "org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService", 
+@WebService(endpointInterface = "org.openiam.srvc.common.MetadataElementTemplateWebService",
 			targetNamespace = "urn:idm.openiam.org/srvc/meta/ws", 
 			portName = "MetadataElementTemplateWebServicePort", 
 			serviceName = "MetadataElementTemplateWebService")

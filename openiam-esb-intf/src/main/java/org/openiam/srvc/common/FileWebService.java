@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.file.ws;
+package org.openiam.srvc.common;
 
 import java.io.File;
 

@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.activiti.model.dto.TaskSearchBean;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -86,7 +87,6 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.SystemInfoWebService;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -161,7 +161,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	private MetadataElementTemplateService pageTemplateService;
 
 	@Autowired
-	private SystemInfoWebService sysInfoService;
+	private SysConfiguration sysConfiguration;
 
 	@Autowired
 	private ActivitiHelper activitiHelper;
@@ -292,7 +292,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
-			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysInfoService.getProjectVersion());
+			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysConfiguration.getProjectVersion());
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
 			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
@@ -514,7 +514,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
-			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysInfoService.getProjectVersion());
+			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysConfiguration.getProjectVersion());
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
 			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
@@ -675,7 +675,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
-			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysInfoService.getProjectVersion());
+			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysConfiguration.getProjectVersion());
 			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), request.getActivitiRequestType());
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);

@@ -7,7 +7,7 @@ import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.provision.dto.srcadapter.*;
@@ -46,7 +46,7 @@ public class SourceAdapterImpl implements SourceAdapter {
 
 
     @Autowired
-    private MetadataWebService metadataWS;
+    private MetadataService metadataDS;
     @Autowired
     private ManagedSystemWebService managedSysService;
     @Autowired
@@ -138,7 +138,7 @@ public class SourceAdapterImpl implements SourceAdapter {
 
     private String getNote(MetadataTypeSearchBean metadataTypeSearchBean, MetadataTypeGrouping name) {
         metadataTypeSearchBean.setGrouping(name);
-        List<MetadataType> types = metadataWS.findTypeBeans(metadataTypeSearchBean, 0, Integer.MAX_VALUE, null);
+        List<MetadataType> types = metadataDS.findBeans(metadataTypeSearchBean, 0, Integer.MAX_VALUE, null);
         StringBuilder sb = new StringBuilder();
         sb.append("\nAvailable types for ");
         sb.append(name.name());

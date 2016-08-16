@@ -161,12 +161,12 @@
     </bean>
 
     <bean id="metadataTemplateServiceClient"
-          class="org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService"
+          class="org.openiam.srvc.common.MetadataElementTemplateWebService"
           factory-bean="metadataTemplateServiceClientFactory" factory-method="create" />
 
     <bean id="metadataTemplateServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService" />
+                  value="org.openiam.srvc.common.MetadataElementTemplateWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}MetadataElementTemplateWebService" />
     </bean>
@@ -192,10 +192,10 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}ContentProviderWebService" />
     </bean>
 
-    <bean id="fileWebService" class="org.openiam.idm.srvc.file.ws.FileWebService"
+    <bean id="fileWebService" class="org.openiam.srvc.common.FileWebService"
           factory-bean="fileWebServiceFactory" factory-method="create" />
     <bean id="fileWebServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.file.ws.FileWebService" />
+        <property name="serviceClass" value="org.openiam.srvc.common.FileWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}FileWebService" />
     </bean>
@@ -219,14 +219,12 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}AuditService" />
     </bean>
 
-    <bean id="policyServiceClient" class="org.openiam.idm.srvc.policy.service.PolicyDataService"
+    <bean id="policyServiceClient" class="org.openiam.srvc.common.PolicyDataService"
           factory-bean="policyServiceClientFactory" factory-method="create" />
 
     <bean id="policyServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass"
-                  value="org.openiam.idm.srvc.policy.service.PolicyDataService" />
-        <property name="address"
-                  value="${openiam.service_host}${openiam.idm.ws.path}PolicyWebService" />
+        <property name="serviceClass" value="org.openiam.srvc.common.PolicyDataService" />
+        <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}PolicyWebService" />
     </bean>
 
     <!-- Organization Service -->
@@ -268,11 +266,11 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}BatchDataWebService" />
     </bean>
 
-    <bean id="uiThemeClient" class="org.openiam.idm.srvc.ui.theme.UIThemeWebService"
+    <bean id="uiThemeClient" class="org.openiam.srvc.common.UIThemeWebService"
           factory-bean="uiThemeClientFactory" factory-method="create" />
 
     <bean id="uiThemeClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.ui.theme.UIThemeWebService" />
+        <property name="serviceClass" value="org.openiam.srvc.common.UIThemeWebService" />
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}UIThemeWebService" />
     </bean>
 
@@ -322,7 +320,7 @@
                   address="${openiam.service_host}${openiam.connector.ws.path}ProvisioningService" />
 
     <jaxws:client id="propertyValuerServiceClient"
-                  serviceClass="org.openiam.idm.srvc.property.ws.PropertyValueWebService"
+                  serviceClass="org.openiam.srvc.common.PropertyValueWebService"
                   address="${openiam.service_host}${openiam.connector.ws.path}PropertyValueWebService" />
 
     <jaxws:client id="accessRightServiceClient"
@@ -342,7 +340,7 @@
                   address="${openiam.service_host}${openiam.connector.ws.path}ConnectorWebService" />
 
     <jaxws:client id="metadataServiceClient"
-                  serviceClass="org.openiam.idm.srvc.meta.ws.MetadataWebService"
+                  serviceClass="org.openiam.srvc.common.MetadataWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}MetadataWebService" />
 
     <jaxws:client id="identityServiceClient"
@@ -362,7 +360,7 @@
                   address="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerAdminWebService" />
                   
 	<jaxws:client id="elasticSearchServiceClient"
-                  serviceClass="org.openiam.elasticsearch.ws.ElasticSearchWebService"
+                  serviceClass="org.openiam.srvc.search.ElasticSearchWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}ElasticSearchWebService" />
                   
     <jaxws:client id="connectorServiceClient"

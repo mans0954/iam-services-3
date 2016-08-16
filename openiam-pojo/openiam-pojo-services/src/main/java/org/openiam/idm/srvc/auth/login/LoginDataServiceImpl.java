@@ -8,7 +8,6 @@ import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
@@ -28,7 +27,7 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.idm.srvc.policy.service.PolicyService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordPolicyProvider;
@@ -59,7 +58,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     protected UserDAO userDao;
 
     @Autowired
-    private PolicyDataService policyDataService;
+    private PolicyService policyService;
 
     @Autowired
     protected PasswordPolicyProvider passwordPolicyProvider;

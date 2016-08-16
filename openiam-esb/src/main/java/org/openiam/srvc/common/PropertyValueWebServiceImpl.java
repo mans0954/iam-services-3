@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.property.ws;
+package org.openiam.srvc.common;
 
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Service;
 
 @Service("propertyValueWS")
 @WebService(
-	endpointInterface = "org.openiam.idm.srvc.property.ws.PropertyValueWebService", 
+	endpointInterface = "org.openiam.srvc.common.PropertyValueWebService",
 	targetNamespace = "urn:idm.openiam.org/srvc/property/service", 
 	portName = "PropertyValueWebServicePort", 
 	serviceName = "PropertyValueWebService"

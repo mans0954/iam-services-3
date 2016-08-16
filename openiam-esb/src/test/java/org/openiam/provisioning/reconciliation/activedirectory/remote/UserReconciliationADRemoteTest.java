@@ -16,7 +16,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.srvc.user.LoginDataWebService;
 import org.openiam.base.response.LoginResponse;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.srvc.common.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
