@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.dto.URIPattern;
-import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
-import org.openiam.am.srvc.ws.ContentProviderWebService;
+import org.openiam.am.srvc.searchbean.URIPatternSearchBean;
+import org.openiam.srvc.am.ContentProviderWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;

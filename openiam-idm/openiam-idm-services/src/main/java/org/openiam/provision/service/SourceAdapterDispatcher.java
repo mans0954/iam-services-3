@@ -16,16 +16,14 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.meta.service.MetadataService;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.base.response.PasswordValidationResponse;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
@@ -67,11 +65,11 @@ public class SourceAdapterDispatcher implements Runnable {
     @Autowired
     private GroupDataService groupDataService;
     @Autowired
-    private RoleDataWebService roleDataWebService;
+    private RoleDataService roleDataService;
     @Autowired
     private ResourceService resourceDataService;
     @Autowired
-    private OrganizationDataService organizationDataService;
+    private OrganizationService organizationDataService;
     @Autowired
     protected SysConfiguration sysConfiguration;
 
@@ -651,7 +649,7 @@ public class SourceAdapterDispatcher implements Runnable {
             osb.addAttribute(org.getAttributeLookup().getName(), org.getAttributeLookup().getValue());
         }
         osb.setDeepCopy(false);
-        organization = organizationDataService.findBeans(osb, requestodId, 0, Integer.MAX_VALUE);
+        organization = organizationDataService.findBeansDto(osb, requestodId, 0, Integer.MAX_VALUE, null);
         return organization;
     }
 
@@ -771,7 +769,7 @@ public class SourceAdapterDispatcher implements Runnable {
         orgDB = organization.get(0);
 
         if (orgDB != null && orgDB.getId() != null) {
-            List<OrganizationAttribute> organizationAttributes = organizationDataService.getOrganizationAttributes(orgDB.getId());
+            List<OrganizationAttribute> organizationAttributes = organizationDataService.getOrgAttributesDtoList(orgDB.getId());
             if (CollectionUtils.isNotEmpty(organizationAttributes))
                 orgDB.setAttributes(new HashSet<OrganizationAttribute>(organizationAttributes));
         }
@@ -882,7 +880,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     RoleSearchBean rsb = new RoleSearchBean();
                     rsb.setName(role.getName());
                     rsb.setManagedSysId(role.getManagedSystemId());
-                    List<Role> dbRoles = roleDataWebService.findBeans(rsb, requestorId, -1, -1);
+                    List<Role> dbRoles = roleDataService.findBeansDto(rsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbRoles)) {
                         if (dbRoles.size() > 1) {
                             warnings.append(this.getWarning("Not unique name. Skip it. Role Name=" + role.getName()));

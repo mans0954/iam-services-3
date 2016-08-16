@@ -2,8 +2,8 @@ package org.openiam.authmanager.service;
 
 import java.util.List;
 
-import org.openiam.authmanager.common.model.AuthorizationMenu;
-import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationMenu;
+import org.openiam.base.request.MenuEntitlementsRequest;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.thread.Sweepable;
 

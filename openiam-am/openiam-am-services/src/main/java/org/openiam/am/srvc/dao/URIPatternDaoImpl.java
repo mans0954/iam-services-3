@@ -8,7 +8,7 @@ import org.hibernate.Query;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.URIPatternEntity;
-import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
+import org.openiam.am.srvc.searchbean.URIPatternSearchBean;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.springframework.stereotype.Repository;

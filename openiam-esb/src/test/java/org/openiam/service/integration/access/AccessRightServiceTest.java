@@ -5,7 +5,7 @@ import java.util.List;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
-import org.openiam.idm.srvc.access.ws.AccessRightDataService;
+import org.openiam.srvc.am.AccessRightDataService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

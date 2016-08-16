@@ -14,7 +14,7 @@ import org.openiam.srvc.audit.IdmAuditLogWebDataService;
 import org.openiam.srvc.user.LoginDataWebService;
 import org.openiam.srvc.user.ChallengeResponseWebService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.srvc.am.RoleDataWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.srvc.user.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;

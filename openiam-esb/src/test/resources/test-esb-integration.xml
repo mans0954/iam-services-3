@@ -41,13 +41,13 @@
     </bean>
 
     <bean id="authorizationManagerMenuServiceClient"
-          class="org.openiam.authmanager.service.AuthorizationManagerMenuWebService"
+          class="org.openiam.srvc.am.AuthorizationManagerMenuWebService"
           factory-bean="authorizationManagerMenuServiceFactory" factory-method="create" />
 
 
     <bean id="authorizationManagerMenuServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.authmanager.service.AuthorizationManagerMenuWebService" />
+                  value="org.openiam.srvc.am.AuthorizationManagerMenuWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerMenuWebService" />
     </bean>
@@ -65,13 +65,13 @@
     </bean>
 
     <bean id="authorizationManagerServiceClient"
-          class="org.openiam.authmanager.service.AuthorizationManagerWebService"
+          class="org.openiam.srvc.am.AuthorizationManagerWebService"
           factory-bean="authorizationManagerServiceFactory" factory-method="create" />
 
 
     <bean id="authorizationManagerServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.authmanager.service.AuthorizationManagerWebService" />
+                  value="org.openiam.srvc.am.AuthorizationManagerWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerWebService" />
     </bean>
@@ -87,13 +87,13 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}UserDataService" />
     </bean>
 
-    <bean id="roleServiceClient" class="org.openiam.idm.srvc.role.ws.RoleDataWebService"
+    <bean id="roleServiceClient" class="org.openiam.srvc.am.RoleDataWebService"
           factory-bean="roleServiceFactory" factory-method="create" />
 
 
     <bean id="roleServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.idm.srvc.role.ws.RoleDataWebService" />
+                  value="org.openiam.srvc.am.RoleDataWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}RoleDataWebService" />
     </bean>
@@ -181,13 +181,13 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}LanguageWebService" />
     </bean>
 
-    <bean id="contentProviderServiceClient" class="org.openiam.am.srvc.ws.ContentProviderWebService"
+    <bean id="contentProviderServiceClient" class="org.openiam.srvc.am.ContentProviderWebService"
           factory-bean="contentProviderServiceFactory" factory-method="create" />
 
 
     <bean id="contentProviderServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.am.srvc.ws.ContentProviderWebService" />
+                  value="org.openiam.srvc.am.ContentProviderWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}ContentProviderWebService" />
     </bean>
@@ -228,19 +228,19 @@
     </bean>
 
     <!-- Organization Service -->
-    <bean id="organizationServiceClient" class="org.openiam.idm.srvc.org.service.OrganizationDataService"
+    <bean id="organizationServiceClient" class="org.openiam.srvc.am.OrganizationDataService"
           factory-bean="organizatinoServiceClientFactory" factory-method="create" />
 
     <bean id="organizatinoServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.org.service.OrganizationDataService" />
+        <property name="serviceClass" value="org.openiam.srvc.am.OrganizationDataService" />
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}OrganizationDataService" />
     </bean>
 
-    <bean id="organizationTypeClient" class="org.openiam.idm.srvc.org.service.OrganizationTypeDataService"
+    <bean id="organizationTypeClient" class="org.openiam.srvc.am.OrganizationTypeDataService"
           factory-bean="organizationTypeClientFactory" factory-method="create" />
 
     <bean id="organizationTypeClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.org.service.OrganizationTypeDataService" />
+        <property name="serviceClass" value="org.openiam.srvc.am.OrganizationTypeDataService" />
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}OrganizationTypeDataService" />
     </bean>
 
@@ -274,35 +274,35 @@
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}UIThemeWebService" />
     </bean>
 
-    <bean id="authAttributeServiceClient" class="org.openiam.am.srvc.ws.AuthResourceAttributeWebService"
+    <bean id="authAttributeServiceClient" class="org.openiam.srvc.am.AuthResourceAttributeWebService"
           factory-bean="authAttributeServiceFactory" factory-method="create" />
 
 
     <bean id="authAttributeServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.am.srvc.ws.AuthResourceAttributeWebService" />
+                  value="org.openiam.srvc.am.AuthResourceAttributeWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}AuthResourceAttributeWebService" />
     </bean>
 
-    <bean id="authProviderServiceClient" class="org.openiam.am.srvc.ws.AuthProviderWebService"
+    <bean id="authProviderServiceClient" class="org.openiam.srvc.am.AuthProviderWebService"
           factory-bean="authProviderServiceFactory" factory-method="create" />
 
 
     <bean id="authProviderServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.am.srvc.ws.AuthProviderWebService" />
+                  value="org.openiam.srvc.am.AuthProviderWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}AuthProviderWebService" />
     </bean>
 
-    <bean id="oauthServiceClient" class="org.openiam.am.srvc.ws.OAuthWebService"
+    <bean id="oauthServiceClient" class="org.openiam.srvc.am.OAuthWebService"
           factory-bean="oauthServiceFactory" factory-method="create" />
 
 
     <bean id="oauthServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.am.srvc.ws.OAuthWebService" />
+                  value="org.openiam.srvc.am.OAuthWebService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}OAuthWebService" />
     </bean>
@@ -324,7 +324,7 @@
                   address="${openiam.service_host}${openiam.connector.ws.path}PropertyValueWebService" />
 
     <jaxws:client id="accessRightServiceClient"
-                  serviceClass="org.openiam.idm.srvc.access.ws.AccessRightDataService"
+                  serviceClass="org.openiam.srvc.am.AccessRightDataService"
                   address="${openiam.service_host}${openiam.connector.ws.path}AccessRightDataService" />
 
     <jaxws:client id="reconciliationServiceClient"
@@ -356,7 +356,7 @@
                   address="${openiam.service_host}/openiam-esb/source/SourceAdapterService" />
 
 	 <jaxws:client id="authManagerAdminClient"
-                  serviceClass="org.openiam.authmanager.service.AuthorizationManagerAdminWebService"
+                  serviceClass="org.openiam.srvc.am.AuthorizationManagerAdminWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerAdminWebService" />
                   
 	<jaxws:client id="elasticSearchServiceClient"

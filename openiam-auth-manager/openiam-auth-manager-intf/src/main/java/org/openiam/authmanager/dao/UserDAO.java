@@ -1,11 +1,9 @@
 package org.openiam.authmanager.dao;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.openiam.authmanager.common.model.AuthorizationUser;
-import org.openiam.authmanager.common.model.InternalAuthroizationUser;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationUser;
 
 public interface UserDAO extends AbstractDAO<AuthorizationUser> {
 

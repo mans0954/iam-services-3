@@ -11,7 +11,7 @@ import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.PatternMatchMode;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternParameter;
-import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
+import org.openiam.am.srvc.searchbean.ContentProviderSearchBean;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
 import org.openiam.base.response.URIFederationResponse;
 import org.openiam.base.Tuple;

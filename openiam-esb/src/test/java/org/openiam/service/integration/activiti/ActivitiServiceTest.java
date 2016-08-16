@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.activiti.model.dto.TaskSearchBean;
-import org.openiam.authmanager.service.AuthorizationManagerWebService;
+import org.openiam.srvc.am.AuthorizationManagerWebService;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.SearchParam;

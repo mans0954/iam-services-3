@@ -3,7 +3,7 @@ package org.openiam.service.integration.provisioning;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.srvc.am.RoleDataWebService;
 import org.openiam.service.integration.AbstractServiceTest;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;

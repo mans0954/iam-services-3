@@ -15,7 +15,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.cache.CacheKeyEvictions;
@@ -1663,5 +1665,100 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         } else {
             orgAttrDao.save(attribute);
         }
+    }
+
+
+    @Override
+    public Response saveOrganization(final Organization organization, final String requesterId) {
+        return saveOrganizationWithSkipPrePostProcessors(organization, requesterId, false);
+    }
+
+    @Override
+    public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            Organization org = this.save(organization, requestorId, skipPrePostProcessors);
+            response.setResponseValue(org.getId());
+
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+        } catch (Throwable e) {
+            log.error("Can't save organization", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+    @Override
+    public Response deleteOrganization(final String orgId, final String requestorId) {
+        return deleteOrganizationWithSkipPrePostProcessors(orgId, false, requestorId);
+    }
+
+    @Override
+    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors, final String requestorId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            this.deleteOrganization(orgId, skipPrePostProcessors);
+
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+
+        } catch (Throwable e) {
+            log.error("Can't save resource type", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response addUserToOrg(final String orgId,
+                                 final String userId,
+                                 final String requestorId,
+                                 final Set<String> rightIds,
+                                 final Date startDate,
+                                 final Date endDate) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (orgId == null || userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+
+            this.addUserToOrg(orgId, userId, rightIds, startDate, endDate);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't save resource type", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeUserFromOrg(String orgId, String userId, final String requestorId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (orgId == null || userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            this.removeUserFromOrg(orgId, userId);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't save resource type", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
     }
 }

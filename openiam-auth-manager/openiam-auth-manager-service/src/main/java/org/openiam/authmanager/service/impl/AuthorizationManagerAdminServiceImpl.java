@@ -2,25 +2,21 @@ package org.openiam.authmanager.service.impl;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.authmanager.common.SetStringResponse;
-import org.openiam.authmanager.common.model.*;
+import org.openiam.am.srvc.dto.jdbc.*;
+import org.openiam.base.response.SetStringResponse;
 import org.openiam.authmanager.dao.MembershipDAO;
 import org.openiam.authmanager.model.*;
 import org.openiam.authmanager.provider.AuthorizationManagerDataProvider;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
-import org.openiam.authmanager.ws.request.AuthorizationMatrixMapAdapter;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.membership.MembershipDTO;
+import org.openiam.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 @Service("authorizationManagerAdminService")
 public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationManagerService implements AuthorizationManagerAdminService {
@@ -133,7 +129,7 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 
 	private <Entity extends AbstractAuthorizationEntity, AuthEntity extends AbstractAuthorizationRight>
 	Set<AuthEntity> getEntitlementData(List<Integer> linearEntitlementBitList,
-							  Map<Integer, Entity> bitSetMap, Map<Integer, AuthorizationAccessRight> rightMap, int numOfRights, Class<AuthEntity> clazz){
+									   Map<Integer, Entity> bitSetMap, Map<Integer, AuthorizationAccessRight> rightMap, int numOfRights, Class<AuthEntity> clazz){
 
 		Set<AuthEntity> tempDataSet = new HashSet<>();
 		AuthEntity currentEntity = null;
@@ -157,7 +153,7 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 		return tempDataSet;
 	}
 
-	private void fillEntitlementToken(final AbstractEntitlementToken entitlementToken, final  Set<? extends AbstractAuthorizationRight> tempDataSet,  final  Map<String, Set<InternalAuthorizationToken>> directEntitlements){
+	private void fillEntitlementToken(final AbstractEntitlementToken entitlementToken, final  Set<? extends AbstractAuthorizationRight> tempDataSet, final  Map<String, Set<InternalAuthorizationToken>> directEntitlements){
 		if(CollectionUtils.isNotEmpty(tempDataSet)){
 			for(AbstractAuthorizationRight data: tempDataSet){
 				if (directEntitlements != null && directEntitlements.containsKey(data.getEntity().getId())) {

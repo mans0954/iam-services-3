@@ -7,7 +7,7 @@ import org.openiam.base.AbstractAttributeDTO;
 import org.openiam.base.AbstractMetadataTypeDTO;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
-import org.openiam.idm.srvc.access.ws.AccessRightDataService;
+import org.openiam.srvc.am.AccessRightDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;

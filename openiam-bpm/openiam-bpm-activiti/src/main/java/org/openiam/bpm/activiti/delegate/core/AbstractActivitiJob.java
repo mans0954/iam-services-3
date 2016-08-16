@@ -30,11 +30,11 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -85,13 +85,13 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	protected GroupDataService groupDataService;
 	
 	@Autowired
-	protected RoleDataWebService roleDataService;
+	protected RoleDataService roleDataService;
 	
 	@Autowired
 	protected ResourceService resourceDataService;
 	
 	@Autowired
-	protected OrganizationDataService organizationDataService;
+	protected OrganizationService organizationDataService;
 
 	@Autowired
 	protected CustomJacksonMapper customJacksonMapper;
@@ -134,7 +134,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	}
 	
 	protected Role getRole(final String roleId) {
-		return roleDataService.getRoleLocalized(roleId, null, null);
+		return roleDataService.getRoleDtoLocalized(roleId, null, null);
 	}
 	
 	protected Group getGroup(final String groupId) {
@@ -142,7 +142,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	}
 	
 	protected Organization getOrganization(final String organizationId) {
-		return organizationDataService.getOrganizationLocalized(organizationId, null, null);
+		return organizationDataService.getOrganizationDTO(organizationId, null);
 	}
 	
 	protected Resource getResource(final String resourceId) {

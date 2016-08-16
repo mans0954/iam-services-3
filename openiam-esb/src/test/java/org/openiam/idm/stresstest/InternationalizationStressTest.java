@@ -8,7 +8,7 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.srvc.am.GroupDataWebService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.srvc.am.RoleDataWebService;
 import org.openiam.srvc.user.UserDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

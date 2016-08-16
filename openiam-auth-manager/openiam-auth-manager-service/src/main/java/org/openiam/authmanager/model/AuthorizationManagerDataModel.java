@@ -4,15 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import org.openiam.authmanager.common.model.AuthorizationAccessRight;
-import org.openiam.authmanager.common.model.AuthorizationGroup;
-import org.openiam.authmanager.common.model.AuthorizationOrganization;
-import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.model.AuthorizationRole;
-import org.openiam.authmanager.common.model.AuthorizationUser;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationAccessRight;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationGroup;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationOrganization;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationResource;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationRole;
 import org.openiam.membership.MembershipDTO;
 
 public class AuthorizationManagerDataModel {

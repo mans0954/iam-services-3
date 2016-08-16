@@ -21,7 +21,7 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceService;
@@ -68,7 +68,7 @@ public class BaseProvisioningHelper {
     @Autowired
     protected ResourceService resourceService;
     @Autowired
-    protected OrganizationDataService orgManager;
+    protected OrganizationService orgManager;
     @Autowired
     protected PasswordService passwordDS;
     @Autowired

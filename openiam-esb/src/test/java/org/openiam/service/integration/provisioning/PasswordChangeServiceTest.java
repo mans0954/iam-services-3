@@ -11,7 +11,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.srvc.user.LoginDataWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.srvc.am.OrganizationDataService;
 import org.openiam.idm.srvc.policy.dto.*;
 import org.openiam.srvc.common.PolicyDataService;
 import org.openiam.idm.srvc.pswd.dto.Password;

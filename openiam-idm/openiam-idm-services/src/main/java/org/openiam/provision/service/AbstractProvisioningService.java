@@ -89,7 +89,6 @@ import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -198,8 +197,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     protected GroupDataService groupManager;
     @Autowired
     protected SysConfiguration sysConfiguration;
-    @Autowired
-    protected OrganizationDataService orgManager;
     @Autowired
     protected OrganizationService organizationService;
     @Autowired

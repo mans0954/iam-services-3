@@ -6,10 +6,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.openiam.authmanager.common.model.GroupAuthorizationRight;
-import org.openiam.authmanager.common.model.OrganizationAuthorizationRight;
-import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
-import org.openiam.authmanager.common.model.RoleAuthorizationRight;
+import org.openiam.am.srvc.dto.jdbc.GroupAuthorizationRight;
+import org.openiam.am.srvc.dto.jdbc.OrganizationAuthorizationRight;
+import org.openiam.am.srvc.dto.jdbc.ResourceAuthorizationRight;
+import org.openiam.am.srvc.dto.jdbc.RoleAuthorizationRight;
 import org.openiam.base.ws.Response;
 import org.testng.Assert;
 

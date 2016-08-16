@@ -20,7 +20,7 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.recon.dto.MatchConfig;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -53,7 +53,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
     private RoleDozerConverter roleDozerConverter;
 
     @Autowired
-    private OrganizationDataService orgManager;
+    private OrganizationService orgManager;
 
     @Autowired
     private RoleDataService roleManager;
@@ -256,7 +256,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             }
         }
 
-        List<Organization> orgEntities = orgManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
+        List<Organization> orgEntities = orgManager.findBeansDto(searchBean, null, 0, Integer.MAX_VALUE, null);
         if (orgEntities != null && !orgEntities.isEmpty()) {
             System.out.println("Organization matched with existing role...");
             return orgEntities.get(0);
