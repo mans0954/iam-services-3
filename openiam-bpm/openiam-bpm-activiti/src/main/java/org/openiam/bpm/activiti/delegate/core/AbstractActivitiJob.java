@@ -28,7 +28,7 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.srvc.user.MailService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.res.dto.Resource;

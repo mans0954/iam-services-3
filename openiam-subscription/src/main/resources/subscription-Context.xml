@@ -17,10 +17,10 @@
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}ReportWebService" />
     </bean>
 
-    <bean id="mailServiceClient" class="org.openiam.idm.srvc.msg.service.MailService"
+    <bean id="mailServiceClient" class="org.openiam.srvc.user.MailService"
           factory-bean="mailServiceFactory" factory-method="create" />
     <bean id="mailServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.msg.service.MailService" />
+        <property name="serviceClass" value="org.openiam.srvc.user.MailService" />
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}EmailWebService" />
     </bean>
 

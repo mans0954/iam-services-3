@@ -1,10 +1,7 @@
 package org.openiam.idm.srvc.msg.service;
 
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.base.request.NotificationRequest;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
 import java.util.Date;
 
 /**
@@ -12,15 +9,12 @@ import java.util.Date;
  *
  * @author suneet
  */
-@WebService
-public interface MailService {
+public interface MailDataService {
 
 
     /**
      * Sends an email all users with OpenIAM
      */
-
-    @WebMethod
     void sendToAllUsers();
 
     /**
@@ -28,7 +22,6 @@ public interface MailService {
      *
      * @param groupId
      */
-    @WebMethod
     void sendToGroup(String groupId);
 
     /**
@@ -37,10 +30,7 @@ public interface MailService {
      * @param req
      */
 
-    @WebMethod
-    boolean sendNotification(
-            @WebParam(name = "req", targetNamespace = "")
-            NotificationRequest req);
+    boolean sendNotification(NotificationRequest req);
 
     /**
      * sending a email to one user,cc and having one attachment at time.

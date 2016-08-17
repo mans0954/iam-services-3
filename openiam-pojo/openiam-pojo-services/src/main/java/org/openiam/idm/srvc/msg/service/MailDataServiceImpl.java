@@ -4,8 +4,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.base.AbstractBaseService;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.base.request.NotificationParam;
+import org.openiam.base.request.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.script.ScriptIntegration;
@@ -18,23 +18,15 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
-import javax.jws.WebService;
-
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Properties;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Service("mailService")
-@WebService(endpointInterface = "org.openiam.idm.srvc.msg.service.MailService", targetNamespace = "urn:idm.openiam.org/srvc/msg", portName = "EmailWebServicePort", serviceName = "EmailWebService")
-public class MailServiceImpl extends AbstractBaseService implements MailService, ApplicationContextAware {
+@Service("mailDataService")
+public class MailDataServiceImpl extends AbstractBaseService implements MailDataService, ApplicationContextAware {
 
     @Autowired
     private MailSender mailSender;
@@ -61,7 +53,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
 
     public static ApplicationContext ac;
 
-    private static final Log log = LogFactory.getLog(MailServiceImpl.class);
+    private static final Log log = LogFactory.getLog(MailDataServiceImpl.class);
     private static final int SUBJECT_IDX = 0;
     private static final int SCRIPT_IDX = 1;
     private static final int IS_HTML_IDX = 2;
@@ -83,7 +75,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.idm.srvc.msg.service.MailService#sendWithCC(java.lang.String,
+     * org.openiam.srvc.user.MailService#sendWithCC(java.lang.String,
      * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
      * java.lang.String, boolean)
      */
@@ -118,7 +110,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
     /*
      * (non-Javadoc)
      * 
-     * @see org.openiam.idm.srvc.msg.service.MailService#send(java.lang.String,
+     * @see org.openiam.srvc.user.MailService#send(java.lang.String,
      * java.lang.String[], java.lang.String[], java.lang.String[],
      * java.lang.String, java.lang.String, boolean, java.lang.String[])
      */
@@ -232,7 +224,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.idm.srvc.msg.service.MailService#sendNotification(org.openiam
+     * org.openiam.srvc.user.MailService#sendNotification(org.openiam
      * .idm.srvc.msg.dto.NotificationRequest)
      */
     @Transactional
@@ -394,7 +386,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.idm.srvc.msg.service.MailService#SendTwitterMessage(java.
+     * org.openiam.srvc.user.MailService#SendTwitterMessage(java.
      * lang.String, java.lang.String)
      */
 
@@ -416,7 +408,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.idm.srvc.msg.service.MailService#tweetMessage(java.lang.String
+     * org.openiam.srvc.user.MailService#tweetMessage(java.lang.String
      * )
      */
     @Override

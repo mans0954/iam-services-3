@@ -14,7 +14,7 @@
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o ResourceDataService.wsdl  org.openiam.srvc.am.ResourceDataService
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o OrganizationService.wsdl  org.openiam.srvc.am.OrganizationDataService
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o MetadataService.wsdl  org.openiam.srvc.common.MetadataWebService
-/devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o NotificationService.wsdl  org.openiam.idm.srvc.msg.service.MailService
+/devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o NotificationService.wsdl  org.openiam.srvc.user.MailService
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o ProvisioningService.wsdl  org.openiam.srvc.idm.ProvisionService
 
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o connectorService.wsdl  org.openiam.spml2.interf.ConnectorService

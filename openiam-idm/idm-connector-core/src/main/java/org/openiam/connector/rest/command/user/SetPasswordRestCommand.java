@@ -16,8 +16,8 @@ import org.openiam.provision.constant.StatusCodeType;
 import org.openiam.provision.request.PasswordRequest;
 import org.openiam.base.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.base.request.NotificationParam;
+import org.openiam.base.request.NotificationRequest;
 import org.springframework.stereotype.Service;
 
 /**

@@ -11,8 +11,8 @@ import org.openiam.connector.rest.command.base.AbstractLookupRestCommand;
 import org.openiam.provision.request.LookupRequest;
 import org.openiam.base.response.ObjectResponse;
 import org.openiam.base.response.SearchResponse;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.base.request.NotificationParam;
+import org.openiam.base.request.NotificationRequest;
 
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;

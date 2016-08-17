@@ -19,7 +19,7 @@
 /**
  *
  */
-package org.openiam.idm.srvc.msg.dto;
+package org.openiam.base.request;
 
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;

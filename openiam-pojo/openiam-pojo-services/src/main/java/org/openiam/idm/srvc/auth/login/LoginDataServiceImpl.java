@@ -19,9 +19,9 @@ import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
-import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.base.request.NotificationParam;
+import org.openiam.base.request.NotificationRequest;
+import org.openiam.idm.srvc.msg.service.MailDataService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
@@ -82,7 +82,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     private EmailAddressDAO emailAddressDao;
 
     @Autowired
-    private MailService mailService;
+    private MailDataService mailService;
 
     boolean encrypt = true; // default encryption setting
     private static final Log log = LogFactory
