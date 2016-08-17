@@ -12,7 +12,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.srvc.am.ContentProviderWebService;
-import org.openiam.srvc.lang.LanguageWebService;
+import org.openiam.srvc.common.LanguageWebService;
 import org.openiam.srvc.am.AuthorizationManagerWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;

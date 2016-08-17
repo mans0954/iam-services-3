@@ -1,4 +1,4 @@
-package org.openiam.srvc.user;
+package org.openiam.srvc.common;
 
 
 import org.openiam.base.request.NotificationRequest;

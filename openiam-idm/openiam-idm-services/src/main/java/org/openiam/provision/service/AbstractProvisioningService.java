@@ -84,7 +84,7 @@ import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.base.request.NotificationParam;
 import org.openiam.base.request.NotificationRequest;
-import org.openiam.srvc.user.MailService;
+import org.openiam.srvc.common.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;

@@ -11,7 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.request.NotificationParam;
 import org.openiam.base.request.NotificationRequest;
-import org.openiam.srvc.user.MailService;
+import org.openiam.srvc.common.MailService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;

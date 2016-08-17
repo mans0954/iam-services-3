@@ -11,7 +11,7 @@ import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.runner.RunWith;
-import org.openiam.srvc.lang.LanguageWebService;
+import org.openiam.srvc.common.LanguageWebService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LanguageSearchBean;

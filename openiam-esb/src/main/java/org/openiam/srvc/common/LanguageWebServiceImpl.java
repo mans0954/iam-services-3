@@ -1,4 +1,4 @@
-package org.openiam.srvc.lang;
+package org.openiam.srvc.common;
 
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.base.request.BaseGrudServiceRequest;
@@ -11,6 +11,7 @@ import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.srvc.common.LanguageWebService;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
@@ -19,7 +20,7 @@ import java.util.List;
 /**
  * Created by alexander on 08/08/16.
  */
-@WebService(endpointInterface = "org.openiam.srvc.lang.LanguageWebService",
+@WebService(endpointInterface = "org.openiam.srvc.common.LanguageWebService",
             targetNamespace = "urn:idm.openiam.org/srvc/lang/service", portName = "LanguageWebServicePort", serviceName = "LanguageWebService")
 @Service("languageWebService")
 public class LanguageWebServiceImpl extends AbstractApiService implements LanguageWebService {

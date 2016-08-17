@@ -1,4 +1,4 @@
-package org.openiam.srvc.user;
+package org.openiam.srvc.common;
 
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.base.request.NotificationRequest;
@@ -12,7 +12,7 @@ import javax.jws.WebService;
 import java.util.*;
 
 @Service("mailService")
-@WebService(endpointInterface = "org.openiam.srvc.user.MailService", targetNamespace = "urn:idm.openiam.org/srvc/msg", portName = "EmailWebServicePort", serviceName = "EmailWebService")
+@WebService(endpointInterface = "org.openiam.srvc.common.MailService", targetNamespace = "urn:idm.openiam.org/srvc/msg", portName = "EmailWebServicePort", serviceName = "EmailWebService")
 public class MailServiceImpl extends AbstractBaseService implements MailService {
 
     @Autowired
@@ -37,7 +37,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService 
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.srvc.user.MailService#sendWithCC(java.lang.String,
+     * org.openiam.srvc.common.MailService#sendWithCC(java.lang.String,
      * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
      * java.lang.String, boolean)
      */
@@ -54,7 +54,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService 
     /*
      * (non-Javadoc)
      * 
-     * @see org.openiam.srvc.user.MailService#send(java.lang.String,
+     * @see org.openiam.srvc.common.MailService#send(java.lang.String,
      * java.lang.String[], java.lang.String[], java.lang.String[],
      * java.lang.String, java.lang.String, boolean, java.lang.String[])
      */
@@ -72,7 +72,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService 
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.srvc.user.MailService#sendNotification(org.openiam
+     * org.openiam.srvc.common.MailService#sendNotification(org.openiam
      * .idm.srvc.msg.dto.NotificationRequest)
      */
     @Transactional
@@ -84,7 +84,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService 
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.srvc.user.MailService#SendTwitterMessage(java.
+     * org.openiam.srvc.common.MailService#SendTwitterMessage(java.
      * lang.String, java.lang.String)
      */
 
@@ -96,7 +96,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService 
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.srvc.user.MailService#tweetMessage(java.lang.String
+     * org.openiam.srvc.common.MailService#tweetMessage(java.lang.String
      * )
      */
     @Override

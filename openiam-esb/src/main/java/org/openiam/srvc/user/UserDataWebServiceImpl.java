@@ -77,6 +77,7 @@ import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.base.response.UserResponse;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.openiam.srvc.common.MailService;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

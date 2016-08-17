@@ -4,7 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.request.NotificationRequest;
 import org.openiam.provision.dto.PasswordSync;
-import org.openiam.srvc.user.MailService;
+import org.openiam.srvc.common.MailService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
