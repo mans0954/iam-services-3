@@ -25,7 +25,7 @@ import org.openiam.am.srvc.dto.jdbc.AuthorizationGroup;
 import org.openiam.am.srvc.dto.jdbc.AuthorizationResource;
 import org.openiam.am.srvc.dto.jdbc.AuthorizationRole;
 import org.openiam.base.TreeNode;
-import org.openiam.bpm.response.TaskWrapper;
+import org.openiam.base.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.res.dto.ResourceType;
 

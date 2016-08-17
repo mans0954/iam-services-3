@@ -312,7 +312,7 @@
                   address="${openiam.service_host}${openiam.idm.ws.path}URIFederationWebService" />
 
     <jaxws:client id="activitiClient"
-                  serviceClass="org.openiam.bpm.activiti.ActivitiService"
+                  serviceClass="org.openiam.srvc.activiti.ActivitiService"
                   address="${openiam.service_host}${openiam.idm.ws.path}ActivitiService" />
 
     <jaxws:client id="provisionServiceClient"

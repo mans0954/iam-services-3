@@ -1,4 +1,4 @@
-package org.openiam.bpm.response;
+package org.openiam.base.response;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -8,7 +8,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.activiti.engine.history.HistoricActivityInstance;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -54,23 +53,6 @@ public class TaskHistoryWrapper {
 	private ActivitiHistoricDetail variableDetails;
 	
 	public TaskHistoryWrapper() {}
-	
-	public TaskHistoryWrapper(final HistoricActivityInstance instance) {
-		this.id = instance.getId();
-		this.activityId = instance.getActivityId();
-		this.activityName = instance.getActivityName();
-		this.activityType = instance.getActivityType();
-		this.assigneeId = instance.getAssignee();
-		this.duration = instance.getDurationInMillis();
-		this.endTime = instance.getEndTime();
-		this.executionId = instance.getExecutionId();
-		this.processDefinitionId = instance.getProcessDefinitionId();
-		this.processInstanceId = instance.getProcessInstanceId();
-		this.startTime = instance.getStartTime();
-		this.taskId = instance.getTaskId();
-		this.calledProcessInstanceId = instance.getCalledProcessInstanceId();
-		this.tenantId = instance.getTenantId();
-	}
 	
 	public void setUserInfo(final UserEntity user) {
 		if(user != null) {

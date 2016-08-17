@@ -1,4 +1,4 @@
-package org.openiam.bpm.response;
+package org.openiam.base.response;
 
 import java.io.Serializable;
 

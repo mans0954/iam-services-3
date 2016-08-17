@@ -6,7 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.response.SetStringResponse;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.bpm.activiti.ActivitiService;
+import org.openiam.srvc.activiti.ActivitiService;
 import org.openiam.bpm.dto.BasicWorkflowResponse;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.util.ActivitiConstants;

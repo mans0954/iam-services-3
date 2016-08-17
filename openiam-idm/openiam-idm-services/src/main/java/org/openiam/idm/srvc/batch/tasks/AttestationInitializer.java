@@ -9,7 +9,7 @@ import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.bpm.activiti.ActivitiService;
+import org.openiam.srvc.activiti.ActivitiService;
 import org.openiam.bpm.dto.BasicWorkflowResponse;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.util.ActivitiConstants;

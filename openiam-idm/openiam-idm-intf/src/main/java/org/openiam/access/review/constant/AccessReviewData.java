@@ -11,7 +11,7 @@ import org.openiam.am.srvc.dto.jdbc.AuthorizationResource;
 import org.openiam.am.srvc.dto.jdbc.AuthorizationRole;
 import org.openiam.model.UserEntitlementsMatrix;
 import org.openiam.base.TreeNode;
-import org.openiam.bpm.response.TaskWrapper;
+import org.openiam.base.response.TaskWrapper;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
