@@ -1,43 +1,19 @@
 package org.openiam.bpm.activiti.delegate.user.newuser.displaymapper;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.delegate.JavaDelegate;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.activiti.delegate.user.displaymapper.AbstractUserDisplayMapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.continfo.dto.Address;
-import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.meta.dto.PageElement;
-import org.openiam.idm.srvc.meta.dto.PageElementValue;
-import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.provision.service.ProvisionService;
-import org.openiam.util.SpringContextProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import com.thoughtworks.xstream.XStream;
 
 public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper {
 

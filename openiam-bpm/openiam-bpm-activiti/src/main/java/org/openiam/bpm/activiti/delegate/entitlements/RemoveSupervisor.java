@@ -13,7 +13,7 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.provision.service.ProvisioningDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -25,10 +25,9 @@ public class RemoveSupervisor extends AbstractActivitiJob {
 	@Autowired
 	@Qualifier("userManager")
 	private UserDataService userManager;
-	
+
 	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
+	protected ProvisioningDataService provisionService;
 	
 	public RemoveSupervisor() {
 		super();

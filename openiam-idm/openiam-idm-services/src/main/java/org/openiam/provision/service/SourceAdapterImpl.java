@@ -9,7 +9,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.provision.dto.srcadapter.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -48,7 +48,7 @@ public class SourceAdapterImpl implements SourceAdapter {
     @Autowired
     private MetadataService metadataDS;
     @Autowired
-    private ManagedSystemWebService managedSysService;
+    private ManagedSystemService managedSystemService;
     @Autowired
     protected SysConfiguration sysConfiguration;
 
@@ -103,7 +103,7 @@ public class SourceAdapterImpl implements SourceAdapter {
 
     private String getManagedSystems() {
         StringBuilder sb = new StringBuilder("Available Managed System Ids (for principals) \n");
-        List<ManagedSysDto> managedSysDtos = managedSysService.getAllManagedSys();
+        List<ManagedSysDto> managedSysDtos = managedSystemService.getAllManagedSysDTO();
         if (CollectionUtils.isNotEmpty(managedSysDtos)) {
             for (ManagedSysDto managedSysDto : managedSysDtos) {
                 if ("ACTIVE".equals(managedSysDto.getStatus())) {

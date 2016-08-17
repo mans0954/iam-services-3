@@ -15,7 +15,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

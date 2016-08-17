@@ -2,9 +2,9 @@ package org.openiam.connector.rest.command.base;
 
 import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.SuspendResumeRequest;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.SuspendResumeRequest;
+import org.openiam.base.response.ResponseType;
 
 /**
  * Created with IntelliJ IDEA. User: alexander Date: 7/12/13 Time: 1:48 AM To

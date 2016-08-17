@@ -7,8 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.openiam.connector.soap.command.base.AbstractSearchSoapCommand;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.request.SearchRequest;
+import org.openiam.provision.request.SearchRequest;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 

@@ -15,7 +15,7 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.service.ObjectProvisionService;
+import org.openiam.provision.service.ObjectProvisionDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,8 +28,8 @@ public class CreateIdmGroupCommand  extends BaseReconciliationGroupCommand {
     private static final Log log = LogFactory.getLog(CreateIdmGroupCommand.class);
 
     @Autowired
-    @Qualifier("groupProvision")
-    private ObjectProvisionService<ProvisionGroup> provisionService;
+    @Qualifier("groupProvisionDataService")
+    private ObjectProvisionDataService<ProvisionGroup> provisionService;
 
     @Autowired
     private GroupDataService groupManager;

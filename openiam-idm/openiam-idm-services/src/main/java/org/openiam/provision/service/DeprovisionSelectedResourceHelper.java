@@ -11,8 +11,10 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.provision.PostProcessor;
+import org.openiam.provision.PreProcessor;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.base.response.ObjectResponse;
 import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -30,7 +32,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.util.UserUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
@@ -132,7 +134,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap); // prevent data rewriting
 
         // ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-        ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
+        ManagedSysDto mSys = managedSystemService.getManagedSysDtoByResource(res.getId());
         String managedSysId = (mSys != null) ? mSys.getId() : null;
         if (mSys == null || mSys.getConnectorId() == null) {
             return null;
@@ -147,7 +149,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES,userMgr.getUserAttributesDto(pUser.getId()));
 
         ManagedSystemObjectMatch matchObj = null;
-        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
+        ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParamDTO(managedSysId, ManagedSystemObjectMatch.USER);
         if (matchObjAry != null && matchObjAry.length > 0) {
             matchObj = matchObjAry[0];
             bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
@@ -301,7 +303,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
             	log.debug("Resource object = " + res);
             }
 
-            ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
+            ManagedSysDto managedSys = managedSystemService.getManagedSysDtoByResource(res.getId());
             String mSysId = (managedSys != null) ? managedSys.getId() : null;
             if (mSysId != null)  {
 
@@ -324,10 +326,10 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                         l.setIsLocked(0);
                         loginManager.updateLogin(l);
 
-                        ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
+                        ManagedSysDto mSys = managedSystemService.getManagedSys(l.getManagedSysId());
 
                         ManagedSystemObjectMatch matchObj = null;
-                        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
+                        ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParamDTO(mSys.getId(), ManagedSystemObjectMatch.USER);
                         if (matchObjAry != null && matchObjAry.length > 0) {
                             matchObj = matchObjAry[0];
                         }

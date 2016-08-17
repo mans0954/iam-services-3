@@ -39,7 +39,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.util.CustomJacksonMapper;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.provision.service.ProvisioningDataService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -75,8 +75,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	protected ActivitiHelper activitiHelper;
 
 	@Autowired
-	@Qualifier("defaultProvision")
-	protected ProvisionService provisionService;
+	protected ProvisioningDataService provisionService;
 
 	@Autowired
 	protected UserDataService userDataService;

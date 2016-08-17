@@ -33,13 +33,14 @@ import org.openiam.base.ws.*;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.cache.ProvisionUserResourceKeyGenerator;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.response.LookupAttributeResponse;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.provision.PostProcessor;
+import org.openiam.provision.PreProcessor;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.LookupRequest;
+import org.openiam.base.response.LookupAttributeResponse;
+import org.openiam.base.response.ObjectResponse;
+import org.openiam.base.response.ResponseType;
+import org.openiam.base.response.SearchResponse;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
@@ -79,13 +80,14 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.provision.dto.*;
-import org.openiam.provision.resp.LookupUserResponse;
-import org.openiam.provision.resp.ManagedSystemViewerResponse;
-import org.openiam.provision.resp.PasswordResponse;
-import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.base.response.LookupUserResponse;
+import org.openiam.base.response.ManagedSystemViewerResponse;
+import org.openiam.base.response.PasswordResponse;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.provision.type.ManagedSystemViewerBean;
+import org.openiam.provision.utils.ProvisionUtils;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -228,7 +230,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
      * (non-Javadoc)
      *
      * @see
-     * org.openiam.provision.service.ProvisionService#addUser(org.openiam.provision
+     * org.openiam.srvc.idm.ProvisionService#addUser(org.openiam.provision
      * .dto.ProvisionUser)
      */
     @Override
@@ -285,7 +287,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
      * (non-Javadoc)
      *
      * @see
-     * org.openiam.provision.service.ProvisionService#modifyUser(org.openiam
+     * org.openiam.srvc.idm.ProvisionService#modifyUser(org.openiam
      * .provision.dto.ProvisionUser)
      */
     @Override
@@ -423,7 +425,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.provision.service.ProvisionService#deleteUserWithSkipManagedSysList(java.lang.String
+     * org.openiam.srvc.idm.ProvisionService#deleteUserWithSkipManagedSysList(java.lang.String
      * , java.lang.String, java.lang.String)
      */
     @Override
@@ -535,12 +537,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 // terminate that identity
 
                 // call delete on the connector
-                ManagedSysDto mSys = managedSysService.getManagedSys(managedSystemId);
+                ManagedSysDto mSys = managedSystemService.getManagedSys(managedSystemId);
 
                 idmAuditLogChild.setTargetManagedSys(mSys.getId(), mSys.getName());
 
                 ManagedSystemObjectMatch matchObj = null;
-                ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
+                ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParamDTO(mSys.getId(), ManagedSystemObjectMatch.USER);
                 if (matchObjAry != null && matchObjAry.length > 0) {
                     matchObj = matchObjAry[0];
                     bindingMap.put(MATCH_PARAM, matchObj);
@@ -568,7 +570,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             if (preProcessScript != null && !preProcessScript.isEmpty()) {
                                 PreProcessor<ProvisionUser> ppScript = createPreProcessScript(preProcessScript);
                                 if (ppScript != null) {
-                                    if (executePreProcess(ppScript, bindingMap, pUser, null, null, "DELETE") == ProvisioningConstants.FAIL) {
+                                    if (ProvisionUtils.executePreProcess(ppScript, bindingMap, pUser, null, null, "DELETE") == ProvisioningConstants.FAIL) {
                                         response.setStatus(ResponseStatus.FAILURE);
                                         response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
                                         return response;
@@ -585,7 +587,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             if (postProcessScript != null && !postProcessScript.isEmpty()) {
                                 PostProcessor<ProvisionUser> ppScript = createPostProcessScript(postProcessScript);
                                 if (ppScript != null) {
-                                    executePostProcess(ppScript, bindingMap, pUser, null, null, "DELETE", connectorSuccess);
+                                    ProvisionUtils.executePostProcess(ppScript, bindingMap, pUser, null, null, "DELETE", connectorSuccess);
                                 }
                             }
 
@@ -654,11 +656,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             // identity.
                             if (!l.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
 
-                                ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
+                                ManagedSysDto mSys = managedSystemService.getManagedSys(l.getManagedSysId());
                                 idmAuditLogChild.setTargetManagedSys(mSys.getId(), mSys.getName());
 
                                 ManagedSystemObjectMatch matchObj = null;
-                                ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(
+                                ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParamDTO(
                                         mSys.getId(), ManagedSystemObjectMatch.USER);
                                 if (matchObjAry != null && matchObjAry.length > 0) {
                                     matchObj = matchObjAry[0];
@@ -697,7 +699,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                                 if (preProcessScript != null && !preProcessScript.isEmpty()) {
                                                     PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                                     if (ppScript != null) {
-                                                        if (executePreProcess(ppScript, bindingMap, pUser, null, null, "DELETE") == ProvisioningConstants.FAIL) {
+                                                        if (ProvisionUtils.executePreProcess(ppScript, bindingMap, pUser, null, null, "DELETE") == ProvisioningConstants.FAIL) {
                                                             continue;
                                                         }
                                                     }
@@ -716,7 +718,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                             if (postProcessScript != null && !postProcessScript.isEmpty()) {
                                                 PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                                 if (ppScript != null) {
-                                                    executePostProcess(ppScript, bindingMap, pUser, null, null, "DELETE", connectorSuccess);
+                                                    ProvisionUtils.executePostProcess(ppScript, bindingMap, pUser, null, null, "DELETE", connectorSuccess);
                                                 }
                                             }
                                         }
@@ -828,7 +830,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.provision.service.ProvisionService#lockUser(java.lang.String,
+     * org.openiam.srvc.idm.ProvisionService#lockUser(java.lang.String,
      * org.openiam.provision.dto.AccountLockEnum)
      */
     @Override
@@ -899,7 +901,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (userLogin != null) {
                 if (userLogin.getManagedSysId() != null && !userLogin.getManagedSysId().equals("0")) {
                     final String managedSysId = userLogin.getManagedSysId();
-                    final ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
+                    final ManagedSysDto managedSys = managedSystemService.getManagedSys(managedSysId);
                     final Login login = loginDozerConverter.convertToDTO(userLogin, false);
                     boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
                     ResponseType responsetype = suspend(requestorId, login, managedSys,
@@ -931,7 +933,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 final List<Resource> resourceList = resourceService.getResourcesForRoleNoLocalized(role.getId(), 0, Integer.MAX_VALUE, rsb);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
-                        ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getId());
+                        ManagedSysDto managedSys = managedSystemService.getManagedSysDtoByResource(resource.getId());
                         if (managedSys != null) {
                             boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
                             ResponseType responsetype = suspend(requestorId, primLogin, managedSys,
@@ -1400,7 +1402,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             // do check if provisioning user has source resource
                             // => we should skip it from double provisioning
                             // reconciliation case
-                            ManagedSysDto managedSys = managedSysService.getManagedSys(pUser.getSrcSystemId());
+                            ManagedSysDto managedSys = managedSystemService.getManagedSys(pUser.getSrcSystemId());
                             if (res.getId().equalsIgnoreCase(managedSys.getResourceId())) {
                                 continue;
                             }
@@ -1498,7 +1500,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
      * (non-Javadoc)
      *
      * @see
-     * org.openiam.provision.service.ProvisionService#resetPassword(org.openiam
+     * org.openiam.srvc.idm.ProvisionService#resetPassword(org.openiam
      * .provision.dto.PasswordSync)
      */
     @Override
@@ -1687,7 +1689,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             if (preProcessScript != null && !preProcessScript.isEmpty()) {
                                 final PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                 if (ppScript != null) {
-                                    if (executePreProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD") == ProvisioningConstants.FAIL) {
+                                    if (ProvisionUtils.executePreProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD") == ProvisioningConstants.FAIL) {
                                         continue;
                                     }
                                 }
@@ -1781,7 +1783,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             if (postProcessScript != null && !postProcessScript.isEmpty()) {
                                 final PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                 if (ppScript != null) {
-                                    executePostProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD", resp.getStatus() == StatusCodeType.SUCCESS);
+                                    ProvisionUtils.executePostProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD", resp.getStatus() == StatusCodeType.SUCCESS);
                                 }
                             }
                         } else {
@@ -1837,10 +1839,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             response.setPrincipalName(principalName);
             // get the connector for the managedSystem
 
-            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSysDto mSys = managedSystemService.getManagedSys(managedSysId);
             ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] objList = managedSysService.managedSysObjectParam(managedSysId,
+            ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParamDTO(managedSysId,
                     ManagedSystemObjectMatch.USER);
             if (objList != null && objList.length > 0) {
                 matchObj = objList[0];
@@ -1877,7 +1879,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (preProcessScript != null && !preProcessScript.isEmpty()) {
                 final PreProcessor ppScript = createPreProcessScript(preProcessScript);
                 if (ppScript != null) {
-                    if (executePreProcess(ppScript, null, null, null, reqType, "LOOKUP") == ProvisioningConstants.FAIL) {
+                    if (ProvisionUtils.executePreProcess(ppScript, null, null, null, reqType, "LOOKUP") == ProvisioningConstants.FAIL) {
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
                         return response;
@@ -1891,7 +1893,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (postProcessScript != null && !postProcessScript.isEmpty()) {
                 final PostProcessor ppScript = createPostProcessScript(postProcessScript);
                 if (ppScript != null) {
-                    executePostProcess(ppScript, null, null, null, responseType, "LOOKUP", responseType.getStatus() == StatusCodeType.SUCCESS);
+                    ProvisionUtils.executePostProcess(ppScript, null, null, null, responseType, "LOOKUP", responseType.getStatus() == StatusCodeType.SUCCESS);
                 }
             }
             if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getObjectList().size() == 0) {
@@ -1918,7 +1920,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.provision.service.ProvisionService#setPassword(org.openiam
+     * org.openiam.srvc.idm.ProvisionService#setPassword(org.openiam
      * .provision.dto.PasswordSync)
      */
     @Override
@@ -2110,7 +2112,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             if (preProcessScript != null && !preProcessScript.isEmpty()) {
                                 final PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                 if (ppScript != null) {
-                                    if (executePreProcess(ppScript, bindingMap, null, passwordSync, null, "SET_PASSWORD") == ProvisioningConstants.FAIL) {
+                                    if (ProvisionUtils.executePreProcess(ppScript, bindingMap, null, passwordSync, null, "SET_PASSWORD") == ProvisioningConstants.FAIL) {
                                         continue;
                                     }
                                 }
@@ -2171,7 +2173,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
                                     final PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                     if (ppScript != null) {
-                                        executePostProcess(ppScript, bindingMap, null, passwordSync, null, "SET_PASSWORD",
+                                        ProvisionUtils.executePostProcess(ppScript, bindingMap, null, passwordSync, null, "SET_PASSWORD",
                                                 connectorSuccess);
                                     }
                                 }
@@ -2358,7 +2360,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     }
 
     private LookupAttributeResponse lookupAttributes(String mSysId, String execMode) {
-        ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
+        ManagedSysDto mSys = managedSystemService.getManagedSys(mSysId);
         if (mSys != null) {
             LookupRequest lookupRequest = new LookupRequest();
             lookupRequest.setExecutionMode(execMode);
@@ -2904,7 +2906,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             return res;
         }
 
-        List<AttributeMapEntity> attrMapEntities = managedSysService.getAttributeMapsByManagedSysId(managedSysId);
+        List<AttributeMapEntity> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
         for (AttributeMapEntity ame : attrMapEntities) {
             if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
@@ -3128,7 +3130,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
  * (non-Javadoc)
  *
  * @see
- * org.openiam.provision.service.ProvisionService#disableUser(java.lang.
+ * org.openiam.srvc.idm.ProvisionService#disableUser(java.lang.
  * String, boolean)
  */
     @Override
@@ -3269,7 +3271,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
                         String managedSysId = lg.getManagedSysId();
                         // update the target system
-                        ManagedSysDto mSys = managedSysService
+                        ManagedSysDto mSys = managedSystemService
                                 .getManagedSys(managedSysId);
 
                         final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
@@ -3290,7 +3292,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
                             final PreProcessor ppScript = createPreProcessScript(preProcessScript);
                             if (ppScript != null) {
-                                if (executePreProcess(ppScript, bindingMap, user, null, null, "DISABLE") == ProvisioningConstants.FAIL) {
+                                if (ProvisionUtils.executePreProcess(ppScript, bindingMap, user, null, null, "DISABLE") == ProvisioningConstants.FAIL) {
                                     continue;
                                 }
                             }
@@ -3351,7 +3353,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         if (postProcessScript != null && !postProcessScript.isEmpty()) {
                             final PostProcessor ppScript = createPostProcessScript(postProcessScript);
                             if (ppScript != null) {
-                                executePostProcess(ppScript, bindingMap, user, null, null, "DISABLE", StatusCodeType.SUCCESS.equals(resp.getStatus()));
+                                ProvisionUtils.executePostProcess(ppScript, bindingMap, user, null, null, "DISABLE", StatusCodeType.SUCCESS.equals(resp.getStatus()));
                             }
                         }
                     } else {

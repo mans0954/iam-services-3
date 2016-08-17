@@ -2,7 +2,8 @@ package org.openiam.provision.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.base.response.SearchResponse;
+import org.openiam.provision.PostProcessor;
 import org.openiam.provision.dto.PasswordSync;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;

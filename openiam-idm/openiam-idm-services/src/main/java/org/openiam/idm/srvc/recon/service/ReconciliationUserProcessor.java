@@ -17,10 +17,11 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ObjectValue;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.SearchRequest;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.provision.service.ProvisioningDataService;
+import org.openiam.provision.type.ObjectValue;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.SearchRequest;
+import org.openiam.base.response.SearchResponse;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.parser.csv.UserCSVParser;
@@ -35,15 +36,14 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.base.response.LoginResponse;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.recon.command.BaseReconciliationCommand;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
@@ -58,7 +58,7 @@ import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultUtil;
 import org.openiam.idm.srvc.recon.util.Serializer;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceService;
-import org.openiam.idm.srvc.synch.dto.Attribute;
+import org.openiam.provision.type.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -67,10 +67,9 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.UserUtils;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.base.response.LookupUserResponse;
 import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.ProvisionServiceUtil;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
@@ -95,11 +94,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     @Value("${iam.files.location}")
     private String absolutePath;
     @Autowired
-    @Qualifier("managedSysService")
-    private ManagedSystemWebService managedSystemWebService;
+    private ManagedSystemService managedSystemService;
     @Autowired
-    @Qualifier("provisionConnectorWebService")
-    private ProvisionConnectorWebService connectorService;
+    private ProvisionConnectorService connectorService;
 	@Autowired
 	private LoginDataService loginManager;
     @Autowired
@@ -112,8 +109,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     @Autowired
     public UserSearchBeanCSVParser userSearchCSVParser;
     @Autowired
-    @Qualifier("defaultProvision")
-    private ProvisionService provisionService;
+    private ProvisioningDataService provisionService;
     @Autowired
     @Qualifier("matchRuleFactory")
     private MatchRuleFactory matchRuleFactory;
@@ -136,7 +132,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 
         Resource res = resourceService.findResourceDtoById(config.getResourceId(), null);
 
-        ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
+        ManagedSysDto mSys = managedSystemService.getManagedSysDtoByResource(res.getId());
         if (mSys == null) {
 			log.error("Requested managed sys does not exist");
 			return new ReconciliationResponse(ResponseStatus.FAILURE);
@@ -159,7 +155,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             }
         }
         // have resource connector
-        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
+        ProvisionConnectorDto connector = connectorService.getDto(mSys.getConnectorId());
 
         if (connector.getServiceUrl().contains("CSV")) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "CSV Processing started for configId="
@@ -178,13 +174,13 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             return new ReconciliationResponse(ResponseStatus.SUCCESS);
         }
         ReconciliationResultBean resultBean = new ReconciliationResultBean();
-        List<AttributeMap> attrMap = managedSystemWebService.getResourceAttributeMaps(mSys.getResourceId());
+        List<AttributeMap> attrMap = managedSystemService.getResourceAttributeMapsDTO(mSys.getResourceId());
         resultBean.setObjectType("USER");
         resultBean.setRows(new ArrayList<ReconciliationResultRow>());
         resultBean.setHeader(ReconciliationResultUtil.setHeaderInReconciliationResult(attrMap));
 
         // initialization match parameters of connector
-        ManagedSystemObjectMatch matchObjAry[] = managedSystemWebService.managedSysObjectParam(mSys.getId(), "USER");
+        ManagedSystemObjectMatch matchObjAry[] = managedSystemService.managedSysObjectParamDTO(mSys.getId(), "USER");
         // execute all Reconciliation Commands need to be check
         if (matchObjAry == null || matchObjAry.length < 1) {
             log.error("No match object found for this managed sys");
@@ -633,7 +629,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         try {
             bindingMap.put("user", new ProvisionUser(user));
             bindingMap.put("managedSysId", identity.getManagedSysId());
-            final ManagedSystemObjectMatch[] matches = managedSystemWebService.managedSysObjectParam(
+            final ManagedSystemObjectMatch[] matches = managedSystemService.managedSysObjectParamDTO(
                     identity.getManagedSysId(), "USER");
             if (matches != null && matches.length > 0) {
                 bindingMap.put("matchParam", matches[0]);

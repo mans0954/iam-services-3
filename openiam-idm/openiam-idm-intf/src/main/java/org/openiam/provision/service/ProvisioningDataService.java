@@ -1,17 +1,17 @@
 package org.openiam.provision.service;
 
 import org.openiam.base.ws.Response;
-import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.base.response.ObjectResponse;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.base.response.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.*;
-import org.openiam.provision.resp.LookupUserResponse;
-import org.openiam.provision.resp.ManagedSystemViewerResponse;
-import org.openiam.provision.resp.PasswordResponse;
-import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.base.response.LookupUserResponse;
+import org.openiam.base.response.ManagedSystemViewerResponse;
+import org.openiam.base.response.PasswordResponse;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 

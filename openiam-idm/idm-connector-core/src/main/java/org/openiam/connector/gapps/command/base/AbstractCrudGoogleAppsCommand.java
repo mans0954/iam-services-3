@@ -1,7 +1,6 @@
 package org.openiam.connector.gapps.command.base;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,16 +8,13 @@ import java.util.Map;
 import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.gapps.GoogleAgent;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.CrudRequest;
+import org.openiam.base.response.ObjectResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.provision.type.ExtensibleUser;
 
-import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
-import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
 
 /**

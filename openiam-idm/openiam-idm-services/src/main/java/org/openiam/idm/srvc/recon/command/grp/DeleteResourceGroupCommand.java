@@ -1,23 +1,17 @@
 package org.openiam.idm.srvc.recon.command.grp;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.BaseAttribute;
 import org.openiam.base.ws.Response;
-import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.provision.request.CrudRequest;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
-import org.openiam.idm.srvc.recon.service.PopulationScript;
-import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.ObjectProvisionService;
+import org.openiam.provision.service.ObjectProvisionDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
@@ -25,22 +19,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component("deleteResourceGroupCommand")
 public class DeleteResourceGroupCommand extends BaseReconciliationGroupCommand {
     private static final Log log = LogFactory.getLog(DeleteResourceGroupCommand.class);
 
     @Autowired
-    @Qualifier("groupProvision")
-    private ObjectProvisionService<ProvisionGroup> provisionService;
+    @Qualifier("groupProvisionDataService")
+    private ObjectProvisionDataService<ProvisionGroup> provisionService;
 
     @Autowired
-    @Qualifier("managedSysService")
-    private ManagedSystemWebService managedSysService;
+    protected ManagedSystemService managedSystemService;
 
     @Autowired
     private ConnectorAdapter connectorAdapter;
@@ -59,7 +49,7 @@ public class DeleteResourceGroupCommand extends BaseReconciliationGroupCommand {
 	        log.debug("Do delete for Group: " + principal);
     	}
 		if(group == null) {
-            ManagedSysDto mSys = managedSysService.getManagedSys(mSysID);
+            ManagedSysDto mSys = managedSystemService.getManagedSys(mSysID);
             if(log.isDebugEnabled()) {
             	log.debug("Calling delete with Remote connector");
             }

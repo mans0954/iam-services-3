@@ -41,12 +41,12 @@ import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.resp.LookupUserResponse;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.base.response.LookupUserResponse;
+import org.openiam.provision.service.ProvisioningDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -62,12 +62,10 @@ public class LDAPLoginModule extends AbstractLoginModule {
     private static final Log log = LogFactory.getLog(LDAPLoginModule.class);
 
     @Autowired
-    @Qualifier("defaultProvision")
-    protected ProvisionService provisionService;
+    private ProvisioningDataService provisionService;
 
     @Autowired
-    @Qualifier("managedSysService")
-    protected ManagedSystemWebService managedSystemWebService;
+    protected ManagedSystemService managedSystemService;
 
 	@Override
 	protected void validate(AuthenticationContext context) throws Exception {

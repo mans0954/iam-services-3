@@ -21,7 +21,7 @@ import org.openiam.am.srvc.searchbean.AuthProviderSearchBean;
 import org.openiam.srvc.am.AuthProviderWebService;
 import org.openiam.srvc.am.AuthResourceAttributeWebService;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.srvc.idm.ManagedSystemWebService;
 import org.openiam.srvc.common.PolicyDataService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;

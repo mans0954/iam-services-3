@@ -8,10 +8,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.openiam.connector.rest.command.base.AbstractLookupRestCommand;
-import org.openiam.connector.rest.command.base.AbstractSearchRestCommand;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.provision.request.LookupRequest;
+import org.openiam.base.response.ObjectResponse;
+import org.openiam.base.response.SearchResponse;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 

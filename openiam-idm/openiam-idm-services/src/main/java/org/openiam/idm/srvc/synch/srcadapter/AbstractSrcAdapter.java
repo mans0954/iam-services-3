@@ -25,7 +25,8 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.provision.service.ProvisioningDataService;
+import org.openiam.provision.type.Attribute;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,10 +59,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     protected LoginDozerConverter loginDozerConverter;
     @Autowired
     protected RoleDataService roleDataService;
-    
+
     @Autowired
-    @Qualifier("defaultProvision")
-    protected ProvisionService provService;
+    protected ProvisioningDataService provisionService;
     
     @Autowired
     protected UserDozerConverter userDozerConverter;
@@ -294,7 +294,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                     }
 
                 } else if (retval == TransformScript.DELETE && pUser.getUser() != null) {
-                    provService.deleteByUserId(pUser.getId(), UserStatusEnum.REMOVE, systemAccount);
+                    provisionService.deleteByUserId(pUser.getId(), UserStatusEnum.REMOVE, systemAccount);
 
                 } else {
                     // call prov service
@@ -306,7 +306,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                             pUser.setId(usr.getId());
                             try {
 
-                                provService.modifyUser(pUser);
+                                provisionService.modifyUser(pUser);
                                 if(log.isDebugEnabled()) {
                                     log.debug("================ After Modify => "+(System.currentTimeMillis()-startTime));
                                 }
@@ -319,7 +319,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                             }
                             pUser.setId(null);
                             try {
-                                provService.addUser(pUser);
+                                provisionService.addUser(pUser);
                                 if(log.isDebugEnabled()) {
                                     log.debug("================ After Add => "+(System.currentTimeMillis()-startTime));
                                 }

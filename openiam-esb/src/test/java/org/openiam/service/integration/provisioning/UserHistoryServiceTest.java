@@ -18,7 +18,7 @@ import org.openiam.srvc.am.RoleDataWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.srvc.user.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.srvc.idm.ProvisionService;
 import org.openiam.service.integration.AbstractServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

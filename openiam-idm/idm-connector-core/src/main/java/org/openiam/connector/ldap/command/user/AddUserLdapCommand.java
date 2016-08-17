@@ -1,10 +1,9 @@
 package org.openiam.connector.ldap.command.user;
 
-import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.ldap.command.base.AbstractCrudLdapCommand;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.request.CrudRequest;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -14,7 +13,6 @@ import org.openiam.connector.ldap.dirtype.Directory;
 import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.springframework.stereotype.Service;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.ldap.LdapContext;

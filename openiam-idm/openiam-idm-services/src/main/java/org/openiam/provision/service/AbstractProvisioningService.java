@@ -21,15 +21,15 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.request.PasswordRequest;
-import org.openiam.connector.type.request.SuspendResumeRequest;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.provision.PostProcessor;
+import org.openiam.provision.PreProcessor;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.CrudRequest;
+import org.openiam.provision.request.PasswordRequest;
+import org.openiam.provision.request.SuspendResumeRequest;
+import org.openiam.base.response.ObjectResponse;
+import org.openiam.base.response.ResponseType;
 import org.openiam.dozer.converter.AddressDozerConverter;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.EmailAddressDozerConverter;
@@ -82,8 +82,6 @@ import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -116,7 +114,7 @@ import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionActionEvent;
 import org.openiam.provision.dto.ProvisionActionTypeEnum;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
@@ -189,9 +187,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
-    @Qualifier("managedSysService")
-    protected ManagedSystemWebService managedSysService;
-    @Autowired
     protected RoleDataService roleDataService;
     @Autowired
     protected GroupDataService groupManager;
@@ -206,16 +201,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     @Autowired
     protected ConnectorAdapter connectorAdapter;
     @Autowired
-    @Qualifier("provisionConnectorWebService")
-    protected ProvisionConnectorWebService provisionConnectorWebService;
-    @Autowired
     protected ValidateConnectionConfig validateConnectionConfig;
     @Autowired
     protected PasswordHistoryDAO passwordHistoryDao;
     @Autowired
     protected UserDozerConverter userDozerConverter;
     @Autowired
-    ResourceDozerConverter resourceDozerConverter;
+    protected ResourceDozerConverter resourceDozerConverter;
     @Autowired
     protected SupervisorDozerConverter supervisorDozerConverter;
     @Autowired
@@ -736,48 +728,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         return 0;
     }
 
-    static int executePreProcess(PreProcessor<ProvisionUser> ppScript,
-                                 Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, LookupRequest lookupRequest, String operation) {
-        log.info("======= call PreProcessor: ppScript=" + ppScript + ", operation=" + operation);
-        if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.add(user, bindingMap);
-        } else if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modify(user, bindingMap);
-        } else if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.delete(user, bindingMap);
-        } else if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(passwordSync, bindingMap);
-        } else if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.resetPassword(passwordSync, bindingMap);
-        } else if ("DISABLE".equalsIgnoreCase(operation)) {
-            return ppScript.disable(user, bindingMap);
-        } else if ("LOOKUP".equalsIgnoreCase(operation)) {
-            return ppScript.lookupRequest(lookupRequest);
-        }
 
-        return 0;
-    }
-
-    static int executePostProcess(PostProcessor<ProvisionUser> ppScript,
-                                  Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, SearchResponse searchResponse, String operation, boolean success) {
-        log.info("======= call PostProcessor: ppScript=" + ppScript + ", operation=" + operation);
-        if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.add(user, bindingMap, success);
-        } else if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modify(user, bindingMap, success);
-        } else if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.delete(user, bindingMap, success);
-        } else if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(passwordSync, bindingMap, success);
-        } else if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.resetPassword(passwordSync, bindingMap, success);
-        } else if ("DISABLE".equalsIgnoreCase(operation)) {
-            return ppScript.disable(user, bindingMap, success);
-        } else if ("LOOKUP".equalsIgnoreCase(operation)) {
-            return ppScript.lookupRequest(searchResponse);
-        }
-        return 0;
-    }
 
     public void updateEmails(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLogEntity parentLog) {
         // Processing emails

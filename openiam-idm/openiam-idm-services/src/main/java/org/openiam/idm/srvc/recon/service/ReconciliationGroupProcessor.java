@@ -14,10 +14,11 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ObjectValue;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.SearchRequest;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.provision.service.ObjectProvisionDataService;
+import org.openiam.provision.type.ObjectValue;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.SearchRequest;
+import org.openiam.base.response.SearchResponse;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -32,8 +33,8 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.recon.command.BaseReconciliationCommand;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
@@ -42,15 +43,14 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceService;
-import org.openiam.idm.srvc.synch.dto.Attribute;
+import org.openiam.provision.type.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.resp.LookupObjectResponse;
+import org.openiam.base.response.LookupObjectResponse;
 import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.ObjectProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.script.ScriptIntegration;
@@ -68,12 +68,10 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     private ResourceService resourceDataService;
 
     @Autowired
-    @Qualifier("managedSysService")
-    private ManagedSystemWebService managedSysService;
+    protected ManagedSystemService managedSystemService;
 
     @Autowired
-    @Qualifier("provisionConnectorWebService")
-    private ProvisionConnectorWebService connectorService;
+    protected ProvisionConnectorService connectorService;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -101,8 +99,8 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     private IdentityService identityService;
 
     @Autowired
-    @Qualifier("groupProvision")
-    private ObjectProvisionService provisionService;
+    @Qualifier("groupProvisionDataService")
+    private ObjectProvisionDataService<ProvisionGroup> provisionService;
 
 	@Autowired
 	ReconciliationConfigService reconConfigService;
@@ -118,7 +116,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     	}
         Resource res = resourceDataService.findResourceDtoById(config.getResourceId(), null);
 
-        ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
+        ManagedSysDto mSys = managedSystemService.getManagedSysDtoByResource(res.getId());
 		if (mSys == null) {
 			log.error("Requested managed sys does not exist");
 			return new ReconciliationResponse(ResponseStatus.FAILURE);
@@ -139,12 +137,12 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         }
 
         // have resource connector
-        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
+        ProvisionConnectorDto connector = connectorService.getDto(mSys.getConnectorId());
 
-        List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
+        List<AttributeMap> attrMap = managedSystemService.getResourceAttributeMapsDTO(res.getId());
 
         // initialization match parameters of connector
-        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), "GROUP");
+        ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParamDTO(mSys.getId(), "GROUP");
         // execute all Reconciliation Commands need to be check
         if (matchObjAry.length == 0) {
             log.error("No match object found for this managed sys");

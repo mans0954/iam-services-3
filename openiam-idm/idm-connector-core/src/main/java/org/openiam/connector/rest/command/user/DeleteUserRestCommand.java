@@ -10,8 +10,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.connector.rest.command.base.AbstractDeleteRestCommand;
 
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.request.CrudRequest;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.provision.type.ExtensibleUser;

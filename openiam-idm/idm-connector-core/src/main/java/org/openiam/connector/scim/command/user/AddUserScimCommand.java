@@ -1,12 +1,7 @@
 package org.openiam.connector.scim.command.user;
 
 import java.net.HttpURLConnection;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -15,9 +10,8 @@ import org.openiam.connector.common.scim.S;
 import org.openiam.connector.common.scim.TestRSA;
 import org.openiam.connector.scim.command.base.AbstractAddScimCommand;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.request.CrudRequest;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;

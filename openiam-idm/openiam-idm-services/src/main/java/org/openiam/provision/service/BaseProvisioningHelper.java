@@ -7,8 +7,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.provision.request.CrudRequest;
+import org.openiam.base.response.ObjectResponse;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -19,8 +19,7 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
+import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -29,6 +28,8 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.provision.PostProcessor;
+import org.openiam.provision.PreProcessor;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleUser;
@@ -49,8 +50,7 @@ public class BaseProvisioningHelper {
     @Autowired
     protected LoginDAO loginDao;
     @Autowired
-    @Qualifier("managedSysService")
-    protected ManagedSystemWebService managedSysService;
+    protected ManagedSystemService managedSystemService;
     @Autowired
     protected ManagedSystemService managedSysDaoService;
     @Autowired
@@ -86,10 +86,9 @@ public class BaseProvisioningHelper {
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
-    
+
     @Autowired
-    @Qualifier("provisionConnectorWebService")
-    protected ProvisionConnectorWebService connectorService;
+    private ProvisionConnectorService connectorService;
 
     @Autowired
     protected LoginDozerConverter loginDozerConverter;

@@ -31,7 +31,7 @@ import org.openiam.provision.dto.ProvisionActionEnum;
 import org.openiam.provision.dto.ProvisionActionEvent;
 import org.openiam.provision.dto.ProvisionActionTypeEnum;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.provision.service.ActionEventBuilder;
 import org.openiam.provision.service.ProvisionServiceEventProcessor;
 import org.springframework.beans.factory.annotation.Autowired;

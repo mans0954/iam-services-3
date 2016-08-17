@@ -98,12 +98,12 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}RoleDataWebService" />
     </bean>
 
-    <bean id="groupProvisionServiceClient" class="org.openiam.provision.service.ObjectProvisionService"
+    <bean id="groupProvisionServiceClient" class="org.openiam.srvc.idm.ObjectProvisionService"
           factory-bean="groupProvisionServiceFactory" factory-method="create" />
 
     <bean id="groupProvisionServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.provision.service.ObjectProvisionService" />
+                  value="org.openiam.srvc.idm.ObjectProvisionService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}GroupProvisionService" />
     </bean>
@@ -199,10 +199,10 @@
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}FileWebService" />
     </bean>
-    <bean id="csvConnector" class="org.openiam.connector.ConnectorService"
+    <bean id="csvConnector" class="org.openiam.srvc.idm.ConnectorService"
           factory-bean="csvConnectorFactory" factory-method="create" />
     <bean id="csvConnectorFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.connector.ConnectorService" />
+        <property name="serviceClass" value="org.openiam.srvc.idm.ConnectorService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}CSVConnectorService" />
     </bean>
@@ -316,7 +316,7 @@
                   address="${openiam.service_host}${openiam.idm.ws.path}ActivitiService" />
 
     <jaxws:client id="provisionServiceClient"
-                  serviceClass="org.openiam.provision.service.ProvisionService"
+                  serviceClass="org.openiam.srvc.idm.ProvisionService"
                   address="${openiam.service_host}${openiam.connector.ws.path}ProvisioningService" />
 
     <jaxws:client id="propertyValuerServiceClient"
@@ -328,15 +328,15 @@
                   address="${openiam.service_host}${openiam.connector.ws.path}AccessRightDataService" />
 
     <jaxws:client id="reconciliationServiceClient"
-                  serviceClass="org.openiam.idm.srvc.recon.ws.ReconciliationWebService"
+                  serviceClass="org.openiam.srvc.idm.ReconciliationWebService"
                   address="${openiam.service_host}${openiam.connector.ws.path}ReconciliationWebService" />
 
     <jaxws:client id="managedSysServiceClient"
-                  serviceClass="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService"
+                  serviceClass="org.openiam.srvc.idm.ManagedSystemWebService"
                   address="${openiam.service_host}${openiam.connector.ws.path}ManagedSystemWebService" />
 
     <jaxws:client id="provisionConnectorWebServiceClient"
-                  serviceClass="org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService"
+                  serviceClass="org.openiam.srvc.idm.ProvisionConnectorWebService"
                   address="${openiam.service_host}${openiam.connector.ws.path}ConnectorWebService" />
 
     <jaxws:client id="metadataServiceClient"
@@ -344,7 +344,7 @@
                   address="${openiam.service_host}${openiam.idm.ws.path}MetadataWebService" />
 
     <jaxws:client id="identityServiceClient"
-                  serviceClass="org.openiam.idm.srvc.auth.ws.IdentityWebService"
+                  serviceClass="org.openiam.srvc.idm.IdentityWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}IdentityWebService" />
 
     <jaxws:client id="groupServiceClient"
@@ -364,11 +364,11 @@
                   address="${openiam.service_host}${openiam.idm.ws.path}ElasticSearchWebService" />
                   
     <jaxws:client id="connectorServiceClient"
-                  serviceClass="org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService"
+                  serviceClass="org.openiam.srvc.idm.ProvisionConnectorWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}ConnectorWebService" />
 
     <jaxws:client id="syncServiceClient"
-                  serviceClass="org.openiam.idm.srvc.synch.ws.IdentitySynchWebService"
+                  serviceClass="org.openiam.srvc.idm.IdentitySynchWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}IdentitySynchWebService" />
 
 </beans>

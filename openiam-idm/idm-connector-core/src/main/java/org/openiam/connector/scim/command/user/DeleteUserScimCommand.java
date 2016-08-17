@@ -8,7 +8,7 @@ import org.openiam.connector.common.scim.S;
 import org.openiam.connector.common.scim.TestRSA;
 import org.openiam.connector.scim.command.base.AbstractDeleteScimCommand;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.provision.constant.ErrorCode;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 

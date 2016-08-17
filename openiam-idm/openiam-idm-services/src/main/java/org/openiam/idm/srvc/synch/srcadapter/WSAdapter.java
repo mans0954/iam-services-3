@@ -34,12 +34,12 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.service.*;
+import org.openiam.provision.type.Attribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.*;
-import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 

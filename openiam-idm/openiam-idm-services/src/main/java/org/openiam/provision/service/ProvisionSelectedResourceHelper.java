@@ -29,14 +29,13 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.util.UserUtils;
@@ -174,7 +173,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
 
         Map<String, Object> bindingMap = new HashMap<>(tmpMap); // prevent data rewriting
 
-        ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
+        ManagedSysDto managedSys = managedSystemService.getManagedSysDtoByResource(res.getId());
         String managedSysId = (managedSys != null) ? managedSys.getId() : null;
         if (managedSysId != null) {
             // we are checking if SrcSystemId is set in ProvisionUser it
@@ -203,11 +202,11 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             bindingMap.put(AbstractProvisioningService.USER, targetSysProvUser);
             bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
 
-            List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
+            List<AttributeMap> attrMap = managedSystemService.getResourceAttributeMapsDTO(res.getId());
 
 
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
+            ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParamDTO(managedSysId, ManagedSystemObjectMatch.USER);
             if (matchObjAry != null && matchObjAry.length > 0) {
                 matchObj = matchObjAry[0];
                 bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);

@@ -2,8 +2,7 @@ package org.openiam.connector.csv.command.user;
 
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.connector.csv.command.base.AbstractCrudCSVCommand;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.idm.parser.csv.CSVParser;
+import org.openiam.provision.constant.ErrorCode;
 import org.openiam.idm.parser.csv.ExtensibleUserCSVParser;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;

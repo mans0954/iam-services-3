@@ -2,7 +2,6 @@ package org.openiam.idm.srvc.recon.command.grp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -11,7 +10,6 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

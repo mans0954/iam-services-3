@@ -1,35 +1,24 @@
 package org.openiam.idm.srvc.recon.command;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseAttribute;
-import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.provision.request.CrudRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
-import org.openiam.idm.srvc.recon.service.PopulationScript;
-import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.provision.service.AbstractProvisioningService;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.provision.service.ProvisioningDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component("deleteResourceAccountUserCommand")
 public class DeleteResourceAccountUserCommand extends BaseReconciliationUserCommand {
@@ -37,15 +26,13 @@ public class DeleteResourceAccountUserCommand extends BaseReconciliationUserComm
     private static final Log log = LogFactory.getLog(DeleteResourceAccountUserCommand.class);
 
     @Autowired
-    @Qualifier("managedSysService")
-    private ManagedSystemWebService managedSysService;
+    protected ManagedSystemService managedSystemService;
 
     @Autowired
     private ConnectorAdapter connectorAdapter;
 
     @Autowired
-    @Qualifier("defaultProvision")
-    private ProvisionService provisionService;
+    private ProvisioningDataService provisionService;
 
     public DeleteResourceAccountUserCommand(){
     }
@@ -57,7 +44,7 @@ public class DeleteResourceAccountUserCommand extends BaseReconciliationUserComm
 			log.debug("Delete Resource for principal: " + principal);
 		}
 		if(user == null) {
-            ManagedSysDto mSys = managedSysService.getManagedSys(mSysID);
+            ManagedSysDto mSys = managedSystemService.getManagedSys(mSysID);
 
             CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
             request.setObjectIdentity(principal);

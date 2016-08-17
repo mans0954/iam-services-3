@@ -16,8 +16,8 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.gapps.GoogleUtils;
-import org.openiam.connector.type.request.RequestType;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.provision.request.RequestType;
+import org.openiam.base.response.ResponseType;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -29,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
-import com.google.gdata.data.codesearch.File;
-import com.jcraft.jsch.jce.Random;
 
 public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Response extends ResponseType>
 		extends AbstractCommand<Request, Response> {

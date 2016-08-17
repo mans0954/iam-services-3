@@ -1,15 +1,10 @@
 package org.openiam.connector.common.command;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.connector.common.data.ConnectorConfiguration;
-import org.openiam.connector.ldap.command.base.AbstractLdapCommand;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.response.LookupAttributeResponse;
-import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.LookupRequest;
+import org.openiam.base.response.LookupAttributeResponse;
 import org.openiam.idm.srvc.mngsys.service.AttributeNamesLookupService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;

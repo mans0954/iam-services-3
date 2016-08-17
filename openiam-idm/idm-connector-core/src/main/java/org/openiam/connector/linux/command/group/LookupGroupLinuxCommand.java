@@ -4,8 +4,8 @@ import org.openiam.connector.linux.command.base.AbstractLookupLinuxCommand;
 import org.openiam.connector.linux.data.LinuxGroup;
 import org.openiam.connector.linux.ssh.SSHAgent;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.base.response.SearchResponse;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 

@@ -10,7 +10,7 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.service.ObjectProvisionService;
+import org.openiam.provision.service.ObjectProvisionDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -20,8 +20,8 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
 	private GroupDataService groupDataService;
 
     @Autowired
-    @Qualifier("groupProvision")
-    private ObjectProvisionService<ProvisionGroup> groupProvisionService;
+    @Qualifier("groupProvisionDataService")
+    private ObjectProvisionDataService<ProvisionGroup> groupProvisionService;
 	
 	public SaveGroupDelegate() {
 		super();
