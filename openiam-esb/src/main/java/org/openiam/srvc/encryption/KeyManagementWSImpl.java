@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.key.ws;
+package org.openiam.srvc.encryption;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,7 +15,7 @@ import javax.jws.WebService;
  * Date: 19.10.12
  */
 @Service("keyManagementWS")
-@WebService(endpointInterface = "org.openiam.idm.srvc.key.ws.KeyManagementWS",
+@WebService(endpointInterface = "org.openiam.srvc.encryption.KeyManagementWS",
             targetNamespace = "urn:idm.openiam.org/srvc/key/service", portName = "KeyManagementWSPort",
             serviceName = "KeyManagementWS")
 public class KeyManagementWSImpl implements KeyManagementWS {

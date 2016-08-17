@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.key.ws;
+package org.openiam.srvc.encryption;
 
 import org.openiam.base.ws.Response;
 

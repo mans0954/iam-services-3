@@ -4,7 +4,7 @@ import org.apache.cxf.frontend.ClientProxyFactoryBean;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.openiam.srvc.user.LoginDataWebService;
 import org.openiam.srvc.am.GroupDataWebService;
-import org.openiam.idm.srvc.key.ws.KeyManagementWS;
+import org.openiam.srvc.encryption.KeyManagementWS;
 import org.openiam.srvc.am.OrganizationDataService;
 import org.openiam.srvc.am.RoleDataWebService;
 import org.openiam.srvc.user.UserDataWebService;
