@@ -24,15 +24,14 @@ package org.openiam.idm.srvc.synch.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
+import org.openiam.base.request.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.dto.SynchReviewRequest;
+import org.openiam.base.request.SynchReviewRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import javax.jws.WebService;
 import java.util.concurrent.Executors;
 
 /**

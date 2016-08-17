@@ -23,7 +23,7 @@ package org.openiam.srvc.idm;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.base.response.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.generic.GenericObjectSynchService;
 import org.springframework.beans.factory.annotation.Autowired;

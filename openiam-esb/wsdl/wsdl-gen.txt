@@ -1,7 +1,7 @@
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o AuthenticationService.wsdl org.openiam.idm.srvc.auth.service.AuthenticationService
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o AuditService.wsdl  org.openiam.idm.srvc.audit.service.IdmAuditLogDataService
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o PolicyService.wsdl  org.openiam.srvc.common.PolicyDataService
-/devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o BatchDataService.wsdl  org.openiam.idm.srvc.batch.service.BatchDataService
+/devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o BatchDataService.wsdl  org.openiam.srvc.batch.BatchDataService
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o CategoryDataService.wsdl  org.openiam.idm.srvc.cat.service.CategoryDataService
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o ReferenceDataService.wsdl  org.openiam.idm.srvc.cd.service.ReferenceDataService
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o LoginDataService.wsdl  org.openiam.srvc.user.LoginDataWebService
@@ -33,4 +33,4 @@ BPM Integration
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /workspace/idm-ee/openiam-pojo-intf/target/classes/ -d /workspace/idm-ee/openiam-idm-esb/wsdl/ -o AuthorizationService.wsdl  org.openiam.idm.srvc.auth.service.AuthorizationService
 
 // add services for Reporting
-/devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o ReportService.wsdl  org.openiam.idm.srvc.report.ws.ReportWebService
+/devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o ReportService.wsdl  org.openiam.srvc.report.ReportWebService

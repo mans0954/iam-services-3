@@ -10,10 +10,10 @@
 
     <import resource="jmsContext.xml" />
 
-    <bean id="reportServiceClient" class="org.openiam.idm.srvc.report.ws.ReportWebService"
+    <bean id="reportServiceClient" class="org.openiam.srvc.report.ReportWebService"
           factory-bean="reportServiceFactory" factory-method="create" />
     <bean id="reportServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.report.ws.ReportWebService" />
+        <property name="serviceClass" value="org.openiam.srvc.report.ReportWebService" />
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}ReportWebService" />
     </bean>
 

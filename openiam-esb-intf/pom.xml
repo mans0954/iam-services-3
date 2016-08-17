@@ -21,10 +21,6 @@
 			<groupId>org.openiam</groupId>
 			<artifactId>openiam-common-intf</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.openiam</groupId>
-			<artifactId>openiam-idm-intf</artifactId>
-		</dependency>
 	</dependencies>
 
     <developers>
@@ -44,7 +40,7 @@
     </reporting>
 
     <build>
-        <finalName>openiam-esb</finalName>
+        <finalName>openiam-esb-inf</finalName>
         <plugins>
 	      <plugin>
 	        <groupId>org.apache.maven.plugins</groupId>

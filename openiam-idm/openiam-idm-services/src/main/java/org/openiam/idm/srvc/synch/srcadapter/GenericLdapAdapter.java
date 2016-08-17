@@ -11,7 +11,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.mngsys.service.AttributeNamesLookupService;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.LineObject;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.base.response.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.SynchReview;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;

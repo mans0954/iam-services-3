@@ -2,7 +2,7 @@ package org.openiam.service.integration.sync;
 
 import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.base.response.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.srvc.idm.IdentitySynchWebService;
 import org.openiam.base.response.SynchConfigResponse;

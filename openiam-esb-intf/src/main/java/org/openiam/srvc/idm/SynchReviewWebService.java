@@ -1,11 +1,11 @@
 package org.openiam.srvc.idm;
 
+import org.openiam.base.request.SynchReviewRequest;
+import org.openiam.base.response.SynchReviewResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.SynchReviewSearchBean;
 import org.openiam.idm.srvc.synch.dto.SynchReview;
 import org.openiam.idm.srvc.synch.dto.SynchReviewRecord;
-import org.openiam.idm.srvc.synch.dto.SynchReviewRequest;
-import org.openiam.idm.srvc.synch.dto.SynchReviewResponse;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;

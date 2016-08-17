@@ -38,10 +38,10 @@ import org.openiam.bpm.activiti.groovy.DefaultNewHireRequestApproverAssociationI
 import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.dto.AbstractWorkflowResponse;
 import org.openiam.bpm.dto.BasicWorkflowResponse;
-import org.openiam.bpm.request.ActivitiClaimRequest;
-import org.openiam.bpm.request.ActivitiRequestDecision;
-import org.openiam.bpm.request.GenericWorkflowRequest;
-import org.openiam.bpm.request.HistorySearchBean;
+import org.openiam.base.request.ActivitiClaimRequest;
+import org.openiam.base.request.ActivitiRequestDecision;
+import org.openiam.base.request.GenericWorkflowRequest;
+import org.openiam.activiti.model.dto.HistorySearchBean;
 import org.openiam.base.response.ActivitiHistoricDetail;
 import org.openiam.base.response.ActivitiJSONField;
 import org.openiam.base.response.ActivitiUserField;

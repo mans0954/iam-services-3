@@ -33,6 +33,8 @@ import org.openiam.base.ws.*;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.cache.ProvisionUserResourceKeyGenerator;
+import org.openiam.constants.AccountLockEnum;
+import org.openiam.constants.ProvisionActionTypeEnum;
 import org.openiam.provision.PostProcessor;
 import org.openiam.provision.PreProcessor;
 import org.openiam.provision.constant.StatusCodeType;
@@ -831,7 +833,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
      * 
      * @see
      * org.openiam.srvc.idm.ProvisionService#lockUser(java.lang.String,
-     * org.openiam.provision.dto.AccountLockEnum)
+     * org.openiam.constants.AccountLockEnum)
      */
     @Override
     @Transactional

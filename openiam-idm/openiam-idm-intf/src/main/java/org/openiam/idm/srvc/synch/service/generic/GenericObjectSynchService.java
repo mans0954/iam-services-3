@@ -1,9 +1,7 @@
 package org.openiam.idm.srvc.synch.service.generic;
 
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.base.response.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-
-import java.util.List;
 
 /**
  * Interface for <code>GenericObjectSynchService</code> which is used to synchronize objects such as

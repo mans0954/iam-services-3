@@ -1,5 +1,7 @@
 package org.openiam.srvc.idm;
 
+import org.openiam.base.request.BulkMigrationConfig;
+import org.openiam.base.request.SynchReviewRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.synch.dto.*;
 
@@ -30,7 +32,7 @@ public interface AsynchIdentitySynchService {
     @WebMethod
     void executeSynchReview(
             @WebParam(name = "synchReviewRequest", targetNamespace = "")
-            SynchReviewRequest synchReviewRequest);
+                    SynchReviewRequest synchReviewRequest);
 
     /**
      * Moves a set of users from resource or role. Users are selected based on some search criteria defined in the
@@ -41,7 +43,7 @@ public interface AsynchIdentitySynchService {
     @WebMethod
     void bulkUserMigration(
             @WebParam(name = "config", targetNamespace = "")
-            BulkMigrationConfig config);
+                    BulkMigrationConfig config);
 
     /**
      * Asynchronous interface to allow for role re-synchroniation.

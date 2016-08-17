@@ -1,12 +1,8 @@
 package org.openiam.idm.srvc.synch.service;
 
-import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
+import org.openiam.base.request.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.dto.SynchReviewRequest;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
+import org.openiam.base.request.SynchReviewRequest;
 
 /**
  * Interface for <code>AsynchIdentitySynchService</code>. This interface is used in an asynchronous manner.

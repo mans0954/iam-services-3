@@ -112,7 +112,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionActionEvent;
-import org.openiam.provision.dto.ProvisionActionTypeEnum;
+import org.openiam.constants.ProvisionActionTypeEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;

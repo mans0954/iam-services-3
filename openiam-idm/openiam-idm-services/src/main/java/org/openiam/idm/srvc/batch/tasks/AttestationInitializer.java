@@ -11,7 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.srvc.activiti.ActivitiService;
 import org.openiam.bpm.dto.BasicWorkflowResponse;
-import org.openiam.bpm.request.GenericWorkflowRequest;
+import org.openiam.base.request.GenericWorkflowRequest;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.user.dto.User;

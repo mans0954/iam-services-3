@@ -4,6 +4,11 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.openiam.base.request.BulkMigrationConfig;
+import org.openiam.base.request.ImportSyncResponse;
+import org.openiam.base.request.SynchReviewRequest;
+import org.openiam.base.response.SyncResponse;
+import org.openiam.base.response.SynchReviewResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
@@ -57,7 +62,7 @@ public interface IdentitySynchWebService {
     @WebMethod
     Response bulkUserMigration(
             @WebParam(name = "config", targetNamespace = "")
-            BulkMigrationConfig config);
+                    BulkMigrationConfig config);
 
     /**
      * When resources associated with a role have been modified, the role membership needs to be resynchronized
@@ -72,7 +77,7 @@ public interface IdentitySynchWebService {
     ImportSyncResponse importAttrMapFromCSV(String syncId);
 
     @WebMethod
-	SyncResponse startSynchronization(
+    SyncResponse startSynchronization(
 			@WebParam(name = "config", targetNamespace = "")
 			SynchConfig config);
 
@@ -85,7 +90,7 @@ public interface IdentitySynchWebService {
     @WebMethod
     SynchReviewResponse executeSynchReview(
             @WebParam(name = "synchReviewRequest", targetNamespace = "")
-            SynchReviewRequest synchReviewRequest);
+                    SynchReviewRequest synchReviewRequest);
 
     @WebMethod
     int getSynchConfigCount(

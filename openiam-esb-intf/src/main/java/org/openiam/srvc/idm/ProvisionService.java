@@ -29,6 +29,8 @@ import javax.jws.WebService;
 
 import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
+import org.openiam.constants.AccountLockEnum;
+import org.openiam.constants.ProvisionActionTypeEnum;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;

@@ -256,12 +256,12 @@
                   value="${openiam.service_host}${openiam.idm.ws.path}ChallengeResponseWebService" />
     </bean>
 
-    <bean id="batchServiceClient" class="org.openiam.idm.srvc.batch.service.BatchDataService"
+    <bean id="batchServiceClient" class="org.openiam.srvc.batch.BatchDataService"
           factory-bean="batchServiceClientFactory" factory-method="create" />
 
     <bean id="batchServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
         <property name="serviceClass"
-                  value="org.openiam.idm.srvc.batch.service.BatchDataService" />
+                  value="org.openiam.srvc.batch.BatchDataService" />
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}BatchDataWebService" />
     </bean>
