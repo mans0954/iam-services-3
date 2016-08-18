@@ -61,6 +61,7 @@ import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.UserUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -184,7 +185,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Value("${org.openiam.usersearch.lucene.enabled}")
     private Boolean isLuceneEnabled;
 
-    final private Pattern delegationFilterAttributePattern = Pattern.compile("\"(.*)\";\"(.*)\";\"(.*)\"");
+
 
     @Autowired
     @Qualifier("authorizationManagerService")
@@ -584,21 +585,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     }
 
 
-    private SearchAttribute parseDelegationFilterAttribute(String param) {
-        SearchAttribute retVal = new SearchAttribute();
-        try {
-            Matcher matcher = delegationFilterAttributePattern.matcher(param.toLowerCase());
-            if (matcher.matches()) {
-                retVal.setAttributeName(matcher.group(1));
-                retVal.setAttributeValue(matcher.group(2));
-                retVal.setMatchType(MatchType.valueOf(matcher.group(3).toUpperCase()));
-            }
-        } catch (Exception e) {
-            log.warn("Can't parse Attribute delegation filer=" + param);
-            log.warn(e);
-        }
-        return retVal;
-    }
+
 
     @Transactional(readOnly = true)
     private List<String> getUserIds(final UserSearchBean searchBean) throws BasicDataServiceException {
@@ -653,7 +640,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                         searchBean.setAttributeList(searchAttributeList);
                     }
                     for (String param : searchParams) {
-                        searchAttributeList.add(this.parseDelegationFilterAttribute(param));
+                        searchAttributeList.add(UserUtils.parseDelegationFilterAttribute(param));
                     }
                 }
             }
@@ -2874,4 +2861,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return userIdentityAnswerDAO.findUsersWithoutAnswersOnDate(fromDate, toDate, hasAnswer);
     }
 
+    @Override
+    public LightSearchResponse getLightSearchResult(LightSearchRequest request) {
+        return userDao.getLightSearchResult(request);
+    }
 }

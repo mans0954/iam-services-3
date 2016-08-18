@@ -2,7 +2,6 @@ package org.openiam.idm.srvc.user.ws;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -814,4 +813,9 @@ public interface UserDataWebService {
 
     @WebMethod
     public Response resendEmail(@WebParam(name = "id", targetNamespace = "") String id, @WebParam(name = "cc", targetNamespace = "") String cc);
+
+    @WebMethod
+    public LightSearchResponse getLightSearchResult(@WebParam(name = "lightUserSearchRequest", targetNamespace = "")
+                                                    LightSearchRequest lightUserSearchRequest);
+
 }
