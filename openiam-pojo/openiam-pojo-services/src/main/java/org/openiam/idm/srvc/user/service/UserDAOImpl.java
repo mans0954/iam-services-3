@@ -1182,7 +1182,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                     request.getStatus() != null) {
                 sb.append(" AND ");
             }
-            sb.append(" u.SECONDARY_STATUS='" + request.getStatus().name() + "' ");
+            sb.append(" u.SECONDARY_STATUS='" + request.getSecondaryStatus().name() + "' ");
         }
     }
 
