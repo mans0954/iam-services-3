@@ -979,7 +979,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         LightSearchResponse response = new LightSearchResponse();
         response.setStatus(ResponseStatus.SUCCESS);
         if (StringUtils.isNotBlank(request.getEmployeeId()) || StringUtils.isNotBlank(request.getEmailAddress()) || StringUtils.isNotBlank(request.getLogin())
-                || StringUtils.isNotBlank(request.getLastName())) {
+                || StringUtils.isNotBlank(request.getLastName()) || request.getStatus() != null || request.getSecondaryStatus() != null) {
 
 
             final String count = " COUNT(*) as count ";
