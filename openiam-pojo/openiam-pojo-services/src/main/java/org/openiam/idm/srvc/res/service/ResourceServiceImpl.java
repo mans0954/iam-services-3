@@ -63,6 +63,7 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.SpringContextProvider;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
@@ -480,7 +481,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         final ResourceEntity parent = resourceDao.findById(parentResourceId);
         final ResourceEntity child = resourceDao.findById(childResourceId);
         parent.addChildResource(child, accessRightDAO.findByIds(rights), startDate, endDate);
-        resourceDao.save(parent);
+        resourceDao.merge(parent);
     }
 
     @Override
@@ -527,6 +528,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         if(resource != null && group != null) {
             group.addResource(resource, accessRightDAO.findByIds(rightIds), startDate, endDate);
         }
+        groupDao.save(group);
     }
 
     @Override
@@ -543,7 +545,8 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         if(resource != null && group != null) {
             group.removeResource(resource);
         }
-     resourceDao.evictCache();
+        groupDao.merge(group);
+        resourceDao.evictCache();
     }
 
     @Override
@@ -947,7 +950,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     private ResourceService getProxyService() {
-        ResourceService service = (ResourceService) ac.getBean("resourceService");
+        ResourceService service = (ResourceService) SpringContextProvider.getBean("resourceService");
         return service;
     }
 
@@ -1026,6 +1029,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         }
     }
     @Override
+//    @CacheKeyEviction(
+//            evictions={
+//                    @CacheKeyEvict("resources"),
+//                    @CacheKeyEvict("resourceEntities")
+//            }
+//    )
     public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId,
                                        final Set<String> rightIds, final Date startDate, final Date endDate){
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -1047,7 +1056,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
                 throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
 
-            this.addResourceGroup(resourceId, groupId, rightIds, startDate, endDate);
+            getProxyService().addResourceGroup(resourceId, groupId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -1068,6 +1077,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
+//    @CacheKeyEviction(
+//            evictions={
+//                    @CacheKeyEvict("resources"),
+//                    @CacheKeyEvict("resourceEntities")
+//            }
+//    )
     public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
@@ -1089,7 +1104,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
             }
 
-            this.deleteResourceGroup(resourceId, groupId);
+            getProxyService().deleteResourceGroup(resourceId, groupId);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -1189,6 +1204,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
+//    @CacheKeyEviction(
+//            evictions={
+//                    @CacheKeyEvict("resources"),
+//                    @CacheKeyEvict("resourceEntities")
+//            }
+//    )
     public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId,
                                       final Set<String> rightIds, final Date startDate, final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -1218,7 +1239,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             }
             idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
 
-            this.addResourceToRole(resourceId, roleId, rightIds, startDate, endDate);
+            getProxyService().addResourceToRole(resourceId, roleId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -1239,6 +1260,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
+//    @CacheKeyEviction(
+//            evictions={
+//                    @CacheKeyEvict("resources"),
+//                    @CacheKeyEvict("resourceEntities")
+//            }
+//    )
     public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
@@ -1253,7 +1280,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
             }
-            this.deleteResourceRole(resourceId, roleId);
+            getProxyService().deleteResourceRole(resourceId, roleId);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -1273,6 +1300,22 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         return response;
     }
     @Override
+//    @CacheKeyEvictions({
+//            @CacheKeyEviction(
+//                    evictions={
+//                            @CacheKeyEvict("resources"),
+//                            @CacheKeyEvict("resourceEntities")
+//                    },
+//                    parameterIndex=0
+//            ),
+//            @CacheKeyEviction(
+//                    evictions={
+//                            @CacheKeyEvict("resources"),
+//                            @CacheKeyEvict("resourceEntities")
+//                    },
+//                    parameterIndex=1
+//            )
+//    })
     public Response addChildResource(final String resourceId,
                                      final String childResourceId,
                                      final String requesterId,
@@ -1291,8 +1334,8 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         idmAuditLog.setAuditDescription(
                 String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
         try {
-            this.validateResource2ResourceAddition(resourceId, childResourceId, rights, startDate, endDate);
-            this.addChildResource(resourceId, childResourceId, rights, startDate, endDate);
+            getProxyService().validateResource2ResourceAddition(resourceId, childResourceId, rights, startDate, endDate);
+            getProxyService().addChildResource(resourceId, childResourceId, rights, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setResponseValue(e.getResponseValue());
@@ -1313,7 +1356,23 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         return response;
     }
 
-    @Override
+//    @Override
+//    @CacheKeyEvictions({
+//            @CacheKeyEviction(
+//                    evictions={
+//                            @CacheKeyEvict("resources"),
+//                            @CacheKeyEvict("resourceEntities")
+//                    },
+//                    parameterIndex=0
+//            ),
+//            @CacheKeyEviction(
+//                    evictions={
+//                            @CacheKeyEvict("resources"),
+//                            @CacheKeyEvict("resourceEntities")
+//                    },
+//                    parameterIndex=1
+//            )
+//    })
     public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
@@ -1333,7 +1392,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
                         "Parent ResourceId or Child ResourceId is null");
             }
 
-            this.deleteChildResource(resourceId, memberResourceId);
+            getProxyService().deleteChildResource(resourceId, memberResourceId);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -1355,6 +1414,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
 
     @Override
+    @CacheKeyEviction(
+            evictions={
+                    @CacheKeyEvict("resources"),
+                    @CacheKeyEvict("resourceEntities")
+            }
+    )
     public Response deleteResource(final String resourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -1362,8 +1427,8 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Resource ID is not specified");
             }
 
-            this.validateResourceDeletion(resourceId);
-            this.deleteResource(resourceId);
+            getProxyService().validateResourceDeletion(resourceId);
+            getProxyService().deleteResource(resourceId);
             //resourceService.deleteResourceWeb(resourceId, requesterId);
 
         } catch (BasicDataServiceException e) {
@@ -1379,6 +1444,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
+    @CacheKeyEviction(
+            evictions={
+                    @CacheKeyEvict("resources"),
+                    @CacheKeyEvict("resourceEntities")
+            }
+    )
     public Response saveResourceWeb(final Resource resource, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -1386,7 +1457,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
             resourceService.save(entity, requesterId);*/
 
-            final ResourceEntity entity = this.saveResource(resource, requesterId);
+            final ResourceEntity entity = getProxyService().saveResource(resource, requesterId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.fail();

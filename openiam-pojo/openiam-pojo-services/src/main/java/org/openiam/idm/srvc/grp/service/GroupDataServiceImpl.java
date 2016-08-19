@@ -71,6 +71,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.SpringContextProvider;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
@@ -629,14 +630,13 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     }
 
     @Override
-    @Transactional
     public Response saveGroup(final Group group, final String requesterId) {
 
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
 
             final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
-            isValid(entity);
+            validate(entity);
             this.saveGroup(entity, group.getOwner(), requesterId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
@@ -1205,7 +1205,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     }*/
 
     private GroupDataService getProxyService() {
-        GroupDataService service = (GroupDataService)ac.getBean("groupManager");
+        GroupDataService service = (GroupDataService) SpringContextProvider.getBean("groupManager");
         return service;
     }
 
@@ -1266,7 +1266,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
             }
 
-            this.saveGroupRequest(request);
+            getProxyService().saveGroupRequest(request);
             response.setResponseValue(request.getTargetObject().getId());
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -1404,8 +1404,8 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                         "Cannot add group itself as child");
             }
 
-            this.validateGroup2GroupAddition(groupId, childGroupId, rights, startDate, endDate);
-            this.addChildGroup(groupId, childGroupId, rights, startDate, endDate);
+            getProxyService().validateGroup2GroupAddition(groupId, childGroupId, rights, startDate, endDate);
+            getProxyService().addChildGroup(groupId, childGroupId, rights, startDate, endDate);
             auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -1442,7 +1442,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or child groupId is null");
             }
 
-            this.removeChildGroup(groupId, childGroupId);
+            getProxyService().removeChildGroup(groupId, childGroupId);
             auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -1459,5 +1459,24 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             auditLogService.enqueue(auditLog);
         }
         return response;
+    }
+
+    private void validate(final GroupEntity entity) throws BasicDataServiceException {
+        if (entity == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+
+        if (StringUtils.isBlank(entity.getName())) {
+            throw new BasicDataServiceException(ResponseCode.NO_NAME);
+        }
+
+        final GroupEntity nameEntity = this.getGroupByNameAndManagedSystem(entity.getName(), entity.getManagedSystem().getId(), null, null);
+        if(nameEntity != null) {
+            if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
+                throw new BasicDataServiceException(ResponseCode.CONSTRAINT_VIOLATION, "Role Name + Managed Sys combination taken");
+            }
+        }
+
+        this.isValid(entity);
     }
 }

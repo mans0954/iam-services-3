@@ -7,7 +7,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.response.LoginResponse;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
@@ -735,5 +738,47 @@ public class LoginDataServiceImpl implements LoginDataService {
         notificationRequest.getParamList().add(
                 new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
         mailService.sendNotification(notificationRequest);
+    }
+
+
+    @Override
+    public Response saveLogin(final Login principal) {
+        final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
+        try {
+            if(principal == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            if(StringUtils.isBlank(principal.getManagedSysId()) ||
+                    StringUtils.isBlank(principal.getLogin())) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            final LoginEntity currentEntity = this.getLoginByManagedSys(principal.getLogin(), principal.getManagedSysId());
+            if(currentEntity != null) {
+                if(StringUtils.isBlank(principal.getId())) {
+                    throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+                } else if(!principal.getId().equals(currentEntity.getId())) {
+                    throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+                }
+            }
+
+            final LoginEntity entity = loginDozerConverter.convertToEntity(principal, true);
+            if(StringUtils.isNotBlank(entity.getId())) {
+                this.updateLogin(entity);
+            } else {
+                this.addLogin(entity);
+            }
+            resp.setResponseValue(entity.getId());
+        } catch(BasicDataServiceException e) {
+            log.warn(String.format("Error while saving login: %s", e.getMessage()));
+            resp.setErrorCode(e.getCode());
+            resp.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            log.error("Error while saving login", e);
+        }
+        return resp;
     }
 }

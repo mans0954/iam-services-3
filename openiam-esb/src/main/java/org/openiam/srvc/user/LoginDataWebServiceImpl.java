@@ -89,43 +89,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	
 	@Override
 	public Response saveLogin(final Login principal) {
-		final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		try {
-			if(principal == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			if(StringUtils.isBlank(principal.getManagedSysId()) ||
-			   StringUtils.isBlank(principal.getLogin())) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			final LoginEntity currentEntity = loginDS.getLoginByManagedSys(principal.getLogin(), principal.getManagedSysId());
-			if(currentEntity != null) {
-				if(StringUtils.isBlank(principal.getId())) {
-					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
-				} else if(!principal.getId().equals(currentEntity.getId())) {
-					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
-				}
-			}
-			
-			final LoginEntity entity = loginDozerConverter.convertToEntity(principal, true);
-			if(StringUtils.isNotBlank(entity.getId())) {
-				loginDS.updateLogin(entity);
-			} else {
-				loginDS.addLogin(entity);
-			}
-			resp.setResponseValue(entity.getId());
-		} catch(BasicDataServiceException e) {
-			log.warn(String.format("Error while saving login: %s", e.getMessage()));
-			resp.setErrorCode(e.getCode());
-			resp.setStatus(ResponseStatus.FAILURE);
-		} catch(Throwable e) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
-			log.error("Error while saving login", e);
-		}
-		return resp;
+		return loginDS.saveLogin(principal);
 	}
 
 	/* (non-Javadoc)

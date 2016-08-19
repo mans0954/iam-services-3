@@ -56,6 +56,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.SpringContextProvider;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
@@ -220,6 +221,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			if(role != null && group != null) {
 				role.addGroup(group, accessRightDAO.findByIds(rightIds), startDate, endDate);
 			}
+            roleDao.merge(role);
 		}
 	}
 	
@@ -232,6 +234,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			if(role != null && group != null) {
 				role.removeGroup(group);
 				//roleDao.update(role);
+                roleDao.merge(role);
 			}
 		}
 
@@ -252,6 +255,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     	if(user != null && role != null) {
     		user.addRole(role, accessRightDAO.findByIds(rightIds), startDate, endDate);
     	}
+        userDAO.save(user);
 	}
 	
 	@Override
@@ -262,6 +266,7 @@ public class RoleDataServiceImpl implements RoleDataService {
         if(user != null && role != null) {
         	user.removeRole(role);
         }
+        userDAO.save(user);
 	}
 
 	private void visitChildRoles(final String id, final Set<RoleEntity> visitedSet) {
@@ -847,7 +852,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 
     private RoleDataService getProxyService() {
-        RoleDataService service = (RoleDataService) ac.getBean("roleDataService");
+        RoleDataService service = (RoleDataService) SpringContextProvider.getBean("roleDataService");
         return service;
     }
 
@@ -867,7 +872,7 @@ public class RoleDataServiceImpl implements RoleDataService {
             if(entity == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, String.format("No Role is found for roleId: %s", roleId));
             }
-            this.removeRole(roleId);
+            getProxyService().removeRole(roleId);
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -887,7 +892,7 @@ public class RoleDataServiceImpl implements RoleDataService {
         try {
             validate(role);
             final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
-            this.saveRole(entity, requesterId);
+            getProxyService().saveRole(entity, requesterId);
             response.setResponseValue(entity.getId());
         } catch(BasicDataServiceException e) {
             log.warn(String.format("Could not save role", e));
@@ -939,8 +944,8 @@ public class RoleDataServiceImpl implements RoleDataService {
                 throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
 
-            this.validateGroup2RoleAddition(roleId, groupId);
-            this.addGroupToRole(roleId, groupId, rightIds, startDate, endDate);
+            getProxyService().validateGroup2RoleAddition(roleId, groupId);
+            getProxyService().addGroupToRole(roleId, groupId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -982,7 +987,7 @@ public class RoleDataServiceImpl implements RoleDataService {
                 throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
 
-            this.addUserToRole(roleId, userId, rightIds, startDate, endDate);
+            getProxyService().addUserToRole(roleId, userId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -1018,7 +1023,7 @@ public class RoleDataServiceImpl implements RoleDataService {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
             }
 
-            this.removeGroupFromRole(roleId, groupId);
+            getProxyService().removeGroupFromRole(roleId, groupId);
             idmAuditLog.succeed();
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -1054,7 +1059,7 @@ public class RoleDataServiceImpl implements RoleDataService {
             if(roleId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            this.removeUserFromRole(roleId, userId);
+            getProxyService().removeUserFromRole(roleId, userId);
             idmAuditLog.succeed();
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -1089,8 +1094,8 @@ public class RoleDataServiceImpl implements RoleDataService {
                 throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
 
-            this.validateRole2RoleAddition(roleId, childRoleId, rights, startDate, endDate);
-            this.addChildRole(roleId, childRoleId, rights, startDate, endDate);
+            getProxyService().validateRole2RoleAddition(roleId, childRoleId, rights, startDate, endDate);
+            getProxyService().addChildRole(roleId, childRoleId, rights, startDate, endDate);
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -1114,7 +1119,7 @@ public class RoleDataServiceImpl implements RoleDataService {
             if(parent == null || child == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Parent Role or Child Role are not found");
             }
-            this.removeChildRole(roleId, childRoleId);
+            getProxyService().removeChildRole(roleId, childRoleId);
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
