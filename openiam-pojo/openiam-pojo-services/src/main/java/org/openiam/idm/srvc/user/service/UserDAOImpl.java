@@ -1119,9 +1119,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     private StringBuilder getBaseLightSearchQuery() {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ${replace} ");
-        sb.append("FROM USERS u LEFT JOIN EMAIL_ADDRESS ea ON ea.IS_DEFAULT = 'Y' AND ea.EMAIL_ID = (SELECT MAX(EMAIL_ID) FROM ");
-        sb.append(" EMAIL_ADDRESS WHERE PARENT_ID = u.USER_ID) LEFT JOIN PHONE p ON p.IS_DEFAULT = 'Y' AND ");
-        sb.append(" p.PHONE_ID = (SELECT MAX(PHONE_ID) FROM PHONE WHERE PARENT_ID = u.USER_ID) JOIN LOGIN l ON ");
+        sb.append("FROM USERS u LEFT JOIN EMAIL_ADDRESS ea ON ea.EMAIL_ID = (SELECT MAX(EMAIL_ID) FROM ");
+        sb.append(" EMAIL_ADDRESS WHERE PARENT_ID = u.USER_ID AND IS_DEFAULT = 'Y') LEFT JOIN PHONE p ON ");
+        sb.append(" p.PHONE_ID = (SELECT MAX(PHONE_ID) FROM PHONE WHERE PARENT_ID = u.USER_ID AND IS_DEFAULT = 'Y' ) JOIN LOGIN l ON ");
         sb.append(" l.USER_ID = u.USER_ID AND l.MANAGED_SYS_ID = '0' ${delegationFilterPart} ");
         sb.append(" WHERE ");
         return sb;
