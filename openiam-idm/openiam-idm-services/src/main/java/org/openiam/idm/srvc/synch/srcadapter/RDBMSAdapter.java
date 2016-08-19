@@ -25,6 +25,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.response.SyncResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -34,7 +35,7 @@ import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.synch.util.DatabaseUtil;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.provision.service.ProvisioningDataService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -191,7 +192,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                         @Override
                         public void run() {
                             try {
-                                Timestamp mostRecentRecord = proccess(config, resultReview, provService, part, validationScript, transformScripts, matchRule, resultReview, startIndex);
+                                Timestamp mostRecentRecord = proccess(config, resultReview, provisionService, part, validationScript, transformScripts, matchRule, resultReview, startIndex);
                                 recentRecordByThreadInx.put("Thread_" + threadIndx, mostRecentRecord);
                             } catch (ClassNotFoundException e) {
                                 log.error(e);
@@ -292,7 +293,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
     }
 
-    private Timestamp proccess(SynchConfig config, SynchReviewEntity review, ProvisionService provService, List<LineObject> part, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, SynchReviewEntity resultReview, int ctr) throws ClassNotFoundException {
+    private Timestamp proccess(SynchConfig config, SynchReviewEntity review, ProvisioningDataService provService, List<LineObject> part, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, SynchReviewEntity resultReview, int ctr) throws ClassNotFoundException {
         Timestamp mostRecentRecord = null;
         for (LineObject rowObj : part) {
         	if(log.isDebugEnabled()) {

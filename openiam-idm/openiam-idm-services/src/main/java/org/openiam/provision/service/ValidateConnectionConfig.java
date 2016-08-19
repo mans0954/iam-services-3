@@ -3,12 +3,11 @@ package org.openiam.provision.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.base.response.ResponseType;
+import org.openiam.provision.constant.StatusCodeType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -25,13 +24,12 @@ public class ValidateConnectionConfig {
     @Autowired
     protected ConnectorAdapter connectorAdapter;
     @Autowired
-    @Qualifier("managedSysService")
-    protected ManagedSystemWebService managedSysService;
+    private ManagedSystemService managedSystemService;
 
     Response testConnection(String managedSysId) {
         Response resp = new Response(org.openiam.base.ws.ResponseStatus.SUCCESS);
 
-        ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+        ManagedSysDto mSys = managedSystemService.getManagedSys(managedSysId);
 
         if(log.isDebugEnabled()) {
         	log.debug("Testing connection with localConnector");

@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * Created by alexander on 29/07/16.
  */
-public class UpdateAttributeByMetadataRequest implements Serializable{
+public class UpdateAttributeByMetadataRequest  extends BaseServiceRequest implements Serializable{
     private String metadataElementId;
     private String metadataTypeId;
     private MetadataTypeGrouping metadataTypeGrouping;

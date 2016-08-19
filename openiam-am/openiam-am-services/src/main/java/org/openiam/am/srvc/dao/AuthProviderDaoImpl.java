@@ -9,7 +9,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
-import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
+import org.openiam.am.srvc.searchbean.AuthProviderSearchBean;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.springframework.stereotype.Repository;

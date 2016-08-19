@@ -2577,6 +2577,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     	}
     }
 
+
     @Override
     @Transactional(readOnly = true)
     public boolean isHasGroup(String userId, String groupId) {

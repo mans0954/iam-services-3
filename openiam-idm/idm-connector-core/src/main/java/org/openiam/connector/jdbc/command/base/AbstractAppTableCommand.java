@@ -11,24 +11,21 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.base.BaseProperty;
 import org.openiam.connector.common.jdbc.AbstractJDBCCommand;
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.request.RequestType;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.request.RequestType;
+import org.openiam.base.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 

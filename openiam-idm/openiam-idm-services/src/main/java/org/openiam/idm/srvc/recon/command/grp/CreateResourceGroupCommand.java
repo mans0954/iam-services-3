@@ -6,7 +6,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.service.ObjectProvisionService;
+import org.openiam.provision.service.ObjectProvisionDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,9 +19,9 @@ public class CreateResourceGroupCommand extends BaseReconciliationGroupCommand {
 
     private static final Log log = LogFactory.getLog(CreateResourceGroupCommand.class);
 
-    @Autowired
-    @Qualifier("groupProvision")
-    private ObjectProvisionService<ProvisionGroup> provisionService;
+	@Autowired
+	@Qualifier("groupProvisionDataService")
+	private ObjectProvisionDataService<ProvisionGroup> provisionService;
 
     public CreateResourceGroupCommand() {
     }

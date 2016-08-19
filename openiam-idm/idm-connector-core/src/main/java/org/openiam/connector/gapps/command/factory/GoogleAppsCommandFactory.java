@@ -1,6 +1,6 @@
 package org.openiam.connector.gapps.command.factory;
 
-import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.provision.constant.ErrorCode;
 import org.openiam.provision.type.ExtensibleObjectType;
 import org.openiam.connector.common.constants.CommandType;
 import org.openiam.connector.type.ConnectorDataException;

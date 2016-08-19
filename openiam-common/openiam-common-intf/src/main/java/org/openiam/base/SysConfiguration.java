@@ -1,6 +1,7 @@
 package org.openiam.base;
 
 import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
+import org.openiam.util.SystemUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -84,5 +85,8 @@ public class SysConfiguration {
 	public void setDefaultLoginModule(String defaultLoginModule) {
 		this.defaultLoginModule = defaultLoginModule;
 	}
-    
+
+	public String getProjectVersion() {
+		return  SystemUtils.getManifestInfo(this.getClass(), "Openiam-Version");
+	}
 }

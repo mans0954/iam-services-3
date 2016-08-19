@@ -4,9 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.openiam.authmanager.common.model.AuthorizationMenu;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationMenu;
 import org.openiam.authmanager.dao.ResourceDAO;
-import org.openiam.authmanager.util.AuthorizationConstants;
+import org.openiam.util.AuthorizationConstants;
 import org.openiam.core.dao.AbstractJDBCDao;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;

@@ -3,7 +3,7 @@ package org.openiam.access.review.strategy;
 
 import org.openiam.access.review.constant.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
-import org.openiam.access.review.model.AccessViewBean;
+import org.openiam.model.AccessViewBean;
 import org.openiam.base.TreeNode;
 
 import java.util.Collections;

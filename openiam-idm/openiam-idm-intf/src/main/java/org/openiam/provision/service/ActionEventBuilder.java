@@ -1,7 +1,7 @@
 package org.openiam.provision.service;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.provision.dto.ProvisionActionEnum;
+import org.openiam.constants.ProvisionActionEnum;
 import org.openiam.provision.dto.ProvisionActionEvent;
 
 import java.util.HashMap;

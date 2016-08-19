@@ -14,7 +14,7 @@ import java.util.Map;
  * Created by alexander on 06/07/16.
  */
 public class MQResponse<ResponseBody> extends AbstractMQMessage {
-    protected ResponseStatus status;
+    protected ResponseStatus status = ResponseStatus.SUCCESS;
     protected ResponseCode errorCode;
     protected String errorText;
     protected Map<String, String> fieldMappings;

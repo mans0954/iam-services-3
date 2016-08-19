@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <parent>
+        <groupId>org.openiam</groupId>
+        <artifactId>iam-services</artifactId>
+        <version>4.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.openiam</groupId>
+    <artifactId>openiam-esb-intf</artifactId>
+    <name>openiam-esb-intf</name>
+    <packaging>jar</packaging>
+    <version>4.0.0</version>
+    <description>OpenIAM ESB Module </description>
+	<properties>
+    	<skipTests>true</skipTests>
+  	</properties>
+
+    <dependencies>
+		<dependency>
+			<groupId>org.openiam</groupId>
+			<artifactId>openiam-common-intf</artifactId>
+		</dependency>
+		<!-- Testing -->
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+		</dependency>
+	</dependencies>
+
+    <developers>
+        <developer>
+            <id>Arun_Shah</id>
+            <name>Arun Shah</name>
+            <email>arun_shah@openiam.com</email>
+        </developer>
+        <developer>
+            <id>Suneet_shah</id>
+            <name>Suneet Shah</name>
+            <email>suneet_shah@openiam.com</email>
+        </developer>
+    </developers>
+    <reporting>
+
+    </reporting>
+
+    <build>
+        <finalName>openiam-esb-inf</finalName>
+        <plugins>
+
+	    </plugins>
+        <pluginManagement>
+        	<plugins>
+        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        		<plugin>
+        			<groupId>org.eclipse.m2e</groupId>
+        			<artifactId>lifecycle-mapping</artifactId>
+        			<version>1.0.0</version>
+        			<configuration>
+        				<lifecycleMappingMetadata>
+        					<pluginExecutions>
+        						<pluginExecution>
+        							<pluginExecutionFilter>
+        								<groupId>
+        									pl.project13.maven
+        								</groupId>
+        								<artifactId>
+        									git-commit-id-plugin
+        								</artifactId>
+        								<versionRange>
+        									[2.0.3,)
+        								</versionRange>
+        								<goals>
+        									<goal>revision</goal>
+        								</goals>
+        							</pluginExecutionFilter>
+        							<action>
+        								<ignore></ignore>
+        							</action>
+        						</pluginExecution>
+        					</pluginExecutions>
+        				</lifecycleMappingMetadata>
+        			</configuration>
+        		</plugin>
+        	</plugins>
+        </pluginManagement>
+    </build>
+</project>

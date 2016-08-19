@@ -321,6 +321,7 @@ public interface UserDataService {
 
     void removeUserFromGroup(String userId, String groupId);
 
+
     boolean isHasGroup(String userId, String groupId);
 
     void removeUserFromResource(String userId, String resourceId);

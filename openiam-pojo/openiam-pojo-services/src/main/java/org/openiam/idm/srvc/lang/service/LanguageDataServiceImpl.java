@@ -211,7 +211,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
             localesUI = new java.util.HashMap<String, LanguageLocale>(language.getLocales());
             language.setLocales(null);
         }
-        // get current default language
+        // get current default lang
         LanguageEntity defaultLanguage = languageDao.getDefaultLanguage();
 
         if ((defaultLanguage == null && !language.getIsDefault())
@@ -220,9 +220,9 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 
         LanguageEntity entity = languageDozerConverter.convertToEntity(language, true);
         String id = entity.getId();
-        // add language
+        // add lang
         if (isAdd) {
-            // if language to add is default make current default as Not
+            // if lang to add is default make current default as Not
             // default
             if (defaultLanguage != null && language.getIsDefault()) {
                 defaultLanguage.setIsDefault(false);
@@ -231,9 +231,9 @@ public class LanguageDataServiceImpl implements LanguageDataService {
             // add languages without fetches
             languageDao.add(entity);
         } else {
-            // update language
+            // update lang
             id = entity.getId();
-            // if language to update is set as default, make current
+            // if lang to update is set as default, make current
             // default as not default
             if (defaultLanguage != null && !id.equals(defaultLanguage.getId()) && language.getIsDefault()) {
                 defaultLanguage.setIsDefault(false);

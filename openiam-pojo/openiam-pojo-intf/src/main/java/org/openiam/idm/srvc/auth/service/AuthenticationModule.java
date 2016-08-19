@@ -2,7 +2,7 @@ package org.openiam.idm.srvc.auth.service;
 
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
-import org.openiam.idm.srvc.auth.dto.LogoutRequest;
+import org.openiam.base.request.LogoutRequest;
 import org.openiam.idm.srvc.auth.dto.Subject;
 
 public interface AuthenticationModule {

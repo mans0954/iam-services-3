@@ -1,12 +1,12 @@
 package org.openiam.idm.srvc.auth.service;
 
+import org.openiam.base.request.OTPServiceRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.LogoutRequest;
-import org.openiam.idm.srvc.auth.dto.OTPServiceRequest;
-import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.base.request.AuthenticationRequest;
+import org.openiam.base.request.LogoutRequest;
+import org.openiam.base.response.AuthenticationResponse;
 
 import java.util.List;
 

@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.synch.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.request.SynchReviewRequest;
+import org.openiam.base.response.SynchReviewResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.SynchReviewDozerConverter;

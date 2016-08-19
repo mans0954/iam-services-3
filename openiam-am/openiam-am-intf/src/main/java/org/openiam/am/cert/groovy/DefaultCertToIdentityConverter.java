@@ -12,11 +12,11 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class DefaultCertToIdentityConverter {
 	
@@ -27,10 +27,11 @@ public class DefaultCertToIdentityConverter {
 	protected String regex;
 	
 	@Autowired
-	protected LoginDataWebService loginDataWebService;
-	
+	protected LoginDataService loginDataWebService;
+
 	@Autowired
-	protected UserDataWebService userDataService;
+	@Qualifier("userManager")
+	protected UserDataService userManager;
 	
 	@Autowired
 	protected SysConfiguration sysConfiguration;
@@ -83,11 +84,11 @@ public class DefaultCertToIdentityConverter {
 			throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN, String.format("Regular expression '%s' did not resolve to any matches", regex));
 		}
 		
-		final LoginResponse loginResponse = loginDataWebService.getLoginByManagedSys(username, sysConfiguration.getDefaultManagedSysId());
-		if(loginResponse.isFailure() || loginResponse.getPrincipal() == null) {
+		final Login login= loginDataWebService.getLoginDtoByManagedSys(username, sysConfiguration.getDefaultManagedSysId());
+		if(login == null) {
 			throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN, String.format("Regular expression '%s' did not resolve to any login for principal '%s'", regex, username));
 		}
 		
-		return loginResponse.getPrincipal();
+		return login;
 	}
 }

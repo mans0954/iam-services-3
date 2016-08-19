@@ -15,7 +15,7 @@ import org.openiam.am.srvc.dto.URIPatternMethod;
 import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
 import org.openiam.idm.srvc.auth.service.AuthAttributeProcessor;
 import org.openiam.am.srvc.service.AuthProviderService;
-import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
+import org.openiam.base.response.URIPatternRuleToken;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;

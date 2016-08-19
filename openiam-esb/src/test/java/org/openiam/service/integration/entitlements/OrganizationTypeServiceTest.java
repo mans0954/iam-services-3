@@ -3,11 +3,9 @@ package org.openiam.service.integration.entitlements;
 import java.util.List;
 
 import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
-import org.openiam.idm.srvc.org.service.OrganizationTypeDataService;
+import org.openiam.srvc.am.OrganizationTypeDataService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

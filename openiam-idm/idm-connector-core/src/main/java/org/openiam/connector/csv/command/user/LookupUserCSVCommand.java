@@ -1,7 +1,7 @@
 package org.openiam.connector.csv.command.user;
 
 import org.openiam.am.srvc.constants.CSVSource;
-import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.provision.constant.ErrorCode;
 import org.openiam.idm.parser.csv.CSVParser;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -14,7 +14,6 @@ import org.openiam.connector.csv.command.base.AbstractLookupCSVCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;

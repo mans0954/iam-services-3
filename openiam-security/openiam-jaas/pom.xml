@@ -137,6 +137,10 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-esb-intf</artifactId>
+        </dependency>
         <!--		<dependency>
                     <groupId>javax.security</groupId>
                     <artifactId>jacc</artifactId>

@@ -2,7 +2,6 @@ package org.openiam.bpm.activiti.delegate.core;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -18,33 +17,29 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.bpm.activiti.ActivitiService;
+import org.openiam.srvc.activiti.ActivitiService;
 import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.srvc.common.MailService;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.idm.util.CustomJacksonMapper;
-import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.provision.service.ProvisioningDataService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -80,24 +75,22 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	protected ActivitiHelper activitiHelper;
 
 	@Autowired
-	@Qualifier("defaultProvision")
-	protected ProvisionService provisionService;
+	protected ProvisioningDataService provisionService;
 
 	@Autowired
 	protected UserDataService userDataService;
 	
 	@Autowired
-	@Qualifier("groupWS")
-	protected GroupDataWebService groupDataService;
+	protected GroupDataService groupDataService;
 	
 	@Autowired
-	protected RoleDataWebService roleDataService;
+	protected RoleDataService roleDataService;
 	
 	@Autowired
-	protected ResourceDataService resourceDataService;
+	protected ResourceService resourceDataService;
 	
 	@Autowired
-	protected OrganizationDataService organizationDataService;
+	protected OrganizationService organizationDataService;
 
 	@Autowired
 	protected CustomJacksonMapper customJacksonMapper;
@@ -106,14 +99,14 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	protected ApproverAssociationDAO approverAssociationDAO;
 	
 	@Autowired
-	protected LoginDataWebService loginService;
+	protected LoginDataService loginService;
 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
 
-    @Autowired
-    @Qualifier("userWS")
-    private UserDataWebService userDataWebService;
+	@Autowired
+	@Qualifier("userManager")
+	private UserDataService userManager;
 	
 	@Override
 	public void notify(DelegateTask delegateTask) {
@@ -140,23 +133,23 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	}
 	
 	protected Role getRole(final String roleId) {
-		return roleDataService.getRoleLocalized(roleId, null, null);
+		return roleDataService.getRoleDtoLocalized(roleId, null, null);
 	}
 	
 	protected Group getGroup(final String groupId) {
-		return groupDataService.getGroupLocalize(groupId, null, null);
+		return groupDataService.getGroupDtoLocalize(groupId, null, null);
 	}
 	
 	protected Organization getOrganization(final String organizationId) {
-		return organizationDataService.getOrganizationLocalized(organizationId, null, null);
+		return organizationDataService.getOrganizationDTO(organizationId, null);
 	}
 	
 	protected Resource getResource(final String resourceId) {
-		return resourceDataService.getResource(resourceId, null);
+		return resourceDataService.findResourceDtoById(resourceId, null);
 	}
 
     protected List<Resource> getResources(final List<String> resourceIds) {
-        return resourceDataService.getResourcesByIds(resourceIds, null);
+        return resourceDataService.findResourcesDtoByIds(resourceIds, null);
     }
     
     protected void addUsersToProtectingResource(final DelegateTask task, final Collection<String> userIds, final Set<String> rightIds) {
@@ -178,7 +171,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	protected List<String> getSupervisorsForUser(final UserEntity  user) {
 		final List<String> supervisorIds = new LinkedList<String>();
 		if(user != null) {
-			final List<User> userList = userDataWebService.getSuperiors(user.getId(), 0, Integer.MAX_VALUE);
+			final List<User> userList = userManager.getSuperiorsDto(user.getId(), 0, Integer.MAX_VALUE);
 			if(CollectionUtils.isNotEmpty(userList)) {
 				for(final User userDto : userList) {
 					supervisorIds.add(userDto.getId());

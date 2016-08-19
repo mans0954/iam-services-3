@@ -1,36 +1,29 @@
 package org.openiam.authentication.integration;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.RandomStringUtils;
-import org.openiam.am.srvc.dto.AuthLevel;
-import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
-import org.openiam.am.srvc.ws.ContentProviderWebService;
-import org.openiam.authmanager.service.AuthorizationManagerMenuWebService;
-import org.openiam.authmanager.service.AuthorizationManagerWebService;
+import org.openiam.srvc.am.ContentProviderWebService;
+import org.openiam.srvc.common.LanguageWebService;
+import org.openiam.srvc.am.AuthorizationManagerWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
-import org.openiam.idm.srvc.lang.service.LanguageWebService;
+//import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
-import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplateXref;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.dto.MetadataValidValue;
@@ -39,18 +32,16 @@ import org.openiam.idm.srvc.meta.dto.PageElementValidValue;
 import org.openiam.idm.srvc.meta.dto.PageElementValue;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
-import org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService;
-import org.openiam.idm.srvc.meta.ws.MetadataWebService;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.srvc.common.MetadataElementTemplateWebService;
+import org.openiam.srvc.common.MetadataWebService;
+import org.openiam.srvc.am.ResourceDataService;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.srvc.user.UserDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})

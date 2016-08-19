@@ -43,6 +43,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.SearchParam;
+import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.SynchConfigDozerConverter;
 import org.openiam.dozer.converter.SynchReviewDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
@@ -53,24 +54,25 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
-import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.base.request.BulkMigrationConfig;
+import org.openiam.base.response.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
 import org.openiam.idm.srvc.synch.dto.SynchReview;
 import org.openiam.idm.srvc.synch.srcadapter.AdapterFactory;
+import org.openiam.base.response.SynchConfigResponse;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.AsynchUserProvisionService;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.provision.service.AsynchUserProvisionDataService;
+import org.openiam.provision.service.ProvisioningDataService;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -100,12 +102,10 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     private UserDataService userManager;
     
     @Autowired
-    @Qualifier("defaultProvision")
-    private ProvisionService provisionService;
+    private ProvisioningDataService provisionService;
 
     @Autowired
-    @Qualifier("asynchProvisonWS")
-    private AsynchUserProvisionService asyncProvisionService;
+    private AsynchUserProvisionDataService asyncProvisionService;
 
     @Autowired
     private UserDozerConverter userDozerConverter;
@@ -126,6 +126,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
+
+    @Autowired
+    private AttributeMapDozerConverter attributeMapDozerConverter;
 
 	private static final Log log = LogFactory.getLog(IdentitySynchServiceImpl.class);
 
@@ -612,4 +615,36 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         return attributeMapDAO.getByExample(searchBean);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttributeMap> getSynchConfigAttributeMapsDTO(String synchConfigId) {
+        if (synchConfigId == null) {
+            throw new IllegalArgumentException("synchConfigId is null");
+        }
+
+        List<AttributeMapEntity> ameList = this.getSynchConfigAttributeMaps(synchConfigId);
+        return (ameList == null) ? null : attributeMapDozerConverter.convertToDTOList(ameList, true);
+    }
+    @Override
+    public SynchConfigResponse findDTOById(String id) {
+        SynchConfigResponse resp = new SynchConfigResponse(ResponseStatus.SUCCESS);
+        SynchConfigEntity config = this.findById(id);
+        if (config == null || config.getId() == null) {
+            resp.setStatus(ResponseStatus.FAILURE);
+        } else {
+            resp.setConfig(synchConfigDozerConverter.convertToDTO(config, false));
+        }
+        return resp;
+    }
+    public Response testConnection(SynchConfig config) {
+        return this.testConnection(synchConfigDozerConverter.convertToEntity(config, false));
+    }
+    @Override
+    public SyncResponse startSynchronization(SynchConfig config) {
+        return this.startSynchronization(synchConfigDozerConverter.convertToEntity(config, false));
+    }
+    @Override
+    public SyncResponse startCustomSynchronization(SynchConfig config, String additionalValues){
+        return this.startCustomSynchronization(synchConfigDozerConverter.convertToEntity(config, false), additionalValues);
+    }
 }

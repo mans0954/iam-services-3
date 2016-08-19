@@ -17,10 +17,12 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ObjectValue;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.SearchRequest;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.provision.service.ProvisioningDataService;
+import org.openiam.provision.type.ObjectValue;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.SearchRequest;
+import org.openiam.base.response.SearchResponse;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
@@ -34,16 +36,14 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.recon.command.BaseReconciliationCommand;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
@@ -57,8 +57,8 @@ import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultRow;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultUtil;
 import org.openiam.idm.srvc.recon.util.Serializer;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.synch.dto.Attribute;
+import org.openiam.idm.srvc.res.service.ResourceService;
+import org.openiam.provision.type.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -66,12 +66,10 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.UserUtils;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.base.response.LookupUserResponse;
 import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.ProvisionServiceUtil;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
@@ -92,17 +90,13 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     @Autowired
     private ReconciliationCommandFactory commandFactory;
     @Autowired
-    protected ResourceDataService resourceDataService;
+    protected ResourceService resourceService;
     @Value("${iam.files.location}")
     private String absolutePath;
     @Autowired
-    @Qualifier("managedSysService")
-    private ManagedSystemWebService managedSystemWebService;
+    private ManagedSystemService managedSystemService;
     @Autowired
-    @Qualifier("provisionConnectorWebService")
-    private ProvisionConnectorWebService connectorService;
-    @Autowired
-    private LoginDataWebService loginDataWebService;
+    private ProvisionConnectorService connectorService;
 	@Autowired
 	private LoginDataService loginManager;
     @Autowired
@@ -115,20 +109,15 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     @Autowired
     public UserSearchBeanCSVParser userSearchCSVParser;
     @Autowired
-    @Qualifier("defaultProvision")
-    private ProvisionService provisionService;
+    private ProvisioningDataService provisionService;
     @Autowired
     @Qualifier("matchRuleFactory")
     private MatchRuleFactory matchRuleFactory;
     @Autowired
-    @Qualifier("groupWS")
-    protected GroupDataWebService groupDataWebService;
+    protected GroupDataService groupDataWebService;
     @Autowired
     @Qualifier("userManager")
     private UserDataService userManager;
-	@Autowired
-	@Qualifier("userWS")
-	private UserDataWebService userDataWebService;
 	@Autowired
 	ReconciliationConfigService reconConfigService;
 
@@ -141,9 +130,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     public ReconciliationResponse startReconciliation(final ReconciliationConfig config, final IdmAuditLogEntity idmAuditLog) throws IOException, ScriptEngineException {
         Date startDate = new Date();
 
-        Resource res = resourceDataService.getResource(config.getResourceId(), null);
+        Resource res = resourceService.findResourceDtoById(config.getResourceId(), null);
 
-        ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
+        ManagedSysDto mSys = managedSystemService.getManagedSysDtoByResource(res.getId());
         if (mSys == null) {
 			log.error("Requested managed sys does not exist");
 			return new ReconciliationResponse(ResponseStatus.FAILURE);
@@ -166,7 +155,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             }
         }
         // have resource connector
-        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
+        ProvisionConnectorDto connector = connectorService.getDto(mSys.getConnectorId());
 
         if (connector.getServiceUrl().contains("CSV")) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "CSV Processing started for configId="
@@ -185,13 +174,13 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             return new ReconciliationResponse(ResponseStatus.SUCCESS);
         }
         ReconciliationResultBean resultBean = new ReconciliationResultBean();
-        List<AttributeMap> attrMap = managedSystemWebService.getResourceAttributeMaps(mSys.getResourceId());
+        List<AttributeMap> attrMap = managedSystemService.getResourceAttributeMapsDTO(mSys.getResourceId());
         resultBean.setObjectType("USER");
         resultBean.setRows(new ArrayList<ReconciliationResultRow>());
         resultBean.setHeader(ReconciliationResultUtil.setHeaderInReconciliationResult(attrMap));
 
         // initialization match parameters of connector
-        ManagedSystemObjectMatch matchObjAry[] = managedSystemWebService.managedSysObjectParam(mSys.getId(), "USER");
+        ManagedSystemObjectMatch matchObjAry[] = managedSystemService.managedSysObjectParamDTO(mSys.getId(), "USER");
         // execute all Reconciliation Commands need to be check
         if (matchObjAry == null || matchObjAry.length < 1) {
             log.error("No match object found for this managed sys");
@@ -491,10 +480,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                     newUser.setSrcSystemId(mSys.getId());
                     // ADD Target user principal
                     newUser.getPrincipalList().add(l);
-                    LoginResponse loginResponse = loginDataWebService.getLoginByManagedSys(targetUserPrincipal,
-							BaseReconciliationCommand.OPENIAM_MANAGED_SYS_ID);
-                    if (loginResponse.isSuccess()) {
-                        newUser.getPrincipalList().add(loginResponse.getPrincipal());
+                    Login login = loginManager.getLoginDtoByManagedSys(targetUserPrincipal, BaseReconciliationCommand.OPENIAM_MANAGED_SYS_ID);
+                    if (login!=null) {
+                        newUser.getPrincipalList().add(login);
                     }
 
                     if(log.isDebugEnabled()) {
@@ -641,7 +629,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         try {
             bindingMap.put("user", new ProvisionUser(user));
             bindingMap.put("managedSysId", identity.getManagedSysId());
-            final ManagedSystemObjectMatch[] matches = managedSystemWebService.managedSysObjectParam(
+            final ManagedSystemObjectMatch[] matches = managedSystemService.managedSysObjectParamDTO(
                     identity.getManagedSysId(), "USER");
             if (matches != null && matches.length > 0) {
                 bindingMap.put("matchParam", matches[0]);
@@ -653,7 +641,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             sb.setDeepCopy(false);
             
             
-            final List<org.openiam.idm.srvc.grp.dto.Group> curGroupList =groupDataWebService.findBeansLocalize(sb, null, -1, -1, null);
+            final List<org.openiam.idm.srvc.grp.dto.Group> curGroupList =groupDataWebService.findBeansDtoLocalize(sb, null, -1, -1, null);
 
             String decPassword;
 			if (StringUtils.isEmpty(identity.getUserId())) {
@@ -705,7 +693,12 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         searchBean.setShowInSearch(0);
         searchBean.setMaxResultSize(1);
 		searchBean.setDeepCopy(true);
-        List<User> idmUsers = userDataWebService.findBeans(searchBean, 0, 1);
+        List<User> idmUsers = null;
+        try {
+            idmUsers = userManager.findBeansDto(searchBean, 0, 1);
+        } catch (BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+        }
         if (CollectionUtils.isEmpty(idmUsers)) {
             return null;
         } else {

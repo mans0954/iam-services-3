@@ -19,6 +19,7 @@ import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface ManagedSystemService {
 	
@@ -80,8 +81,7 @@ public interface ManagedSystemService {
 
     //void deleteRules(String ruleId);
 
-    List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
-            String managedSystemId, String objectType);
+    List<ManagedSystemObjectMatchEntity> managedSysObjectParam(String managedSystemId, String objectType);
 
     List<AttributeMapEntity> saveAttributesMap(
             List<AttributeMapEntity> attrMap, String mSysId, String resId,
@@ -96,4 +96,11 @@ public interface ManagedSystemService {
     void save(final ManagedSysEntity entity) throws BasicDataServiceException;
     
     public void saveManagedSysObjectMatch(final ManagedSystemObjectMatchEntity entity);
+
+
+    public ManagedSysDto getManagedSys(String sysId);
+    public ManagedSystemObjectMatch[] managedSysObjectParamDTO(String managedSystemId, String objectType);
+    public List<AttributeMap> getResourceAttributeMapsDTO(final String resourceId);
+    public ManagedSysDto getManagedSysDtoByResource(String resourceId);
+    public List<ManagedSysDto> getAllManagedSysDTO();
 }

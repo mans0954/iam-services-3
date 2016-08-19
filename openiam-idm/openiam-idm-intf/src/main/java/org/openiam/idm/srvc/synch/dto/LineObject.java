@@ -21,7 +21,8 @@
  */
 package org.openiam.idm.srvc.synch.dto;
 
-import java.util.HashMap;
+import org.openiam.provision.type.Attribute;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;

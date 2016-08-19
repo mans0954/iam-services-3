@@ -8,17 +8,10 @@ import org.apache.commons.collections.MapUtils;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.idm.searchbeans.LoginSearchBean;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.property.ws.PropertyValueWebService;
 import org.openiam.property.domain.PropertyType;
-import org.openiam.property.domain.PropertyValueEntity;
 import org.openiam.property.dto.PropertyValue;
-import org.openiam.service.integration.AbstractKeyServiceTest;
 import org.openiam.service.integration.AbstractServiceTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

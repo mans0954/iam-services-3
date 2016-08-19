@@ -11,7 +11,7 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity;
 import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
 import org.openiam.am.srvc.dto.SSOAttribute;
-import org.openiam.am.srvc.searchbeans.AuthResourceAttributeMapSearchBean;
+import org.openiam.am.srvc.searchbean.AuthResourceAttributeMapSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthAttributeProcessor;

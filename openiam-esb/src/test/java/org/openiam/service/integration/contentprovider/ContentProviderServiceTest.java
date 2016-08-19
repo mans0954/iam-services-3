@@ -1,6 +1,5 @@
 package org.openiam.service.integration.contentprovider;
 
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -9,22 +8,16 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.sql.Insert;
-import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
-import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXrefId;
 import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.ContentProviderServer;
-import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
-import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
-import org.openiam.am.srvc.ws.AuthProviderWebService;
-import org.openiam.am.srvc.ws.ContentProviderWebService;
+import org.openiam.am.srvc.searchbean.AuthProviderSearchBean;
+import org.openiam.am.srvc.searchbean.ContentProviderSearchBean;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
-import org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService;
-import org.openiam.service.integration.AbstractKeyNameServiceTest;
+import org.openiam.srvc.common.MetadataElementTemplateWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

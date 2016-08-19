@@ -1,12 +1,10 @@
 package org.openiam.connector.orcl.command.base;
 
-import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.request.RequestType;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.request.RequestType;
+import org.openiam.base.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.connector.common.jdbc.AbstractJDBCCommand;
 
 /**

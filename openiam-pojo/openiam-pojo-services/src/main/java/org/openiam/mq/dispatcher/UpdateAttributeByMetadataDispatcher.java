@@ -2,7 +2,9 @@ package org.openiam.mq.dispatcher;
 
 import org.openiam.base.request.UpdateAttributeByMetadataRequest;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,7 +28,7 @@ public abstract class UpdateAttributeByMetadataDispatcher extends AbstractAPIDis
 
     @Override
     @Transactional
-    protected void processingApiRequest(final UpdateAttributeByMetadataRequest request, String languageId, Response response) throws BasicDataServiceException {
+    protected Response processingApiRequest(final OpenIAMAPI openIAMAPI, final UpdateAttributeByMetadataRequest request) throws BasicDataServiceException {
         if(request.isRequired()) {
             final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
             transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
@@ -38,6 +40,7 @@ public abstract class UpdateAttributeByMetadataDispatcher extends AbstractAPIDis
                 }
             });
         }
+        return new Response(ResponseStatus.SUCCESS);
     }
 
     protected abstract void process(final UpdateAttributeByMetadataRequest request);

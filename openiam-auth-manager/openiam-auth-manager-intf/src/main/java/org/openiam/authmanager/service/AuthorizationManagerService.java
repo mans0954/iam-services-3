@@ -4,10 +4,10 @@ package org.openiam.authmanager.service;
 import java.util.List;
 import java.util.Set;
 
-import org.openiam.authmanager.common.model.GroupAuthorizationRight;
-import org.openiam.authmanager.common.model.OrganizationAuthorizationRight;
-import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
-import org.openiam.authmanager.common.model.RoleAuthorizationRight;
+import org.openiam.am.srvc.dto.jdbc.GroupAuthorizationRight;
+import org.openiam.am.srvc.dto.jdbc.OrganizationAuthorizationRight;
+import org.openiam.am.srvc.dto.jdbc.ResourceAuthorizationRight;
+import org.openiam.am.srvc.dto.jdbc.RoleAuthorizationRight;
 
 public interface AuthorizationManagerService {
 

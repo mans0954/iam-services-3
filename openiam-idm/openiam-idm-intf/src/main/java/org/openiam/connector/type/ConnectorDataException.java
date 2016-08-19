@@ -1,6 +1,6 @@
 package org.openiam.connector.type;
 
-import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.provision.constant.ErrorCode;
 
 public class ConnectorDataException  extends Exception {
 

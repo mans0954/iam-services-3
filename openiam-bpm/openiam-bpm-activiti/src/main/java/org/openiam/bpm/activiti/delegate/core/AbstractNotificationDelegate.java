@@ -1,15 +1,9 @@
 package org.openiam.bpm.activiti.delegate.core;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.impl.el.FixedValue;
-import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.bpm.util.ActivitiRequestType;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditSource;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.base.request.NotificationParam;
+import org.openiam.base.request.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 

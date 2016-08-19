@@ -11,12 +11,13 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.mngsys.service.AttributeNamesLookupService;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.LineObject;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.base.response.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.SynchReview;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
+import org.openiam.provision.type.Attribute;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.naming.Context;
@@ -29,7 +30,6 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 
 public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
@@ -211,7 +211,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                                     }
                                 }
                                 if (valueList.size() > 0) {
-                                    org.openiam.idm.srvc.synch.dto.Attribute rowAttr = new org.openiam.idm.srvc.synch.dto.Attribute();
+                                    Attribute rowAttr = new Attribute();
                                     rowAttr.populateAttribute(key, valueList);
                                     rowObj.put(key, rowAttr);
                                 } else {
@@ -421,7 +421,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
 
     protected abstract String getNullDate();
 
-    protected LastRecordTime getTime(org.openiam.idm.srvc.synch.dto.Attribute atr) {
+    protected LastRecordTime getTime(Attribute atr) {
         LastRecordTime lrt = new LastRecordTime();
 
         String s = atr.getValue();

@@ -1,7 +1,7 @@
 package org.openiam.connector.salesforce.command.user;
 
 import com.sforce.ws.ConnectionException;
-import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.provision.constant.ErrorCode;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.provision.type.ExtensibleUser;

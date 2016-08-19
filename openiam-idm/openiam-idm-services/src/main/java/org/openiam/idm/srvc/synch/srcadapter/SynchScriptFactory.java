@@ -24,8 +24,6 @@ package org.openiam.idm.srvc.synch.srcadapter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.dozer.converter.AttributeMapDozerConverter;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.SynchReview;
@@ -33,7 +31,6 @@ import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.openiam.idm.srvc.synch.service.PolicyMapTransformScript;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
-import org.openiam.idm.srvc.synch.ws.IdentitySynchWebService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
 import java.io.IOException;
@@ -76,9 +73,8 @@ public class SynchScriptFactory {
         LinkedList<TransformScript> scripts = new LinkedList<TransformScript>();
 
 		if (config.getUsePolicyMap()) {
-            IdentitySynchWebService synchService = (IdentitySynchWebService)SpringContextProvider.getBean("synchServiceWS");
-            List<AttributeMap> attrMap =
-                    synchService.getSynchConfigAttributeMaps(config.getId());
+            IdentitySynchService synchService = (IdentitySynchService)SpringContextProvider.getBean("synchService");
+            List<AttributeMap> attrMap = synchService.getSynchConfigAttributeMapsDTO(config.getId());
             TransformScript transformScript = new PolicyMapTransformScript(attrMap);
             scripts.add(transformScript);
 

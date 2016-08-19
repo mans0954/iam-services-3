@@ -2,11 +2,11 @@ package org.openiam.access.review.strategy.entitlements;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.openiam.access.review.model.AccessViewBean;
-import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
+import org.openiam.model.AccessViewBean;
+import org.openiam.am.srvc.dto.jdbc.AbstractAuthorizationEntity;
 import org.openiam.access.review.constant.AccessReviewData;
-import org.openiam.authmanager.common.model.AuthorizationGroup;
-import org.openiam.authmanager.common.xref.AbstractResourceXref;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationGroup;
+import org.openiam.am.srvc.dto.jdbc.xref.AbstractResourceXref;
 
 import java.util.Collections;
 import java.util.HashSet;

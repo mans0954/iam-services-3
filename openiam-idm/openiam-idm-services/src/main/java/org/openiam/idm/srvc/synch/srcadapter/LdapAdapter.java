@@ -23,6 +23,7 @@ package org.openiam.idm.srvc.synch.srcadapter;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.synch.dto.*;
 
+import org.openiam.provision.type.Attribute;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,7 +35,7 @@ import org.springframework.stereotype.Component;
 public class LdapAdapter extends GenericLdapAdapter { // implements SourceAdapter
 
     protected LastRecordTime getRowTime(LineObject rowObj) {
-        org.openiam.idm.srvc.synch.dto.Attribute atr = rowObj.get("modifyTimestamp");
+        Attribute atr = rowObj.get("modifyTimestamp");
         if (StringUtils.isNotBlank(atr.getValue())) {
             return getTime(atr);
         }

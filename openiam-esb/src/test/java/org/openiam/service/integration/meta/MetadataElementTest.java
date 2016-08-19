@@ -4,17 +4,11 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
-import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

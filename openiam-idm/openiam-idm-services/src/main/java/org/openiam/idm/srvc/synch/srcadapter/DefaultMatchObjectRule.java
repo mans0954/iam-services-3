@@ -11,6 +11,7 @@ import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
@@ -19,16 +20,17 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.recon.dto.MatchConfig;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.synch.dto.Attribute;
+import org.openiam.provision.type.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component("defaultMatchRule")
@@ -37,9 +39,9 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
     @Autowired
     protected SysConfiguration sysConfiguration;
-
     @Autowired
-    private UserDataWebService userDataWebService;
+    @Qualifier("userManager")
+    private UserDataService userManager;
 
     @Autowired
     private GroupDataService groupManager;
@@ -51,7 +53,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
     private RoleDozerConverter roleDozerConverter;
 
     @Autowired
-    private OrganizationDataService orgManager;
+    private OrganizationService orgManager;
 
     @Autowired
     private RoleDataService roleManager;
@@ -115,12 +117,16 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
         }
 
-        List<User> userList = userDataWebService.findBeans(searchBean, 0, Integer.MAX_VALUE);
-
+        List<User> userList = null;
+        try {
+            userList = userManager.findBeansDto(searchBean, 0, Integer.MAX_VALUE);
+        } catch (BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+        }
 
         if (userList != null && !userList.isEmpty()) {
             System.out.println("User matched with existing user...");
-            return userDataWebService.getUserWithDependent(userList.get(0).getId(), null, true);
+            return userManager.getUserDto(userList.get(0).getId(), null, true);
         }
         return null;
     }
@@ -250,7 +256,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             }
         }
 
-        List<Organization> orgEntities = orgManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
+        List<Organization> orgEntities = orgManager.findBeansDto(searchBean, null, 0, Integer.MAX_VALUE, null);
         if (orgEntities != null && !orgEntities.isEmpty()) {
             System.out.println("Organization matched with existing role...");
             return orgEntities.get(0);

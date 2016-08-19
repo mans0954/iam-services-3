@@ -2,8 +2,8 @@ package org.openiam.connector.script.command;
 
 import org.openiam.connector.common.constants.CommandType;
 import org.openiam.connector.script.command.base.AbstractScriptCommand;
-import org.openiam.connector.type.request.RequestType;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.provision.request.RequestType;
+import org.openiam.base.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.springframework.stereotype.Service;
 

@@ -7,10 +7,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.connector.common.scim.S;
 import org.openiam.connector.common.scim.TestRSA;
 import org.openiam.connector.scim.command.base.AbstractLookupScimCommand;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.base.response.ObjectResponse;
+import org.openiam.base.response.SearchResponse;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 

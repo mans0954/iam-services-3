@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.auth.login;
 
+import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
@@ -35,6 +36,7 @@ public interface LoginDataService {
     Login getLoginDTO(final String loginId);
 
     LoginEntity getLoginByManagedSys(String principal, String sysId);
+    Login getLoginDtoByManagedSys(String principal, String sysId);
 
     /**
      * Returns a list of Login objects for the managed system specified by the sysId
@@ -52,6 +54,8 @@ public interface LoginDataService {
      * @return
      */
     LoginEntity getPrimaryIdentity(String userId);
+
+    Login getPrimaryIdentityDto(String userId);
 
     /**
      * Returns the identity for this user  and managedSysId
@@ -190,4 +194,6 @@ public interface LoginDataService {
     List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size);
 
     void forgotUsername(String email) throws BasicDataServiceException;
+
+    public Response saveLogin(final Login principal);
 }

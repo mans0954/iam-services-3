@@ -4,10 +4,10 @@ import java.util.Map;
 
 import org.openiam.connector.linux.ssh.SSHAgent;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.CrudRequest;
+import org.openiam.base.response.ObjectResponse;
 import org.openiam.connector.util.connect.FileUtil;
 import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.util.StringUtils;

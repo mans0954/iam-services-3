@@ -171,7 +171,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
 	/* AM-851 */
-	//@Cacheable(value="metadataTypeEntities", key="{ #searchBean, #from, #size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
+	//@Cacheable(value="metadataTypeEntities", key="{ #searchBean, #from, #size,#lang}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language){
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
@@ -257,42 +257,44 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
     private void send(final MetadataElementEntity entity) {
-		UpdateAttributeByMetadataRequest request = new UpdateAttributeByMetadataRequest();
-		request.setMetadataElementId(entity.getId());
-		request.setDefaultValue(entity.getStaticDefaultValue());
-		request.setName(entity.getAttributeName());
-		request.setRequired(entity.isRequired());
-		request.setMetadataTypeId(entity.getMetadataType().getId());
-		request.setMetadataTypeGrouping(entity.getMetadataType().getGrouping());
+		if(entity.getMetadataType()!=null && entity.getMetadataType().getGrouping()!=null) {
+			UpdateAttributeByMetadataRequest request = new UpdateAttributeByMetadataRequest();
+			request.setMetadataElementId(entity.getId());
+			request.setDefaultValue(entity.getStaticDefaultValue());
+			request.setName(entity.getAttributeName());
+			request.setRequired(entity.isRequired());
+			request.setMetadataTypeId(entity.getMetadataType().getId());
+			request.setMetadataTypeGrouping(entity.getMetadataType().getGrouping());
 
-		MQRequest<UpdateAttributeByMetadataRequest> mqRequest = new MQRequest<>();
-		mqRequest.setRequestBody(request);
-		mqRequest.setRequestApi(OpenIAMAPI.UpdateAttributesByMetadata);
+			MQRequest<UpdateAttributeByMetadataRequest> mqRequest = new MQRequest<>();
+			mqRequest.setRequestBody(request);
+			mqRequest.setRequestApi(OpenIAMAPI.UpdateAttributesByMetadata);
 
-		OpenIAMQueue queue = null;
-		switch(entity.getMetadataType().getGrouping()){
-			case USER_OBJECT_TYPE:
-				queue = OpenIAMQueue.UserAttributeQueue;
-				break;
-			case ROLE_TYPE:
-				queue = OpenIAMQueue.RoleAttributeQueue;
-				break;
-			case GROUP_TYPE:
-				queue = OpenIAMQueue.GroupAttributeQueue;
-				break;
-			case ORG_TYPE:
-				queue = OpenIAMQueue.OrganizationAttributeQueue;
-				break;
-			case RESOURCE_TYPE:
-				queue = OpenIAMQueue.ResourceAttributeQueue;
-				break;
-			default:
-				return;
-		}
-		try {
-			requestServiceGateway.send(queue, mqRequest);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			OpenIAMQueue queue = null;
+			switch (entity.getMetadataType().getGrouping()) {
+				case USER_OBJECT_TYPE:
+					queue = OpenIAMQueue.UserAttributeQueue;
+					break;
+				case ROLE_TYPE:
+					queue = OpenIAMQueue.RoleAttributeQueue;
+					break;
+				case GROUP_TYPE:
+					queue = OpenIAMQueue.GroupAttributeQueue;
+					break;
+				case ORG_TYPE:
+					queue = OpenIAMQueue.OrganizationAttributeQueue;
+					break;
+				case RESOURCE_TYPE:
+					queue = OpenIAMQueue.ResourceAttributeQueue;
+					break;
+				default:
+					return;
+			}
+			try {
+				requestServiceGateway.send(queue, mqRequest);
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+			}
 		}
     }
 	

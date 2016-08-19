@@ -7,13 +7,13 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class SaveRoleDeletage extends AbstractActivitiJob {
 	
 	@Autowired
-	private RoleDataWebService roleService;
+	private RoleDataService roleService;
 
 	public SaveRoleDeletage() {
 		super();

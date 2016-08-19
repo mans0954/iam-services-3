@@ -1,15 +1,15 @@
 package org.openiam.access.review.strategy.entitlements;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.openiam.access.review.model.AccessViewBean;
-import org.openiam.authmanager.common.model.*;
+import org.openiam.model.AccessViewBean;
+import org.openiam.am.srvc.dto.jdbc.AbstractAuthorizationEntity;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationGroup;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationResource;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationRole;
 import org.openiam.access.review.constant.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
-import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
 import java.util.*;
 
