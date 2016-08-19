@@ -5,19 +5,22 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.*;
+import org.hibernate.type.IntegerType;
 import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.MatchType;
-import org.openiam.base.ws.SearchParam;
-import org.openiam.base.ws.SortParam;
+import org.openiam.base.ws.*;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.sysprop.dto.SystemPropertyDto;
+import org.openiam.idm.srvc.sysprop.service.SystemPropertyService;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.SearchAttribute;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.*;
+import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.util.StringUtil;
+import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -41,6 +44,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     private String dbType;
     @Autowired
     protected SysConfiguration sysConfiguration;
+
+    @Autowired
+    private SystemPropertyService systemPropertyService;
 
     @Override
     protected String getPKfieldName() {
@@ -157,6 +163,28 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return criterion;
     }
 
+    private Criterion getStringCriterionMatchType(String fieldName, String value, MatchType matchType, boolean caseInsensitive) {
+        Criterion criterion = null;
+        MatchMode matchMode = null;
+
+        switch (matchType) {
+            case EXACT:
+                criterion = (caseInsensitive) ? Restrictions.eq(fieldName, value).ignoreCase() : Restrictions.eq(fieldName, value);
+                break;
+            case STARTS_WITH:
+                criterion = Restrictions.ilike(fieldName, value, MatchMode.START);
+                break;
+            case END_WITH:
+                criterion = Restrictions.ilike(fieldName, value, MatchMode.END);
+                break;
+            default:
+                criterion = Restrictions.ilike(fieldName, value, MatchMode.ANYWHERE);
+                break;
+        }
+
+        return criterion;
+    }
+
     private Criteria getExampleCriteria(UserSearchBean searchBean) {
         boolean ORACLE_INSENSITIVE = "ORACLE_INSENSITIVE".equalsIgnoreCase(dbType);
 
@@ -164,17 +192,52 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         if (StringUtils.isNotBlank(searchBean.getKey())) {
             criteria.add(Restrictions.eq(getPKfieldName(), searchBean.getKey()));
         } else {
+            Boolean useMatchType = false;
+
+            List<SystemPropertyDto> propList = systemPropertyService.getByType("USER_SEARCH_PROP");
+            if (CollectionUtils.isNotEmpty(propList)) {
+                for (SystemPropertyDto sysProp : propList) {
+                    if ("USE_MATCH_TYPE".equalsIgnoreCase(sysProp.getName())) {
+                        try {
+                            useMatchType = Boolean.valueOf(sysProp.getValue());
+                        } catch (Exception e) {
+                            log.error("Cann't parse system property : USE_DEFAULT_MATCH_TYPE = " + sysProp.getValue());
+                        }
+                        continue;
+                    }
+                }
+            }
+
             if (searchBean.getShowInSearch() != null) {
                 criteria.add(Restrictions.eq("showInSearch", searchBean.getShowInSearch()));
             }
             if (searchBean.getFirstNameMatchToken() != null && searchBean.getFirstNameMatchToken().isValid()) {
-                criteria.add(getStringCriterion("firstName", searchBean.getFirstNameMatchToken().getValue(), ORACLE_INSENSITIVE));
+                if (useMatchType) {
+                    criteria.add(getStringCriterionMatchType("firstName", searchBean.getFirstNameMatchToken().getValue(), searchBean.getFirstNameMatchToken().getMatchType(), ORACLE_INSENSITIVE));
+                } else {
+                    criteria.add(getStringCriterion("firstName", searchBean.getFirstNameMatchToken().getValue(), ORACLE_INSENSITIVE));
+                }
             }
             if (searchBean.getLastNameMatchToken() != null && searchBean.getLastNameMatchToken().isValid()) {
-                criteria.add(getStringCriterion("lastName", searchBean.getLastNameMatchToken().getValue(), ORACLE_INSENSITIVE));
+                if (useMatchType) {
+                    criteria.add(getStringCriterionMatchType("lastName", searchBean.getLastNameMatchToken().getValue(), searchBean.getLastNameMatchToken().getMatchType(), ORACLE_INSENSITIVE));
+                } else {
+                    criteria.add(getStringCriterion("lastName", searchBean.getLastNameMatchToken().getValue(), ORACLE_INSENSITIVE));
+                }
             }
             if (StringUtils.isNotEmpty(searchBean.getNickName())) {
-                criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
+                if (useMatchType) {
+                    criteria.add(getStringCriterionMatchType("nickname", searchBean.getNickName(), MatchType.STARTS_WITH, ORACLE_INSENSITIVE));
+                } else {
+                    criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
+                }
+            }
+            if (searchBean.getNickNameMatchToken() != null && searchBean.getNickNameMatchToken().isValid()) {
+                if (useMatchType) {
+                    criteria.add(getStringCriterionMatchType("nickname", searchBean.getNickNameMatchToken().getValue(), searchBean.getNickNameMatchToken().getMatchType(), ORACLE_INSENSITIVE));
+                } else {
+                    criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
+                }
             }
             if (StringUtils.isNotEmpty(searchBean.getUserStatus())) {
                 criteria.add(Restrictions.eq("status", UserStatusEnum.valueOf(searchBean.getUserStatus())));
@@ -300,7 +363,11 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 if (searchBean.getPrincipal() != null) {
                     final SearchParam param = searchBean.getPrincipal().getLoginMatchToken();
                     if (param != null && param.isValid()) {
-                        criteria.add(getStringCriterion("lg.login", param.getValue(), ORACLE_INSENSITIVE));
+                        MatchMode matchMode = MatchMode.START;
+                        if (param.getMatchType() != null) {
+                            matchMode = getMatchMode(param.getMatchType());
+                        }
+                        criteria.add(Restrictions.ilike("lg.login", param.getValue(), matchMode));
                     }
                     if (StringUtils.isNotEmpty(searchBean.getPrincipal().getManagedSysId())) {
                         criteria.add(Restrictions.eq("lg.managedSysId", searchBean.getPrincipal().getManagedSysId()));
@@ -907,7 +974,286 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 //        }
 //    }
 
+    @Override
+    public LightSearchResponse getLightSearchResult(LightSearchRequest request) {
+        LightSearchResponse response = new LightSearchResponse();
+        response.setStatus(ResponseStatus.SUCCESS);
+        if (StringUtils.isNotBlank(request.getEmployeeId()) || StringUtils.isNotBlank(request.getEmailAddress()) || StringUtils.isNotBlank(request.getLogin())
+                || StringUtils.isNotBlank(request.getLastName()) || request.getStatus() != null || request.getSecondaryStatus() != null) {
+
+
+            final String count = " COUNT(*) as count ";
+            final String fieldNames = getBaseLigthSearchColumns();
+
+            StringBuilder sb = this.getBaseLightSearchQuery();
+            this.applyWherePart(sb, request);
+
+            //get DelegationFilterPart
+            final String delegationFilterPart = this.prepareDelagationFilterPart(
+                    this.getRequesterDelegationAttributes(request.getRequesterId()), request);
+
+
+            //run count command
+            Integer countNum = (Integer) this.getSession().createSQLQuery(getResultLightSearchQuery(sb, count,
+                    delegationFilterPart.toString())).addScalar("count", IntegerType.INSTANCE).uniqueResult();
+            //if count > 0 run get data command
+            if (countNum != null && countNum > 0) {
+                response.setCount(countNum);
+                //do to it more smart
+                sb.append(this.addSorting(request.getSortParam()));
+                sb.append(this.getBasePaginatorQuery(request));
+                response.setLightUserSearchModels(this.getSession().createSQLQuery(getResultLightSearchQuery(sb,
+                        fieldNames, delegationFilterPart.toString()))
+                        .addEntity(LightUserSearchModel.class).list());
+            }
+        }
+        return response;
+    }
+
+    private StringBuilder getBasePaginatorQuery(LightSearchRequest request) {
+        StringBuilder paginationBuilder = new StringBuilder();
+        if (request.getSize() != -1 && request.getFrom() != -1) {
+            String dbType = this.dbType;
+            if ("SQLServer".equalsIgnoreCase(dbType)) {
+                paginationBuilder.append("OFFSET " + request.getFrom() + " ROWS FETCH NEXT " + request.getSize() + " ROWS ONLY");
+            } else if ("ORACLE_INSENSITIVE".equalsIgnoreCase(dbType)) {
+                paginationBuilder.append("OFFSET " + request.getFrom() + " ROWS FETCH NEXT " + request.getSize() + " ROWS ONLY");
+            } else if ("MySQL".equalsIgnoreCase(dbType)) {
+                paginationBuilder.append(" LIMIT " + request.getFrom() + "," + request.getSize());
+            } else if ("PostgreSQL".equalsIgnoreCase(dbType)) {
+                paginationBuilder.append(" LIMIT " + request.getSize() + " OFFSET " + request.getFrom());
+            }
+        }
+        return paginationBuilder;
+    }
+
+    private String getResultLightSearchQuery(StringBuilder sb, String returnColumns, String delegationFilterPart) {
+        return sb.toString().replace("${replace}", returnColumns).replace("${delegationFilterPart}", delegationFilterPart);
+    }
+
+    private String prepareDelagationFilterPart(Map<String, UserAttribute> requesterDelegationAttributes, LightSearchRequest request) {
+        StringBuilder delegationFilterPart = new StringBuilder();
+        if (requesterDelegationAttributes != null) {
+            boolean isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterDelegationAttributes);
+            boolean isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterDelegationAttributes);
+            boolean isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterDelegationAttributes);
+            boolean isMngReportFilterSet = DelegationFilterHelper.isMngRptFilterSet(requesterDelegationAttributes);
+            boolean isAttributeFilterSet = DelegationFilterHelper.isAttributeFilterSet(requesterDelegationAttributes);
+            if (isOrgFilterSet) {
+                delegationFilterPart.append(" JOIN USER_AFFILIATION usf ON usf.USER_ID = u.USER_ID AND ");
+                delegationFilterPart.append(" COMPANY_ID IN ('");
+                delegationFilterPart.append(StringUtils.join(DelegationFilterHelper.getOrgIdFilterFromString(requesterDelegationAttributes), "','"));
+                delegationFilterPart.append("') ");
+            }
+
+            if (isGroupFilterSet) {
+                delegationFilterPart.append(" JOIN USER_GRP usgr ON usgr.USER_ID = u.USER_ID AND ");
+                delegationFilterPart.append(" GRP_ID IN ('");
+                delegationFilterPart.append(StringUtils.join(DelegationFilterHelper.getGroupFilterFromString(requesterDelegationAttributes), "','"));
+                delegationFilterPart.append("') ");
+            }
+
+            if (isRoleFilterSet) {
+                delegationFilterPart.append(" JOIN USER_ROLE usrole ON usrole.USER_ID = u.USER_ID AND ");
+                delegationFilterPart.append(" ROLE_ID IN ('");
+                delegationFilterPart.append(StringUtils.join(DelegationFilterHelper.getRoleFilterFromString(requesterDelegationAttributes), "','"));
+                delegationFilterPart.append("') ");
+            }
+
+            if (isMngReportFilterSet) {
+                delegationFilterPart.append(" JOIN ORG_STRUCTURE orgStr ON orgStr.STAFF_ID = u.USER_ID AND ");
+                delegationFilterPart.append(" orgStr.SUPERVISOR_ID = '" + request.getRequesterId() + "' ");
+            }
+            if (isAttributeFilterSet) {
+                List<String> searchParams = DelegationFilterHelper.getAttributeFilterSet(requesterDelegationAttributes);
+                List<SearchAttribute> searchAttributeList = null;
+                if (searchParams != null) {
+                    searchAttributeList = new ArrayList<>();
+                    for (String param : searchParams) {
+                        searchAttributeList.add(UserUtils.parseDelegationFilterAttribute(param));
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(searchAttributeList)) {
+
+                    List<String> contitionsList = new ArrayList<>();
+                    for (SearchAttribute sa : searchAttributeList) {
+                        if (StringUtils.isNotEmpty(sa.getAttributeName()) &&
+                                StringUtils.isNotBlank(sa.getAttributeValue())
+                                && sa.getMatchType() != null) {
+                            StringBuilder clause = new StringBuilder();
+                            clause.append("(uattributes.NAME='");
+                            clause.append(sa.getAttributeName());
+                            clause.append("' AND ");
+                            clause.append("uattributes.VALUE LIKE('");
+
+                            switch (sa.getMatchType()) {
+                                case END_WITH:
+                                    clause.append("%" + sa.getAttributeValue());
+                                    break;
+                                case EXACT:
+                                    clause.append(sa.getAttributeValue());
+                                    break;
+                                case STARTS_WITH:
+                                    clause.append(sa.getAttributeValue() + "%");
+                                    break;
+                                default:
+                                    break;
+                            }
+                            clause.append("'))");
+                            contitionsList.add(clause.toString());
+                        }
+                    }
+                    if (CollectionUtils.isNotEmpty(contitionsList)) {
+                        delegationFilterPart.append(" JOIN USER_ATTRIBUTES uattributes ON uattributes.USER_ID = u.USER_ID AND (");
+                        delegationFilterPart.append(StringUtils.join(contitionsList, " OR "));
+                        delegationFilterPart.append(") ");
+                    }
+                }
+            }
+            //todo parf of delegation filter
+        }
+        return delegationFilterPart.toString();
+    }
+
+
+    private StringBuilder getBaseLightSearchQuery() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ${replace} ");
+        sb.append("FROM USERS u LEFT JOIN EMAIL_ADDRESS ea ON ea.IS_DEFAULT = 'Y' AND ea.EMAIL_ID = (SELECT MAX(EMAIL_ID) FROM ");
+        sb.append(" EMAIL_ADDRESS WHERE PARENT_ID = u.USER_ID) LEFT JOIN PHONE p ON p.IS_DEFAULT = 'Y' AND ");
+        sb.append(" p.PHONE_ID = (SELECT MAX(PHONE_ID) FROM PHONE WHERE PARENT_ID = u.USER_ID) JOIN LOGIN l ON ");
+        sb.append(" l.USER_ID = u.USER_ID AND l.MANAGED_SYS_ID = '0' ${delegationFilterPart} ");
+        sb.append(" WHERE ");
+        return sb;
+    }
+
+    private String getBaseLigthSearchColumns() {
+
+        String fieldNames = "u.USER_ID AS userId, u.EMPLOYEE_ID AS employeeId, u.FIRST_NAME AS firstName, " +
+                " u.LAST_NAME AS lastName, u.STATUS AS status, u.SECONDARY_STATUS AS secondaryStatus, " +
+                " u.NICKNAME AS nickname, ea.EMAIL_ADDRESS AS email, l.LOGIN AS defaultLogin," +
+                "CONCAT(p.COUNTRY_CD, p.AREA_CD, p.PHONE_NBR,p.PHONE_EXT) AS  defaultPhone ";
+        return fieldNames;
+
+    }
+
+    private void applyWherePart(StringBuilder sb, LightSearchRequest request) {
+        if (StringUtils.isNotBlank(request.getEmployeeId())) {
+            sb.append(" u.EMPLOYEE_ID LIKE ('" + request.getEmployeeId() + "%') ");
+        }
+
+        if (StringUtils.isNotBlank(request.getEmailAddress())) {
+            if (StringUtils.isNotBlank(request.getEmployeeId())) {
+                sb.append(" AND ");
+            }
+            sb.append(" ea.EMAIL_ADDRESS LIKE ('" + request.getEmailAddress() + "%') ");
+        }
+
+        if (StringUtils.isNotBlank(request.getLogin())) {
+            if (StringUtils.isNotBlank(request.getEmployeeId()) || StringUtils.isNotBlank(request.getEmailAddress())) {
+                sb.append(" AND ");
+            }
+            sb.append(" l.LOGIN LIKE ('" + request.getLogin() + "%') ");
+        }
+
+        if (StringUtils.isNotBlank(request.getLastName())) {
+            if (StringUtils.isNotBlank(request.getEmployeeId()) ||
+                    StringUtils.isNotBlank(request.getLogin()) ||
+                    StringUtils.isNotBlank(request.getEmailAddress())) {
+                sb.append(" AND ");
+            }
+            sb.append(" u.LAST_NAME LIKE ('" + request.getLastName() + "%') ");
+        }
+
+        if (request.getStatus() != null) {
+            if (StringUtils.isNotBlank(request.getEmployeeId()) ||
+                    StringUtils.isNotBlank(request.getLogin()) ||
+                    StringUtils.isNotBlank(request.getEmailAddress()) ||
+                    StringUtils.isNotBlank(request.getLastName())) {
+                sb.append(" AND ");
+            }
+            sb.append(" u.STATUS='" + request.getStatus().name() + "' ");
+        }
+        if (request.getSecondaryStatus() != null) {
+            if (StringUtils.isNotBlank(request.getEmployeeId()) ||
+                    StringUtils.isNotBlank(request.getLogin()) ||
+                    StringUtils.isNotBlank(request.getEmailAddress()) ||
+                    StringUtils.isNotBlank(request.getLastName()) ||
+                    request.getStatus() != null) {
+                sb.append(" AND ");
+            }
+            sb.append(" u.SECONDARY_STATUS='" + request.getSecondaryStatus().name() + "' ");
+        }
+    }
+
+
+    private Map<String, UserAttribute> getRequesterDelegationAttributes(String requesterId) {
+        if (StringUtils.isBlank(requesterId)) {
+            return null;
+        }
+        String sql = "SELECT ua.ID as id," +
+                "ua.VALUE as value, uav.VALUE as " + ("PostgreSQL".equals(this.dbType) ? "values" : "'values'") +
+                ", ua.IS_MULTIVALUED as isMultivalued, ua.USER_ID as userId, ua.NAME as name " +
+                " FROM USER_ATTRIBUTES ua LEFT JOIN  USER_ATTRIBUTE_VALUES uav ON uav.USER_ATTRIBUTE_ID" +
+                "=ua.ID WHERE ua.USER_ID='%s' AND ua.NAME IN" +
+                " ( 'DLG_FLT_APP', 'DLG_FLT_DEPT', 'DLG_FLT_DIV','DLG_FLT_GRP','DLG_FLT_ORG','DLG_FLT_ROLE'" +
+                ",'DLG_FLT_MNG_RPT','DLG_FLT_PARAM','DLG_FLT_USE_ORG_INH') ";
+        List<LightSearchDelegationAttributeModel> userAttributeEntityList =
+                this.getSession().createSQLQuery(String.format(sql, requesterId)).
+                        addEntity(LightSearchDelegationAttributeModel.class).list();
+        if (CollectionUtils.isEmpty(userAttributeEntityList)) {
+            return null;
+        }
+        Map<String, UserAttribute> userAttributeEntityMap = new HashMap<>();
+        for (LightSearchDelegationAttributeModel userAttributeEntity : userAttributeEntityList) {
+            UserAttribute userAttribute = new UserAttribute();
+            userAttribute.setId(userAttributeEntity.getId());
+            userAttribute.setName(userAttributeEntity.getName());
+            userAttribute.setValue(userAttributeEntity.getValue());
+            userAttribute.setValues(userAttributeEntity.getValues());
+            userAttribute.setIsMultivalued("Y".equalsIgnoreCase(userAttributeEntity.getIsMultivalued()));
+            userAttribute.setUserId(userAttributeEntity.getUserId());
+            userAttributeEntityMap.put(userAttributeEntity.getName(), userAttribute);
+        }
+        return userAttributeEntityMap;
+    }
+
+    private StringBuilder addSorting(List<SortParam> sortParam) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(" ORDER BY ");
+        if (sortParam == null) {
+            return sb.append("u.USER_ID ");
+        }
+        for (SortParam sort : sortParam) {
+            String orderDir = (sort.getOrderBy() == null) ? OrderConstants.ASC.getValue() : sort.getOrderBy().getValue();
+            if ("name".equals(sort.getSortBy())) {
+                sb.append("u.LAST_NAME " + orderDir + ", ");
+                sb.append("u.FIRST_NAME " + orderDir);
+            } else if ("phone".equals(sort.getSortBy())) {
+                sb.append("p.COUNTRY_CD " + orderDir + ", ");
+                sb.append("p.AREA_CD " + orderDir + ", ");
+                sb.append("p.PHONE_NBR " + orderDir + ", ");
+                sb.append("p.PHONE_EXT " + orderDir);
+            } else if ("email".equals(sort.getSortBy())) {
+                sb.append("ea.EMAIL_ADDRESS " + orderDir);
+            } else if ("userStatus".equals(sort.getSortBy())) {
+                sb.append("u.STATUS " + orderDir);
+            } else if ("accountStatus".equals(sort.getSortBy())) {
+                sb.append("u.SECONDARY_STATUS " + orderDir);
+            } else if ("principal".equals(sort.getSortBy())) {
+                sb.append("l.LOGIN " + orderDir);
+            }
+            sb.append(",");
+        }
+        if (',' == sb.charAt(sb.length() - 1)) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        sb.append(" ");
+        return sb;
+    }
+
     private void addSorting(Criteria criteria, List<SortParam> sortParam) {
+
         for (SortParam sort : sortParam) {
             OrderConstants orderDir = (sort.getOrderBy() == null) ? OrderConstants.ASC : sort.getOrderBy();
 

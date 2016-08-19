@@ -41,8 +41,6 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailEntity;
@@ -1373,7 +1371,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
                     if (cc != null) {
                         String[] copies = cc.split(";");
                         String[] to = new String[1];
-                        to [0] =ee.getAddress();
+                        to[0] = ee.getAddress();
                         mailService.sendEmails(null, to, copies, null, ee.getSubject(), emailBody, true, null);
                     } else {
                         mailService.sendEmail(null, ee.getAddress(), null, ee.getSubject(), emailBody, null, true);
@@ -1387,4 +1385,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         }
         return response;
     }
+
+    @Override
+    public LightSearchResponse getLightSearchResult(LightSearchRequest request) {
+        return userManager.getLightSearchResult(request);
+    }
+
 }
+
+

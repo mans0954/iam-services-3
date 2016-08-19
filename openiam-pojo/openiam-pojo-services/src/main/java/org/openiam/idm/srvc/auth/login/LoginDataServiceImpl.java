@@ -714,13 +714,17 @@ public class LoginDataServiceImpl implements LoginDataService {
 
         for (UserEntity user : userList) {
             LoginEntity login = loginMap.get(user.getId());
-            if (login != null)
+            if (login != null) {
+                if (user.getSecondaryStatus() == null || (user.getSecondaryStatus() != UserStatusEnum.DISABLED &&
+                        user.getSecondaryStatus() != UserStatusEnum.TERMINATED))
                 sendCredentialsToUser(email, login, user);
+            }
         }
     }
 
     private void sendCredentialsToUser(String email, LoginEntity loginEntity, UserEntity user) {
         final NotificationRequest notificationRequest = new NotificationRequest();
+        notificationRequest.setUserId(user.getId());
         notificationRequest.setTo(email);
         notificationRequest.setNotificationType("FORGOT_USER_NAME");
         notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), loginEntity.getLogin()));

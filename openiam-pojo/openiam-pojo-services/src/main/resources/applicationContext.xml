@@ -264,7 +264,8 @@
                                                 org.openiam.idm.srvc.sysprop.domain*,
                                                org.openiam.idm.srvc.prov*,
                                                org.openiam.idm.srvc.batch.domain*,
-                                               org.openiam.idm.srvc.ui*
+                                               org.openiam.idm.srvc.ui*,
+                                               org.openiam.idm.srvc.user.dto*
                                                "/>
 
     </bean>

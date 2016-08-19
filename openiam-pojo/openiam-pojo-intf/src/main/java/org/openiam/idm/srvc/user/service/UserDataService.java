@@ -14,7 +14,6 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -24,7 +23,7 @@ import org.openiam.idm.srvc.user.dto.*;
 /**
  * Service interface that clients will access to gain information about users
  * and related information.
- * 
+ *
  * @author Suneet Shah
  * @version 2
  */
@@ -35,7 +34,7 @@ public interface UserDataService {
      * Returns a User object that is associated with the principal. ManagedSysId
      * refers to a principal that is associated with a particular target system.
      * User 0 to use the default principal ID.
-     * 
+     *
      * @param principal
      * @param managedSysId
      * @return
@@ -63,7 +62,7 @@ public interface UserDataService {
      * associated objects such as the User-Group and User-Role relationship.
      * This has been done on purpose to minimize impact on the system through an
      * erroneous call to the delete operation.
-     * 
+     *
      * @param id
      */
     public void removeUser(String id) throws Exception;
@@ -195,12 +194,11 @@ public interface UserDataService {
     /**
      * Returns a List of supervisor objects that represents the supervisors for
      * this employee or user.
-     * 
+     *
      * @param superiorId
      * @return
      */
     // public List<UserEntity> getSupervisors(String employeeId);
-
     public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
 
     public Supervisor findSupervisorDto(String superiorId, String subordinateId);
@@ -227,12 +225,12 @@ public interface UserDataService {
 
     public List<User> findPotentialSupSubsDto(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException;
 
-    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean)  throws BasicDataServiceException;
+    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean) throws BasicDataServiceException;
 
     /**
      * Returns a list of Supervisor objects that represents the employees or
      * users for this supervisor
-     * 
+     *
      * @param supervisorId
      * @return
      */
@@ -241,7 +239,7 @@ public interface UserDataService {
     /**
      * Returns the primary supervisor for this employee. Null if no primary is
      * defined.
-     * 
+     *
      * @param employeeId
      * @return
      */
@@ -302,7 +300,7 @@ public interface UserDataService {
     List<UserEntity> getUsersForMSys(String mSysId);
 
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
-    
+
     public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language);
 
     public List<UserAttribute> getUserAttributeDtoList(String userId, final LanguageEntity language);
@@ -326,7 +324,7 @@ public interface UserDataService {
     boolean isHasGroup(String userId, String groupId);
 
     void removeUserFromResource(String userId, String resourceId);
-    
+
     void addUserToResource(String userId, String resourceId);
 
     boolean isHasResource(String userId, String resourceId);
@@ -346,11 +344,16 @@ public interface UserDataService {
     public List<User> getUserDtoBetweenLastDate(Date fromDate, Date toDate);
 
     public List<User> getUserDtoBySearchBean(AuditLogSearchBean searchBean);
+
     public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate);
 
     public List<Supervisor> findSupervisors(SupervisorSearchBean sb);
 
     public List<User> getUserWithoutAnswerDto();
+
     public List<String> getUsersIdsWithoutAnswers();
-    public List<Map<String,Object>> findUsersWithoutAnswersOnDate(Date fromDate, Date toDate, boolean hasAnswer);
+
+    public List<Map<String, Object>> findUsersWithoutAnswersOnDate(Date fromDate, Date toDate, boolean hasAnswer);
+
+    public LightSearchResponse getLightSearchResult(LightSearchRequest request);
 }

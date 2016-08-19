@@ -4,8 +4,12 @@ package org.openiam.service.integration.provisioning;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchMode;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
@@ -564,5 +568,17 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
         User foundUser = get(user.getId());
         // required Attribute must not be deleted
         Assert.assertNull(foundUser, "User cannot be deleted");
+    }
+    
+    @Test
+    public void testCGIOOM() {
+    	final UserSearchBean sb = new UserSearchBean();
+    	sb.setDeepCopy(true);
+    	sb.setFindInCache(false);
+    	sb.setDelAdmin(false);
+    	sb.setEmailAddressMatchToken(new SearchParam("gilbert.jones@cgi.com", MatchType.EXACT));
+    	sb.setSearchMode(SearchMode.AND);
+    	sb.setInitDefaulLogin(false);
+    	Assert.assertTrue(CollectionUtils.isNotEmpty(userServiceClient.findBeans(sb, 0, 10)));
     }
 }
