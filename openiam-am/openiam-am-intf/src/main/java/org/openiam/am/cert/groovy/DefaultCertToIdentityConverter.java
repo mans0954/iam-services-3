@@ -12,7 +12,6 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.base.response.LoginResponse;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.SpringContextProvider;
