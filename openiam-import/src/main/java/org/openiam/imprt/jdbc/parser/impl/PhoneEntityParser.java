@@ -117,11 +117,11 @@ public class PhoneEntityParser extends BaseParser<PhoneEntity> {
                 break;
             }
             case PHONE_IS_DEFAULT: {
-                list.add(entity.getIsDefault());
+                list.add(entity.getIsDefault() ? "Y" : "N");
                 break;
             }
             case PHONE_ACTIVE: {
-                list.add(entity.getIsActive());
+                list.add(entity.getIsActive() ? "Y" : "N");
                 break;
             }
             case PHONE_PARENT_ID: {

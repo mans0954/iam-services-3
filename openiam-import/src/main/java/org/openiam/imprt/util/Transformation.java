@@ -3,22 +3,18 @@ package org.openiam.imprt.util;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.criterion.MatchMode;
-import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.base.ws.MatchType;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
-import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.sysprop.domain.SystemPropertyEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -310,20 +306,32 @@ public class Transformation {
             e.setDescription("DELETE_FROM_DB");
         }
 
-        attr = this.getValue(lo.get("telephoneNumber"));
-        if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("OfficePhone", attr));
-            addPhone(attr, "OFFICE_PHONE", user);
+        String mobilePhone = this.getValue(lo.get("mobile"));
+        String mobilePhoneExt = this.getValue(lo.get("msExchExtensionAttribute17"));
+        String officePhone = this.getValue(lo.get("telephoneNumber"));
+
+        boolean hideMobilePhone = StringUtils.isNotBlank(mobilePhoneExt) && StringUtils.isBlank(mobilePhone);
+        addUserAttribute(user, new UserAttributeEntity("hideMobilePhone", hideMobilePhone ? "On" : "Off"));
+        boolean isDefaultSet = false;
+        if (StringUtils.isNotBlank(mobilePhoneExt)) {
+            addUserAttribute(user, new UserAttributeEntity("MobilePhone", mobilePhoneExt));
+            addPhone(mobilePhoneExt, "CELL_PHONE", user, !hideMobilePhone);
+            isDefaultSet = !hideMobilePhone;
         }
-        attr = this.getValue(lo.get("msExchExtensionAttribute17"));
-        if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("MobilePhone", attr));
-            addPhone(attr, "CELL_PHONE", user);
+
+
+        if (StringUtils.isNotBlank(officePhone)) {
+            addUserAttribute(user, new UserAttributeEntity("OfficePhone", officePhone));
+            isDefaultSet = hideMobilePhone || StringUtils.isBlank(mobilePhoneExt);
+            addPhone(officePhone, "OFFICE_PHONE", user, isDefaultSet);
+
         }
+
         attr = this.getValue(lo.get("fax"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("Fax", attr));
-            addPhone(attr, "FAX", user);
+            addPhone(attr, "FAX", user, !isDefaultSet);
+            isDefaultSet = true;
         }
 
         String attr13 = this.getValue(lo.get("extensionAttribute13"));
@@ -340,19 +348,27 @@ public class Transformation {
                     if (curPh.length == 2) {
                         if (StringUtils.isNotBlank(curPh[1]) && StringUtils.isNotBlank(curPh[0])) {
                             if ("tablet".equalsIgnoreCase(curPh[0])) {
-                                addPhone(curPh[1].trim(), "tablet", user);
+                                addPhone(curPh[1].trim(), "tablet", user, !isDefaultSet);
+                                isDefaultSet = true;
                             } else if ("voice".equalsIgnoreCase(curPh[0])) {
-                                addPhone(curPh[1].trim(), "voice", user);
+                                addPhone(curPh[1].trim(), "voice", user, !isDefaultSet);
+                                isDefaultSet = true;
                             } else if ("data".equalsIgnoreCase(curPh[0])) {
-                                addPhone(curPh[1].trim(), "data", user);
+                                addPhone(curPh[1].trim(), "data", user, !isDefaultSet);
+                                isDefaultSet = true;
                             } else if ("dongle".equalsIgnoreCase(curPh[0])) {
-                                addPhone(curPh[1].trim(), "dongle", user);
+                                addPhone(curPh[1].trim(), "dongle", user, !isDefaultSet);
+                                isDefaultSet = true;
                             }
                         }
                     }
                 }
             }
         }
+
+        //if hideMobilePhone set default phone Office Phone
+        // else set defaultPhone mobilePhone
+
 
         //Drive & Directory
         attr = this.getValue(lo.get("homeDirectory"));
@@ -537,10 +553,10 @@ public class Transformation {
         String userPrincipalName = this.getValue(lo.get("userPrincipalName"));
 
         // PROD
-        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
+//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
 
         // STAGING
-//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
+        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
 
         // lync
         String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
@@ -860,13 +876,14 @@ public class Transformation {
         user.getEmailAddresses().add(email);
     }
 
-    private void addPhone(String phoneValue, String metatypeId, UserEntity user) {
+    private void addPhone(String phoneValue, String metatypeId, UserEntity user, boolean defaultPhone) {
         PhoneEntity ph = new PhoneEntity();
         MetadataTypeEntity metatype = new MetadataTypeEntity();
         metatype.setId(metatypeId);
         ph.setName(metatype.getId().replaceAll("_", " "));
         ph.setMetadataType(metatype);
-        ph.setIsDefault(false);
+        ph.setIsDefault(defaultPhone);
+        ph.setIsActive(true);
         String[] parts = phoneValue.split(" ");
         if (parts != null && parts.length > 1) {
             String newP = "";
