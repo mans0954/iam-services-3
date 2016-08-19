@@ -156,7 +156,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             AddressSearchBean searchBean = new AddressSearchBean();
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMdTypeId());
-            List<AddressEntity> entityList = userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
+            List<AddressEntity> entityList = userManager.getAddressList(searchBean, 0, Integer.MAX_VALUE);
             if (CollectionUtils.isNotEmpty(entityList))
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
 
@@ -215,7 +215,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             EmailSearchBean searchBean = new EmailSearchBean();
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMdTypeId());
-            List<EmailAddressEntity> entityList = userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
+            List<EmailAddressEntity> entityList = userManager.getEmailAddressList(searchBean, 0, Integer.MAX_VALUE);
             if (CollectionUtils.isNotEmpty(entityList))
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
 
@@ -282,7 +282,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             PhoneSearchBean searchBean = new PhoneSearchBean();
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMdTypeId());
-            List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
+            List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, 0, Integer.MAX_VALUE);
             if (CollectionUtils.isNotEmpty(entityList))
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
 
@@ -346,14 +346,14 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
     //@Transactional(readOnly = true)
     public List<Address> getAddressList(String userId) {
-        return this.getAddressListByPage(userId, Integer.MAX_VALUE, 0);
+        return this.getAddressListByPage(userId, 0, Integer.MAX_VALUE);
     }
 
     @Override
     //@Transactional(readOnly = true)
-    public List<Address> getAddressListByPage(String userId, Integer size, Integer from) {
+    public List<Address> getAddressListByPage(String userId, int from, int size) {
 
-        return userManager.getAddressDtoList(userId, size, from);
+        return userManager.getAddressDtoList(userId, from, size);
     }
 
     /*
@@ -380,13 +380,19 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
     //@Transactional(readOnly = true)
     public List<EmailAddress> getEmailAddressList(String userId) {
-        return this.getEmailAddressListByPage(userId, Integer.MAX_VALUE, 0);
+    	final EmailSearchBean sb = new EmailSearchBean();
+    	sb.setDeepCopy(false);
+    	sb.setParentId(userId);
+    	return findEmailBeans(sb, 0, Integer.MAX_VALUE);
     }
 
     @Override
-    //@Transactional(readOnly = true)
-    public List<EmailAddress> getEmailAddressListByPage(String userId, Integer size, Integer from) {
-        return userManager.getEmailAddressDtoList(userId, size, from);
+    @Deprecated
+    public List<EmailAddress> getEmailAddressListByPage(String userId, int from, int size) {
+        final EmailSearchBean sb = new EmailSearchBean();
+        sb.setParentId(userId);
+        sb.setDeepCopy(false);
+        return findEmailBeans(sb, from, size);
     }
 
     // @Override
@@ -414,13 +420,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
     //@Transactional(readOnly = true)
     public List<Phone> getPhoneList(String userId) {
-        return getPhoneListByPage(userId, Integer.MAX_VALUE, 0);
+        return getPhoneListByPage(userId, 0, Integer.MAX_VALUE);
     }
 
     @Override
     //@Transactional(readOnly = true)
-    public List<Phone> getPhoneListByPage(String userId, Integer size, Integer from) {
-        return userManager.getPhoneDtoList(userId, size, from);
+    public List<Phone> getPhoneListByPage(String userId, int from, int size) {
+        return userManager.getPhoneDtoList(userId, from, size);
     }
 
     @Override
@@ -452,7 +458,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     //@Transactional(readOnly = true)
-    public List<User> getSuperiors(String userId, Integer from, Integer size) {
+    public List<User> getSuperiors(String userId, int from, int size) {
         return userManager.getSuperiorsDto(userId, from, size);
     }
 
@@ -463,7 +469,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     //@Transactional(readOnly = true)
-    public List<User> getSubordinates(String userId, Integer from, Integer size) {
+    public List<User> getSubordinates(String userId, int from, int size) {
         return userManager.getSubordinatesDto(userId, from, size);
     }
 
@@ -474,7 +480,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     //@Transactional(readOnly = true)
-    public List<User> findPotentialSupSubs(PotentialSupSubSearchBean userSearchBean, Integer from, Integer size) {
+    public List<User> findPotentialSupSubs(PotentialSupSubSearchBean userSearchBean, int from, int size) {
         List<User> resultList = Collections.EMPTY_LIST;
         try {
             resultList = userManager.findPotentialSupSubsDto(userSearchBean, from, size);
@@ -744,7 +750,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             AddressSearchBean searchBean = new AddressSearchBean();
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMdTypeId());
-            List<AddressEntity> entityList = userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
+            List<AddressEntity> entityList = userManager.getAddressList(searchBean, 0, Integer.MAX_VALUE);
             if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getId().equals(val.getId()))
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
 
@@ -805,7 +811,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMdTypeId());
             // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-            List<EmailAddressEntity> entityList = userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
+            List<EmailAddressEntity> entityList = userManager.getEmailAddressList(searchBean, 0, Integer.MAX_VALUE);
             if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getId().equals(val.getId()))
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
 
@@ -855,7 +861,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
             // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-            List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
+            List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, 0, Integer.MAX_VALUE);
             if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getId().equals(val.getId()))
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
 
@@ -1375,8 +1381,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     //@Transactional(readOnly = true)
-    public List<User> getAllSuperiors(@WebParam(name = "from", targetNamespace = "") Integer from,
-                                      @WebParam(name = "size", targetNamespace = "") Integer size) {
+    public List<User> getAllSuperiors(int from, int size) {
 
         return userManager.getAllSuperiorsDto(from, size);
     }
@@ -1389,8 +1394,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
 	@Override
 	//@Transactional(readOnly = true)
-	public List<EmailAddress> findEmailBeans(final EmailSearchBean searchBean, final int size, final int from) {
-        return userManager.getEmailAddressDtoList(searchBean, size, from);
+	public List<EmailAddress> findEmailBeans(final EmailSearchBean searchBean, final int from, final int size) {
+        return userManager.getEmailAddressDtoList(searchBean, from, size);
 	}
 
 	@Override

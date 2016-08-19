@@ -24,6 +24,7 @@ import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldIndex;
@@ -36,6 +37,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Document(indexName = ESIndexName.EMAIL, type= ESIndexType.EMAIL)
 @AttributeOverride(name = "id", column = @Column(name = "EMAIL_ID"))
+@Internationalized
 public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 
     @Column(name = "ACTIVE")

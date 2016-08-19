@@ -237,8 +237,8 @@ public interface UserDataWebService {
      */
     @WebMethod
     public List<Address> getAddressListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                              @WebParam(name = "size", targetNamespace = "") Integer size,
-                                              @WebParam(name = "from", targetNamespace = "") Integer from);
+    										  @WebParam(name = "from", targetNamespace = "") int from,
+    										  @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Add a Phone to this User
@@ -316,8 +316,8 @@ public interface UserDataWebService {
      */
     @WebMethod
     public List<Phone> getPhoneListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                          @WebParam(name = "size", targetNamespace = "") Integer size,
-                                          @WebParam(name = "from", targetNamespace = "") Integer from);
+    									  @WebParam(name = "from", targetNamespace = "") int from,
+    									  @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Adds an Email Address
@@ -370,25 +370,30 @@ public interface UserDataWebService {
     public List<EmailAddress> getEmailAddressList(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
-     * Gets a paged List of EmailAddress records associated with a User
      * 
-     * @param userId
-     *            - the user ID of interest
-     * @param size
-     *            - how many records to fetch
-     * @param from
-     *            - where to start
-     * @return a paged List of EmailAddress records associated with a User
+     * Use findEmailBeans
+
      */
     @WebMethod
+    @Deprecated
     public List<EmailAddress> getEmailAddressListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                                        @WebParam(name = "size", targetNamespace = "") Integer size,
-                                                        @WebParam(name = "from", targetNamespace = "") Integer from);
+    													@WebParam(name = "from", targetNamespace = "") int from,
+                                                        @WebParam(name = "size", targetNamespace = "") int size);
 
+    /**
+    Gets a paged List of EmailAddress records associated with a User
+    * 
+    * @param searchBean - search bean to use
+    * @param size
+    *            - how many records to fetch
+    * @param from
+    *            - where to start
+    * @return a paged List of EmailAddress records associated with the given Search Bean
+    */
     @WebMethod
     public List<EmailAddress> findEmailBeans(final @WebParam(name="searchBean") EmailSearchBean searchBean,
-    										 final @WebParam(name = "size", targetNamespace = "") int size,
-    										 final @WebParam(name = "from", targetNamespace = "") int from);
+    										 @WebParam(name = "from", targetNamespace = "") int from,
+    										 @WebParam(name = "size", targetNamespace = "") int size);
     
     /**
      * Add a Supervisor record
@@ -493,8 +498,8 @@ public interface UserDataWebService {
      */
     @WebMethod
     public List<User> getSuperiors(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                   @WebParam(name = "from", targetNamespace = "") Integer from,
-                                   @WebParam(name = "size", targetNamespace = "") Integer size);
+    							   @WebParam(name = "from", targetNamespace = "") int from,
+    							   @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Get the Number of supervisors for this user
@@ -521,8 +526,8 @@ public interface UserDataWebService {
      */
     @WebMethod
     public List<User> getSubordinates(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                      @WebParam(name = "from", targetNamespace = "") Integer from,
-                                      @WebParam(name = "size", targetNamespace = "") Integer size);
+    								  @WebParam(name = "from", targetNamespace = "") int from,
+    								  @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Gets the number of subordinates for this User
@@ -536,8 +541,8 @@ public interface UserDataWebService {
 
     @WebMethod
     public List<User> findPotentialSupSubs(@WebParam(name = "searchBean", targetNamespace = "") PotentialSupSubSearchBean userSearchBean,
-                                           @WebParam(name = "from", targetNamespace = "") Integer from,
-                                           @WebParam(name = "size", targetNamespace = "") Integer size);
+    									   @WebParam(name = "from", targetNamespace = "") int from,
+    									   @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     public int findPotentialSupSubsCount(@WebParam(name = "searchBean", targetNamespace = "") PotentialSupSubSearchBean userSearchBean);
@@ -891,8 +896,8 @@ public interface UserDataWebService {
      * @return a paged List of all Supervisors in the system
      */
     @WebMethod
-    public List<User> getAllSuperiors(@WebParam(name = "from", targetNamespace = "") Integer from,
-                                      @WebParam(name = "size", targetNamespace = "") Integer size);
+    public List<User> getAllSuperiors(@WebParam(name = "from", targetNamespace = "") int from,
+            						  @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Get the Number of all supervisors in the system

@@ -121,11 +121,11 @@ public interface UserDataService {
 
     public List<Address> getAddressDtoList(String userId, boolean isDeep);
 
-    public List<AddressEntity> getAddressList(String userId, Integer size, Integer from);
+    public List<AddressEntity> getAddressList(String userId, int from, int size);
 
-    public List<Address> getAddressDtoList(String userId, Integer size, Integer from);
+    public List<Address> getAddressDtoList(String userId, int from, int size);
 
-    public List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from);
+    public List<AddressEntity> getAddressList(AddressSearchBean searchBean, int from, int size);
 
     public void addTOPTTokenToPhone(String phoneId, String secret);
     
@@ -147,11 +147,11 @@ public interface UserDataService {
 
     public List<Phone> getPhoneDtoList(String userId, boolean isDeep);
 
-    public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from);
+    public List<PhoneEntity> getPhoneList(String userId, int from, int size);
 
-    public List<Phone> getPhoneDtoList(String userId, Integer size, Integer from);
+    public List<Phone> getPhoneDtoList(String userId, int from, int size);
 
-    public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, Integer size, Integer from);
+    public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, int from, int size);
 
     public void addEmailAddress(EmailAddressEntity val);
 
@@ -171,13 +171,12 @@ public interface UserDataService {
 
     public List<EmailAddress> getEmailAddressDtoList(String userId, boolean isDeep);
 
-    public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from);
+    public List<EmailAddressEntity> getEmailAddressList(String userId, int from, int size);
 
-    public List<EmailAddress> getEmailAddressDtoList(String userId, Integer size, Integer from);
 
-    public List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, Integer size, Integer from);
+    public List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, int from, int size);
 
-    public List<EmailAddress> getEmailAddressDtoList(EmailSearchBean searchBean, Integer size, Integer from);
+    public List<EmailAddress> getEmailAddressDtoList(EmailSearchBean searchBean, int from, int size);
 
     public void addSupervisor(SupervisorEntity supervisor);
 
@@ -204,27 +203,27 @@ public interface UserDataService {
 
     public Supervisor findSupervisorDto(String superiorId, String subordinateId);
 
-    public List<UserEntity> getSuperiors(String userId, Integer from, Integer size);
+    public List<UserEntity> getSuperiors(String userId, int from, int size);
 
-    public List<User> getSuperiorsDto(String userId, Integer from, Integer size);
+    public List<User> getSuperiorsDto(String userId, int from, int size);
 
     public int getSuperiorsCount(String userId);
 
-    public List<UserEntity> getAllSuperiors(Integer from, Integer size);
+    public List<UserEntity> getAllSuperiors(int from, int size);
 
-    public List<User> getAllSuperiorsDto(Integer from, Integer size);
+    public List<User> getAllSuperiorsDto(int from, int size);
 
     public int getAllSuperiorsCount();
 
-    public List<UserEntity> getSubordinates(String userId, Integer from, Integer size);
+    public List<UserEntity> getSubordinates(String userId, int from, int size);
 
-    public List<User> getSubordinatesDto(String userId, Integer from, Integer size);
+    public List<User> getSubordinatesDto(String userId, int from, int size);
 
     public int getSubordinatesCount(String userId);
 
-    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException;
+    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, int from, int size) throws BasicDataServiceException;
 
-    public List<User> findPotentialSupSubsDto(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException;
+    public List<User> findPotentialSupSubsDto(PotentialSupSubSearchBean searchBean, int from, int size) throws BasicDataServiceException;
 
     public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean)  throws BasicDataServiceException;
 

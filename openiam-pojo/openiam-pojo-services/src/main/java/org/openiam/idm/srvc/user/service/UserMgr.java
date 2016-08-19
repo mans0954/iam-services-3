@@ -1221,7 +1221,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public List<AddressEntity> getAddressList(String userId) {
-        return this.getAddressList(userId, Integer.MAX_VALUE, 0);
+        return this.getAddressList(userId, 0, Integer.MAX_VALUE);
     }
 
     @Override
@@ -1232,19 +1232,19 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AddressEntity> getAddressList(String userId, Integer size, Integer from) {
+    public List<AddressEntity> getAddressList(String userId, int from, int size) {
         if (userId == null)
             throw new NullPointerException("userId is null");
 
         AddressSearchBean searchBean = new AddressSearchBean();
         searchBean.setParentId(userId);
         /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
-        return getAddressList(searchBean, size, from);
+        return getAddressList(searchBean, from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Address> getAddressDtoList(String userId, Integer size, Integer from) {
+    public List<Address> getAddressDtoList(String userId, int from, int size) {
         /*if (userId == null)
             throw new NullPointerException("userId is null");
 
@@ -1252,13 +1252,13 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         searchBean.setParentId(userId);*/
         /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
         //List<AddressEntity> addressEntityList = getAddressList(searchBean, size, from);
-        List<AddressEntity> addressEntityList = this.getProxyService().getAddressList(userId, size, from);
+        List<AddressEntity> addressEntityList = this.getProxyService().getAddressList(userId, from, size);
         return addressDozerConverter.convertToDTOList(addressEntityList, false);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from) {
+    public List<AddressEntity> getAddressList(AddressSearchBean searchBean, int from, int size) {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
@@ -1436,7 +1436,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public List<PhoneEntity> getPhoneList(String userId) {
-        return this.getPhoneList(userId, Integer.MAX_VALUE, 0);
+        return this.getPhoneList(userId, 0, Integer.MAX_VALUE);
     }
 
     @Override
@@ -1447,19 +1447,19 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from) {
+    public List<PhoneEntity> getPhoneList(String userId, int from, int size) {
         if (userId == null)
             throw new NullPointerException("userId is null");
 
         PhoneSearchBean searchBean = new PhoneSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-        return getPhoneList(searchBean, size, from);
+        return getPhoneList(searchBean, from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Phone> getPhoneDtoList(String userId, Integer size, Integer from) {
+    public List<Phone> getPhoneDtoList(String userId, int from, int size) {
         /*if (userId == null)
             throw new NullPointerException("userId is null");
 
@@ -1467,13 +1467,13 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
         List<PhoneEntity> phoneEntityList = getPhoneList(searchBean, size, from);*/
-        List<PhoneEntity> phoneEntityList = this.getProxyService().getPhoneList(userId, size, from);
+        List<PhoneEntity> phoneEntityList = this.getProxyService().getPhoneList(userId, from, size);
         return phoneDozerConverter.convertToDTOList(phoneEntityList, false);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, Integer size, Integer from) {
+    public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, int from, int size) {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
         return phoneDao.getByExample(searchBean, from, size);
@@ -1625,7 +1625,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public List<EmailAddressEntity> getEmailAddressList(String userId) {
-        return this.getEmailAddressList(userId, Integer.MAX_VALUE, 0);
+        return this.getEmailAddressList(userId, 0, Integer.MAX_VALUE);
     }
 
     @Override
@@ -1636,19 +1636,20 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from) {
+    public List<EmailAddressEntity> getEmailAddressList(String userId, int from, int size) {
         if (userId == null)
             throw new NullPointerException("userId is null");
 
         EmailSearchBean searchBean = new EmailSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-        return getEmailAddressList(searchBean, size, from);
+        return getEmailAddressList(searchBean, from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, Integer size, Integer from) {
+    @LocalizedServiceGet
+    public List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, int from, int size) {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
@@ -1781,7 +1782,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> getSuperiors(String userId, Integer from, Integer size) {
+    public List<UserEntity> getSuperiors(String userId, int from, int size) {
         if (userId == null)
             throw new NullPointerException("userId is null");
         return userDao.getSuperiors(userId, from, size);
@@ -1789,7 +1790,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getSuperiorsDto(String userId, Integer from, Integer size) {
+    public List<User> getSuperiorsDto(String userId, int from, int size) {
         /*if (userId == null)
             throw new NullPointerException("userId is null");
         List<UserEntity> userEntity = userDao.getSuperiors(userId, from, size);*/
@@ -1807,13 +1808,13 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> getAllSuperiors(Integer from, Integer size) {
+    public List<UserEntity> getAllSuperiors(int from, int size) {
         return userDao.getAllSuperiors(from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getAllSuperiorsDto(Integer from, Integer size) {
+    public List<User> getAllSuperiorsDto(int from, int size) {
         //List<UserEntity> userEntityList = userDao.getAllSuperiors(from, size);
         List<UserEntity> userEntityList = this.getProxyService().getAllSuperiors(from, size);
         return userDozerConverter.convertToDTOList(userEntityList, true);
@@ -1827,7 +1828,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> getSubordinates(String userId, Integer from, Integer size) {
+    public List<UserEntity> getSubordinates(String userId, int from, int size) {
         if (userId == null)
             throw new NullPointerException("userId is null");
         return userDao.getSubordinates(userId, from, size);
@@ -1835,7 +1836,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getSubordinatesDto(String userId, Integer from, Integer size) {
+    public List<User> getSubordinatesDto(String userId, int from, int size) {
         /*if (userId == null)
             throw new NullPointerException("userId is null");
         List<UserEntity> userEntity = userDao.getSubordinates(userId, from, size);*/
@@ -1853,7 +1854,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException {
+    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, int from, int size) throws BasicDataServiceException {
         List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
 
         if (entityList != null && entityList.size() >= from) {
@@ -1869,7 +1870,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> findPotentialSupSubsDto(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException {
+    public List<User> findPotentialSupSubsDto(PotentialSupSubSearchBean searchBean, int from, int size) throws BasicDataServiceException {
         List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
 
         if (entityList != null && entityList.size() >= from) {
@@ -2787,24 +2788,12 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EmailAddress> getEmailAddressDtoList(String userId, Integer size, Integer from) {
-        /*if (userId == null)
-            throw new NullPointerException("userId is null");
-        EmailSearchBean searchBean = new EmailSearchBean();
-        searchBean.setParentId(userId);
-        // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-        List<EmailAddressEntity> emailAddressEntityList = getEmailAddressList(searchBean, size, from);*/
-        List<EmailAddressEntity> emailAddressEntityList = this.getProxyService().getEmailAddressList(userId, size, from);
-        return emailAddressDozerConverter.convertToDTOList(emailAddressEntityList, false);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<EmailAddress> getEmailAddressDtoList(EmailSearchBean searchBean, Integer size, Integer from) {
+    @LocalizedServiceGet
+    public List<EmailAddress> getEmailAddressDtoList(EmailSearchBean searchBean, int from, int size) {
         /*if (searchBean == null)
             throw new NullPointerException("searchBean is null");
         List<EmailAddressEntity> emailAddressEntityList = emailAddressDao.getByExample(emailAddressSearchBeanConverter.convert(searchBean), from, size);*/
-        List<EmailAddressEntity> emailAddressEntityList = this.getProxyService().getEmailAddressList(searchBean, size, from);
+        List<EmailAddressEntity> emailAddressEntityList = this.getProxyService().getEmailAddressList(searchBean, from, size);
         return emailAddressDozerConverter.convertToDTOList(emailAddressEntityList, searchBean.isDeepCopy());
     }
 

@@ -2,10 +2,12 @@ package org.openiam.idm.searchbeans;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.SortParam;
+import org.openiam.idm.srvc.lang.dto.Language;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +17,17 @@ import java.util.List;
         "key",
         "deepCopy",
         "sortBy",
-        "findInCache"
+        "findInCache",
+        "languageId"
 })
-public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType> {
+public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType>, Serializable {
 
 	private boolean deepCopy = true;
 	private KeyType key;
 	private boolean findInCache;
+	
+	/* if set, the provider SHOULD return a localized object */
+	private String languageId;
 
     private List<SortParam> sortBy;
     
@@ -71,17 +77,18 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 		this.findInCache = findInCache;
 	}
 
-	protected String getSortKeyForCache(){
-		StringBuilder sb = new StringBuilder();
-		if (sortBy != null) {
-			for (SortParam sort : sortBy) {
-				if (sort.getSortBy() != null)
-					sb.append(sort.getSortBy().toString());
-				if (sort.getOrderBy() != null)
-					sb.append(sort.getOrderBy().toString());
-			}
+	public String getLanguageId() {
+		return languageId;
+	}
+
+	public void setLanguage(final Language language) {
+		if(language != null) {
+			this.languageId = language.getId();
 		}
-		return StringUtils.isNotBlank(sb.toString()) ? sb.toString() : "";
+	}
+	
+	public void setLanguageId(String languageId) {
+		this.languageId = languageId;
 	}
 
 	@Override
@@ -91,6 +98,8 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 		result = prime * result + (deepCopy ? 1231 : 1237);
 		result = prime * result + (findInCache ? 1231 : 1237);
 		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		result = prime * result
+				+ ((languageId == null) ? 0 : languageId.hashCode());
 		result = prime * result + ((sortBy == null) ? 0 : sortBy.hashCode());
 		return result;
 	}
@@ -113,6 +122,11 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 				return false;
 		} else if (!key.equals(other.key))
 			return false;
+		if (languageId == null) {
+			if (other.languageId != null)
+				return false;
+		} else if (!languageId.equals(other.languageId))
+			return false;
 		if (sortBy == null) {
 			if (other.sortBy != null)
 				return false;
@@ -123,9 +137,10 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 
 	@Override
 	public String toString() {
-		return String.format("AbstractSearchBean [deepCopy=%s, key=%s]",
-				deepCopy, key);
+		return "AbstractSearchBean [deepCopy=" + deepCopy + ", key=" + key
+				+ ", findInCache=" + findInCache + ", languageId=" + languageId
+				+ ", sortBy=" + sortBy + "]";
 	}
-	
+
 	
 }
