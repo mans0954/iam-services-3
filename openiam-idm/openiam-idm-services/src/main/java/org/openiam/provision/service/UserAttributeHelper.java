@@ -34,7 +34,6 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.*;
 import org.springframework.stereotype.Component;

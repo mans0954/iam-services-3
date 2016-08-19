@@ -2,15 +2,9 @@ package org.openiam.idm.srvc.synch.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.dozer.converter.RoleDozerConverter;
-import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.synch.dto.Attribute;
+import org.openiam.provision.type.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
@@ -19,10 +13,7 @@ import org.openiam.provision.service.ProvisionServiceUtil;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.*;
 

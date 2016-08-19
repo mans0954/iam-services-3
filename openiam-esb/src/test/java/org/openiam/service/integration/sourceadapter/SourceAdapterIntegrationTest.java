@@ -1,6 +1,5 @@
 package org.openiam.service.integration.sourceadapter;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,7 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.srvc.user.UserDataWebService;
 import org.openiam.provision.dto.srcadapter.SourceAdapterAttributeRequest;
 import org.openiam.provision.dto.srcadapter.SourceAdapterKey;
 import org.openiam.provision.dto.srcadapter.SourceAdapterKeyEnum;

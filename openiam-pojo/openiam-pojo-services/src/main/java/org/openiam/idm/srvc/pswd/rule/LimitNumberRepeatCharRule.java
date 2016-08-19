@@ -21,9 +21,8 @@
  */
 package org.openiam.idm.srvc.pswd.rule;
 
-import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.exception.CreateException;
+import org.openiam.exception.PasswordRuleException;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 

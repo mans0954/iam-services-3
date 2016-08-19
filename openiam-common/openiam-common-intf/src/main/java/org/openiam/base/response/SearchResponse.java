@@ -1,0 +1,39 @@
+package org.openiam.base.response;
+
+
+import org.openiam.provision.type.ObjectValue;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+import java.util.LinkedList;
+import java.util.List;
+
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "SearchResponse", propOrder = {
+    "objectList"
+})
+public class SearchResponse extends ResponseType
+{
+    List<ObjectValue> objectList = new LinkedList<ObjectValue>();
+
+    public List<ObjectValue> getObjectList() {
+        return objectList;
+    }
+
+    public void setObjectList(List<ObjectValue> objectList) {
+        this.objectList = objectList;
+    }
+
+    @Override
+    public String toString() {
+        return "SearchResponse{" +
+                "objectList=" + objectList +
+                ", errorMessage=" + errorMessage +
+                ", status=" + status +
+                ", requestID='" + requestID + '\'' +
+                ", error=" + error +
+                '}';
+    }
+}

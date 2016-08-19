@@ -15,8 +15,11 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeObjectId;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.dozer.converter.RoleAttributeDozerConverter;
@@ -28,8 +31,10 @@ import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -51,6 +56,8 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.SpringContextProvider;
+import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,6 +119,10 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Value("${org.openiam.ui.admin.right.id}")
 	private String adminRightId;
 
+    @Autowired
+    private GroupDataService groupDataService;
+    @Autowired
+    private SysConfiguration sysConfiguration;
 
     private ApplicationContext ac;
 
@@ -210,6 +221,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			if(role != null && group != null) {
 				role.addGroup(group, accessRightDAO.findByIds(rightIds), startDate, endDate);
 			}
+            roleDao.merge(role);
 		}
 	}
 	
@@ -222,6 +234,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			if(role != null && group != null) {
 				role.removeGroup(group);
 				//roleDao.update(role);
+                roleDao.merge(role);
 			}
 		}
 
@@ -242,6 +255,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     	if(user != null && role != null) {
     		user.addRole(role, accessRightDAO.findByIds(rightIds), startDate, endDate);
     	}
+        userDAO.save(user);
 	}
 	
 	@Override
@@ -252,6 +266,7 @@ public class RoleDataServiceImpl implements RoleDataService {
         if(user != null && role != null) {
         	user.removeRole(role);
         }
+        userDAO.save(user);
 	}
 
 	private void visitChildRoles(final String id, final Set<RoleEntity> visitedSet) {
@@ -837,11 +852,282 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 
     private RoleDataService getProxyService() {
-        RoleDataService service = (RoleDataService) ac.getBean("roleDataService");
+        RoleDataService service = (RoleDataService) SpringContextProvider.getBean("roleDataService");
         return service;
     }
 
     public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
         return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
+    }
+
+
+    public Response removeRole(String roleId, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(roleId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId  is null or empty");
+            }
+
+            final RoleEntity entity = this.getRoleLocalized(roleId, requesterId, null);
+            if(entity == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, String.format("No Role is found for roleId: %s", roleId));
+            }
+            getProxyService().removeRole(roleId);
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+        } catch(Throwable e) {
+            log.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+
+        return response;
+    }
+
+    @Override
+    public Response saveRole(Role role, final String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            validate(role);
+            final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
+            getProxyService().saveRole(entity, requesterId);
+            response.setResponseValue(entity.getId());
+        } catch(BasicDataServiceException e) {
+            log.warn(String.format("Could not save role", e));
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+        } catch(Throwable e) {
+            log.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    private void validate(final Role role) throws BasicDataServiceException {
+        if(role == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Role object is null");
+        }
+
+        final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
+        if(StringUtils.isBlank(entity.getName())) {
+            throw new BasicDataServiceException(ResponseCode.NO_NAME, "Role Name is null or empty");
+        }
+
+		/* check if the name is taken by another entity */
+        final RoleEntity nameEntity = this.getRoleByNameAndManagedSysId(role.getName(), role.getManagedSysId());
+        if(nameEntity != null) {
+            if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
+                throw new BasicDataServiceException(ResponseCode.CONSTRAINT_VIOLATION, "Role Name + Managed Sys combination taken");
+            }
+        }
+
+        entityValidator.isValid(entity);
+    }
+    @Override
+    public Response addGroupToRole(final String roleId, final String groupId, final String requesterId,
+                                   final Set<String> rightIds, final Date startDate, final Date endDate) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_ROLE.value());
+        GroupEntity groupEntity = groupDataService.getGroup(groupId);
+        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+        RoleEntity roleEntity = this.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        idmAuditLog.setAuditDescription(String.format("Add group to  role: %s", roleId));
+        try {
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+
+            getProxyService().validateGroup2RoleAddition(roleId, groupId);
+            getProxyService().addGroupToRole(roleId, groupId, rightIds, startDate, endDate);
+            idmAuditLog.succeed();
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch(Throwable e) {
+            log.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response addUserToRole(final String roleId, final String userId, final String requesterId, final Set<String> rightIds,
+                                  final Date startDate, final Date endDate) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        idmAuditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
+        final UserEntity user = userDataService.getUser(userId);
+        final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        final RoleEntity roleEntity = this.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAuditDescription(String.format("Add user to  role: %s", roleId));
+        try {
+            if(roleId == null || userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "UserId or RoleId  is null or empty");
+            }
+
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+
+            getProxyService().addUserToRole(roleId, userId, rightIds, startDate, endDate);
+            idmAuditLog.succeed();
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch(Throwable e) {
+            log.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        }  finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeGroupFromRole(String roleId, String groupId, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_ROLE.value());
+        GroupEntity groupEntity = groupDataService.getGroup(groupId);
+        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+        RoleEntity roleEntity = this.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        idmAuditLog.setAuditDescription(String.format("Remove group %s from role: %s", groupId, roleId));
+        try {
+            if(groupId == null || roleId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
+            }
+
+            getProxyService().removeGroupFromRole(roleId, groupId);
+            idmAuditLog.succeed();
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch(Throwable e) {
+            log.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        }finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeUserFromRole(String roleId, String userId, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
+        UserEntity userEntity = userDataService.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        RoleEntity roleEntity = this.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAuditDescription(String.format("Remove user %s from role: %s", userId, roleId));
+        try {
+            if(roleId == null || userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            getProxyService().removeUserFromRole(roleId, userId);
+            idmAuditLog.succeed();
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch(Throwable e) {
+            log.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    public Response addChildRole(final String roleId,
+                                 final String childRoleId,
+                                 final String requesterId,
+                                 final Set<String> rights,
+                                 final Date startDate,
+                                 final Date endDate) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(roleId == null || childRoleId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or child roleId is null");
+            }
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+
+            getProxyService().validateRole2RoleAddition(roleId, childRoleId, rights, startDate, endDate);
+            getProxyService().addChildRole(roleId, childRoleId, rights, startDate, endDate);
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error("Can't add child role", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeChildRole(final String roleId, final String childRoleId, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(roleId == null || childRoleId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or child roleId is null");
+            }
+            final RoleEntity parent = this.getRole(roleId, null);
+            final RoleEntity child = this.getRole(childRoleId, null);
+            if(parent == null || child == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Parent Role or Child Role are not found");
+            }
+            getProxyService().removeChildRole(roleId, childRoleId);
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error("Can't remove child role", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
     }
 }

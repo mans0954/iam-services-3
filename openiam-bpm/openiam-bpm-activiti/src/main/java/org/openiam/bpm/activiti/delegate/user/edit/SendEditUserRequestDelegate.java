@@ -1,19 +1,12 @@
 package org.openiam.bpm.activiti.delegate.user.edit;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.activiti.engine.delegate.DelegateExecution;
-import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.base.request.NotificationParam;
+import org.openiam.base.request.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
-import org.openiam.idm.srvc.user.service.UserDAO;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class SendEditUserRequestDelegate extends AbstractEntitlementsDelegate {
 

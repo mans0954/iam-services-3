@@ -14,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
+import org.openiam.base.request.IdmAuditLogRequest;
 import org.openiam.elasticsearch.dao.AuditLogElasticSearchRepository;
 import org.openiam.elasticsearch.dao.GroupElasticSearchRepository;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
@@ -201,8 +202,11 @@ public class AuditLogServiceImpl implements AuditLogService {
 	}
 	
 	 private void send(final IdmAuditLogEntity log) {
-         MQRequest<IdmAuditLogEntity> request = new MQRequest<>();
-         request.setRequestBody(log);
+         IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
+         wrapper.setLogEntity(log);
+
+         MQRequest<IdmAuditLogRequest> request = new MQRequest<>();
+         request.setRequestBody(wrapper);
          request.setRequestApi(OpenIAMAPI.AuditLogSave);
          requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
 	 }

@@ -1,28 +1,17 @@
 package org.openiam.service.integration.entitlements;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.time.StopWatch;
-import org.junit.Assert;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.idm.searchbeans.AuditLogSearchBean;
-import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
-import org.openiam.idm.srvc.org.service.OrganizationTypeDataService;
+import org.openiam.srvc.am.OrganizationDataService;
+import org.openiam.srvc.am.OrganizationTypeDataService;
 import org.openiam.service.integration.AbstractAttributeServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

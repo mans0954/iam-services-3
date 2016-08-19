@@ -2,22 +2,19 @@ package org.openiam.connector.peoplesoft.command.user;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.peoplesoft.command.base.AbstractPeoplesoftCommand;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.CrudRequest;
+import org.openiam.base.response.ObjectResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 /**

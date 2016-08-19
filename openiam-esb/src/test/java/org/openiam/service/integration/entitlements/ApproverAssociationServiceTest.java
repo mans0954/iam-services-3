@@ -7,7 +7,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.bean.ApproverAssocationSearchBean;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.srvc.idm.ManagedSystemWebService;
 import org.openiam.service.integration.AbstractKeyServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

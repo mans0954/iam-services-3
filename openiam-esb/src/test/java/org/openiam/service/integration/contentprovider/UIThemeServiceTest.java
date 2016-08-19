@@ -2,11 +2,9 @@ package org.openiam.service.integration.contentprovider;
 
 import java.util.List;
 
-import org.openiam.am.srvc.dto.ContentProvider;
-import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.UIThemeSearchBean;
-import org.openiam.idm.srvc.ui.theme.UIThemeWebService;
+import org.openiam.srvc.common.UIThemeWebService;
 import org.openiam.idm.srvc.ui.theme.dto.UITheme;
 import org.openiam.service.integration.AbstractKeyServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;

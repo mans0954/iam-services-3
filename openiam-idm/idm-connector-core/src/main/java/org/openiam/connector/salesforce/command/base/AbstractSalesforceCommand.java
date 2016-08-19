@@ -1,8 +1,8 @@
 package org.openiam.connector.salesforce.command.base;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.connector.type.request.RequestType;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.provision.request.RequestType;
+import org.openiam.base.response.ResponseType;
 import org.openiam.connector.common.command.AbstractCommand;
 
 import java.sql.Timestamp;

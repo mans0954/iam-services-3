@@ -3,11 +3,10 @@ package org.openiam.idm.srvc.synch.rs;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.synch.ws.AsynchIdentitySynchService;
-import org.openiam.idm.srvc.synch.ws.IdentitySynchWebService;
-import org.openiam.idm.srvc.synch.ws.SynchConfigResponse;
+import org.openiam.idm.srvc.synch.service.AsynchIdentitySynchDataService;
+import org.openiam.idm.srvc.synch.service.IdentitySynchService;
+import org.openiam.base.response.SynchConfigResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,10 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class SynchRestEndpoint {
 
     @Autowired
-    private IdentitySynchWebService synchConfigServiceClient;
+    protected IdentitySynchService synchService;
 
     @Autowired
-    private AsynchIdentitySynchService asynchIdentitySynchService;
+    private AsynchIdentitySynchDataService asynchIdentitySynchService;
 
     @RequestMapping(value="/run/{synchId}", method=RequestMethod.POST)
     public @ResponseBody Response execute(final @PathVariable(value="synchId") String synchId,
@@ -33,9 +32,9 @@ public class SynchRestEndpoint {
         Response ajaxResponse = Response.accepted().build();
         try {
             if (StringUtils.isNotBlank(synchId)) {
-                SynchConfigResponse res = synchConfigServiceClient.findById(synchId);
+                SynchConfigResponse res = synchService.findDTOById(synchId);
                 if (res.isSuccess()) {
-                    org.openiam.base.ws.Response testResponse = synchConfigServiceClient.testConnection(res.getConfig());
+                    org.openiam.base.ws.Response testResponse = synchService.testConnection(res.getConfig());
                     if (testResponse.isSuccess()) {
                         asynchIdentitySynchService.startCustomSynchronization(res.getConfig(), jsonValue);
                         ajaxResponse = Response.status(200).entity("synch/run/ is called, jsonParams : " + jsonValue + ", synchId=" + synchId).build();

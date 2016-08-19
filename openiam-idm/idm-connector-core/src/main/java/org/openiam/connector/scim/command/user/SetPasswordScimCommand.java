@@ -8,10 +8,10 @@ import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.common.scim.S;
 import org.openiam.connector.scim.command.base.AbstractScimCommand;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.PasswordRequest;
-import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.PasswordRequest;
+import org.openiam.base.response.ObjectResponse;
 import org.springframework.stereotype.Service;
 
 /**

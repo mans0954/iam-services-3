@@ -7,7 +7,7 @@ import java.util.List;
 import org.openiam.connector.linux.command.base.AbstractSearchLinuxCommand;
 import org.openiam.connector.linux.ssh.SSHAgent;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.provision.constant.ErrorCode;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;

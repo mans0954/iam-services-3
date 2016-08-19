@@ -10,18 +10,16 @@ import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.base.response.LookupUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.util.UserUtils;
@@ -41,9 +39,6 @@ public class BuildUserPolicyMapHelper {
     private UserDozerConverter userDozerConverter;
 
     @Autowired
-    private ManagedSystemService managedSystemService;
-
-    @Autowired
     private ProvisionSelectedResourceHelper provisionSelectedResourceHelper;
 
     @Autowired
@@ -53,8 +48,7 @@ public class BuildUserPolicyMapHelper {
     private UserDataService userMgr;
 
     @Autowired
-    @Qualifier("managedSysService")
-    private ManagedSystemWebService managedSysService;
+    private ManagedSystemService managedSystemService;
 
     @Autowired
     private LoginDataService loginManager;
@@ -63,8 +57,7 @@ public class BuildUserPolicyMapHelper {
     private SysConfiguration sysConfiguration;
 
     @Autowired
-    @Qualifier("defaultProvision")
-    private ProvisionService provisionService;
+    private ProvisioningDataService provisionService;
     
     private static final Log LOG = LogFactory.getLog(BuildUserPolicyMapHelper.class);
 
@@ -138,11 +131,11 @@ public class BuildUserPolicyMapHelper {
         bindingMap.put("userBeforeModify", u);
 
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
-        ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
+        ManagedSysDto managedSys = managedSystemService.getManagedSys(managedSysId);
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, managedSys.getResourceId());
 
         ManagedSystemObjectMatch matchObj = null;
-        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
+        ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParamDTO(managedSysId, ManagedSystemObjectMatch.USER);
         if (matchObjAry != null && matchObjAry.length > 0) {
             matchObj = matchObjAry[0];
             bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);

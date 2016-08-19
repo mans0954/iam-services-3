@@ -3,17 +3,13 @@ package org.openiam.idm.srvc.recon.command;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
-import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.recon.service.ReconciliationSituationResponseOptions;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.service.AbstractProvisioningService;
-import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

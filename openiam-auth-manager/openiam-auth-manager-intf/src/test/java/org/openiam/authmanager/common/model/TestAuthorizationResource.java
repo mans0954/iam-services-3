@@ -4,7 +4,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.openiam.authmanager.common.xref.ResourceUserXref;
+import org.openiam.am.srvc.dto.jdbc.AbstractAuthorizationEntity;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationAccessRight;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationResource;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationUser;
+import org.openiam.am.srvc.dto.jdbc.xref.ResourceUserXref;
 
 public class TestAuthorizationResource {
 	

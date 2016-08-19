@@ -4,17 +4,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Resource;
-
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupAttribute;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.srvc.am.RoleDataWebService;
 import org.openiam.service.integration.AbstractAttributeServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

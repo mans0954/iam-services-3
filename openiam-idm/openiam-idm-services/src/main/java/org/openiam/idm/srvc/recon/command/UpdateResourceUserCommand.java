@@ -5,8 +5,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.base.response.ProvisionUserResponse;
+import org.openiam.provision.service.ProvisioningDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,9 +18,8 @@ import java.util.List;
 public class UpdateResourceUserCommand extends BaseReconciliationUserCommand {
 
     private static final Log log = LogFactory.getLog(UpdateResourceUserCommand.class);
-    @Autowired
-    @Qualifier("defaultProvision")
-    private ProvisionService provisionService;
+	@Autowired
+	private ProvisioningDataService provisionService;
 
     public UpdateResourceUserCommand() {
     }

@@ -3,18 +3,9 @@ package org.openiam.service.integration.challengeresponse;
 import java.util.List;
 
 import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.BatchTaskSearchBean;
-import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
-import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
-import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
-import org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService;
-import org.openiam.service.integration.AbstractKeyServiceTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

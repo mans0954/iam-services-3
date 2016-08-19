@@ -12,7 +12,7 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.srvc.idm.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.annotations.BeforeClass;

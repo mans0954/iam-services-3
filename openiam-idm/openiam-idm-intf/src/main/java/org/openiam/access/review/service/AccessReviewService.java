@@ -2,9 +2,8 @@ package org.openiam.access.review.service;
 
 import java.util.Date;
 
-import org.openiam.access.review.model.AccessViewFilterBean;
-import org.openiam.access.review.model.AccessViewResponse;
-import org.openiam.base.TreeNode;
+import org.openiam.model.AccessViewFilterBean;
+import org.openiam.model.AccessViewResponse;
 import org.openiam.idm.srvc.lang.dto.Language;
 
 /**

@@ -5,12 +5,12 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.service.ObjectProvisionService;
+import org.openiam.provision.service.ObjectProvisionDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,17 +22,15 @@ import java.util.Set;
 @Component("updateIdmGroupCommand")
 public class UpdateIdmGroupCommand extends BaseReconciliationGroupCommand {
     private static final Log log = LogFactory.getLog(UpdateIdmGroupCommand.class);
+	@Autowired
+	@Qualifier("groupProvisionDataService")
+	private ObjectProvisionDataService<ProvisionGroup> provisionService;
 
     @Autowired
-    @Qualifier("groupProvision")
-    private ObjectProvisionService<ProvisionGroup> provisionService;
+    private GroupDataService groupDataService;
 
     @Autowired
-    @Qualifier("groupWS")
-    private GroupDataWebService groupDataService;
-
-    @Autowired
-    private ResourceDataService resourceDataService;
+    private ResourceService resourceDataService;
 
     public UpdateIdmGroupCommand() {
     }

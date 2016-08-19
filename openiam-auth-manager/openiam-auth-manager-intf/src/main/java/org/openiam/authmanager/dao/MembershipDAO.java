@@ -2,17 +2,13 @@ package org.openiam.authmanager.dao;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
-import org.openiam.authmanager.common.model.AuthorizationGroup;
-import org.openiam.authmanager.common.model.AuthorizationOrganization;
-import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.model.AuthorizationRole;
-import org.openiam.authmanager.common.model.AuthorizationUser;
-import org.openiam.authmanager.common.model.InternalAuthroizationUser;
-import org.openiam.base.KeyDTO;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationGroup;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationOrganization;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationResource;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationRole;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationUser;
+import org.openiam.am.srvc.dto.jdbc.InternalAuthroizationUser;
 import org.openiam.membership.MembershipDTO;
 import org.openiam.membership.MembershipRightDTO;
 

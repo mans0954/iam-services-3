@@ -6,17 +6,10 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
-import org.openiam.service.integration.AbstractServiceTest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import javax.annotation.Resource;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class ManagedSystemServiceTest extends AbstractKeyNameServiceTest<ManagedSysDto, ManagedSysSearchBean> {

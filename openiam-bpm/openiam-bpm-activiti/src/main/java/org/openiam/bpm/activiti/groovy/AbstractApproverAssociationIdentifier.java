@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.bpm.request.GenericWorkflowRequest;
+import org.openiam.base.request.GenericWorkflowRequest;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;

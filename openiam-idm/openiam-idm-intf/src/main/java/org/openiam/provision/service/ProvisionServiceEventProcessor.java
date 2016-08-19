@@ -2,7 +2,7 @@ package org.openiam.provision.service;
 
 import org.openiam.base.ws.Response;
 import org.openiam.provision.dto.ProvisionActionEvent;
-import org.openiam.provision.dto.ProvisionActionTypeEnum;
+import org.openiam.constants.ProvisionActionTypeEnum;
 
 public interface ProvisionServiceEventProcessor {
 

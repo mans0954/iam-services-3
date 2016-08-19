@@ -13,34 +13,34 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.authmanager.common.SetStringResponse;
+import org.openiam.base.response.SetStringResponse;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
-import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.IdentityEntity;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.IdentityDAO;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
-import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupOwner;
 import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
@@ -49,6 +49,8 @@ import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
+import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
@@ -57,24 +59,20 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
-import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
-import org.openiam.util.ws.collection.StringUtil;
+import org.openiam.util.SpringContextProvider;
+import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -626,10 +624,40 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException {
         saveGroup(group, null, requestorId);
 	}
+
+    public boolean isValid(final GroupEntity group) throws BasicDataServiceException{
+        return entityValidator.isValid(group);
+    }
+
+    @Override
+    public Response saveGroup(final Group group, final String requesterId) {
+
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+
+            final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
+            validate(entity);
+            this.saveGroup(entity, group.getOwner(), requesterId);
+            response.setResponseValue(entity.getId());
+        } catch (BasicDataServiceException e) {
+            log.error("Error save", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+        } catch (Throwable e) {
+            log.error("Can't save", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            response.addErrorToken(new EsbErrorToken(e.getMessage()));
+        }
+        return response;
+    }
+
     @Override
     @Transactional
     public void saveGroup(final GroupEntity group, final GroupOwner groupOwner, final String requestorId) throws BasicDataServiceException{
-        if(group != null && entityValidator.isValid(group)) {
+        if(group != null && isValid(group)) {
 
             if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getId())) {
                 final ManagedSysEntity mngSys = managedSysDAO.findById(group.getManagedSystem().getId());
@@ -955,6 +983,29 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             }
 		}
 	}
+    @Override
+    public Response deleteGroup(final String groupId, final String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            validateDeleteInternal(groupId);
+
+            this.deleteGroup(groupId);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't delete", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+
+        return response;
+    }
+    private void validateDeleteInternal(final String groupId) throws BasicDataServiceException {
+        if (StringUtils.isBlank(groupId)) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId is null or empty");
+        }
+    }
 
 	private void visitGroups(final GroupEntity entity, final Set<GroupEntity> visitedSet) {
 		if(entity != null) {
@@ -1148,13 +1199,13 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 /*    @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language) {
+    public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity lang) {
         List<GroupEntity> groupEntities = groupDao.findGroupsByAttributeValue(attrName, attrValue);
         return groupDozerConverter.convertToDTOList(groupEntities, true);
     }*/
 
     private GroupDataService getProxyService() {
-        GroupDataService service = (GroupDataService)ac.getBean("groupManager");
+        GroupDataService service = (GroupDataService) SpringContextProvider.getBean("groupManager");
         return service;
     }
 
@@ -1208,7 +1259,224 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         request.getTargetObject().setId(groupEntity.getId()) ;
     }
 
+    public SaveTemplateProfileResponse saveGroupRequestWeb(final GroupRequestModel request){
+        final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
+        try {
+            if(request == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
+            }
+
+            getProxyService().saveGroupRequest(request);
+            response.setResponseValue(request.getTargetObject().getId());
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (PageTemplateException e){
+            response.setCurrentValue(e.getCurrentValue());
+            response.setElementName(e.getElementName());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        }catch(Throwable e) {
+            log.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
     public void validateGroupRequest(final GroupRequestModel request) throws Exception {
         pageTemplateService.validate(request);
+    }
+
+    @Override
+    @Transactional
+    public Response addUserToGroup(final String groupId, final String userId, final String requesterId, final Set<String> rightIds,
+                                   final Date startDate, final Date endDate){
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
+        UserEntity user = userDataService.getUser(userId);
+        LoginEntity userPrimaryIdentity =  UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        auditLog.setTargetUser(userId,userPrimaryIdentity.getLogin());
+        GroupEntity groupEntity = this.getGroup(groupId);
+        auditLog.setTargetGroup(groupId, groupEntity.getName());
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setAuditDescription(String.format("Add user %s to group: %s", userId, groupId));
+        try {
+            if (groupId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
+            }
+
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+
+            userDataService.addUserToGroup(userId, groupId, rightIds, startDate, endDate);
+            auditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            auditLog.fail();
+            auditLog.setFailureReason(e.getCode());
+            auditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("Error while adding user to group", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            auditLog.fail();
+            auditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(auditLog);
+        }
+        return response;
+    }
+    @Override
+    public Response removeUserFromGroup(final String groupId, final String userId, final String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        try {
+            if (groupId == null || userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
+            }
+
+            final GroupEntity groupEntity = this.getGroupLocalize(groupId, null);
+            if(groupEntity != null) {
+                auditLog.setRequestorUserId(requesterId);
+                auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
+                auditLog.setTargetUser(userId, null);
+                auditLog.setTargetGroup(groupId, groupEntity.getName());
+                auditLog.setAuditDescription(String.format("Remove user %s from group: %s", userId, groupId));
+
+                userDataService.removeUserFromGroup(userId, groupId);
+            }
+            auditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            auditLog.fail();
+            auditLog.setFailureReason(e.getCode());
+            auditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("Error while remove user from group", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            auditLog.fail();
+            auditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(auditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response addChildGroup(final String groupId, final String childGroupId, final String requesterId,
+                                  final Set<String> rights, final Date startDate, final Date endDate) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
+        //GroupEntity groupEntity = groupManager.getGroup(groupId);
+        //auditLog.setTargetGroup(groupId, groupEntity.getName());
+        //GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
+        //auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setAuditDescription(String.format("Add child group: %s to group: %s", childGroupId, groupId));
+
+        try {
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+
+            GroupEntity groupEntity = this.getGroupLocalize(groupId, null);
+            GroupEntity groupEntityChild = this.getGroupLocalize(childGroupId, null);
+            if(groupEntity == null || groupEntityChild == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+
+            auditLog.setTargetGroup(groupId, groupEntity.getName());
+            auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
+
+            if (groupId == null || childGroupId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or child groupId is null");
+            }
+
+            if (groupId.equals(childGroupId)) {
+                throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD,
+                        "Cannot add group itself as child");
+            }
+
+            getProxyService().validateGroup2GroupAddition(groupId, childGroupId, rights, startDate, endDate);
+            getProxyService().addChildGroup(groupId, childGroupId, rights, startDate, endDate);
+            auditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            auditLog.fail();
+            auditLog.setFailureReason(e.getCode());
+            auditLog.setException(e);
+        } catch (Throwable e) {
+            log.error("can't add child group", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            auditLog.fail();
+            auditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(auditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeChildGroup(final String groupId, final String childGroupId, final String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        auditLog.setAction(AuditAction.REMOVE_CHILD_GROUP.value());
+        Group groupDto = this.getGroupDTO(groupId);
+        auditLog.setTargetGroup(groupId, groupDto.getName());
+        Group groupChild = this.getGroupDTO(childGroupId);
+        auditLog.setTargetGroup(childGroupId, groupChild.getName());
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setAuditDescription(String.format("Remove child group: %s from group: %s", childGroupId, groupId));
+
+        try {
+            if (groupId == null || childGroupId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or child groupId is null");
+            }
+
+            getProxyService().removeChildGroup(groupId, childGroupId);
+            auditLog.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            auditLog.fail();
+            auditLog.setFailureReason(e.getCode());
+            auditLog.setException(e);
+        } catch (Throwable e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            auditLog.fail();
+            auditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(auditLog);
+        }
+        return response;
+    }
+
+    private void validate(final GroupEntity entity) throws BasicDataServiceException {
+        if (entity == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+
+        if (StringUtils.isBlank(entity.getName())) {
+            throw new BasicDataServiceException(ResponseCode.NO_NAME);
+        }
+
+        final GroupEntity nameEntity = this.getGroupByNameAndManagedSystem(entity.getName(), entity.getManagedSystem().getId(), null, null);
+        if(nameEntity != null) {
+            if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
+                throw new BasicDataServiceException(ResponseCode.CONSTRAINT_VIOLATION, "Role Name + Managed Sys combination taken");
+            }
+        }
+
+        this.isValid(entity);
     }
 }

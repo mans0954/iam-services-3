@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.pswd.service;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,24 +9,17 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.PolicyDozerConverter;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.policy.service.PolicyService;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.

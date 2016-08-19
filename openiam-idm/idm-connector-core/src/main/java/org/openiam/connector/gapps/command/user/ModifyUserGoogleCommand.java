@@ -1,14 +1,12 @@
 package org.openiam.connector.gapps.command.user;
 
-import java.util.Map;
-
 import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.gapps.GoogleAgent;
 import org.openiam.connector.gapps.GoogleUtils;
 import org.openiam.connector.gapps.command.base.AbstractCrudGoogleAppsCommand;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.request.CrudRequest;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;

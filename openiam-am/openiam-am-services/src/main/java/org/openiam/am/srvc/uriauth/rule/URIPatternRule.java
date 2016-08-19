@@ -8,9 +8,8 @@ import org.openiam.am.srvc.dto.AbstractPatternMetaValue;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
-import org.openiam.am.srvc.dto.URIPatternMetaValue;
 import org.openiam.am.srvc.dto.URIPatternMethod;
-import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
+import org.openiam.base.response.URIPatternRuleToken;
 
 /**
  * @author Lev Bornovalov

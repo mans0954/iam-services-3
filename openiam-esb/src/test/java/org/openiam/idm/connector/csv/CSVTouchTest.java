@@ -3,10 +3,10 @@ package org.openiam.idm.connector.csv;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.openiam.connector.ConnectorService;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.request.RequestType;
+import org.openiam.srvc.idm.ConnectorService;
+import org.openiam.provision.request.CrudRequest;
+import org.openiam.provision.request.LookupRequest;
+import org.openiam.provision.request.RequestType;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;

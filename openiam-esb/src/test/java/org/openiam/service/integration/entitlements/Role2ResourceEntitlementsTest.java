@@ -8,17 +8,11 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.openiam.service.integration.AbstractEntitlementsTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.annotations.Test;
 
 public class Role2ResourceEntitlementsTest extends AbstractEntitlementsTest<Role, Resource> {

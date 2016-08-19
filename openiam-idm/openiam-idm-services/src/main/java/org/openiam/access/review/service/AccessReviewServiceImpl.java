@@ -7,20 +7,20 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.openiam.access.review.constant.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
-import org.openiam.access.review.model.AccessViewBean;
-import org.openiam.access.review.model.AccessViewFilterBean;
-import org.openiam.access.review.model.AccessViewResponse;
+import org.openiam.model.AccessViewBean;
+import org.openiam.model.AccessViewFilterBean;
+import org.openiam.model.AccessViewResponse;
 import org.openiam.access.review.strategy.AccessReviewStrategy;
 import org.openiam.activiti.model.dto.TaskSearchBean;
-import org.openiam.authmanager.model.UserEntitlementsMatrix;
+import org.openiam.idm.srvc.access.service.AccessRightService;
+import org.openiam.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
-import org.openiam.bpm.activiti.ActivitiService;
-import org.openiam.bpm.response.TaskWrapper;
+import org.openiam.srvc.activiti.ActivitiService;
+import org.openiam.base.response.TaskWrapper;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
-import org.openiam.idm.srvc.access.ws.AccessRightDataService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -28,12 +28,11 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
 import org.openiam.idm.srvc.res.dto.ResourceType;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -50,15 +49,14 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     @Autowired
     private ManagedSystemService managedSystemService;
     @Autowired
-    private ResourceDataService resourceService;
+    private ResourceService resourceService;
     @Autowired
     @Qualifier("activitiBPMService")
     private ActivitiService activitiService;
     @Autowired
     protected SysConfiguration sysConfiguration;
     @Autowired
-    @Qualifier("accessRightWS")
-    private AccessRightDataService accessRightDataService;
+    private AccessRightService accessRightDataService;
     @Autowired
     private PropertyValueSweeper propertyValueSweeper;
 
@@ -131,7 +129,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
 
     private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Date date, Language language) {
         final List<LoginEntity> loginList = loginDS.getLoginByUser(filter.getUserId());
-        final List<AccessRight> accessRights = accessRightDataService.findBeans(new AccessRightSearchBean(), 0, Integer.MAX_VALUE, language);
+        final List<AccessRight> accessRights = accessRightDataService.findBeansDTO(new AccessRightSearchBean(), 0, Integer.MAX_VALUE, language);
         UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId(), date);
 
         if(StringUtils.isNotBlank(filter.getAttestationTaskId())){
@@ -184,7 +182,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
 
     private Map<String, ResourceType> getResourceTypeMap(final Language language){
         Map<String, ResourceType> resourceTypeMap = new HashMap<String, ResourceType>();
-        final List<org.openiam.idm.srvc.res.dto.ResourceType> resourceTypeList = resourceService.getAllResourceTypes(language);
+        final List<org.openiam.idm.srvc.res.dto.ResourceType> resourceTypeList = resourceService.getAllResourceTypesDto(language);
 
         if (CollectionUtils.isNotEmpty(resourceTypeList)) {
             for(ResourceType resourceType : resourceTypeList){

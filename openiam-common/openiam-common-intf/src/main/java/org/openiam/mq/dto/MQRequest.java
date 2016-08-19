@@ -1,19 +1,23 @@
 package org.openiam.mq.dto;
 
+import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.util.OpenIAMUtils;
 
 /**
  * Created by alexander on 06/07/16.
  */
-public class MQRequest<RequestBody>  extends AbstractMQMessage{
+public class MQRequest<RequestBody extends BaseServiceRequest>  extends AbstractMQMessage{
 
     private String replyTo;
     private OpenIAMAPI requestApi;
     protected RequestBody requestBody;
-    private String languageId;
 
-
+    public MQRequest(){}
+    public MQRequest(OpenIAMAPI requestApi, RequestBody requestBody){
+        this.requestApi=requestApi;
+        this.requestBody=requestBody;
+    }
 
     public String getReplyTo() {
         return replyTo;
@@ -39,14 +43,6 @@ public class MQRequest<RequestBody>  extends AbstractMQMessage{
         this.requestBody = requestBody;
     }
 
-    public String getLanguageId() {
-        return languageId;
-    }
-
-    public void setLanguageId(String languageId) {
-        this.languageId = languageId;
-    }
-
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("MQRequest{");
@@ -54,7 +50,6 @@ public class MQRequest<RequestBody>  extends AbstractMQMessage{
         sb.append(", replyTo='").append(replyTo).append('\'');
         sb.append(", requestApi=").append(requestApi);
         sb.append(", requestBody=").append(requestBody);
-        sb.append(", languageId=").append(languageId);
         sb.append('}');
         return sb.toString();
     }

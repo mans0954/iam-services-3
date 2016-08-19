@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.grp.service;
 
+import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
@@ -9,6 +10,7 @@ import org.openiam.idm.srvc.grp.dto.GroupOwner;
 import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 import java.util.Date;
@@ -80,12 +82,13 @@ public interface GroupDataService {
     public int getNumOfParentGroups(final String groupId, final String requesterId);
     public int countBeans(final GroupSearchBean searchBean, final String requesterId);
 
-
+    public boolean isValid(final GroupEntity group) throws BasicDataServiceException;
 	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException;
+    public Response saveGroup(final Group group, final String requesterId);
     public void saveGroup(final GroupEntity group, final GroupOwner groupOwner, final String requestorId) throws BasicDataServiceException;
     public void addRequiredAttributes(GroupEntity group);
 	public void deleteGroup(final String groupId);
-
+    public Response deleteGroup(final String groupId, final String requesterId);
     /**
      * Returns true or false depending on whether a user belongs to a particular
      * group or not. If a group has been marked as "Inherits from Parent", then
@@ -122,7 +125,7 @@ public interface GroupDataService {
 
     public Group getGroupDTOLocalize(final String groupId, LanguageEntity language);
     public List<GroupEntity> findGroupsByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language);
-    //public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language);
+    //public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity lang);
 
     public int countGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId);
     public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, LanguageEntity languageEntity);
@@ -134,4 +137,16 @@ public interface GroupDataService {
     public void saveGroupRequest(final GroupRequestModel request) throws Exception;
     public void validateGroupRequest(final GroupRequestModel request) throws Exception;
     //public List<GroupOwner> getOwnersBeansForGroup(String groupId);
+
+
+    public Response addUserToGroup(final String groupId, final String userId, final String requesterId, final Set<String> rightIds,
+                                   final Date startDate, final Date endDate);
+    public Response removeUserFromGroup(final String groupId, final String userId, final String requesterId);
+
+    public Response addChildGroup(final String groupId, final String childGroupId, final String requesterId,
+                                  final Set<String> rights, final Date startDate, final Date endDate);
+    public Response removeChildGroup(final String groupId, final String childGroupId, final String requesterId);
+
+
+    public SaveTemplateProfileResponse saveGroupRequestWeb(final GroupRequestModel request);
 }

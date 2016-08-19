@@ -208,6 +208,10 @@
             <groupId>org.openiam</groupId>
             <artifactId>openiam-idm-intf</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-esb-intf</artifactId>
+        </dependency>
         <!--dependency>
             <groupId>com.github.groovy-wslite</groupId>
             <artifactId>groovy-wslite</artifactId>

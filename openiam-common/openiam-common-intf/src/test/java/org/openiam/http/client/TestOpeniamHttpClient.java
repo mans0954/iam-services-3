@@ -15,6 +15,6 @@ public class TestOpeniamHttpClient {
 	@Test
 	public void testSelfSignedCertificate() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException, AuthenticationException, MalformedURLException, IOException {
 		final OpenIAMHttpClient client = new OpenIAMHttpClient();
-		client.doPost(new URL("https://api.smsglobal.com/v1/sms/"), null, null, null);
+		client.doPost(new URL("https://srvc.smsglobal.com/v1/sms/"), null, null, null);
 	}
 }

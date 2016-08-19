@@ -7,13 +7,15 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
+import java.io.Serializable;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthLevelGroupingContentProviderXrefId", propOrder = {
         "groupingId",
         "contentProviderId"
 })
 @DozerDTOCorrespondence(AuthLevelGroupingContentProviderXrefIdEntity.class)
-public class AuthLevelGroupingContentProviderXrefId {
+public class AuthLevelGroupingContentProviderXrefId implements Serializable {
 
 	private String groupingId;
 	private String contentProviderId;

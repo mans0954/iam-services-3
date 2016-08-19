@@ -94,13 +94,15 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
                             }
                         }, request.getReplyTo());
         if (response != null) {
+            ((MQResponse<String>) response).succeed();
             log.info("Received response from backend: " + response.toString());
         } else {
 
             log.warn("Response is not received from backend!");
             response = new MQResponse<String>();
-            ((MQResponse<String>) response)
-                    .setErrorCode(ResponseCode.INTERNAL_ERROR);
+            ((MQResponse<String>) response).fail();
+            ((MQResponse<String>) response).setErrorCode(ResponseCode.INTERNAL_ERROR);
+            ((MQResponse<String>) response).setErrorText("Response is not received from RabbitMQ during reply timeout");
             ((MQResponse<String>) response).setResponseBody("");
         }
         long totalTime = System.currentTimeMillis() - startTime;

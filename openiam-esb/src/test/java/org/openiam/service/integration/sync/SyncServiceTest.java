@@ -2,11 +2,10 @@ package org.openiam.service.integration.sync;
 
 import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.base.response.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.ws.IdentitySynchWebService;
-import org.openiam.idm.srvc.synch.ws.SynchConfigResponse;
+import org.openiam.srvc.idm.IdentitySynchWebService;
+import org.openiam.base.response.SynchConfigResponse;
 import org.openiam.service.integration.AbstractServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

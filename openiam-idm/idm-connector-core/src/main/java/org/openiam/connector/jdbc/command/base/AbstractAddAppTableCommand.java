@@ -4,9 +4,9 @@ import java.sql.Connection;
 
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.CrudRequest;
+import org.openiam.base.response.ObjectResponse;
 import org.openiam.provision.type.ExtensibleObject;
 
 public abstract class AbstractAddAppTableCommand<ExtObject extends ExtensibleObject> extends

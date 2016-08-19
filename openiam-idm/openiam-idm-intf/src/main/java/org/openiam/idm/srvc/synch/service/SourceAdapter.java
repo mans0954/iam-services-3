@@ -23,7 +23,7 @@ package org.openiam.idm.srvc.synch.service;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.base.response.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 
 import java.util.Map;

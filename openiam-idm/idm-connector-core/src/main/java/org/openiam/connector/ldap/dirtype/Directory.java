@@ -1,9 +1,9 @@
 package org.openiam.connector.ldap.dirtype;
 
 import org.openiam.base.BaseAttribute;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.request.PasswordRequest;
-import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.provision.request.CrudRequest;
+import org.openiam.provision.request.PasswordRequest;
+import org.openiam.provision.request.SuspendResumeRequest;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.type.ExtensibleObject;

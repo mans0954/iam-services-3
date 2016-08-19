@@ -1,7 +1,6 @@
 package org.openiam.connector.linux.command.factory;
 
-import org.openiam.connector.linux.command.user.SearchUserLinuxCommand;
-import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.provision.constant.ErrorCode;
 import org.openiam.provision.type.ExtensibleObjectType;
 import org.openiam.connector.common.constants.CommandType;
 import org.openiam.connector.type.ConnectorDataException;

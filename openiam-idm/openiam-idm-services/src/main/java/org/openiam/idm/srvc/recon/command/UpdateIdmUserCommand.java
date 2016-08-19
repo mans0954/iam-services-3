@@ -4,14 +4,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.LookupUserResponse;
-import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.base.response.ProvisionUserResponse;
+import org.openiam.provision.service.ProvisioningDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,13 +22,12 @@ import java.util.List;
 public class UpdateIdmUserCommand extends BaseReconciliationUserCommand {
     private static final Log log = LogFactory.getLog(UpdateIdmUserCommand.class);
 
-    @Autowired
-    @Qualifier("defaultProvision")
-    private ProvisionService provisionService;
+	@Autowired
+	private ProvisioningDataService provisionService;
 
 	@Autowired
-	@Qualifier("userWS")
-	UserDataWebService userWS;
+	@Qualifier("userManager")
+	protected UserDataService userManager;
 
 	public UpdateIdmUserCommand(){
     }
@@ -56,7 +53,7 @@ public class UpdateIdmUserCommand extends BaseReconciliationUserCommand {
 
 	private void setCurrentSuperiors(ProvisionUser pUser) {
 		if (StringUtils.isNotEmpty(pUser.getId())) {
-			List<User> superiors = userWS.getSuperiors(pUser.getId(), -1, -1);
+			List<User> superiors = userManager.getSuperiorsDto(pUser.getId(), -1, -1);
 			if (CollectionUtils.isNotEmpty(superiors)) {
 				pUser.setSuperiors(new HashSet<>(superiors));
 			}

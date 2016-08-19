@@ -79,7 +79,7 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
 		
 		if(language == null) {
 			if(value.isMultilangual()) {
-				throw new RuntimeException(String.format("Key '%s' has a value that is marked as multilangual, but the input language is null", key));
+				throw new RuntimeException(String.format("Key '%s' has a value that is marked as multilangual, but the input lang is null", key));
 			}
 		}
 

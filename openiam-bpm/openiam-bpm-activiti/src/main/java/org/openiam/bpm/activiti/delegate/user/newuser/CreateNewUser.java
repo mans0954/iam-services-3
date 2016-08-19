@@ -11,12 +11,12 @@ import org.openiam.exception.CustomActivitiException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.provision.NewUserModelToProvisionConverter;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -40,8 +40,8 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         String requesterId = getRequestorId(execution);
         if(StringUtils.isNotBlank(requesterId)) {
-            LoginResponse loginResponse = loginService.getPrimaryIdentity(requesterId);
-            idmAuditLog.setRequestorPrincipal(loginResponse.getPrincipal().getLogin());
+            Login login = loginService.getPrimaryIdentityDto(requesterId);
+            idmAuditLog.setRequestorPrincipal(login.getLogin());
         }
         idmAuditLog.setAction(AuditAction.CREATE_USER.value());
         idmAuditLog.addAttributeAsJson(AuditAttributeName.PROFILE, request, customJacksonMapper);

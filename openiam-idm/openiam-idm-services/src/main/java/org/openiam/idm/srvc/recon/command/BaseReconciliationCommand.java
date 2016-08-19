@@ -1,22 +1,10 @@
 package org.openiam.idm.srvc.recon.command;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
-import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
-import org.openiam.idm.srvc.recon.service.PopulationScript;
-import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
-import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.script.ScriptIntegration;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
