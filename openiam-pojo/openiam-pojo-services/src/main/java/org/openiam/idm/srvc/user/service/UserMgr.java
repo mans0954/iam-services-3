@@ -1220,50 +1220,21 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AddressEntity> getAddressList(String userId) {
-        return this.getAddressList(userId, 0, Integer.MAX_VALUE);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Address> getAddressDtoList(String userId, boolean isDeep) {
-        return addressDozerConverter.convertToDTOList(getAddressList(userId), isDeep);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<AddressEntity> getAddressList(String userId, int from, int size) {
-        if (userId == null)
-            throw new NullPointerException("userId is null");
-
-        AddressSearchBean searchBean = new AddressSearchBean();
-        searchBean.setParentId(userId);
-        /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
-        return getAddressList(searchBean, from, size);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Address> getAddressDtoList(String userId, int from, int size) {
-        /*if (userId == null)
-            throw new NullPointerException("userId is null");
-
-        AddressSearchBean searchBean = new AddressSearchBean();
-        searchBean.setParentId(userId);*/
-        /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
-        //List<AddressEntity> addressEntityList = getAddressList(searchBean, size, from);
-        List<AddressEntity> addressEntityList = this.getProxyService().getAddressList(userId, from, size);
-        return addressDozerConverter.convertToDTOList(addressEntityList, false);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
+    @LocalizedServiceGet
     public List<AddressEntity> getAddressList(AddressSearchBean searchBean, int from, int size) {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
         return addressDao.getByExample(searchBean, from ,size);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    @LocalizedServiceGet
+	public List<Address> getAddressDtoList(final AddressSearchBean searchBean, final int from, final int size) {
+		final List<AddressEntity> entities = getProxyService().getAddressList(searchBean, from, size);
+		return addressDozerConverter.convertToDTOList(entities, (searchBean != null) ? searchBean.isDeepCopy() : false);
+	}
     
 	@Override
 	@Transactional
@@ -2797,5 +2768,4 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         List<EmailAddressEntity> emailAddressEntityList = this.getProxyService().getEmailAddressList(searchBean, from, size);
         return emailAddressDozerConverter.convertToDTOList(emailAddressEntityList, searchBean.isDeepCopy());
     }
-
 }

@@ -10,6 +10,7 @@ import javax.jws.WebService;
 
 import org.openiam.base.response.UserResponse;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
@@ -211,28 +212,29 @@ public interface UserDataWebService {
     public Address getAddressById(@WebParam(name = "addressId", targetNamespace = "") String addressId);
 
     /**
-     * Gets all Address objects associated with the given userId
-     * 
-     * @param userId
-     *            - the ID of the User
-     * @return the Address objects associated with this user
+     * use getAddressBeans instead
      */
     @WebMethod
+    @Deprecated
     public List<Address> getAddressList(@WebParam(name = "userId", targetNamespace = "") String userId);
+    
+    /**
+     * find Address objects based on the incoming criteria
+     * 
+     * @param searchBean - the search bean
+     * @param from - from where to page
+     * @param size - how many records to return
+     */
+    @WebMethod
+    public List<Address> getAddressBeans(@WebParam(name = "searchBean", targetNamespace = "") AddressSearchBean sb,
+    									 @WebParam(name = "from", targetNamespace = "") int from,
+    									 @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
-     * returns to Address Objects associated with this user, based on the size
-     * and from parameters
-     * 
-     * @param userId
-     *            - the user ID to which the Address records belong to
-     * @param size
-     *            - the number of records to return
-     * @param from
-     *            - where to start
-     * @return the Address objects associated with this user
+     * use getAddressBeans instead
      */
     @WebMethod
+    @Deprecated
     public List<Address> getAddressListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
     										  @WebParam(name = "from", targetNamespace = "") int from,
     										  @WebParam(name = "size", targetNamespace = "") int size);

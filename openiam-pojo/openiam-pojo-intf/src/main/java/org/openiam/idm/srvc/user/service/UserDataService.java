@@ -117,15 +117,9 @@ public interface UserDataService {
 
     public Address getAddressDtoById(String addressId);
 
-    public List<AddressEntity> getAddressList(String userId);
-
-    public List<Address> getAddressDtoList(String userId, boolean isDeep);
-
-    public List<AddressEntity> getAddressList(String userId, int from, int size);
-
-    public List<Address> getAddressDtoList(String userId, int from, int size);
-
     public List<AddressEntity> getAddressList(AddressSearchBean searchBean, int from, int size);
+    
+    public List<Address> getAddressDtoList(AddressSearchBean searchBean, int from, int size);
 
     public void addTOPTTokenToPhone(String phoneId, String secret);
     

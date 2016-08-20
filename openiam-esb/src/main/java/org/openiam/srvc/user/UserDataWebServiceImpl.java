@@ -347,16 +347,29 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     }
 
     @Override
+    @Deprecated
     //@Transactional(readOnly = true)
     public List<Address> getAddressList(String userId) {
-        return this.getAddressListByPage(userId, 0, Integer.MAX_VALUE);
+    	final AddressSearchBean sb = new AddressSearchBean();
+    	sb.setDeepCopy(false);
+    	sb.setParentId(userId);
+        return getAddressBeans(sb, 0, Integer.MAX_VALUE);
     }
+    
+	@Override
+	public List<Address> getAddressBeans(final AddressSearchBean sb, final int from,
+			final int size) {
+		return userDataService.getAddressDtoList(sb, from, size);
+	}
 
     @Override
+    @Deprecated
     //@Transactional(readOnly = true)
     public List<Address> getAddressListByPage(String userId, int from, int size) {
-
-        return userManager.getAddressDtoList(userId, from, size);
+    	final AddressSearchBean sb = new AddressSearchBean();
+    	sb.setDeepCopy(false);
+    	sb.setParentId(userId);
+    	return getAddressBeans(sb, from, size);
     }
 
     /*
@@ -1435,4 +1448,5 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     public List<Supervisor> findSupervisors(SupervisorSearchBean supervisorSearchBean) {
         return userManager.findSupervisors(supervisorSearchBean);
     }
+
 }
