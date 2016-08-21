@@ -1406,49 +1406,20 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PhoneEntity> getPhoneList(String userId) {
-        return this.getPhoneList(userId, 0, Integer.MAX_VALUE);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Phone> getPhoneDtoList(String userId, boolean isDeep) {
-        return phoneDozerConverter.convertToDTOList(getPhoneList(userId), isDeep);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PhoneEntity> getPhoneList(String userId, int from, int size) {
-        if (userId == null)
-            throw new NullPointerException("userId is null");
-
-        PhoneSearchBean searchBean = new PhoneSearchBean();
-        searchBean.setParentId(userId);
-        // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-        return getPhoneList(searchBean, from, size);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Phone> getPhoneDtoList(String userId, int from, int size) {
-        /*if (userId == null)
-            throw new NullPointerException("userId is null");
-
-        PhoneSearchBean searchBean = new PhoneSearchBean();
-        searchBean.setParentId(userId);
-        // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-        List<PhoneEntity> phoneEntityList = getPhoneList(searchBean, size, from);*/
-        List<PhoneEntity> phoneEntityList = this.getProxyService().getPhoneList(userId, from, size);
-        return phoneDozerConverter.convertToDTOList(phoneEntityList, false);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
+    @LocalizedServiceGet
     public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, int from, int size) {
-        if (searchBean == null)
-            throw new NullPointerException("searchBean is null");
         return phoneDao.getByExample(searchBean, from, size);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    @LocalizedServiceGet
+	public List<Phone> getPhoneDTOList(PhoneSearchBean sb, int from,
+			int size) {
+		final List<PhoneEntity> entities = getProxyService().getPhoneList(sb, from, size);
+		final List<Phone> dtos = phoneDozerConverter.convertToDTOList(entities, (sb != null) ? sb.isDeepCopy() : false);
+		return dtos;
+	}
 
     @Override
     @Transactional

@@ -13,6 +13,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
+import org.openiam.idm.searchbeans.PhoneSearchBean;
 import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
 import org.openiam.idm.searchbeans.SupervisorSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
@@ -293,20 +294,26 @@ public interface UserDataWebService {
     public Phone getPhoneById(@WebParam(name = "phoneId", targetNamespace = "") String phoneId);
 
     /**
-     * Gets all Phones belonging to a user
-     * 
-     * @param userId
-     *            - the user's ID
-     * @return a List of Phone records belonging to this user
+     * use findPhoneBeans
      */
     @WebMethod
+    @Deprecated
     public List<Phone> getPhoneList(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
-     * Gets a paged List of Phones belonging to a User
+     * use findPhoneBeans
+     */
+    @WebMethod
+    @Deprecated
+    public List<Phone> getPhoneListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
+    									  @WebParam(name = "from", targetNamespace = "") int from,
+    									  @WebParam(name = "size", targetNamespace = "") int size);
+
+    /**
+     * Gets a paged List of Phones identified by the search bean
      * 
-     * @param userId
-     *            - the user's ID
+     * @param searchBean
+     *            - the search criteria
      * @param size
      *            - how many records to return
      * @param from
@@ -314,10 +321,10 @@ public interface UserDataWebService {
      * @return a paged List of Phone records belonging to this user
      */
     @WebMethod
-    public List<Phone> getPhoneListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
-    									  @WebParam(name = "from", targetNamespace = "") int from,
-    									  @WebParam(name = "size", targetNamespace = "") int size);
-
+    public List<Phone> findPhoneBeans(@WebParam(name = "searchBean", targetNamespace = "") PhoneSearchBean searchBean,
+    								  @WebParam(name = "from", targetNamespace = "") int from,
+    								  @WebParam(name = "size", targetNamespace = "") int size);
+    
     /**
      * Adds an Email Address
      * 

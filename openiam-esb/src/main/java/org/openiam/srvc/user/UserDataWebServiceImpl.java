@@ -435,15 +435,29 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
 
     @Override
     //@Transactional(readOnly = true)
+    @Deprecated
     public List<Phone> getPhoneList(String userId) {
-        return getPhoneListByPage(userId, 0, Integer.MAX_VALUE);
+    	final PhoneSearchBean sb = new PhoneSearchBean();
+    	sb.setParentId(userId);
+    	sb.setDeepCopy(false);;
+    	return findPhoneBeans(sb, 0, Integer.MAX_VALUE);
     }
 
     @Override
     //@Transactional(readOnly = true)
+    @Deprecated
     public List<Phone> getPhoneListByPage(String userId, int from, int size) {
-        return userManager.getPhoneDtoList(userId, from, size);
+    	final PhoneSearchBean sb = new PhoneSearchBean();
+    	sb.setParentId(userId);
+    	sb.setDeepCopy(false);
+    	return findPhoneBeans(sb, from, size);
     }
+    
+	@Override
+	public List<Phone> findPhoneBeans(PhoneSearchBean searchBean, int from,
+			int size) {
+		return userManager.getPhoneDTOList(searchBean, from, size);
+	}
 
     @Override
     //@Transactional(readOnly = true)

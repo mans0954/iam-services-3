@@ -252,6 +252,10 @@
             <a>type.id</a>
             <b>mdTypeId</b>
         </field>
+        <field>
+            <a>type.displayName</a>
+            <b>metadataTypeName</b>
+        </field>
     </mapping>
 
 

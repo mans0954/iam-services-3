@@ -137,15 +137,9 @@ public interface UserDataService {
 
     public Phone getPhoneDtoById(String addressId);
 
-    public List<PhoneEntity> getPhoneList(String userId);
-
-    public List<Phone> getPhoneDtoList(String userId, boolean isDeep);
-
-    public List<PhoneEntity> getPhoneList(String userId, int from, int size);
-
-    public List<Phone> getPhoneDtoList(String userId, int from, int size);
-
     public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, int from, int size);
+    
+    public List<Phone> getPhoneDTOList(PhoneSearchBean searchBean, int from, int size);
 
     public void addEmailAddress(EmailAddressEntity val);
 
