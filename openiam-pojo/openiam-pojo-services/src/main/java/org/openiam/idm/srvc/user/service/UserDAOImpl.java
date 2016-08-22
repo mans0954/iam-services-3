@@ -954,79 +954,64 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             return null;
     }
 
-//    private Criterion createInClauseForIds(Criteria criteria, List<String> idCollection) {
-//        if (idCollection.size() <= MAX_IN_CLAUSE) {
-//            return Restrictions.in(getPKfieldName(), idCollection);
-//        } else {
-//            Disjunction orClause = Restrictions.disjunction();
-//            int start = 0;
-//            int end;
-//            while (start < idCollection.size()) {
-//                end = start + MAX_IN_CLAUSE;
-//                if (end > idCollection.size()) {
-//                    end = idCollection.size();
-//                }
-//                final String sql = criteria.getAlias() + "_.USER_ID in ('" + StringUtils.join(idCollection.subList(start, end), "','") + "')";
-//                orClause.add(Restrictions.sqlRestriction(sql));
-//                start = end;
-//            }
-//            return orClause;
-//        }
-//    }
-
     @Override
     public LightSearchResponse getLightSearchResult(LightSearchRequest request) {
         LightSearchResponse response = new LightSearchResponse();
         response.setStatus(ResponseStatus.SUCCESS);
-        if (StringUtils.isNotBlank(request.getEmployeeId()) || StringUtils.isNotBlank(request.getEmailAddress()) || StringUtils.isNotBlank(request.getLogin())
-                || StringUtils.isNotBlank(request.getLastName()) || request.getStatus() != null || request.getSecondaryStatus() != null) {
-
-
-            final String count = " COUNT(*) as count ";
-            final String fieldNames = getBaseLigthSearchColumns();
-
+        if (request.isNotBlank()) {
+            //get Initial base for query
             StringBuilder sb = this.getBaseLightSearchQuery();
-            this.applyWherePart(sb, request);
 
+            //apply part for where
+            this.applyWherePart(sb, request);
             //get DelegationFilterPart
             final String delegationFilterPart = this.prepareDelagationFilterPart(
                     this.getRequesterDelegationAttributes(request.getRequesterId()), request);
-
-
             //run count command
-            Integer countNum = (Integer) this.getSession().createSQLQuery(getResultLightSearchQuery(sb, count,
+            Integer countNum = (Integer) this.getSession().createSQLQuery(getResultLightSearchQuery(sb, " COUNT(*) as count ",
                     delegationFilterPart.toString())).addScalar("count", IntegerType.INSTANCE).uniqueResult();
             //if count > 0 run get data command
             if (countNum != null && countNum > 0) {
                 response.setCount(countNum);
-                //do to it more smart
+
+                //ADD sorting part
                 sb.append(this.addSorting(request.getSortParam()));
-                sb.append(this.getBasePaginatorQuery(request));
+
+                //ADD PAGINATOR PART
+                this.getBasePaginatorQuery(sb, request);
+
+                //GET RESULT
                 response.setLightUserSearchModels(this.getSession().createSQLQuery(getResultLightSearchQuery(sb,
-                        fieldNames, delegationFilterPart.toString()))
+                        getBaseLigthSearchColumns(), delegationFilterPart.toString()))
                         .addEntity(LightUserSearchModel.class).list());
             }
         }
         return response;
     }
 
-    private StringBuilder getBasePaginatorQuery(LightSearchRequest request) {
-        StringBuilder paginationBuilder = new StringBuilder();
-        if (request.getSize() != -1 && request.getFrom() != -1) {
-            String dbType = this.dbType;
+    private void getBasePaginatorQuery(StringBuilder mainSQL, LightSearchRequest request) {
+        // don't process if no paginator
+        if (request.getSize() > -1 && request.getFrom() > -1) {
+            //process for each DB type
             if ("SQLServer".equalsIgnoreCase(dbType)) {
-                paginationBuilder.append("OFFSET " + request.getFrom() + " ROWS FETCH NEXT " + request.getSize() + " ROWS ONLY");
+                mainSQL.append("OFFSET " + request.getFrom() + " ROWS FETCH NEXT " + request.getSize() + " ROWS ONLY");
             } else if ("ORACLE_INSENSITIVE".equalsIgnoreCase(dbType)) {
-                paginationBuilder.append("OFFSET " + request.getFrom() + " ROWS FETCH NEXT " + request.getSize() + " ROWS ONLY");
+                mainSQL.insert(0, "SELECT * FROM (");
+                int from = request.getFrom() + 1;
+                int to = from + request.getSize();
+                mainSQL.append(" ) WHERE  ROWNUM >=");
+                mainSQL.append(from);
+                mainSQL.append(" AND ROWNUM < ");
+                mainSQL.append(to);
             } else if ("MySQL".equalsIgnoreCase(dbType)) {
-                paginationBuilder.append(" LIMIT " + request.getFrom() + "," + request.getSize());
+                mainSQL.append(" LIMIT " + request.getFrom() + "," + request.getSize());
             } else if ("PostgreSQL".equalsIgnoreCase(dbType)) {
-                paginationBuilder.append(" LIMIT " + request.getSize() + " OFFSET " + request.getFrom());
+                mainSQL.append(" LIMIT " + request.getSize() + " OFFSET " + request.getFrom());
             }
         }
-        return paginationBuilder;
     }
 
+    //here replace columns part and delegation filter part with real strings
     private String getResultLightSearchQuery(StringBuilder sb, String returnColumns, String delegationFilterPart) {
         return sb.toString().replace("${replace}", returnColumns).replace("${delegationFilterPart}", delegationFilterPart);
     }
@@ -1118,12 +1103,20 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private StringBuilder getBaseLightSearchQuery() {
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT ${replace} ");
-        sb.append("FROM USERS u LEFT JOIN EMAIL_ADDRESS ea ON ea.EMAIL_ID = (SELECT MAX(EMAIL_ID) FROM ");
-        sb.append(" EMAIL_ADDRESS WHERE PARENT_ID = u.USER_ID AND IS_DEFAULT = 'Y') LEFT JOIN PHONE p ON ");
-        sb.append(" p.PHONE_ID = (SELECT MAX(PHONE_ID) FROM PHONE WHERE PARENT_ID = u.USER_ID AND IS_DEFAULT = 'Y' ) JOIN LOGIN l ON ");
-        sb.append(" l.USER_ID = u.USER_ID AND l.MANAGED_SYS_ID = '0' ${delegationFilterPart} ");
-        sb.append(" WHERE ");
+        if ("ORACLE_INSENSITIVE".equals(dbType)) {
+            sb.append("SELECT ${replace} ");
+            sb.append("FROM USERS u LEFT JOIN EMAIL_ADDRESS ea ON ea.PARENT_ID = u.USER_ID AND ea.IS_DEFAULT = 'Y' ");
+            sb.append(" LEFT JOIN PHONE p ON  p.PARENT_ID = u.USER_ID AND p.IS_DEFAULT = 'Y'  JOIN LOGIN l ON ");
+            sb.append(" l.USER_ID = u.USER_ID AND l.MANAGED_SYS_ID = '0' ${delegationFilterPart} ");
+            sb.append(" WHERE ");
+        } else {
+            sb.append("SELECT ${replace} ");
+            sb.append("FROM USERS u LEFT JOIN EMAIL_ADDRESS ea ON ea.EMAIL_ID = (SELECT MAX(EMAIL_ID) FROM ");
+            sb.append(" EMAIL_ADDRESS WHERE PARENT_ID = u.USER_ID AND IS_DEFAULT = 'Y') LEFT JOIN PHONE p ON ");
+            sb.append(" p.PHONE_ID = (SELECT MAX(PHONE_ID) FROM PHONE WHERE PARENT_ID = u.USER_ID AND IS_DEFAULT = 'Y' ) JOIN LOGIN l ON ");
+            sb.append(" l.USER_ID = u.USER_ID AND l.MANAGED_SYS_ID = '0' ${delegationFilterPart} ");
+            sb.append(" WHERE ");
+        }
         return sb;
     }
 
@@ -1132,7 +1125,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         String fieldNames = "u.USER_ID AS userId, u.EMPLOYEE_ID AS employeeId, u.FIRST_NAME AS firstName, " +
                 " u.LAST_NAME AS lastName, u.STATUS AS status, u.SECONDARY_STATUS AS secondaryStatus, " +
                 " u.NICKNAME AS nickname, ea.EMAIL_ADDRESS AS email, l.LOGIN AS defaultLogin," +
-                "CONCAT(p.COUNTRY_CD, p.AREA_CD, p.PHONE_NBR,p.PHONE_EXT) AS  defaultPhone ";
+                "CONCAT(p.COUNTRY_CD, CONCAT(p.AREA_CD, CONCAT(p.PHONE_NBR,p.PHONE_EXT))) AS  defaultPhone ";
         return fieldNames;
 
     }
