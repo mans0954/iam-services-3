@@ -24,17 +24,19 @@ public class OTPDispatcher  extends AbstractAPIDispatcher<OTPServiceRequest, Res
 
     @Override
     protected Response processingApiRequest(OpenIAMAPI openIAMAPI, OTPServiceRequest otpServiceRequest) throws BasicDataServiceException {
+        Response response = new Response();
         switch (openIAMAPI){
             case ClearOTPActiveStatus:
-                return authenticationServiceService.clearOTPActiveStatus(otpServiceRequest);
+                authenticationServiceService.clearOTPActiveStatus(otpServiceRequest);
+                break;
             case SendOTPToken:
-                return authenticationServiceService.sendOTPToken(otpServiceRequest);
+                authenticationServiceService.sendOTPToken(otpServiceRequest);
+                break;
             case ConfirmOTPToken:
-                return authenticationServiceService.confirmOTPToken(otpServiceRequest);
+                authenticationServiceService.confirmOTPToken(otpServiceRequest);
             default:
                 break;
         }
-
-        return null;
+        return response;
     }
 }

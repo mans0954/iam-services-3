@@ -1,18 +1,23 @@
 package org.openiam.mq.processor;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.base.request.IdmAuditLogRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.concurrent.AbstractBaseRunnableBackgroundTask;
+import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.concurrent.IBaseRunnableBackgroundTask;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.dto.MQResponse;
+import org.openiam.mq.gateway.RequestServiceGateway;
 import org.openiam.mq.gateway.ResponseServiceGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.util.StringUtils;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -25,6 +30,9 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
     @Autowired
     @Qualifier("rabbitResponseServiceGateway")
     private ResponseServiceGateway responseServiceGateway;
+    @Autowired
+    private RequestServiceGateway requestServiceGateway;
+
     private OpenIAMAPI apiName;
     private boolean isRunning = false;
 
@@ -71,6 +79,10 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
 
     public void processRequest(MQRequest<RequestBody> apiRequest){
         try {
+            // init AuditLog event for this call
+            AuditLogHolder.getInstance().setEvent(new IdmAuditLogEntity());
+            IdmAuditLogEntity auditEvent = AuditLogHolder.getInstance().getEvent();
+
             ResponseBody apiResponse = this.getResponseInstance();
 
             byte[] correlationId = apiRequest.getCorrelationId();
@@ -80,12 +92,31 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
             log.debug("Processing {} API ...", apiRequest.getRequestApi().name());
             try {
                 apiResponse = processingApiRequest(apiRequest.getRequestApi(),apiRequest.getRequestBody());
+                apiResponse.succeed();
+                auditEvent.succeed();
             } catch (BasicDataServiceException ex) {
                 log.error(ex.getCode().name(), ex);
                 apiResponse.setErrorCode(ex.getCode());
+                apiResponse.setErrorText(ex.getResponseValue());
+                apiResponse.setErrorTokenList(ex.getErrorTokenList());
+                apiResponse.fail();
+
+                auditEvent.fail();
+                auditEvent.setFailureReason(ex.getResponseValue());
+                auditEvent.setException(ex);
+                auditEvent.setFailureReason(ex.getCode());
+
+                rollbackTaransaction();
             } catch (Exception ex) {
                 log.error(ex.getMessage(), ex);
                 apiResponse.setErrorCode(ResponseCode.INTERNAL_ERROR);
+                apiResponse.setErrorText(ex.getMessage());
+                apiResponse.fail();
+
+                auditEvent.fail();
+                auditEvent.setFailureReason(ex.getMessage());
+                auditEvent.setException(ex);
+
                 rollbackTaransaction();
             } finally {
                 response.setResponseBody(apiResponse);
@@ -93,14 +124,30 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
                 log.debug("Processing {} API ends. Total time: {}", apiRequest
                         .getRequestApi().name(), totalTime / 1000.0f);
                 this.sendResponse(apiRequest.getReplyTo(), response, correlationId);
+                // save audit log and remove threadlocal instance
+                this.submitAuditLog();
             }
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
         }
     }
 
+    protected void submitAuditLog(){
+        IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
+        if(event!=null && StringUtils.isNotBlank(event.getAction())){
+            IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
+            wrapper.setLogEntity(event);
+            MQRequest<IdmAuditLogRequest> request = new MQRequest<>();
+            request.setRequestBody(wrapper);
+            request.setRequestApi(OpenIAMAPI.AuditLogSave);
+            requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
+        }
+        //remove auditLog event reference from this thread
+        AuditLogHolder.remove();
+    }
+
     protected void sendResponse(String getReplyTo, MQResponse<ResponseBody> response, byte[] correlationId) {
-        if (StringUtils.hasText(getReplyTo)) {
+        if (StringUtils.isNotBlank(getReplyTo)) {
             response.setCorrelationId(correlationId);
             responseServiceGateway.send(getReplyTo, response, correlationId);
         }

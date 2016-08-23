@@ -23,6 +23,7 @@ public class LogoutRequestDispatcher extends AbstractAPIDispatcher<LogoutRequest
 
     @Override
     protected Response processingApiRequest(OpenIAMAPI openIAMAPI, LogoutRequest logoutRequest) throws BasicDataServiceException {
-        return authenticationServiceService.globalLogoutRequest(logoutRequest);
+        authenticationServiceService.globalLogoutRequest(logoutRequest);
+        return new Response();
     }
 }

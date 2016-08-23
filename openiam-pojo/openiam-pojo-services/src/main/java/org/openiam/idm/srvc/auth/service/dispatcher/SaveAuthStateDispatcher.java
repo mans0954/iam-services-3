@@ -17,21 +17,17 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 11/08/16.
  */
 @Component
-public class SaveAuthStateDispatcher extends AbstractAPIDispatcher<AuthStateCrudServiceRequest, IdServiceResponse> {
+public class SaveAuthStateDispatcher extends AbstractAPIDispatcher<AuthStateCrudServiceRequest, Response> {
     @Autowired
     private AuthenticationServiceService authenticationServiceService;
 
     public SaveAuthStateDispatcher() {
-        super(IdServiceResponse.class);
+        super(Response.class);
     }
 
     @Override
-    protected IdServiceResponse processingApiRequest(OpenIAMAPI openIAMAPI, AuthStateCrudServiceRequest request) throws BasicDataServiceException {
-        IdServiceResponse resp = new IdServiceResponse();
-        Response response = authenticationServiceService.save(request.getAuthStateEntity());
-        resp.setErrorCode(response.getErrorCode());
-        resp.setStatus(response.getStatus());
-        resp.setErrorText(response.getErrorText());
-        return resp;
+    protected Response processingApiRequest(OpenIAMAPI openIAMAPI, AuthStateCrudServiceRequest request) throws BasicDataServiceException {
+        authenticationServiceService.save(request.getAuthStateEntity());
+        return new Response();
     }
 }

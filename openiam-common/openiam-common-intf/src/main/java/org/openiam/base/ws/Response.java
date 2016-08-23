@@ -66,7 +66,6 @@ public class Response implements Serializable {
     private List<EsbErrorToken> errorTokenList;
 
     public Response() {
-
     }
 
     public Response(ResponseStatus s) {
@@ -90,11 +89,17 @@ public class Response implements Serializable {
     public void setStatus(ResponseStatus status) {
         this.status = status;
     }
-
+    /**
+     * Use inherited classes to return expected value to the caller
+     */
+    @Deprecated
     public Object getResponseValue() {
         return responseValue;
     }
-
+    /**
+     * Use inherited classes to return expected value to the caller
+     */
+    @Deprecated
     public void setResponseValue(Object responseValue) {
         this.responseValue = responseValue;
     }
@@ -178,5 +183,21 @@ public class Response implements Serializable {
                 ", errorTokenList=" + errorTokenList +
                 ", stacktraceText=" + stacktraceText +
                 '}';
+    }
+
+    public Response convertToBase(){
+        Response response = new Response();
+        response.setResponseValue(this.getValueInternal());
+        response.setErrorCode(this.errorCode);
+        response.setErrorText(this.errorText);
+        response.setErrorTokenList(this.getErrorTokenList());
+        response.setFieldMappings(this.getFieldMappings());
+        response.setStacktraceText(this.getStacktraceText());
+        response.setStatus(this.getStatus());
+        return response;
+    }
+
+    protected Object getValueInternal(){
+        return this.responseValue;
     }
 }
