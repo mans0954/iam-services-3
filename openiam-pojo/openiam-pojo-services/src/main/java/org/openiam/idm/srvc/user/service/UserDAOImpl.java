@@ -960,6 +960,13 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         response.setStatus(ResponseStatus.SUCCESS);
         if (request.isNotBlank()) {
             //get Initial base for query
+            if (request.getFrom() < 0) {
+                request.setFrom(0);
+            }
+            //max allowed to get at 1 time - 5000k
+            if (request.getSize() < 0 || request.getSize() > 5000) {
+                request.setSize(5000);
+            }
             StringBuilder sb = this.getBaseLightSearchQuery();
 
             //apply part for where
@@ -991,24 +998,23 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private void getBasePaginatorQuery(StringBuilder mainSQL, LightSearchRequest request) {
         // don't process if no paginator
-        if (request.getSize() > -1 && request.getFrom() > -1) {
-            //process for each DB type
-            if ("SQLServer".equalsIgnoreCase(dbType)) {
-                mainSQL.append("OFFSET " + request.getFrom() + " ROWS FETCH NEXT " + request.getSize() + " ROWS ONLY");
-            } else if ("ORACLE_INSENSITIVE".equalsIgnoreCase(dbType)) {
-                mainSQL.insert(0, "SELECT * FROM (");
-                int from = request.getFrom() + 1;
-                int to = from + request.getSize();
-                mainSQL.append(" ) WHERE  ROWNUM >=");
-                mainSQL.append(from);
-                mainSQL.append(" AND ROWNUM < ");
-                mainSQL.append(to);
-            } else if ("MySQL".equalsIgnoreCase(dbType)) {
-                mainSQL.append(" LIMIT " + request.getFrom() + "," + request.getSize());
-            } else if ("PostgreSQL".equalsIgnoreCase(dbType)) {
-                mainSQL.append(" LIMIT " + request.getSize() + " OFFSET " + request.getFrom());
-            }
+        //process for each DB type
+        if ("SQLServer".equalsIgnoreCase(dbType)) {
+            mainSQL.append("OFFSET " + request.getFrom() + " ROWS FETCH NEXT " + request.getSize() + " ROWS ONLY");
+        } else if (isOracle()) {
+            mainSQL.insert(0, "SELECT * FROM (");
+            int from = request.getFrom() + 1;
+            mainSQL.append(" ) WHERE rownnn >= ");
+            mainSQL.append(from);
+        } else if ("MySQL".equalsIgnoreCase(dbType)) {
+            mainSQL.append(" LIMIT " + request.getFrom() + "," + request.getSize());
+        } else if ("PostgreSQL".equalsIgnoreCase(dbType)) {
+            mainSQL.append(" LIMIT " + request.getSize() + " OFFSET " + request.getFrom());
         }
+    }
+
+    private boolean isOracle() {
+        return "ORACLE_INSENSITIVE".equalsIgnoreCase(dbType);
     }
 
     //here replace columns part and delegation filter part with real strings
@@ -1103,8 +1109,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private StringBuilder getBaseLightSearchQuery() {
         StringBuilder sb = new StringBuilder();
-        if ("ORACLE_INSENSITIVE".equals(dbType)) {
-            sb.append("SELECT ${replace} ");
+        if (isOracle()) {
+            sb.append("SELECT  ${replace} ");
             sb.append("FROM USERS u LEFT JOIN EMAIL_ADDRESS ea ON ea.PARENT_ID = u.USER_ID AND ea.IS_DEFAULT = 'Y' ");
             sb.append(" LEFT JOIN PHONE p ON  p.PARENT_ID = u.USER_ID AND p.IS_DEFAULT = 'Y'  JOIN LOGIN l ON ");
             sb.append(" l.USER_ID = u.USER_ID AND l.MANAGED_SYS_ID = '0' ${delegationFilterPart} ");
@@ -1122,7 +1128,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private String getBaseLigthSearchColumns() {
 
-        String fieldNames = "u.USER_ID AS userId, u.EMPLOYEE_ID AS employeeId, u.FIRST_NAME AS firstName, " +
+        String fieldNames = (isOracle()? " ROWNUM  rownnn, ":"" ) + "u.USER_ID AS userId, u.EMPLOYEE_ID AS employeeId, u.FIRST_NAME AS firstName, " +
                 " u.LAST_NAME AS lastName, u.STATUS AS status, u.SECONDARY_STATUS AS secondaryStatus, " +
                 " u.NICKNAME AS nickname, ea.EMAIL_ADDRESS AS email, l.LOGIN AS defaultLogin," +
                 "CONCAT(p.COUNTRY_CD, CONCAT(p.AREA_CD, CONCAT(p.PHONE_NBR,p.PHONE_EXT))) AS  defaultPhone ";
@@ -1131,6 +1137,13 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     private void applyWherePart(StringBuilder sb, LightSearchRequest request) {
+
+        if (isOracle()) {
+            //to will be never epmty
+            sb.append("  ROWNUM <  ");
+            sb.append(request.getFrom() + request.getSize() + 1);
+            sb.append(" AND ");
+        }
         if (StringUtils.isNotBlank(request.getEmployeeId())) {
             sb.append(" u.EMPLOYEE_ID LIKE ('" + request.getEmployeeId() + "%') ");
         }
