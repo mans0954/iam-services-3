@@ -64,12 +64,13 @@ public class AuthenticationWebServiceImpl extends AbstractApiService implements 
 
     @Override
     public Response confirmOTPToken(OTPServiceRequest request) {
-        return this.manageApiRequest(OpenIAMAPI.ConfirmOTPToken, request, Response.class);
+        return this.manageApiRequest(OpenIAMAPI.ConfirmOTPToken, request, BooleanResponse.class);
     }
 
     @Override
     public Response getOTPSecretKey(OTPServiceRequest request) {
-        return  this.manageApiRequest(OpenIAMAPI.GetOTPSecretKey, request, Response.class);
+        StringResponse resp =  this.manageApiRequest(OpenIAMAPI.GetOTPSecretKey, request, StringResponse.class);
+        return resp.convertToBase();
     }
 
     @Override
@@ -80,7 +81,8 @@ public class AuthenticationWebServiceImpl extends AbstractApiService implements 
         request.setTokenType(tokenType);
         request.setPatternId(patternId);
 
-        return this.manageApiRequest(OpenIAMAPI.RenewToken, request, Response.class);
+        SSOTokenResponse response = this.manageApiRequest(OpenIAMAPI.RenewToken, request, SSOTokenResponse.class);
+        return response.convertToBase();
     }
 
     @Override
@@ -96,8 +98,6 @@ public class AuthenticationWebServiceImpl extends AbstractApiService implements 
     @Override
     public Response save(AuthStateEntity entity) {
         AuthStateCrudServiceRequest request = new AuthStateCrudServiceRequest(entity);
-        IdServiceResponse response =  this.manageApiRequest(OpenIAMAPI.SaveAuthState, request, IdServiceResponse.class);
-
-        return response.convertToBase();
+        return this.manageApiRequest(OpenIAMAPI.SaveAuthState, request, Response.class);
     }
 }

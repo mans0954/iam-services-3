@@ -2,7 +2,9 @@ package org.openiam.idm.srvc.auth.service.dispatcher;
 
 import org.openiam.base.request.AuthenticationRequest;
 import org.openiam.base.response.AuthenticationResponse;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
@@ -23,6 +25,11 @@ public class AuthenticationDispatcher extends AbstractAPIDispatcher<Authenticati
 
     @Override
     protected AuthenticationResponse processingApiRequest(OpenIAMAPI openIAMAPI, AuthenticationRequest authenticationRequest) throws BasicDataServiceException {
-        return authenticationServiceService.login(authenticationRequest);
+        AuthenticationResponse response = new AuthenticationResponse();
+
+        Subject authSubject =  authenticationServiceService.login(authenticationRequest);
+        response.setSubject(authSubject);
+
+        return response;
     }
 }

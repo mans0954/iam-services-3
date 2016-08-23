@@ -25,16 +25,7 @@ public class IdServiceResponse extends Response {
         return sb.toString();
     }
 
-    public Response convertToBase(){
-        Response response = new Response();
-        response.setResponseValue(this.id);
-        response.setErrorCode(this.errorCode);
-        response.setErrorText(this.errorText);
-        response.setErrorTokenList(this.getErrorTokenList());
-        response.setFieldMappings(this.getFieldMappings());
-        response.setStacktraceText(this.getStacktraceText());
-        response.setStatus(this.getStatus());
-
-        return response;
+    protected Object getValueInternal(){
+        return this.id;
     }
 }

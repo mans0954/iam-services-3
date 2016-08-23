@@ -68,4 +68,8 @@ public class BooleanResponse  extends Response {
         sb.append('}');
         return sb.toString();
     }
+
+    protected Object getValueInternal(){
+        return this.value;
+    }
 }

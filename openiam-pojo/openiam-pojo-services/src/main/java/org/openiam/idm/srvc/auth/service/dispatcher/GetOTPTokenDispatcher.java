@@ -15,16 +15,19 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 11/08/16.
  */
 @Component
-public class GetOTPTokenDispatcher extends AbstractAPIDispatcher<OTPServiceRequest, Response> {
+public class GetOTPTokenDispatcher extends AbstractAPIDispatcher<OTPServiceRequest, StringResponse> {
     @Autowired
     private AuthenticationServiceService authenticationServiceService;
 
     public GetOTPTokenDispatcher() {
-        super(Response.class);
+        super(StringResponse.class);
     }
 
     @Override
-    protected Response processingApiRequest(OpenIAMAPI openIAMAPI, OTPServiceRequest otpServiceRequest) throws BasicDataServiceException {
-        return authenticationServiceService.getOTPSecretKey(otpServiceRequest);
+    protected StringResponse processingApiRequest(OpenIAMAPI openIAMAPI, OTPServiceRequest otpServiceRequest) throws BasicDataServiceException {
+        StringResponse resp = new StringResponse();
+        String secret =  authenticationServiceService.getOTPSecretKey(otpServiceRequest);
+        resp.setValue(secret);
+        return resp;
     }
 }
