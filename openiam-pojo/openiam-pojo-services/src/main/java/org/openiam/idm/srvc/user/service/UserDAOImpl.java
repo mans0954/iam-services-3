@@ -976,7 +976,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                     this.getRequesterDelegationAttributes(request.getRequesterId()), request);
             //run count command
             Integer countNum = (Integer) this.getSession().createSQLQuery(getResultLightSearchQuery(sb, " COUNT(*) as count ",
-                    delegationFilterPart.toString())).addScalar("count", IntegerType.INSTANCE).uniqueResult();
+                    delegationFilterPart.toString(), request.getFrom(), request.getSize(), true)).addScalar("count", IntegerType.INSTANCE).uniqueResult();
             //if count > 0 run get data command
             if (countNum != null && countNum > 0) {
                 response.setCount(countNum);
@@ -989,7 +989,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
                 //GET RESULT
                 response.setLightUserSearchModels(this.getSession().createSQLQuery(getResultLightSearchQuery(sb,
-                        getBaseLigthSearchColumns(), delegationFilterPart.toString()))
+                        getBaseLigthSearchColumns(), delegationFilterPart.toString(), request.getFrom(), request.getSize(), false))
                         .addEntity(LightUserSearchModel.class).list());
             }
         }
@@ -1018,8 +1018,17 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     //here replace columns part and delegation filter part with real strings
-    private String getResultLightSearchQuery(StringBuilder sb, String returnColumns, String delegationFilterPart) {
-        return sb.toString().replace("${replace}", returnColumns).replace("${delegationFilterPart}", delegationFilterPart);
+    private String getResultLightSearchQuery(StringBuilder sb, String returnColumns, String delegationFilterPart, int from, int size, boolean isCount) {
+        String result = sb.toString().replace("${replace}", returnColumns).replace("${delegationFilterPart}", delegationFilterPart);
+        if (isOracle()) {
+            if (isCount) {
+                result = result.replace("${oraclePagingPart}", " ");
+            } else {
+                result = result.replace("${oraclePagingPart}", " ROWNUM < " + (from + size + 1) + " AND ");
+            }
+
+        }
+        return result;
     }
 
     private String prepareDelagationFilterPart(Map<String, UserAttribute> requesterDelegationAttributes, LightSearchRequest request) {
@@ -1128,7 +1137,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private String getBaseLigthSearchColumns() {
 
-        String fieldNames = (isOracle()? " ROWNUM  rownnn, ":"" ) + "u.USER_ID AS userId, u.EMPLOYEE_ID AS employeeId, u.FIRST_NAME AS firstName, " +
+        String fieldNames = (isOracle() ? " ROWNUM  rownnn, " : "") + "u.USER_ID AS userId, u.EMPLOYEE_ID AS employeeId, u.FIRST_NAME AS firstName, " +
                 " u.LAST_NAME AS lastName, u.STATUS AS status, u.SECONDARY_STATUS AS secondaryStatus, " +
                 " u.NICKNAME AS nickname, ea.EMAIL_ADDRESS AS email, l.LOGIN AS defaultLogin," +
                 "CONCAT(p.COUNTRY_CD, CONCAT(p.AREA_CD, CONCAT(p.PHONE_NBR,p.PHONE_EXT))) AS  defaultPhone ";
@@ -1139,10 +1148,11 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     private void applyWherePart(StringBuilder sb, LightSearchRequest request) {
 
         if (isOracle()) {
-            //to will be never epmty
-            sb.append("  ROWNUM <  ");
-            sb.append(request.getFrom() + request.getSize() + 1);
-            sb.append(" AND ");
+//            //to will be never epmty
+//            sb.append("  ROWNUM <  ");
+//            sb.append(request.getFrom() + request.getSize() + 1);
+//            sb.append(" AND ");
+            sb.append("${oraclePagingPart}");
         }
         if (StringUtils.isNotBlank(request.getEmployeeId())) {
             sb.append(" u.EMPLOYEE_ID LIKE ('" + request.getEmployeeId() + "%') ");
