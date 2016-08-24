@@ -7,6 +7,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
+import org.openiam.mq.constants.AuthenticationAPI;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 11/08/16.
  */
 @Component
-public class FindAuthStateDispatcher extends AbstractAPIDispatcher<BaseSearchServiceRequest<AuthStateSearchBean>, AuthStateListResponse> {
+public class FindAuthStateDispatcher extends AbstractAPIDispatcher<BaseSearchServiceRequest<AuthStateSearchBean>, AuthStateListResponse, AuthenticationAPI> {
     @Autowired
     private AuthenticationServiceService authenticationServiceService;
 
@@ -25,7 +26,7 @@ public class FindAuthStateDispatcher extends AbstractAPIDispatcher<BaseSearchSer
     }
 
     @Override
-    protected AuthStateListResponse processingApiRequest(OpenIAMAPI openIAMAPI, BaseSearchServiceRequest<AuthStateSearchBean> request) throws BasicDataServiceException {
+    protected AuthStateListResponse processingApiRequest(AuthenticationAPI openIAMAPI, BaseSearchServiceRequest<AuthStateSearchBean> request) throws BasicDataServiceException {
         AuthStateListResponse resp = new AuthStateListResponse();
         resp.setAuthStateList(authenticationServiceService.findBeans(request.getSearchBean(), request.getFrom(), request.getSize()));
         return resp;

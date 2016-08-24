@@ -6,6 +6,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.request.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
 import org.openiam.base.response.AuthenticationResponse;
+import org.openiam.mq.constants.AuthenticationAPI;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
@@ -39,7 +40,7 @@ public class AuthenticationRestController extends AbstractApiService {
 
 	@RequestMapping(value="/login", method=RequestMethod.POST)
 	public @ResponseBody AuthenticationResponse login(final @RequestBody AuthenticationRequest request) {
-		return this.manageApiRequest(OpenIAMAPI.Authenticate, request, AuthenticationResponse.class);
+		return this.manageApiRequest(AuthenticationAPI.Authenticate, request, AuthenticationResponse.class);
 	}
 	
 	@RequestMapping(value="/renewToken", method=RequestMethod.GET)
@@ -53,7 +54,7 @@ public class AuthenticationRestController extends AbstractApiService {
 		request.setTokenType(tokenType);
 		request.setPatternId(patternId);
 
-		SSOTokenResponse response = this.manageApiRequest(OpenIAMAPI.RenewToken, request, SSOTokenResponse.class);
+		SSOTokenResponse response = this.manageApiRequest(AuthenticationAPI.RenewToken, request, SSOTokenResponse.class);
 		return response.convertToBase();
 	}
 }

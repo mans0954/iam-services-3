@@ -1,6 +1,8 @@
 package org.openiam.mq;
 
+import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.idm.srvc.auth.service.dispatcher.*;
+import org.openiam.mq.constants.AuthenticationAPI;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 11/08/16.
  */
 @Component
-public class AuthenticationListener extends AbstractRabbitMQListener {
+public class AuthenticationListener extends AbstractRabbitMQListener<AuthenticationAPI> {
     @Autowired
     private LogoutRequestDispatcher logoutRequestDispatcher;
     @Autowired
@@ -36,8 +38,8 @@ public class AuthenticationListener extends AbstractRabbitMQListener {
     }
 
     @Override
-    protected void doOnMessage(MQRequest message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        OpenIAMAPI apiName = message.getRequestApi();
+    protected void doOnMessage(MQRequest<BaseServiceRequest, AuthenticationAPI> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
+        AuthenticationAPI apiName = message.getRequestApi();
         switch (apiName){
             case GlobalLogoutRequest:
                 addTask(logoutRequestDispatcher, correlationId, message, apiName, isAsync);

@@ -11,6 +11,7 @@ import org.openiam.concurrent.IBaseRunnableBackgroundTask;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.dto.MQResponse;
@@ -25,7 +26,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by alexander on 07/07/16.
  */
-public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceRequest, ResponseBody extends Response> extends AbstractBaseRunnableBackgroundTask implements IBaseRunnableBackgroundTask,APIProcessor<RequestBody, ResponseBody> {
+public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceRequest, ResponseBody extends Response, API extends OpenIAMAPI> extends AbstractBaseRunnableBackgroundTask implements IBaseRunnableBackgroundTask,APIProcessor<RequestBody, ResponseBody, API> {
 
     @Autowired
     @Qualifier("rabbitResponseServiceGateway")
@@ -38,7 +39,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
 
     private Class<ResponseBody> responseBodyClass;
 
-    private BlockingQueue<MQRequest<RequestBody>> requestQueue = new LinkedBlockingQueue<MQRequest<RequestBody>>();
+    private BlockingQueue<MQRequest<RequestBody, API>> requestQueue = new LinkedBlockingQueue<MQRequest<RequestBody, API>>();
 
     public AbstractAPIDispatcher(Class<ResponseBody> responseBodyClass) {
         this.responseBodyClass = responseBodyClass;
@@ -49,13 +50,13 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
     }
 
     @Override
-    public void pushToQueue(MQRequest<RequestBody> apiRequest) {
+    public void pushToQueue(MQRequest<RequestBody, API> apiRequest) {
         log.debug("adding API Request {} to queue - starting", apiRequest);
         requestQueue.add(apiRequest);
         log.debug("adding API Request {} to queue - finished", apiRequest);
     }
     @Override
-    public MQRequest<RequestBody> pullFromQueue() throws InterruptedException {
+    public MQRequest<RequestBody, API> pullFromQueue() throws InterruptedException {
         return requestQueue.take();
     }
 
@@ -63,11 +64,11 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
     public void run() {
         try {
             isRunning = true;
-            MQRequest<RequestBody> apiRequest = null;
+            MQRequest<RequestBody, API> apiRequest = null;
             while ((apiRequest = pullFromQueue()) != null) {
-                log.debug("processing API Request {} - starting", apiRequest);
+
                 processRequest(apiRequest);
-                log.debug("processing API Request {} - finished", apiRequest);
+
             }
         } catch (Exception ex) {
             log.debug("API Processor for {} API stoped due to error", apiName);
@@ -77,7 +78,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
         }
     }
 
-    public void processRequest(MQRequest<RequestBody> apiRequest){
+    public void processRequest(MQRequest<RequestBody, API> apiRequest){
         try {
             // init AuditLog event for this call
             AuditLogHolder.getInstance().setEvent(new IdmAuditLogEntity());
@@ -89,7 +90,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
 
             MQResponse<ResponseBody> response = new MQResponse<ResponseBody>();
             long startTime = System.currentTimeMillis();
-            log.debug("Processing {} API ...", apiRequest.getRequestApi().name());
+            log.debug("processing {} API Request {} - starting", apiRequest.getRequestApi().name(), apiRequest);
             try {
                 apiResponse = processingApiRequest(apiRequest.getRequestApi(),apiRequest.getRequestBody());
                 apiResponse.succeed();
@@ -107,7 +108,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
                 auditEvent.setFailureReason(ex.getCode());
 
                 rollbackTaransaction();
-            } catch (Exception ex) {
+            } catch (Exception ex ) {
                 log.error(ex.getMessage(), ex);
                 apiResponse.setErrorCode(ResponseCode.INTERNAL_ERROR);
                 apiResponse.setErrorText(ex.getMessage());
@@ -121,8 +122,8 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
             } finally {
                 response.setResponseBody(apiResponse);
                 long totalTime = System.currentTimeMillis() - startTime;
-                log.debug("Processing {} API ends. Total time: {}", apiRequest
-                        .getRequestApi().name(), totalTime / 1000.0f);
+                log.debug("processing {} API Request {} - finished", apiRequest.getRequestApi().name(), apiRequest);
+                log.debug("Processing {} API ends. Total time: {}", apiRequest.getRequestApi().name(), totalTime / 1000.0f);
                 this.sendResponse(apiRequest.getReplyTo(), response, correlationId);
                 // save audit log and remove threadlocal instance
                 this.submitAuditLog();
@@ -137,9 +138,9 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
         if(event!=null && StringUtils.isNotBlank(event.getAction())){
             IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
             wrapper.setLogEntity(event);
-            MQRequest<IdmAuditLogRequest> request = new MQRequest<>();
+            MQRequest<IdmAuditLogRequest, OpenIAMAPICommon> request = new MQRequest<>();
             request.setRequestBody(wrapper);
-            request.setRequestApi(OpenIAMAPI.AuditLogSave);
+            request.setRequestApi(OpenIAMAPICommon.AuditLogSave);
             requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
         }
         //remove auditLog event reference from this thread
@@ -157,7 +158,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
         return responseBodyClass.newInstance();
     }
 
-    protected abstract ResponseBody processingApiRequest(final OpenIAMAPI openIAMAPI, final RequestBody requestBody) throws BasicDataServiceException;
+    protected abstract ResponseBody processingApiRequest(final API openIAMAPI, final RequestBody requestBody) throws BasicDataServiceException;
     protected void rollbackTaransaction() {
         log.debug("There is no data which should be rollbacked");
     }

@@ -11,12 +11,13 @@ import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component("auditLogDispatcher")
-public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogRequest, Response> {
+public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogRequest, Response, OpenIAMAPICommon> {
 
 	private static final Log LOG = LogFactory.getLog(AuditLogDispatcher.class);
 
@@ -57,7 +58,7 @@ public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogRequest
     }
 
     @Override
-    protected Response processingApiRequest(final OpenIAMAPI openIAMAPI, final IdmAuditLogRequest idmAuditLogRequest) throws BasicDataServiceException {
+    protected Response processingApiRequest(final OpenIAMAPICommon openIAMAPI, final IdmAuditLogRequest idmAuditLogRequest) throws BasicDataServiceException {
         process(idmAuditLogRequest);
         return new Response(ResponseStatus.SUCCESS);
     }

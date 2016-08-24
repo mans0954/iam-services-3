@@ -6,7 +6,7 @@ import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
-import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.AuthenticationAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.stereotype.Service;
@@ -35,22 +35,22 @@ public class AuthenticationWebServiceImpl extends AbstractApiService implements 
 
     @Override
     public Response globalLogoutRequest(LogoutRequest request) {
-        return this.manageApiRequest(OpenIAMAPI.GlobalLogoutRequest, request, Response.class);
+        return this.manageApiRequest(AuthenticationAPI.GlobalLogoutRequest, request, Response.class);
     }
 
     @Override
     public AuthenticationResponse login(AuthenticationRequest request) {
-        return this.manageApiRequest(OpenIAMAPI.Authenticate, request, AuthenticationResponse.class);
+        return this.manageApiRequest(AuthenticationAPI.Authenticate, request, AuthenticationResponse.class);
     }
 
     @Override
     public Response clearOTPActiveStatus(OTPServiceRequest request) {
-        return this.manageApiRequest(OpenIAMAPI.ClearOTPActiveStatus, request, Response.class);
+        return this.manageApiRequest(AuthenticationAPI.ClearOTPActiveStatus, request, Response.class);
     }
 
     @Override
     public boolean isOTPActive(OTPServiceRequest request) {
-        BooleanResponse response = this.manageApiRequest(OpenIAMAPI.IsOTPActive, request, BooleanResponse.class);
+        BooleanResponse response = this.manageApiRequest(AuthenticationAPI.IsOTPActive, request, BooleanResponse.class);
         if(response.isFailure()){
             return false;
         }
@@ -59,17 +59,17 @@ public class AuthenticationWebServiceImpl extends AbstractApiService implements 
 
     @Override
     public Response sendOTPToken(OTPServiceRequest request) {
-        return this.manageApiRequest(OpenIAMAPI.SendOTPToken, request, Response.class);
+        return this.manageApiRequest(AuthenticationAPI.SendOTPToken, request, Response.class);
     }
 
     @Override
     public Response confirmOTPToken(OTPServiceRequest request) {
-        return this.manageApiRequest(OpenIAMAPI.ConfirmOTPToken, request, BooleanResponse.class);
+        return this.manageApiRequest(AuthenticationAPI.ConfirmOTPToken, request, BooleanResponse.class);
     }
 
     @Override
     public Response getOTPSecretKey(OTPServiceRequest request) {
-        StringResponse resp =  this.manageApiRequest(OpenIAMAPI.GetOTPSecretKey, request, StringResponse.class);
+        StringResponse resp =  this.manageApiRequest(AuthenticationAPI.GetOTPSecretKey, request, StringResponse.class);
         return resp.convertToBase();
     }
 
@@ -81,14 +81,14 @@ public class AuthenticationWebServiceImpl extends AbstractApiService implements 
         request.setTokenType(tokenType);
         request.setPatternId(patternId);
 
-        SSOTokenResponse response = this.manageApiRequest(OpenIAMAPI.RenewToken, request, SSOTokenResponse.class);
+        SSOTokenResponse response = this.manageApiRequest(AuthenticationAPI.RenewToken, request, SSOTokenResponse.class);
         return response.convertToBase();
     }
 
     @Override
     public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean, int from, int size) {
         BaseSearchServiceRequest<AuthStateSearchBean> request = new BaseSearchServiceRequest<AuthStateSearchBean>(searchBean, from, size);
-        AuthStateListResponse response = this.manageApiRequest(OpenIAMAPI.FindAuthState, request, AuthStateListResponse.class);
+        AuthStateListResponse response = this.manageApiRequest(AuthenticationAPI.FindAuthState, request, AuthStateListResponse.class);
         if(response.isFailure()){
             return null;
         }
@@ -98,6 +98,6 @@ public class AuthenticationWebServiceImpl extends AbstractApiService implements 
     @Override
     public Response save(AuthStateEntity entity) {
         AuthStateCrudServiceRequest request = new AuthStateCrudServiceRequest(entity);
-        return this.manageApiRequest(OpenIAMAPI.SaveAuthState, request, Response.class);
+        return this.manageApiRequest(AuthenticationAPI.SaveAuthState, request, Response.class);
     }
 }

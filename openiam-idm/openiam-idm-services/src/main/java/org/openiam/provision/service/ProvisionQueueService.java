@@ -3,6 +3,7 @@ package org.openiam.provision.service;
 import java.util.List;
 
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.gateway.RequestServiceGateway;
@@ -16,9 +17,9 @@ public class ProvisionQueueService {
     private RequestServiceGateway  requestServiceGateway;
 
     public void enqueue(final ProvisionDataContainer data) {
-        MQRequest<ProvisionDataContainer> request = new MQRequest();
+        MQRequest<ProvisionDataContainer, OpenIAMAPICommon> request = new MQRequest();
         request.setRequestBody(data);
-        request.setRequestApi(OpenIAMAPI.UserProvisioning);
+        request.setRequestApi(OpenIAMAPICommon.UserProvisioning);
         requestServiceGateway.send(OpenIAMQueue.ProvisionQueue, request);
     }
 

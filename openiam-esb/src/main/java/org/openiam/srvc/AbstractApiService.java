@@ -26,12 +26,12 @@ public abstract class AbstractApiService {
     }
 
 
-    protected <ApiResponse extends Response> ApiResponse manageApiRequest( OpenIAMAPI apiName, BaseServiceRequest apiRequest, Class<ApiResponse> apiResponseClass) {
+    protected <ApiResponse extends Response, API extends OpenIAMAPI> ApiResponse manageApiRequest(API apiName, BaseServiceRequest apiRequest, Class<ApiResponse> apiResponseClass) {
         return manageApiRequest(rabbitMqQueue, apiName, apiRequest, apiResponseClass);
     }
 
-    protected <ApiResponse extends Response> ApiResponse manageApiRequest(OpenIAMQueue queue, OpenIAMAPI apiName, BaseServiceRequest apiRequest, Class<ApiResponse> apiResponseClass) {
-        MQResponse<ApiResponse> rabbitMqResponse =  (MQResponse<ApiResponse>) requestServiceGateway.sendAndReceive(queue, new MQRequest(apiName, apiRequest));
+    protected <ApiResponse extends Response, API extends OpenIAMAPI> ApiResponse manageApiRequest(OpenIAMQueue queue, API apiName, BaseServiceRequest apiRequest, Class<ApiResponse> apiResponseClass) {
+        MQResponse<ApiResponse> rabbitMqResponse =  (MQResponse<ApiResponse>) requestServiceGateway.sendAndReceive(queue, new MQRequest<BaseServiceRequest, API>(apiName, apiRequest));
 
         if (rabbitMqResponse == null){
             return getFailedResponse(apiResponseClass);

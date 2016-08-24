@@ -9,6 +9,7 @@ import org.openiam.base.response.ContentProviderResponse;
 import org.openiam.base.response.URIFederationResponse;
 import org.openiam.base.response.URIPatternResponse;
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.http.HttpMethod;
@@ -47,7 +48,7 @@ public class URIFederationWebServiceImpl extends AbstractApiService implements U
         URIFederationServiceRequest request = new URIFederationServiceRequest();
         request.setProxyURI(proxyURI);
         request.setMethod(getMethod(method));
-        URIFederationResponse response = this.manageApiRequest(OpenIAMAPI.URIFederationMetadata, request, URIFederationResponse.class);
+        URIFederationResponse response = this.manageApiRequest(OpenIAMAPICommon.URIFederationMetadata, request, URIFederationResponse.class);
         return response;
     }
 
@@ -55,7 +56,7 @@ public class URIFederationWebServiceImpl extends AbstractApiService implements U
     public ContentProvider getCachedContentProvider(String providerId) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(providerId);
-        ContentProviderResponse response = this.manageApiRequest(OpenIAMAPI.CachedContentProviderGet, request, ContentProviderResponse.class);
+        ContentProviderResponse response = this.manageApiRequest(OpenIAMAPICommon.CachedContentProviderGet, request, ContentProviderResponse.class);
         if(response.isFailure()){
             return null;
         }
@@ -66,7 +67,7 @@ public class URIFederationWebServiceImpl extends AbstractApiService implements U
     public URIPattern getCachedURIPattern(String patternId) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(patternId);
-        URIPatternResponse response = this.manageApiRequest(OpenIAMAPI.CachedURIPatternGet, request, URIPatternResponse.class);
+        URIPatternResponse response = this.manageApiRequest(OpenIAMAPICommon.CachedURIPatternGet, request, URIPatternResponse.class);
         if(response.isFailure()){
             return null;
         }

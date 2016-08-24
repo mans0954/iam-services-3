@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.msg.service;
 import javax.annotation.PostConstruct;
 
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.gateway.RequestServiceGateway;
@@ -50,9 +51,9 @@ public class MailSender {
     }
 
 	private void doSend(final Message mail){
-		MQRequest<Message> mqRequest = new MQRequest<>();
+		MQRequest<Message, OpenIAMAPICommon> mqRequest = new MQRequest<>();
 		mqRequest.setRequestBody(mail);
-		mqRequest.setRequestApi(OpenIAMAPI.UpdateAttributesByMetadata);
+		mqRequest.setRequestApi(OpenIAMAPICommon.UpdateAttributesByMetadata);
 		requestServiceGateway.send(OpenIAMQueue.MailQueue, mqRequest);
 	}
 }

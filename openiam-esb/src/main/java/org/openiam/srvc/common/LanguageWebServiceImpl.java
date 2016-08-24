@@ -1,5 +1,6 @@
 package org.openiam.srvc.common;
 
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.base.request.BaseGrudServiceRequest;
 import org.openiam.base.request.BaseSearchServiceRequest;
@@ -33,7 +34,7 @@ public class LanguageWebServiceImpl extends AbstractApiService implements Langua
     public List<Language> getUsedLanguages(Language language) {
         BaseSearchServiceRequest<LanguageSearchBean> request = new BaseSearchServiceRequest<LanguageSearchBean>();
         request.setLanguage(language);
-        LanguageListResponse response = this.manageApiRequest(OpenIAMAPI.GetUsedLanguages, request, LanguageListResponse.class);
+        LanguageListResponse response = this.manageApiRequest(OpenIAMAPICommon.GetUsedLanguages, request, LanguageListResponse.class);
         return response.getLanguageList();
     }
 
@@ -41,21 +42,21 @@ public class LanguageWebServiceImpl extends AbstractApiService implements Langua
     public List<Language> findBeans(LanguageSearchBean searchBean, int from, int size, Language language) {
         BaseSearchServiceRequest<LanguageSearchBean> request = new BaseSearchServiceRequest<LanguageSearchBean>(searchBean, from, size, language);
 
-        LanguageListResponse response = this.manageApiRequest(OpenIAMAPI.FindLanguages, request, LanguageListResponse.class);
+        LanguageListResponse response = this.manageApiRequest(OpenIAMAPICommon.FindLanguages, request, LanguageListResponse.class);
         return response.getLanguageList();
     }
 
     @Override
     public int count(LanguageSearchBean searchBean) {
         BaseSearchServiceRequest<LanguageSearchBean> request = new BaseSearchServiceRequest<LanguageSearchBean>(searchBean);
-        CountResponse response = this.manageApiRequest(OpenIAMAPI.CountLanguages, request, CountResponse.class);
+        CountResponse response = this.manageApiRequest(OpenIAMAPICommon.CountLanguages, request, CountResponse.class);
         return response.getRowCount();
     }
 
     @Override
     public Response save(Language language) {
         BaseGrudServiceRequest<Language> request = new BaseGrudServiceRequest<>(language);
-        IdServiceResponse response =  this.manageApiRequest(OpenIAMAPI.SaveLanguage, request, IdServiceResponse.class);
+        IdServiceResponse response =  this.manageApiRequest(OpenIAMAPICommon.SaveLanguage, request, IdServiceResponse.class);
 
        return response.convertToBase();
     }
