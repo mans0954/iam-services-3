@@ -6,6 +6,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,7 @@ import java.util.List;
  * Created by alexander on 09/08/16.
  */
 @Component
-public class LanguageListDispatcher extends AbstractAPIDispatcher<BaseSearchServiceRequest<LanguageSearchBean>, LanguageListResponse> {
+public class LanguageListDispatcher extends AbstractAPIDispatcher<BaseSearchServiceRequest<LanguageSearchBean>, LanguageListResponse, OpenIAMAPICommon> {
     @Autowired
     private LanguageDataService languageDataService;
 
@@ -25,7 +26,7 @@ public class LanguageListDispatcher extends AbstractAPIDispatcher<BaseSearchServ
     }
 
     @Override
-    protected LanguageListResponse processingApiRequest(final OpenIAMAPI openIAMAPI,  BaseSearchServiceRequest<LanguageSearchBean> request) throws BasicDataServiceException {
+    protected LanguageListResponse processingApiRequest(final OpenIAMAPICommon openIAMAPI,  BaseSearchServiceRequest<LanguageSearchBean> request) throws BasicDataServiceException {
         LanguageListResponse languageListResponse = new LanguageListResponse();
         switch (openIAMAPI){
             case GetUsedLanguages:

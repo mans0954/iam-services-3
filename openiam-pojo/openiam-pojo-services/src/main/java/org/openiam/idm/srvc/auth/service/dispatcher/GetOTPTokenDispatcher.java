@@ -6,6 +6,7 @@ import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
+import org.openiam.mq.constants.AuthenticationAPI;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 11/08/16.
  */
 @Component
-public class GetOTPTokenDispatcher extends AbstractAPIDispatcher<OTPServiceRequest, StringResponse> {
+public class GetOTPTokenDispatcher extends AbstractAPIDispatcher<OTPServiceRequest, StringResponse, AuthenticationAPI> {
     @Autowired
     private AuthenticationServiceService authenticationServiceService;
 
@@ -24,7 +25,7 @@ public class GetOTPTokenDispatcher extends AbstractAPIDispatcher<OTPServiceReque
     }
 
     @Override
-    protected StringResponse processingApiRequest(OpenIAMAPI openIAMAPI, OTPServiceRequest otpServiceRequest) throws BasicDataServiceException {
+    protected StringResponse processingApiRequest(AuthenticationAPI openIAMAPI, OTPServiceRequest otpServiceRequest) throws BasicDataServiceException {
         StringResponse resp = new StringResponse();
         String secret =  authenticationServiceService.getOTPSecretKey(otpServiceRequest);
         resp.setValue(secret);

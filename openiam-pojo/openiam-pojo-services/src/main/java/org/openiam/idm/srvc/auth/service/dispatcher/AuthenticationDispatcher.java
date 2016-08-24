@@ -6,6 +6,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
+import org.openiam.mq.constants.AuthenticationAPI;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 11/08/16.
  */
 @Component
-public class AuthenticationDispatcher extends AbstractAPIDispatcher<AuthenticationRequest, AuthenticationResponse> {
+public class AuthenticationDispatcher extends AbstractAPIDispatcher<AuthenticationRequest, AuthenticationResponse, AuthenticationAPI> {
     @Autowired
     private AuthenticationServiceService authenticationServiceService;
 
@@ -24,7 +25,7 @@ public class AuthenticationDispatcher extends AbstractAPIDispatcher<Authenticati
     }
 
     @Override
-    protected AuthenticationResponse processingApiRequest(OpenIAMAPI openIAMAPI, AuthenticationRequest authenticationRequest) throws BasicDataServiceException {
+    protected AuthenticationResponse processingApiRequest(AuthenticationAPI openIAMAPI, AuthenticationRequest authenticationRequest) throws BasicDataServiceException {
         AuthenticationResponse response = new AuthenticationResponse();
 
         Subject authSubject =  authenticationServiceService.login(authenticationRequest);

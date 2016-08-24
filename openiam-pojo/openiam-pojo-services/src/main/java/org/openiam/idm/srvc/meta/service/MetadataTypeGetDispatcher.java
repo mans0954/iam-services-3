@@ -7,6 +7,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 14/07/16.
  */
 @Component
-public class MetadataTypeGetDispatcher extends AbstractAPIDispatcher<IdServiceRequest, Response> {
+public class MetadataTypeGetDispatcher extends AbstractAPIDispatcher<IdServiceRequest, Response, OpenIAMAPICommon> {
     @Autowired
     private MetadataService metadataService;
 
@@ -24,7 +25,7 @@ public class MetadataTypeGetDispatcher extends AbstractAPIDispatcher<IdServiceRe
     }
 
     @Override
-    protected Response processingApiRequest(final OpenIAMAPI openIAMAPI, final  IdServiceRequest idServiceRequest) throws BasicDataServiceException {
+    protected Response processingApiRequest(final OpenIAMAPICommon openIAMAPI, final  IdServiceRequest idServiceRequest) throws BasicDataServiceException {
         Response response = new Response();
         if(StringUtils.isBlank(idServiceRequest.getId())){
             throw new BasicDataServiceException(ResponseCode.METADATA_TYPE_ID_REQUIRED);

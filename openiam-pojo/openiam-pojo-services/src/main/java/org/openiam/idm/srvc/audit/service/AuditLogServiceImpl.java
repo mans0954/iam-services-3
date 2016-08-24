@@ -31,6 +31,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.gateway.RequestServiceGateway;
@@ -205,9 +206,9 @@ public class AuditLogServiceImpl implements AuditLogService {
          IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
          wrapper.setLogEntity(log);
 
-         MQRequest<IdmAuditLogRequest> request = new MQRequest<>();
+         MQRequest<IdmAuditLogRequest, OpenIAMAPICommon> request = new MQRequest<>();
          request.setRequestBody(wrapper);
-         request.setRequestApi(OpenIAMAPI.AuditLogSave);
+         request.setRequestApi(OpenIAMAPICommon.AuditLogSave);
          requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
 	 }
 

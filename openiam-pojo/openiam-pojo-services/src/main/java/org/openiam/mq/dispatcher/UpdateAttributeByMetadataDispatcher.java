@@ -5,6 +5,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,7 +18,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 /**
  * Created by alexander on 01/08/16.
  */
-public abstract class UpdateAttributeByMetadataDispatcher extends AbstractAPIDispatcher<UpdateAttributeByMetadataRequest, Response> {
+public abstract class UpdateAttributeByMetadataDispatcher extends AbstractAPIDispatcher<UpdateAttributeByMetadataRequest, Response, OpenIAMAPICommon> {
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
@@ -28,7 +29,7 @@ public abstract class UpdateAttributeByMetadataDispatcher extends AbstractAPIDis
 
     @Override
     @Transactional
-    protected Response processingApiRequest(final OpenIAMAPI openIAMAPI, final UpdateAttributeByMetadataRequest request) throws BasicDataServiceException {
+    protected Response processingApiRequest(final OpenIAMAPICommon openIAMAPI, final UpdateAttributeByMetadataRequest request) throws BasicDataServiceException {
         if(request.isRequired()) {
             final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
             transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);

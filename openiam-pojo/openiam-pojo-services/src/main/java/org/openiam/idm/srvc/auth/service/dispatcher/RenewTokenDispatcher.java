@@ -9,6 +9,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
+import org.openiam.mq.constants.AuthenticationAPI;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 11/08/16.
  */
 @Component
-public class RenewTokenDispatcher extends AbstractAPIDispatcher<RenewTokenRequest, SSOTokenResponse> {
+public class RenewTokenDispatcher extends AbstractAPIDispatcher<RenewTokenRequest, SSOTokenResponse, AuthenticationAPI> {
     @Autowired
     private AuthenticationServiceService authenticationServiceService;
 
@@ -27,7 +28,7 @@ public class RenewTokenDispatcher extends AbstractAPIDispatcher<RenewTokenReques
     }
 
     @Override
-    protected SSOTokenResponse processingApiRequest(OpenIAMAPI openIAMAPI, RenewTokenRequest request) throws BasicDataServiceException {
+    protected SSOTokenResponse processingApiRequest(AuthenticationAPI openIAMAPI, RenewTokenRequest request) throws BasicDataServiceException {
         final SSOTokenResponse resp = new SSOTokenResponse();
 
         SSOToken token = authenticationServiceService.renewToken(request.getPrincipal(), request.getToken(), request.getTokenType(), request.getPatternId());

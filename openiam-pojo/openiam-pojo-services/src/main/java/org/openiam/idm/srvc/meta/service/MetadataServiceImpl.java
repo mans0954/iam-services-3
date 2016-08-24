@@ -31,10 +31,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.constants.RabbitMqExchange;
-import org.openiam.mq.constants.RabbitMqExchangeType;
+import org.openiam.mq.constants.*;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.gateway.RequestServiceGateway;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -266,9 +263,9 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			request.setMetadataTypeId(entity.getMetadataType().getId());
 			request.setMetadataTypeGrouping(entity.getMetadataType().getGrouping());
 
-			MQRequest<UpdateAttributeByMetadataRequest> mqRequest = new MQRequest<>();
+			MQRequest<UpdateAttributeByMetadataRequest, OpenIAMAPICommon> mqRequest = new MQRequest<>();
 			mqRequest.setRequestBody(request);
-			mqRequest.setRequestApi(OpenIAMAPI.UpdateAttributesByMetadata);
+			mqRequest.setRequestApi(OpenIAMAPICommon.UpdateAttributesByMetadata);
 
 			OpenIAMQueue queue = null;
 			switch (entity.getMetadataType().getGrouping()) {

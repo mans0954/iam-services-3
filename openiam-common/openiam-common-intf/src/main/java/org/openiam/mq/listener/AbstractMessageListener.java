@@ -1,5 +1,6 @@
 package org.openiam.mq.listener;
 
+import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by alexander on 07/07/16.
  */
-public abstract class AbstractMessageListener {
+public abstract class AbstractMessageListener<RequestBody extends BaseServiceRequest, API extends OpenIAMAPI> {
     protected Logger log = LoggerFactory.getLogger(this.getClass());
     private OpenIAMQueue queueToListen;
     private boolean isInitialized=false;
@@ -28,7 +29,7 @@ public abstract class AbstractMessageListener {
     @Autowired
     private BaseBackgroundProcessorService baseBackgroundProcessorService;
 
-    private ConcurrentHashMap<OpenIAMAPI, AbstractAPIDispatcher> workerMap = new ConcurrentHashMap<OpenIAMAPI, AbstractAPIDispatcher>();
+    private ConcurrentHashMap<API, AbstractAPIDispatcher> workerMap = new ConcurrentHashMap<API, AbstractAPIDispatcher>();
 
     public AbstractMessageListener(OpenIAMQueue queueToListen){
         this.queueToListen=queueToListen;
@@ -42,7 +43,7 @@ public abstract class AbstractMessageListener {
         this.workerTaskExecutor = workerTaskExecutor;
     }
 
-    protected void addTask(AbstractAPIDispatcher processor, byte[] correlationId, MQRequest message, OpenIAMAPI apiName, boolean isAsync) throws RejectMessageException, CloneNotSupportedException  {
+    protected void addTask(AbstractAPIDispatcher processor, byte[] correlationId, MQRequest<RequestBody, API> message, API apiName, boolean isAsync) throws RejectMessageException, CloneNotSupportedException  {
         if(message.getCorrelationId()==null){
             message.setCorrelationId(correlationId);
         }
@@ -52,5 +53,5 @@ public abstract class AbstractMessageListener {
         return queueToListen;
     }
 
-    protected abstract void doOnMessage(MQRequest message, byte[] correlationId, boolean isAsync) throws  RejectMessageException, CloneNotSupportedException ;
+    protected abstract void doOnMessage(MQRequest<RequestBody, API> message, byte[] correlationId, boolean isAsync) throws  RejectMessageException, CloneNotSupportedException ;
 }

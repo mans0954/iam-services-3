@@ -1,18 +1,8 @@
 package org.openiam.mq.constants;
 
 /**
- * Created by alexander on 06/07/16.
+ * Created by alexander on 24/08/16.
  */
-public enum OpenIAMAPI {
-    MetadataTypeGet,
-    UpdateAttributesByMetadata,
-    SendEmail,
-    AuditLogSave,
-    UserProvisioning,
-    GetUsedLanguages,
-    FindLanguages,
-    CountLanguages,
-    SaveLanguage,
-    URIFederationMetadata,
-    CachedContentProviderGet, CachedURIPatternGet, GlobalLogoutRequest, Authenticate, ClearOTPActiveStatus, SendOTPToken, ConfirmOTPToken, GetOTPSecretKey, RenewToken, FindAuthState, IsOTPActive, SaveAuthState;
+public interface OpenIAMAPI {
+    String name();
 }

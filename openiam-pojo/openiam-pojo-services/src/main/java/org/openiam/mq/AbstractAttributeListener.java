@@ -1,6 +1,7 @@
 package org.openiam.mq;
 
 import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;
@@ -18,7 +19,7 @@ public abstract class AbstractAttributeListener extends AbstractRabbitMQListener
 
     @Override
     protected void doOnMessage(MQRequest message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        OpenIAMAPI apiName = message.getRequestApi();
+        OpenIAMAPICommon apiName = (OpenIAMAPICommon)message.getRequestApi();
         switch (apiName){
             case UpdateAttributesByMetadata:
                 addTask(getProcessorTask(), correlationId, message, apiName, isAsync);

@@ -7,14 +7,14 @@ import org.openiam.util.OpenIAMUtils;
 /**
  * Created by alexander on 06/07/16.
  */
-public class MQRequest<RequestBody extends BaseServiceRequest>  extends AbstractMQMessage{
+public class MQRequest<RequestBody extends BaseServiceRequest, API extends OpenIAMAPI>  extends AbstractMQMessage{
 
     private String replyTo;
-    private OpenIAMAPI requestApi;
+    private API requestApi;
     protected RequestBody requestBody;
 
     public MQRequest(){}
-    public MQRequest(OpenIAMAPI requestApi, RequestBody requestBody){
+    public MQRequest(API requestApi, RequestBody requestBody){
         this.requestApi=requestApi;
         this.requestBody=requestBody;
     }
@@ -27,11 +27,11 @@ public class MQRequest<RequestBody extends BaseServiceRequest>  extends Abstract
         this.replyTo = replyTo;
     }
 
-    public OpenIAMAPI getRequestApi() {
+    public API getRequestApi() {
         return requestApi;
     }
 
-    public void setRequestApi(OpenIAMAPI requestApi) {
+    public void setRequestApi(API requestApi) {
         this.requestApi = requestApi;
     }
 
