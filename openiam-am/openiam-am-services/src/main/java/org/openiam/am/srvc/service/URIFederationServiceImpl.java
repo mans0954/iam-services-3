@@ -568,17 +568,20 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
 				uriPattern = patternNode.getPattern();
 				uriMethod = patternNode.getMethod();
-				
-				if(!cp.getIsPublic() && !isEntitled(userId, cp.getResourceId())) {
-					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
-				}
-				
+
 				/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
 				if(uriPattern != null) {
 					
 					/* check entitlements and auth level on patterns */
-					if(!uriPattern.getIsPublic() && !isEntitled(userId, uriPattern.getResourceId())) {
-						throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, uriPattern.getPattern());
+					if(!uriPattern.getIsPublic()) {
+						if(!isEntitled(userId, uriPattern.getResourceId())) {
+							throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, uriPattern.getPattern());
+						}
+						
+						/* if the user is entitled to the URI pattern, now check that he has access tot he overall content provider */
+						if(!cp.getIsPublic() && !isEntitled(userId, cp.getResourceId())) {
+							throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
+						}
 					}
 					
 					if(uriMethod != null) {
