@@ -1155,21 +1155,21 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             sb.append("${oraclePagingPart}");
         }
         if (StringUtils.isNotBlank(request.getEmployeeId())) {
-            sb.append(" u.EMPLOYEE_ID LIKE ('" + request.getEmployeeId() + "%') ");
+            sb.append(" LOWER(u.EMPLOYEE_ID) LIKE LOWER('" + request.getEmployeeId() + "%') ");
         }
 
         if (StringUtils.isNotBlank(request.getEmailAddress())) {
             if (StringUtils.isNotBlank(request.getEmployeeId())) {
                 sb.append(" AND ");
             }
-            sb.append(" ea.EMAIL_ADDRESS LIKE ('" + request.getEmailAddress() + "%') ");
+            sb.append(" LOWER(ea.EMAIL_ADDRESS) LIKE LOWER('" + request.getEmailAddress() + "%') ");
         }
 
         if (StringUtils.isNotBlank(request.getLogin())) {
             if (StringUtils.isNotBlank(request.getEmployeeId()) || StringUtils.isNotBlank(request.getEmailAddress())) {
                 sb.append(" AND ");
             }
-            sb.append(" l.LOGIN LIKE ('" + request.getLogin() + "%') ");
+            sb.append(" LOWER(l.LOGIN) LIKE LOWER('" + request.getLogin() + "%') ");
         }
 
         if (StringUtils.isNotBlank(request.getLastName())) {
@@ -1178,7 +1178,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                     StringUtils.isNotBlank(request.getEmailAddress())) {
                 sb.append(" AND ");
             }
-            sb.append(" u.LAST_NAME LIKE ('" + request.getLastName() + "%') ");
+            sb.append(" LOWER(u.LAST_NAME) LIKE LOWER('" + request.getLastName() + "%') ");
         }
 
         if (request.getStatus() != null) {
