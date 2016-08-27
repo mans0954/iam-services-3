@@ -47,14 +47,11 @@ implements BaseDao<T, PrimaryKey> {
     protected static final int MAX_IN_CLAUSE = 1000;
     
     /* 
-     * by default we set isCachable to false to prevent problems with invalidation of results. 
+     * by default we set cachable to false to prevent problems with invalidation of results. 
      * a caller should explicitly set cacheable to true if he wants to cache query results
      */
-/*    protected boolean isCachable() {
-    	return false;
-    }*/
     protected boolean cachable() {
-        return true;
+    	return false;
     }
 
 	@Autowired
