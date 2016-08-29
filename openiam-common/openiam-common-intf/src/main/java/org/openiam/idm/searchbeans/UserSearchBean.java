@@ -58,6 +58,7 @@ import java.util.*;
         "emailAddressMatchToken",
         "searchMode",
         "initDefaulLoginFlag",
+        "principalList",
         "userType"
 })
 public class UserSearchBean extends EntitlementsSearchBean<User, String> implements SearchBean<User, String>,
@@ -187,6 +188,7 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
      * The attributes which belong to this user
      */
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
+    protected List<LoginSearchBean> principalList = new ArrayList<LoginSearchBean>();
 
     private String requesterId;
     
@@ -585,6 +587,14 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
 
     public void setUserType(String userType) {
         this.userType = userType;
+    }
+
+    public List<LoginSearchBean> getPrincipalList() {
+        return principalList;
+    }
+
+    public void setPrincipalList(List<LoginSearchBean> principalList) {
+        this.principalList = principalList;
     }
 
     @Override
