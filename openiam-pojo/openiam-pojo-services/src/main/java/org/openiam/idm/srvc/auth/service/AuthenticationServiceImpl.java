@@ -1,16 +1,16 @@
 /*
  * Copyright 2009, OpenIAM LLC This file is part of the OpenIAM Identity and
  * Access Management Suite
- * 
+ *
  * OpenIAM Identity and Access Management Suite is free software: you can
  * redistribute it and/or modify it under the terms of the Lesser GNU General
  * Public License version 3 as published by the Free Software Foundation.
- * 
+ *
  * OpenIAM is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the Lesser GNU General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * OpenIAM. If not, see <http://www.gnu.org/licenses/>. *
  */
@@ -178,7 +178,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         return authProvider;
     }
 
-    private AuthenticationModule getLoginModule(String springBeanName, String groovyScript) throws BasicDataServiceException{
+    private AuthenticationModule getLoginModule(String springBeanName, String groovyScript) throws BasicDataServiceException {
         AuthenticationModule loginModule = null;
 
         if (StringUtils.isNotBlank(springBeanName)) {
@@ -272,7 +272,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         }
 
         final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), newLoginEvent);
-        if(authProvider != null) {
+        if (authProvider != null) {
             newLoginEvent.setAuthProviderId(authProvider.getId());
         }
 
@@ -292,7 +292,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
 
         // TODO: refactor this when refactor login modules.
         // TODO: Login Modules should throw BasicDataServiceException or any inherited classes instead of Exception
-        Subject sub=null;
+        Subject sub = null;
         try {
             sub = loginModule.login(authenticationContext);
         } catch (Exception e) {
@@ -306,7 +306,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
 
     @Override
     @Transactional
-    public SSOToken renewToken(final String principal, final String token, final String tokenType, final String patternId) throws BasicDataServiceException{
+    public SSOToken renewToken(final String principal, final String token, final String tokenType, final String patternId) throws BasicDataServiceException {
         PolicyEntity policy = null;
         ManagedSysEntity managedSystem = null;
         if (StringUtils.isNotBlank(patternId)) {
@@ -336,7 +336,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         // get the userId of this token
         final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSystem.getId());
         if (lg == null) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_PRINCIPAL, "Login object is not found for given principal") ;
+            throw new BasicDataServiceException(ResponseCode.INVALID_PRINCIPAL, "Login object is not found for given principal");
         }
 
         final Map tokenParam = new HashMap();
@@ -348,11 +348,11 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         tokenParam.put("PRINCIPAL", principal);
 
         if (!isUserStatusValid(lg.getUserId())) {
-            String msg =String.format("RenewToken: user status failed for userId = %s", lg.getUserId());
-        	if(log.isDebugEnabled()) {
-        		log.debug(msg);
-        	}
-            throw new BasicDataServiceException(ResponseCode.RESULT_INVALID_USER_STATUS, msg) ;
+            String msg = String.format("RenewToken: user status failed for userId = %s", lg.getUserId());
+            if (log.isDebugEnabled()) {
+                log.debug(msg);
+            }
+            throw new BasicDataServiceException(ResponseCode.RESULT_INVALID_USER_STATUS, msg);
         }
 
         final AuthStateId id = new AuthStateId();
@@ -362,25 +362,27 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         AuthStateEntity authSt = authStateDao.findById(id);
         if (authSt != null) {
             if (authSt.getToken() == null || "LOGOUT".equalsIgnoreCase(authSt.getToken())) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_AUTH_STATE, "AuthStateEntity has no token or user has already logged out") ;
+                throw new BasicDataServiceException(ResponseCode.INVALID_AUTH_STATE, "AuthStateEntity has no token or user has already logged out");
             }
 
         }
 
-        SSOTokenModule tkModule = SSOTokenFactory .createModule((String) tokenParam.get("TOKEN_TYPE"));
+        SSOTokenModule tkModule = SSOTokenFactory.createModule((String) tokenParam.get("TOKEN_TYPE"));
         tkModule.setCryptor(this.cryptor);
         tkModule.setKeyManagementService(keyManagementService);
         tkModule.setTokenLife(Integer.parseInt(tokenLife));
 
         try {
             if (!tkModule.isTokenValid(lg.getUserId(), principal, token)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_TOKEN, "Invalid token is provided") ;
+                throw new BasicDataServiceException(ResponseCode.INVALID_TOKEN, "Invalid token is provided");
             }
 
             final SSOToken ssoToken = tkModule.createToken(tokenParam);
             return ssoToken;
+        } catch (BasicDataServiceException e) {
+            throw e;
         } catch (Throwable e) {
-            throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR, e.getMessage()) ;
+            throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR, e.getMessage());
         }
     }
 
@@ -469,7 +471,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
 
     @Override
     @Transactional
-    public String getOTPSecretKey(OTPServiceRequest request) throws BasicDataServiceException{
+    public String getOTPSecretKey(OTPServiceRequest request) throws BasicDataServiceException {
         final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(null);
         event.setAction(AuditAction.GET_QR_CODE.value());
@@ -487,7 +489,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         event.setAuthProviderId(authProvider.getId());
 
         final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
-        if(managedSystem == null) {
+        if (managedSystem == null) {
             throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
         }
         event.setManagedSysId(managedSystem.getId());
@@ -511,7 +513,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
 
     @Override
     @Transactional
-    public void sendOTPToken(final OTPServiceRequest request) throws BasicDataServiceException{
+    public void sendOTPToken(final OTPServiceRequest request) throws BasicDataServiceException {
         final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(null);
         event.setAction(AuditAction.SEND_SMS_OTP_TOKEN.value());
@@ -528,7 +530,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         event.setAuthProviderId(authProvider.getId());
 
         final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
-        if(managedSystem == null) {
+        if (managedSystem == null) {
             throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
         }
         event.setManagedSysId(managedSystem.getId());
@@ -544,16 +546,17 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
             try {
                 numOfMinutesOfSMSValidity = Integer.valueOf(attribute.getValue1());
             } catch (Throwable e) {
+                log.warn("Can't parse numOfMinutesOfSMSValidity. Check OTP_SMS_LIFETIME in Auth Policy");
             }
         }
 
-        AbstractSMSOTPModule module=null;
+        AbstractSMSOTPModule module = null;
         try {
             module = (AbstractSMSOTPModule) scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
         } catch (IOException e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
         }
-        if(module == null) {
+        if (module == null) {
             final String errorMessage = String.format("Could not create %s from groovy script %s", AbstractSMSOTPModule.class, authProvider.getSmsOTPGroovyScript());
             event.addWarning(errorMessage);
             log.error(errorMessage);
@@ -572,7 +575,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         login.setSmsCodeExpiration(new Timestamp(calendar.getTime().getTime()));
         loginManager.updateLogin(login);
 
-        String token=null;
+        String token = null;
         try {
             token = module.generateSMSToken(phone, login);
         } catch (InvalidKeyException e) {
@@ -599,7 +602,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
     }
 
     @Override
-    public void confirmOTPToken(final OTPServiceRequest request)  throws BasicDataServiceException {
+    public void confirmOTPToken(final OTPServiceRequest request) throws BasicDataServiceException {
         final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(request.getUserId());
         event.setAction(AuditAction.CONFIRM_SMS_OTP_TOKEN.value());
@@ -614,7 +617,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         }
         event.setAuthProviderId(authProvider.getId());
         final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
-        if(managedSystem == null) {
+        if (managedSystem == null) {
             throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
         }
         event.setManagedSysId(managedSystem.getId());
@@ -666,7 +669,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
 
     @Override
     @Transactional
-    public void clearOTPActiveStatus(final OTPServiceRequest request) throws BasicDataServiceException{
+    public void clearOTPActiveStatus(final OTPServiceRequest request) throws BasicDataServiceException {
         final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(null);
         event.setAction(AuditAction.CLEAR_SMS_OTP_STATUS.value());
@@ -713,7 +716,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         }
 
         final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
-        if(managedSystem == null) {
+        if (managedSystem == null) {
             throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
         }
         event.setManagedSysId(managedSystem.getId());

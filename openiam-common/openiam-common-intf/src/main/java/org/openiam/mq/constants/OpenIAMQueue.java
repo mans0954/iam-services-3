@@ -18,6 +18,7 @@ public enum OpenIAMQueue {
     MailQueue,
     AuditLog,
     ProvisionQueue,
+    RoleQueue,
 
 
     LanguageServiceQueue, URIFederationQueue, AuthenticationQueue, UserQueue, GroupQueue, ResourceQueue;

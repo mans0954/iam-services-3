@@ -1,7 +1,10 @@
 package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -11,13 +14,13 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class SaveRoleDeletage extends AbstractActivitiJob {
-	
-	@Autowired
-	private RoleDataService roleService;
 
-	public SaveRoleDeletage() {
-		super();
-	}
+    @Autowired
+    private RoleDataService roleService;
+
+    public SaveRoleDeletage() {
+        super();
+    }
 
     @Override
     public void execute(DelegateExecution execution) throws Exception {
@@ -31,24 +34,23 @@ public class SaveRoleDeletage extends AbstractActivitiJob {
             idmAuditLog.setAuditDescription("Edit role");
         }
         try {
-            final Response wsResponse = roleService.saveRole(role, getRequestorId(execution));
-            if (wsResponse.isSuccess()) {
-                String roleId = (String) wsResponse.getResponseValue();
-                idmAuditLog.setTargetRole(roleId, role.getName());
+            final String id = roleService.saveRole(role, getRequestorId(execution));
+            if (StringUtils.isNotBlank(id)) {
+                idmAuditLog.setTargetRole(id, role.getName());
                 idmAuditLog.succeed();
             } else {
                 idmAuditLog.fail();
-                idmAuditLog.setFailureReason(wsResponse.getErrorCode());
-                idmAuditLog.setFailureReason(wsResponse.getErrorText());
+                idmAuditLog.setFailureReason(ResponseCode.INTERNAL_ERROR);
+                idmAuditLog.setFailureReason("Can't save Role");
                 idmAuditLog.setTargetRole(role.getId(), role.getName());
-                throw new RuntimeException(String.format("Can't save role", wsResponse));
+                throw new RuntimeException("Can't save role");
             }
-        } catch(Throwable e) {
- 			idmAuditLog.setException(e);
- 			idmAuditLog.fail();
- 			throw new RuntimeException(e);
- 		} finally {
- 			addAuditLogChild(execution, idmAuditLog);
- 		}
+        } catch (Throwable e) {
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+            throw new RuntimeException(e);
+        } finally {
+            addAuditLogChild(execution, idmAuditLog);
+        }
     }
 }
