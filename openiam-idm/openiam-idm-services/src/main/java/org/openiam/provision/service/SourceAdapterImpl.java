@@ -1,60 +1,21 @@
 package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.MatchType;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.SearchParam;
-import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.*;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.continfo.dto.Address;
-import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
-import org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
-import org.openiam.provision.dto.*;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.provision.dto.srcadapter.*;
-import org.openiam.provision.resp.PasswordResponse;
-import org.openiam.provision.resp.ProvisionUserResponse;
-import org.opensaml.xml.encryption.P;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Component;
-import sun.rmi.runtime.Log;
 
-import javax.jms.*;
 import javax.jws.WebService;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -85,9 +46,9 @@ public class SourceAdapterImpl implements SourceAdapter {
 
 
     @Autowired
-    private MetadataWebService metadataWS;
+    private MetadataService metadataDS;
     @Autowired
-    private ManagedSystemWebService managedSysService;
+    private ManagedSystemService managedSystemService;
     @Autowired
     protected SysConfiguration sysConfiguration;
 
@@ -100,8 +61,8 @@ public class SourceAdapterImpl implements SourceAdapter {
 //    private void send(final SourceAdapterRequest request) {
 //        jmsTemplate.send(queue, new MessageCreator() {
 //            public javax.jms.Message createMessage(Session session) throws JMSException {
-//                javax.jms.Message message = session.createObjectMessage(request);
-//                return message;
+//                javax.jms.Message mq = session.createObjectMessage(request);
+//                return mq;
 //            }
 //        });
 //    }
@@ -142,7 +103,7 @@ public class SourceAdapterImpl implements SourceAdapter {
 
     private String getManagedSystems() {
         StringBuilder sb = new StringBuilder("Available Managed System Ids (for principals) \n");
-        List<ManagedSysDto> managedSysDtos = managedSysService.getAllManagedSys();
+        List<ManagedSysDto> managedSysDtos = managedSystemService.getAllManagedSysDTO();
         if (CollectionUtils.isNotEmpty(managedSysDtos)) {
             for (ManagedSysDto managedSysDto : managedSysDtos) {
                 if ("ACTIVE".equals(managedSysDto.getStatus())) {
@@ -177,7 +138,7 @@ public class SourceAdapterImpl implements SourceAdapter {
 
     private String getNote(MetadataTypeSearchBean metadataTypeSearchBean, MetadataTypeGrouping name) {
         metadataTypeSearchBean.setGrouping(name);
-        List<MetadataType> types = metadataWS.findTypeBeans(metadataTypeSearchBean, 0, Integer.MAX_VALUE, null);
+        List<MetadataType> types = metadataDS.findBeans(metadataTypeSearchBean, 0, Integer.MAX_VALUE, null);
         StringBuilder sb = new StringBuilder();
         sb.append("\nAvailable types for ");
         sb.append(name.name());

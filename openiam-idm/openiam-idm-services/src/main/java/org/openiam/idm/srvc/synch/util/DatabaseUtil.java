@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.openiam.idm.srvc.synch.dto.Attribute;
+import org.openiam.provision.type.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 
 /**

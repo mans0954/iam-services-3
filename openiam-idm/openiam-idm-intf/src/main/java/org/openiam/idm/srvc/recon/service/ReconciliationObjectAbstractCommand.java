@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.recon.service;
 
-import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.BeansException;

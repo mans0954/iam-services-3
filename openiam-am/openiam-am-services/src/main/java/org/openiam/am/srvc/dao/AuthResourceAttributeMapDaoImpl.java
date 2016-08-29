@@ -2,17 +2,13 @@ package org.openiam.am.srvc.dao;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
-import org.openiam.am.srvc.searchbeans.AuthResourceAttributeMapSearchBean;
+import org.openiam.am.srvc.searchbean.AuthResourceAttributeMapSearchBean;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Repository("authResourceAttributeMapDao")
 public class AuthResourceAttributeMapDaoImpl extends BaseDaoImpl<AuthResourceAttributeMapEntity, String> implements AuthResourceAttributeMapDao {

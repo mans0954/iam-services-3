@@ -164,12 +164,8 @@
 			<b>resourceId</b>
 		</field>
 		<field>
-			<a>element.id</a>
+			<a>metadataElementId</a>
 			<b>metadataId</b>
-		</field>
-		<field>
-			<a>element.displayName</a>
-			<b>metadataName</b>
 		</field>
 	</mapping>
 
@@ -193,13 +189,9 @@
 			<b>roleId</b>
 		</field>
 		<field>
-			<a>element.id</a>
+			<a>metadataElementId</a>
 			<b>metadataId</b>
 		</field>
-        <field>
-            <a>element.displayName</a>
-            <b>metadataName</b>
-        </field>
 	</mapping>
 
 	<mapping>
@@ -211,12 +203,8 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.user.dto.UserAttribute</class-b>
 		<field>
-            <a>element.id</a>
+            <a>metadataElementId</a>
             <b>metadataId</b>
-        </field>
-        <field>
-            <a>element.displayName</a>
-            <b>metadataName</b>
         </field>
 		<field>
 			<a>user.id</a>
@@ -264,6 +252,10 @@
             <a>type.id</a>
             <b>mdTypeId</b>
         </field>
+        <field>
+            <a>type.displayName</a>
+            <b>metadataTypeName</b>
+        </field>
     </mapping>
 
 
@@ -288,12 +280,8 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.grp.dto.GroupAttribute</class-b>
         <field>
-            <a>element.id</a>
+            <a>metadataElementId</a>
             <b>metadataId</b>
-        </field>
-        <field>
-            <a>element.displayName</a>
-            <b>metadataName</b>
         </field>
 	</mapping>
 
@@ -312,12 +300,8 @@
 		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
 		<field>
-			<a>element.id</a>
+			<a>metadataElementId</a>
 			<b>metadataId</b>
-		</field>
-		<field>
-			<a>element.displayName</a>
-			<b>metadataName</b>
 		</field>
 		<field>
 			<a>organization.id</a>

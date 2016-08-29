@@ -3,8 +3,12 @@ package org.openiam.idm.srvc.access.service;
 import java.util.Collection;
 import java.util.List;
 
+import org.openiam.dozer.converter.AccessRightDozerConverter;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
+import org.openiam.idm.srvc.access.dto.AccessRight;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +18,8 @@ public class AccessRightServiceImpl implements AccessRightService {
 	
 	@Autowired
 	private AccessRightDAO dao;
-
+	@Autowired
+	private AccessRightDozerConverter converter;
 	@Override
 	@Transactional
 	public void save(AccessRightEntity entity) {
@@ -57,6 +62,15 @@ public class AccessRightServiceImpl implements AccessRightService {
 	@Transactional(readOnly=true)
 	public List<AccessRightEntity> findByIds(Collection<String> ids) {
 		return dao.findByIds(ids);
+	}
+
+
+	@Override
+	@LocalizedServiceGet
+	public List<AccessRight> findBeansDTO(final AccessRightSearchBean searchBean, final int from, final int size, final Language language) {
+		final List<AccessRightEntity> entities = this.findBeans(searchBean, from, size);
+		final List<AccessRight> dtos = converter.convertToDTOList(entities, true);
+		return dtos;
 	}
 
 }

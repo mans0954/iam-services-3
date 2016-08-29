@@ -21,9 +21,11 @@
 				<value>classpath:notification.properties</value>
 				<value>classpath:application.properties</value>
 				<value>classpath:openiam.hibernate.properties</value>
+				<value>classpath:rabbitmq.properties</value>
 				<value>file:/data/openiam/conf/datasource.properties</value>
                 <value>file:/data/openiam/conf/service-urls.properties</value>
                 <value>file:/data/openiam/conf/securityconf.properties</value>
+				<value>file:${confpath}/conf/rabbitmq.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="true" />

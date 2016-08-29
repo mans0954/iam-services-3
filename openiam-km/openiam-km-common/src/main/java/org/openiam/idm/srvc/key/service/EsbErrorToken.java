@@ -18,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="className" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="fieldName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="message" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="mq" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="lengthConstraint" type="{http://www.w3.org/2001/XMLSchema}long" minOccurs="0"/>
  *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/>
  *       &lt;/sequence>
@@ -94,7 +94,7 @@ public class EsbErrorToken {
     }
 
     /**
-     * Gets the value of the message property.
+     * Gets the value of the mq property.
      * 
      * @return
      *     possible object is
@@ -106,7 +106,7 @@ public class EsbErrorToken {
     }
 
     /**
-     * Sets the value of the message property.
+     * Sets the value of the mq property.
      * 
      * @param value
      *     allowed object is

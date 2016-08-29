@@ -1,29 +1,18 @@
 package org.openiam.connector.linux.command.base;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.openiam.connector.linux.data.LinuxUser;
 import org.openiam.connector.linux.ssh.SSHAgent;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.ObjectValue;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.SearchRequest;
-import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.provision.type.ObjectValue;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.SearchRequest;
+import org.openiam.base.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.springframework.util.StringUtils;
 
 public abstract class AbstractSearchLinuxCommand<ExtObject extends ExtensibleObject>
         extends AbstractLinuxCommand<SearchRequest<ExtObject>, SearchResponse> {

@@ -3,7 +3,6 @@ package org.openiam.authmanager.dao.impl;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,9 +10,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
-import org.openiam.authmanager.common.model.AuthorizationUser;
-import org.openiam.authmanager.common.model.InternalAuthroizationUser;
+import org.openiam.am.srvc.dto.jdbc.AuthorizationUser;
 import org.openiam.authmanager.dao.UserDAO;
 import org.openiam.core.dao.AbstractJDBCDao;
 import org.springframework.dao.DataAccessException;

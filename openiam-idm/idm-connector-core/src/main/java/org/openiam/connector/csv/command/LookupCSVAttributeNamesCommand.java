@@ -6,11 +6,11 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.csv.command.base.AbstractCSVCommand;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.response.LookupAttributeResponse;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.idm.srvc.file.ws.FileWebService;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.base.response.LookupAttributeResponse;
+import org.openiam.provision.request.LookupRequest;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.idm.srvc.file.FileService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,13 +18,13 @@ import org.springframework.stereotype.Service;
 @Service("lookupCSVAttributeNamesCommand")
 public class LookupCSVAttributeNamesCommand extends AbstractCSVCommand<LookupRequest,LookupAttributeResponse>{
     @Autowired
-    private FileWebService fileWebService;
+    private FileService fileService;
 
     @Override
     public LookupAttributeResponse execute(LookupRequest reqType) throws ConnectorDataException{
         LookupAttributeResponse respType = new LookupAttributeResponse();
         try {
-            String file = fileWebService.getFile(reqType.getRequestID() + ".csv");
+            String file = fileService.getFile(reqType.getRequestID() + ".csv");
             if (!StringUtils.isEmpty(file)) {
                 respType.setStatus(StatusCodeType.SUCCESS);
                 List<ExtensibleAttribute> extensibleAttribute = new LinkedList<ExtensibleAttribute>();
@@ -33,7 +33,7 @@ public class LookupCSVAttributeNamesCommand extends AbstractCSVCommand<LookupReq
                 }
                 respType.setAttributes(extensibleAttribute);
             } else {
-                fileWebService.saveFile(reqType.getRequestID(), "");
+                fileService.saveFile(reqType.getRequestID(), "");
             }
             respType.setStatus(StatusCodeType.SUCCESS);
             return respType;

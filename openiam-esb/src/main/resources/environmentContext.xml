@@ -27,13 +27,13 @@
 				<value>classpath:notification.properties</value>
 				<value>classpath:application.properties</value>
 				<value>classpath:openiam.hibernate.properties</value>
-				<value>classpath:redis.properties</value>
+				<value>classpath:rabbitmq.properties</value>
 				<value>file:${confpath}/conf/datasource.properties</value>
 				<value>file:${confpath}/conf/service-urls.properties</value>
 				<value>file:${confpath}/conf/securityconf.properties</value>
 				<value>file:${confpath}/conf/openiam.esb.properties</value>
 				<value>file:${confpath}/conf/notification.properties</value>
-				<value>file:${confpath}/conf/redis.properties</value>
+				<value>file:${confpath}/conf/rabbitmq.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="true" />

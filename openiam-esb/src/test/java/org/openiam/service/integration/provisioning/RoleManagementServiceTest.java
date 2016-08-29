@@ -1,31 +1,9 @@
 package org.openiam.service.integration.provisioning;
 
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
-import org.openiam.connector.type.ObjectValue;
-import org.openiam.idm.srvc.auth.dto.IdentityDto;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.ws.IdentityWebService;
-import org.openiam.idm.srvc.auth.ws.LoginListResponse;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.LookupObjectResponse;
-import org.openiam.provision.resp.LookupUserResponse;
-import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.provision.service.ObjectProvisionService;
-import org.openiam.provision.service.ProvisionService;
-import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.srvc.am.RoleDataWebService;
 import org.openiam.service.integration.AbstractServiceTest;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;

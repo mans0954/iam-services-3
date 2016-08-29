@@ -4,8 +4,8 @@ import javax.naming.OperationNotSupportedException;
 
 import org.openiam.connector.common.constants.CommandType;
 import org.openiam.connector.script.command.base.AbstractScriptCommand;
-import org.openiam.connector.type.request.PasswordRequest;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.provision.request.PasswordRequest;
+import org.openiam.base.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.springframework.stereotype.Service;
 

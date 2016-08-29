@@ -20,15 +20,16 @@
  */
 package org.openiam.idm.srvc.auth.service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -40,9 +41,11 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.request.OTPServiceRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.LogoutException;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
@@ -55,10 +58,9 @@ import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.LogoutRequest;
+import org.openiam.base.request.AuthenticationRequest;
+import org.openiam.base.request.LogoutRequest;
 import org.openiam.idm.srvc.auth.dto.OTPRequestType;
-import org.openiam.idm.srvc.auth.dto.OTPServiceRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
@@ -69,8 +71,7 @@ import org.openiam.idm.srvc.auth.spi.AbstractTOTPModule;
 import org.openiam.idm.srvc.auth.spi.GoogleAuthTOTPModule;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
-import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
-import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.base.response.AuthenticationResponse;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -92,7 +93,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
-import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -173,357 +173,140 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
             event.setFailureReason(error);
             event.addWarning(error);
             log.error(error);
-            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND, "Authentication provider is not found for given request");
         }
         return authProvider;
+    }
+
+    private AuthenticationModule getLoginModule(String springBeanName, String groovyScript) throws BasicDataServiceException{
+        AuthenticationModule loginModule = null;
+
+        if (StringUtils.isNotBlank(springBeanName)) {
+            try {
+                loginModule = (AuthenticationModule) ctx.getBean(springBeanName, AuthenticationModule.class);
+            } catch (Throwable e) {
+                log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
+                throw new BasicDataServiceException(ResponseCode.AUTHENTICATION_EXCEPTION, e.getMessage());
+            }
+        } else if (StringUtils.isNotBlank(groovyScript)) {
+            try {
+                loginModule = (AbstractScriptableLoginModule) scriptRunner.instantiateClass(null, groovyScript);
+            } catch (Exception e) {
+                log.error(String.format("Error while getting spring bean: %s", groovyScript), e);
+                throw new BasicDataServiceException(ResponseCode.AUTHENTICATION_EXCEPTION, e.getMessage());
+            }
+        }
+        // get default login module
+        if (loginModule == null) {
+            loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
+        }
+        return loginModule;
     }
 
     @Override
     @Transactional
     @ManagedAttribute
     //@Transactional
-    public Response globalLogoutRequest(final LogoutRequest request) {
+    public void globalLogoutRequest(final LogoutRequest request) throws BasicDataServiceException {
+        final IdmAuditLogEntity newLogoutEvent = AuditLogHolder.getInstance().getEvent();
+
         final String userId = request.getUserId();
         final String patternId = request.getPatternId();
-        final IdmAuditLogEntity newLogoutEvent = new IdmAuditLogEntity();
         newLogoutEvent.setUserId(userId);
         newLogoutEvent.setAction(AuditAction.LOGOUT.value());
-        final Response authResp = new Response(ResponseStatus.SUCCESS);
 
+        if (userId == null) {
+            throw new BasicDataServiceException(ResponseCode.USER_NOT_SET, "Target User object not passed");
+        }
+
+        final AuthProviderEntity authProvider = getAuthProvider(patternId, newLogoutEvent);
+        final String springBeanName = authProvider.getSpringBeanName();
+        final String groovyScript = authProvider.getGroovyScriptURL();
+        AuthenticationModule loginModule = getLoginModule(springBeanName, groovyScript);
+
+        // TODO: refactor this when refactor login modules.
+        // TODO: Login Modules should throw BasicDataServiceException or any inherited classes instead of Exception
         try {
-            if (userId == null) {
-                newLogoutEvent.fail();
-                newLogoutEvent.setFailureReason("Target User object not passed");
-                throw new NullPointerException("UserId is null");
-            }
-
-            final AuthProviderEntity authProvider = getAuthProvider(patternId, newLogoutEvent);
-            final String springBeanName = authProvider.getSpringBeanName();
-            final String groovyScript = authProvider.getGroovyScriptURL();
-            AuthenticationModule loginModule = null;
-            if (StringUtils.isNotBlank(springBeanName)) {
-                try {
-                    loginModule = (AuthenticationModule) ctx.getBean(springBeanName, AuthenticationModule.class);
-                } catch (Throwable e) {
-                    log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
-                }
-
-            } else if (StringUtils.isNotBlank(groovyScript)) {
-                loginModule = (AbstractScriptableLoginModule) scriptRunner.instantiateClass(null, groovyScript);
-            }
-
-            if (loginModule == null) {
-                loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
-            }
-
             loginModule.logout(request, newLogoutEvent);
-
-            final UserEntity userEntity = userManager.getUser(userId);
-            final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
-            newLogoutEvent.addTarget(userId, AuditTarget.USER.value(), primaryIdentity.getLogin());
-
-            final AuthStateId id = new AuthStateId();
-            id.setUserId(userId);
-            final AuthStateSearchBean sb = new AuthStateSearchBean();
-            sb.setKey(id);
-            final List<AuthStateEntity> authStateList = authStateDao.getByExample(sb);
-
-            if (CollectionUtils.isEmpty(authStateList)) {
-                final String errorMessage = String.format("Cannot find AuthState object for User: %s", userId);
-                newLogoutEvent.fail();
-                newLogoutEvent.setFailureReason(errorMessage);
-                log.error(errorMessage);
-                throw new LogoutException(errorMessage);
-            }
-
-            for (final AuthStateEntity authSt : authStateList) {
-                authSt.setAuthState(new BigDecimal(0));
-                authSt.setToken("LOGOUT");
-                authStateDao.saveAuthState(authSt);
-            }
-            newLogoutEvent.succeed();
-        } catch (BasicDataServiceException e) {
-            authResp.fail();
-            authResp.setErrorCode(e.getCode());
-            authResp.setErrorTokenList(e.getErrorTokenList());
-            newLogoutEvent.fail();
-            newLogoutEvent.setFailureReason(e.getMessage());
-            newLogoutEvent.setException(e);
-            newLogoutEvent.setFailureReason(e.getCode());
-        } catch (Throwable e) {
-            log.error("Can't Logout", e);
-            authResp.fail();
-            authResp.setErrorText(e.getMessage());
-            newLogoutEvent.fail();
-            newLogoutEvent.setFailureReason(e.getMessage());
-            newLogoutEvent.setException(e);
-        } finally {
-            auditLogService.enqueue(newLogoutEvent);
+        } catch (Exception e) {
+            log.error(String.format("Error while logout: %s", e.getMessage()), e);
+            throw new BasicDataServiceException(ResponseCode.LOGOUT_EXCEPTION, e.getMessage());
         }
-        return authResp;
+
+        final UserEntity userEntity = userManager.getUser(userId);
+        final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        newLogoutEvent.addTarget(userId, AuditTarget.USER.value(), primaryIdentity.getLogin());
+
+        final AuthStateId id = new AuthStateId();
+        id.setUserId(userId);
+        final AuthStateSearchBean sb = new AuthStateSearchBean();
+        sb.setKey(id);
+        final List<AuthStateEntity> authStateList = authStateDao.getByExample(sb);
+
+        if (CollectionUtils.isEmpty(authStateList)) {
+            final String errorMessage = String.format("Cannot find AuthState object for User: %s", userId);
+            log.error(errorMessage);
+            throw new BasicDataServiceException(ResponseCode.LOGOUT_EXCEPTION, errorMessage);
+        }
+
+        for (final AuthStateEntity authSt : authStateList) {
+            authSt.setAuthState(new BigDecimal(0));
+            authSt.setToken("LOGOUT");
+            authStateDao.saveAuthState(authSt);
+        }
     }
 
     @Override
-    @ManagedAttribute
-    @Deprecated
-    public void globalLogout(String userId) throws Throwable {
-        final LogoutRequest request = new LogoutRequest();
-        request.setUserId(userId);
-        globalLogoutRequest(request);
-    }
-
-    /*@Override
     @Transactional
-    public AuthenticationResponse login(final AuthenticationRequest request) {
-        final IdmAuditLogEntity newLoginEvent = new IdmAuditLogEntity();
+    public Subject login(final AuthenticationRequest request) throws BasicDataServiceException {
+        final IdmAuditLogEntity newLoginEvent = AuditLogHolder.getInstance().getEvent();
         newLoginEvent.setUserId(null);
         newLoginEvent.setAction(AuditAction.LOGIN.value());
 
-        final AuthenticationResponse authResp = new AuthenticationResponse(ResponseStatus.FAILURE);
-        try {
-            if (request == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            if (StringUtils.isBlank(request.getLanguageId())) {
-                throw new BasicDataServiceException(ResponseCode.LANGUAGE_REQUIRED);
-            }
-
-            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), newLoginEvent);
-            if(authProvider != null) {
-            	newLoginEvent.setAuthProviderId(authProvider.getId());
-            }
-            
-            final AuthenticationContext authenticationContext = new AuthenticationContext(request);
-            authenticationContext.setAuthProviderId(authProvider.getId());
-            authenticationContext.setEvent(newLoginEvent);
-
-            final String principal = request.getPrincipal();
-            final String clientIP = request.getClientIP();
-
-            newLoginEvent.setClientIP(clientIP);
-            newLoginEvent.setRequestorPrincipal(principal);
-
-            final String springBeanName = authProvider.getSpringBeanName();
-            final String groovyScript = authProvider.getGroovyScriptURL();
-            AuthenticationModule loginModule = null;
-            if (StringUtils.isNotBlank(springBeanName)) {
-                try {
-                    loginModule = (AuthenticationModule) ctx.getBean(springBeanName, AuthenticationModule.class);
-                } catch (Throwable e) {
-                    log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
-                }
-            } else if (StringUtils.isNotBlank(groovyScript)) {
-                loginModule = (AbstractScriptableLoginModule) scriptRunner.instantiateClass(null, groovyScript);
-            }
-
-            if (loginModule == null) {
-                loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
-            }
-
-            final Subject sub = loginModule.login(authenticationContext);
-            updateAuthState(sub);
-            newLoginEvent.succeed();
-            authResp.setSubject(sub);
-            authResp.succeed();
-        *//*
-        } catch (AuthenticationException ae) {
-        	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
-            newLoginEvent.fail();
-            newLoginEvent.setFailureReason(erroCodeAsString);
-            newLoginEvent.addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
-            int errCode = ae.getErrorCode();
-            switch (errCode) {
-                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_LOGIN:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_PASSWORD:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
-                    break;
-                case AuthenticationConstants.RESULT_LOGIN_DISABLED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_DISABLED);
-                    break;
-                case AuthenticationConstants.RESULT_LOGIN_LOCKED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_LOCKED);
-                    break;
-                case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
-                    break;
-                case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_CONFIGURATION:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-                    break;
-                case AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP:
-                	authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
-                	break;
-                case AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
-                    break;
-                default:
-                    authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-                    break;
-            }
-		*//*
-        } catch (BasicDataServiceException e) {
-            log.warn("Can't log in", e);
-            authResp.fail();
-            authResp.setErrorCode(e.getCode());
-            authResp.setErrorTokenList(e.getErrorTokenList());
-            //authResp.setErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-            newLoginEvent.fail();
-            newLoginEvent.setFailureReason(e.getMessage());
-            newLoginEvent.setException(e);
-            newLoginEvent.setFailureReason(e.getCode());
-        } catch (Throwable e) {
-            log.error("Can't login", e);
-            authResp.fail();
-            authResp.setErrorText(e.getMessage());
-            authResp.setErrorCode(ResponseCode.INTERNAL_ERROR);
-            newLoginEvent.fail();
-            newLoginEvent.setFailureReason(e.getMessage());
-            newLoginEvent.setException(e);
-        } finally {
-            auditLogService.enqueue(newLoginEvent);
+        if (request == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "AuthenticationRequest is null or empty");
         }
-        return authResp;
-    }*/
 
-    @Override
-    @Transactional
-    public AuthenticationResponse login(final AuthenticationRequest request) {
-        final IdmAuditLogEntity newLoginEvent = new IdmAuditLogEntity();
-        newLoginEvent.setUserId(null);
-        newLoginEvent.setAction(AuditAction.LOGIN.value());
-
-        final AuthenticationResponse authResp = new AuthenticationResponse(ResponseStatus.FAILURE);
-        try {
-            if (request == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            if (StringUtils.isBlank(request.getLanguageId())) {
-                throw new BasicDataServiceException(ResponseCode.LANGUAGE_REQUIRED);
-            }
-
-            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), newLoginEvent);
-            if(authProvider != null) {
-                newLoginEvent.setAuthProviderId(authProvider.getId());
-            }
-
-            final AuthenticationContext authenticationContext = new AuthenticationContext(request);
-            authenticationContext.setAuthProviderId(authProvider.getId());
-            authenticationContext.setEvent(newLoginEvent);
-
-            final String principal = request.getPrincipal();
-            final String clientIP = request.getClientIP();
-
-            newLoginEvent.setClientIP(clientIP);
-            newLoginEvent.setRequestorPrincipal(principal);
-
-            final String springBeanName = authProvider.getSpringBeanName();
-            final String groovyScript = authProvider.getGroovyScriptURL();
-            AuthenticationModule loginModule = null;
-            if (StringUtils.isNotBlank(springBeanName)) {
-                try {
-                    loginModule = (AuthenticationModule) ctx.getBean(springBeanName, AuthenticationModule.class);
-                } catch (Throwable e) {
-                    log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
-                }
-            } else if (StringUtils.isNotBlank(groovyScript)) {
-                loginModule = (AbstractScriptableLoginModule) scriptRunner.instantiateClass(null, groovyScript);
-            }
-
-            if (loginModule == null) {
-                loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
-            }
-
-            final Subject sub = loginModule.login(authenticationContext);
-            updateAuthState(sub);
-            newLoginEvent.succeed();
-            authResp.setSubject(sub);
-            authResp.succeed();
-        /*
-        } catch (AuthenticationException ae) {
-        	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
-            newLoginEvent.fail();
-            newLoginEvent.setFailureReason(erroCodeAsString);
-            newLoginEvent.addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
-            int errCode = ae.getErrorCode();
-            switch (errCode) {
-                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_LOGIN:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_PASSWORD:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
-                    break;
-                case AuthenticationConstants.RESULT_LOGIN_DISABLED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_DISABLED);
-                    break;
-                case AuthenticationConstants.RESULT_LOGIN_LOCKED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_LOCKED);
-                    break;
-                case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
-                    break;
-                case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_CONFIGURATION:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-                    break;
-                case AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP:
-                	authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
-                	break;
-                case AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
-                    break;
-                default:
-                    authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-                    break;
-            }
-		*/
-        } catch (BasicDataServiceException e) {
-            log.warn("Can't log in", e);
-            authResp.fail();
-            authResp.setErrorCode(e.getCode());
-            authResp.setErrorTokenList(e.getErrorTokenList());
-            //authResp.setErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-            newLoginEvent.fail();
-            newLoginEvent.setFailureReason(e.getMessage());
-            newLoginEvent.setException(e);
-            newLoginEvent.setFailureReason(e.getCode());
-        } catch (Throwable e) {
-            log.error("Can't login", e);
-            authResp.fail();
-            authResp.setErrorText(e.getMessage());
-            authResp.setErrorCode(ResponseCode.INTERNAL_ERROR);
-            newLoginEvent.fail();
-            newLoginEvent.setFailureReason(e.getMessage());
-            newLoginEvent.setException(e);
-        } finally {
-            auditLogService.enqueue(newLoginEvent);
+        if (StringUtils.isBlank(request.getLanguageId())) {
+            throw new BasicDataServiceException(ResponseCode.LANGUAGE_REQUIRED, "Language is a required parameter for AuthenticationRequest");
         }
-        return authResp;
+
+        final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), newLoginEvent);
+        if(authProvider != null) {
+            newLoginEvent.setAuthProviderId(authProvider.getId());
+        }
+
+        final AuthenticationContext authenticationContext = new AuthenticationContext(request);
+        authenticationContext.setAuthProviderId(authProvider.getId());
+        authenticationContext.setEvent(newLoginEvent);
+
+        final String principal = request.getPrincipal();
+        final String clientIP = request.getClientIP();
+
+        newLoginEvent.setClientIP(clientIP);
+        newLoginEvent.setRequestorPrincipal(principal);
+
+        final String springBeanName = authProvider.getSpringBeanName();
+        final String groovyScript = authProvider.getGroovyScriptURL();
+        AuthenticationModule loginModule = getLoginModule(springBeanName, groovyScript);
+
+        // TODO: refactor this when refactor login modules.
+        // TODO: Login Modules should throw BasicDataServiceException or any inherited classes instead of Exception
+        Subject sub=null;
+        try {
+            sub = loginModule.login(authenticationContext);
+        } catch (Exception e) {
+            log.error(String.format("Error while authentication: %s", e.getMessage()), e);
+            throw new BasicDataServiceException(ResponseCode.AUTHENTICATION_EXCEPTION, e.getMessage());
+        }
+        updateAuthState(sub);
+
+        return sub;
     }
 
     @Override
     @Transactional
-    public Response renewToken(final String principal, final String token, final String tokenType, final String patternId) {
-        final Response resp = new Response(ResponseStatus.SUCCESS);
+    public SSOToken renewToken(final String principal, final String token, final String tokenType, final String patternId) throws BasicDataServiceException{
         PolicyEntity policy = null;
         ManagedSysEntity managedSystem = null;
         if (StringUtils.isNotBlank(patternId)) {
@@ -552,10 +335,8 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
 
         // get the userId of this token
         final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSystem.getId());
-
         if (lg == null) {
-            resp.fail();
-            return resp;
+            throw new BasicDataServiceException(ResponseCode.INVALID_PRINCIPAL, "Login object is not found for given principal") ;
         }
 
         final Map tokenParam = new HashMap();
@@ -567,13 +348,11 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         tokenParam.put("PRINCIPAL", principal);
 
         if (!isUserStatusValid(lg.getUserId())) {
+            String msg =String.format("RenewToken: user status failed for userId = %s", lg.getUserId());
         	if(log.isDebugEnabled()) {
-        		log.debug(String.format("RenewToken: user status failed for userId = %s", lg.getUserId()));
+        		log.debug(msg);
         	}
-
-            resp.fail();
-            return resp;
-
+            throw new BasicDataServiceException(ResponseCode.RESULT_INVALID_USER_STATUS, msg) ;
         }
 
         final AuthStateId id = new AuthStateId();
@@ -582,35 +361,27 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
 
         AuthStateEntity authSt = authStateDao.findById(id);
         if (authSt != null) {
-
-            if (authSt.getToken() == null
-                    || "LOGOUT".equalsIgnoreCase(authSt.getToken())) {
-                resp.fail();
-                return resp;
+            if (authSt.getToken() == null || "LOGOUT".equalsIgnoreCase(authSt.getToken())) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_AUTH_STATE, "AuthStateEntity has no token or user has already logged out") ;
             }
 
         }
 
-        SSOTokenModule tkModule = SSOTokenFactory
-                .createModule((String) tokenParam.get("TOKEN_TYPE"));
+        SSOTokenModule tkModule = SSOTokenFactory .createModule((String) tokenParam.get("TOKEN_TYPE"));
         tkModule.setCryptor(this.cryptor);
         tkModule.setKeyManagementService(keyManagementService);
         tkModule.setTokenLife(Integer.parseInt(tokenLife));
 
         try {
             if (!tkModule.isTokenValid(lg.getUserId(), principal, token)) {
-                resp.fail();
-                return resp;
+                throw new BasicDataServiceException(ResponseCode.INVALID_TOKEN, "Invalid token is provided") ;
             }
 
             final SSOToken ssoToken = tkModule.createToken(tokenParam);
-            resp.setResponseValue(ssoToken);
+            return ssoToken;
         } catch (Throwable e) {
-            resp.fail();
-            resp.setErrorText(e.getMessage());
+            throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR, e.getMessage()) ;
         }
-        return resp;
-
     }
 
     private boolean isUserStatusValid(String userId) {
@@ -671,23 +442,14 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
     }
 
     @Override
-    public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean,
-                                           int from, int size) {
+    public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean, int from, int size) {
         return authStateDao.getByExample(searchBean, from, size);
     }
 
     @Override
     @Transactional
-    public Response save(final AuthStateEntity entity) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            authStateDao.saveAuthState(entity);
-        } catch (Throwable e) {
-            log.error("Can't validate resource", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
+    public void save(final AuthStateEntity entity) {
+        authStateDao.saveAuthState(entity);
     }
 
     private LoginEntity getLogin(final String userId, final String managedSysId) {
@@ -707,8 +469,8 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
 
     @Override
     @Transactional
-    public Response getOTPSecretKey(OTPServiceRequest request) {
-        final IdmAuditLogEntity event = new IdmAuditLogEntity();
+    public String getOTPSecretKey(OTPServiceRequest request) throws BasicDataServiceException{
+        final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(null);
         event.setAction(AuditAction.GET_QR_CODE.value());
         event.setUriPatternId(request.getPatternId());
@@ -717,136 +479,110 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
 
         final String userId = request.getUserId();
         final Phone phone = request.getPhone();
-        final Response response = new Response();
-        try {
-            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
-            if (authProvider == null) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
-            }
-            event.setAuthProviderId(authProvider.getId());
-            
-            final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
-            if(managedSystem == null) {
-            	throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
-            }
-            event.setManagedSysId(managedSystem.getId());
-            
-            final LoginEntity login = getLogin(userId, managedSystem.getId());
 
-            if (login == null) {
-                throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
-            }
-            event.setPrincipal(login.getLogin());
-
-            if (request.getRequestType() == null) {
-                throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
-            }
-
-            final AbstractTOTPModule module = new GoogleAuthTOTPModule();
-            final String secretKey = module.generateSecret(phone, login);
-            response.setResponseValue(secretKey);
-            response.succeed();
-        } catch (BasicDataServiceException e) {
-            log.warn(e.getMessage(), e);
-            event.fail();
-            event.setFailureReason(e.getCode());
-            event.setFailureReason(e.getMessage());
-            response.fail();
-            response.setErrorCode(e.getCode());
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-            event.fail();
-            event.setFailureReason(e.getMessage());
-            response.fail();
-            response.setErrorText(e.getMessage());
-        } finally {
-            auditLogService.enqueue(event);
+        final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
+        if (authProvider == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
         }
-        return response;
+        event.setAuthProviderId(authProvider.getId());
+
+        final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+        if(managedSystem == null) {
+            throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+        }
+        event.setManagedSysId(managedSystem.getId());
+
+        final LoginEntity login = getLogin(userId, managedSystem.getId());
+
+        if (login == null) {
+            throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+        }
+        event.setPrincipal(login.getLogin());
+
+        if (request.getRequestType() == null) {
+            throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+        }
+
+        final AbstractTOTPModule module = new GoogleAuthTOTPModule();
+        final String secretKey = module.generateSecret(phone, login);
+        return secretKey;
+
     }
 
     @Override
     @Transactional
-    public Response sendOTPToken(final OTPServiceRequest request) {
-        final IdmAuditLogEntity event = new IdmAuditLogEntity();
+    public void sendOTPToken(final OTPServiceRequest request) throws BasicDataServiceException{
+        final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(null);
         event.setAction(AuditAction.SEND_SMS_OTP_TOKEN.value());
         event.setUriPatternId(request.getPatternId());
         event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
         event.setUserId(request.getUserId());
 
-        final Response response = new Response();
         final Phone phone = request.getPhone();
         final String userId = request.getUserId();
-        try {
-            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
-            if (authProvider == null) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
-            }
-            event.setAuthProviderId(authProvider.getId());
-            
-            final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
-            if(managedSystem == null) {
-            	throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
-            }
-            event.setManagedSysId(managedSystem.getId());
-
-            if (request.getRequestType() == null) {
-                throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
-            }
-
-            final PolicyEntity policy = authProvider.getPasswordPolicy();
-            final PolicyAttributeEntity attribute = policy.getAttribute("OTP_SMS_LIFETIME");
-            int numOfMinutesOfSMSValidity = 30;
-            if (attribute != null) {
-                try {
-                    numOfMinutesOfSMSValidity = Integer.valueOf(attribute.getValue1());
-                } catch (Throwable e) {
-                }
-            }
-
-            final AbstractSMSOTPModule module = (AbstractSMSOTPModule) scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
-            if(module == null) {
-            	final String errorMessage = String.format("Could not create %s from groovy script %s", AbstractSMSOTPModule.class, authProvider.getSmsOTPGroovyScript());
-            	event.addWarning(errorMessage);
-            	log.error(errorMessage);
-            	throw new BasicDataServiceException(ResponseCode.SMS_OTP_GROOVY_SCRIPT_REQUIRED);
-            }
-            
-            final LoginEntity login = getLogin(userId, managedSystem.getId());
-            if (login == null) {
-                throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
-            }
-            final Calendar calendar = Calendar.getInstance();
-            calendar.setTime(new Date());
-            calendar.add(Calendar.MINUTE, numOfMinutesOfSMSValidity);
-            calendar.set(Calendar.MILLISECOND, 0);
-            //login.setSmsCodeExpiration(calendar.getTime());
-            login.setSmsCodeExpiration(new Timestamp(calendar.getTime().getTime()));
-            loginManager.updateLogin(login);
-
-            final String token = module.generateSMSToken(phone, login);
-            event.addAttribute(AuditAttributeName.SMS_TOKEN, token);
-
-            response.succeed();
-            event.succeed();
-        } catch (BasicDataServiceException e) {
-            log.warn(e.getMessage(), e);
-            event.fail();
-            event.setFailureReason(e.getCode());
-            event.setFailureReason(e.getMessage());
-            response.fail();
-            response.setErrorCode(e.getCode());
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-            event.fail();
-            event.setFailureReason(e.getMessage());
-            response.fail();
-            response.setErrorText(e.getMessage());
-        } finally {
-            auditLogService.enqueue(event);
+        final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
+        if (authProvider == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
         }
-        return response;
+        event.setAuthProviderId(authProvider.getId());
+
+        final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+        if(managedSystem == null) {
+            throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+        }
+        event.setManagedSysId(managedSystem.getId());
+
+        if (request.getRequestType() == null) {
+            throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+        }
+
+        final PolicyEntity policy = authProvider.getPasswordPolicy();
+        final PolicyAttributeEntity attribute = policy.getAttribute("OTP_SMS_LIFETIME");
+        int numOfMinutesOfSMSValidity = 30;
+        if (attribute != null) {
+            try {
+                numOfMinutesOfSMSValidity = Integer.valueOf(attribute.getValue1());
+            } catch (Throwable e) {
+            }
+        }
+
+        AbstractSMSOTPModule module=null;
+        try {
+            module = (AbstractSMSOTPModule) scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
+        } catch (IOException e) {
+            log.error(e.getMessage(),e);
+        }
+        if(module == null) {
+            final String errorMessage = String.format("Could not create %s from groovy script %s", AbstractSMSOTPModule.class, authProvider.getSmsOTPGroovyScript());
+            event.addWarning(errorMessage);
+            log.error(errorMessage);
+            throw new BasicDataServiceException(ResponseCode.SMS_OTP_GROOVY_SCRIPT_REQUIRED);
+        }
+
+        final LoginEntity login = getLogin(userId, managedSystem.getId());
+        if (login == null) {
+            throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+        }
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.MINUTE, numOfMinutesOfSMSValidity);
+        calendar.set(Calendar.MILLISECOND, 0);
+        //login.setSmsCodeExpiration(calendar.getTime());
+        login.setSmsCodeExpiration(new Timestamp(calendar.getTime().getTime()));
+        loginManager.updateLogin(login);
+
+        String token=null;
+        try {
+            token = module.generateSMSToken(phone, login);
+        } catch (InvalidKeyException e) {
+            log.error(String.format("Cannot create token: %s", e.getMessage()), e);
+            throw new BasicDataServiceException(ResponseCode.SMS_TOKEN_GENERATE_ERROR, e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            log.error(String.format("Cannot create token: %s", e.getMessage()), e);
+            throw new BasicDataServiceException(ResponseCode.SMS_TOKEN_GENERATE_ERROR, e.getMessage());
+        }
+        event.addAttribute(AuditAttributeName.SMS_TOKEN, token);
     }
 
     private String decryptTOTP(final Phone phone, final String userId) {
@@ -863,193 +599,139 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
     }
 
     @Override
-    public Response confirmOTPToken(final OTPServiceRequest request) {
-        final IdmAuditLogEntity event = new IdmAuditLogEntity();
+    public void confirmOTPToken(final OTPServiceRequest request)  throws BasicDataServiceException {
+        final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(request.getUserId());
         event.setAction(AuditAction.CONFIRM_SMS_OTP_TOKEN.value());
         event.setUriPatternId(request.getPatternId());
         event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
         event.setUserId(request.getUserId());
 
-        final Response response = new Response();
         final String userId = request.getUserId();
-        try {
-            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
-            if (authProvider == null) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
-            }
-            event.setAuthProviderId(authProvider.getId());
-            final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
-            if(managedSystem == null) {
-            	throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
-            }
-            event.setManagedSysId(managedSystem.getId());
-            final LoginEntity login = getLogin(userId, managedSystem.getId());
+        final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
+        if (authProvider == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
+        }
+        event.setAuthProviderId(authProvider.getId());
+        final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+        if(managedSystem == null) {
+            throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+        }
+        event.setManagedSysId(managedSystem.getId());
+        final LoginEntity login = getLogin(userId, managedSystem.getId());
 
-            if (login == null) {
-                throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
-            }
-            event.setPrincipal(login.getLogin());
+        if (login == null) {
+            throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+        }
+        event.setPrincipal(login.getLogin());
 
-            if (request.getRequestType() == null) {
-                throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
-            }
+        if (request.getRequestType() == null) {
+            throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+        }
 
-            if (OTPRequestType.SMS.equals(request.getRequestType())) {
+        if (OTPRequestType.SMS.equals(request.getRequestType())) {
+            String smsCode = null;
+            try {
                 final AbstractSMSOTPModule module = (AbstractSMSOTPModule) scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
-                final String smsCode = module.generateRFC4226Token(login);
+                smsCode = module.generateRFC4226Token(login);
+            } catch (Exception e) {
+                throw new BasicDataServiceException(ResponseCode.SMS_TOKEN_GENERATE_ERROR);
+            }
 
-                if (!StringUtils.equals(request.getOtpCode(), smsCode)) {
-                    throw new BasicDataServiceException(ResponseCode.SMS_CODES_NOT_EQUAL);
+            if (!StringUtils.equals(request.getOtpCode(), smsCode)) {
+                throw new BasicDataServiceException(ResponseCode.SMS_CODES_NOT_EQUAL);
+            }
+
+            if (login.getSmsCodeExpiration() != null) {
+                if (new Date().after(login.getSmsCodeExpiration())) {
+                    throw new BasicDataServiceException(ResponseCode.SMS_CODE_EXPIRED);
                 }
-
-                if (login.getSmsCodeExpiration() != null) {
-                    if (new Date().after(login.getSmsCodeExpiration())) {
-                        throw new BasicDataServiceException(ResponseCode.SMS_CODE_EXPIRED);
-                    }
-                }
-
-                login.setSmsActive(true);
-            } else {
-                final AbstractTOTPModule module = new GoogleAuthTOTPModule();
-                final String secret = (StringUtils.isNotBlank(request.getSecret())) ? request.getSecret() : decryptTOTP(request.getPhone(), userId);
-                try {
-                    if (!module.validateToken(secret, Integer.valueOf(request.getOtpCode()).intValue())) {
-                        throw new BasicDataServiceException(ResponseCode.TOPT_CODE_INVALID);
-                    }
-                    login.setToptActive(true);
-                } catch (NumberFormatException e) {
+            }
+            login.setSmsActive(true);
+        } else {
+            final AbstractTOTPModule module = new GoogleAuthTOTPModule();
+            final String secret = (StringUtils.isNotBlank(request.getSecret())) ? request.getSecret() : decryptTOTP(request.getPhone(), userId);
+            try {
+                if (!module.validateToken(secret, Integer.valueOf(request.getOtpCode()).intValue())) {
                     throw new BasicDataServiceException(ResponseCode.TOPT_CODE_INVALID);
                 }
+                login.setToptActive(true);
+            } catch (NumberFormatException e) {
+                throw new BasicDataServiceException(ResponseCode.TOPT_CODE_INVALID);
             }
-            login.setSmsCodeExpiration(null);
-            loginManager.updateLogin(login);
-            response.succeed();
-            event.succeed();
-        } catch (BasicDataServiceException e) {
-            log.warn(e.getMessage(), e);
-            event.fail();
-            event.setFailureReason(e.getCode());
-            event.setFailureReason(e.getMessage());
-            response.fail();
-            response.setErrorCode(e.getCode());
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-            event.fail();
-            event.setFailureReason(e.getMessage());
-            response.fail();
-            response.setErrorText(e.getMessage());
-        } finally {
-            auditLogService.enqueue(event);
         }
-        return response;
+        login.setSmsCodeExpiration(null);
+        loginManager.updateLogin(login);
     }
 
     @Override
     @Transactional
-    public Response clearOTPActiveStatus(final OTPServiceRequest request) {
-        final IdmAuditLogEntity event = new IdmAuditLogEntity();
+    public void clearOTPActiveStatus(final OTPServiceRequest request) throws BasicDataServiceException{
+        final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(null);
         event.setAction(AuditAction.CLEAR_SMS_OTP_STATUS.value());
         event.setUriPatternId(request.getPatternId());
         event.setUserId(request.getUserId());
 
-        final Response response = new Response();
-        try {
-            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
-            final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
-            if (authProvider == null) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
-            }
-            event.setAuthProviderId(authProvider.getId());
-
-            final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
-
-            if (login == null) {
-                throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
-            }
-            event.setPrincipal(login.getLogin());
-            event.setManagedSysId(managedSystem.getId());
-
-            login.setSmsActive(false);
-            login.setToptActive(false);
-            loginManager.updateLogin(login);
-
-            response.succeed();
-            event.succeed();
-        } catch (BasicDataServiceException e) {
-            log.warn(e.getMessage(), e);
-            event.fail();
-            event.setFailureReason(e.getCode());
-            event.setFailureReason(e.getMessage());
-            response.fail();
-            response.setErrorCode(e.getCode());
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-            event.fail();
-            event.setFailureReason(e.getMessage());
-            response.fail();
-            response.setErrorText(e.getMessage());
-        } finally {
-            //auditLogService.enqueue(event);
+        final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
+        final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
+        if (authProvider == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
         }
-        return response;
+        event.setAuthProviderId(authProvider.getId());
+
+        final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
+
+        if (login == null) {
+            throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+        }
+        event.setPrincipal(login.getLogin());
+        event.setManagedSysId(managedSystem.getId());
+
+        login.setSmsActive(false);
+        login.setToptActive(false);
+        loginManager.updateLogin(login);
     }
 
     @Override
-    public boolean isOTPActive(final OTPServiceRequest request) {
-        final IdmAuditLogEntity event = new IdmAuditLogEntity();
+    public boolean isOTPActive(final OTPServiceRequest request) throws BasicDataServiceException {
+        final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(null);
         event.setAction(AuditAction.GET_SMS_OTP_STATUS.value());
         event.setUriPatternId(request.getPatternId());
         event.setUserId(request.getUserId());
 
         boolean retVal = false;
-        try {
-            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
-            if (authProvider == null) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
-            }
-            event.setAuthProviderId(authProvider.getId());
+        final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
+        if (authProvider == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
+        }
+        event.setAuthProviderId(authProvider.getId());
 
-            if (request.getRequestType() == null) {
-                throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
-            }
-            
-            final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
-            if(managedSystem == null) {
-            	throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
-            }
-            event.setManagedSysId(managedSystem.getId());
+        if (request.getRequestType() == null) {
+            throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+        }
 
-            final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
+        final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+        if(managedSystem == null) {
+            throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+        }
+        event.setManagedSysId(managedSystem.getId());
 
-            if (login == null) {
-                throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
-            }
-            event.setPrincipal(login.getLogin());
+        final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
 
-            switch (request.getRequestType()) {
-                case SMS:
-                    retVal = login.isSmsActive();
-                    break;
-                case TOPT:
-                    retVal = login.isToptActive();
-                    break;
-            }
+        if (login == null) {
+            throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+        }
+        event.setPrincipal(login.getLogin());
 
-            event.succeed();
-        } catch (BasicDataServiceException e) {
-            log.warn(e.getMessage(), e);
-            event.fail();
-            event.setFailureReason(e.getCode());
-            event.setFailureReason(e.getMessage());
-        } catch (Throwable e) {
-            log.error(e.getMessage(), e);
-            event.fail();
-            event.setFailureReason(e.getMessage());
-        } finally {
-            //auditLogService.enqueue(event);
+        switch (request.getRequestType()) {
+            case SMS:
+                retVal = login.isSmsActive();
+                break;
+            case TOPT:
+                retVal = login.isToptActive();
+                break;
         }
         return retVal;
     }

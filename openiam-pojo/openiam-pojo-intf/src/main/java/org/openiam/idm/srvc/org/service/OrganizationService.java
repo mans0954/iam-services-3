@@ -60,7 +60,7 @@ public interface OrganizationService {
 
     public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity language);
 
-   // public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language);
+   // public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity lang);
 
     //public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size);
 
@@ -70,9 +70,9 @@ public interface OrganizationService {
 
     public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language);
 
-    //public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity language);
+    //public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity lang);
 
-   // public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language);
+   // public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity lang);
 
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
     public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language);
@@ -86,7 +86,7 @@ public interface OrganizationService {
 
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity language);
 
-    /*public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity language);
+    /*public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity lang);
 
     public int getNumOfOrganizationsForUser(final String userId, final String requesterId);
 
@@ -158,10 +158,25 @@ public interface OrganizationService {
     public void addRoleToOrganization(final String organizationId, final String roleId, final Set<String> rightIds, final Date startDate, final Date endDate);
     public void removeRoleFromOrganization(final String organizationId, final String roleId);
 
- public List<Organization> getUserAffiliationsByType(String userId, String typeId, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<Organization> getUserAffiliationsByType(String userId, String typeId, String requesterId, final int from, final int size, final LanguageEntity language);
 
     public List<OrganizationAttribute> getOrgAttributesDtoList(String orgId);
     public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge);
     public OrganizationEntity getOrganizationLocalized(String orgId, String requesterId, final LanguageEntity langauge);
+    public void saveAttribute(final OrganizationAttributeEntity attribute);
 
-    }
+
+    public Response saveOrganization(final Organization organization, final String requesterId);
+    public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors);
+    public Response deleteOrganization(final String orgId, final String requestorId);
+    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors, final String requestorId);
+
+    public Response addUserToOrg(final String orgId,
+                                 final String userId,
+                                 final String requestorId,
+                                 final Set<String> rightIds,
+                                 final Date startDate,
+                                 final Date endDate);
+
+    public Response removeUserFromOrg(String orgId, String userId, final String requestorId);
+}

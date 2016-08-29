@@ -21,9 +21,12 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
+import org.openiam.base.request.PasswordResetTokenRequest;
+import org.openiam.base.response.PasswordResetTokenResponse;
+import org.openiam.base.response.PasswordValidationResponse;
+import org.openiam.base.response.ValidatePasswordResetTokenResponse;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.*;
@@ -48,7 +51,7 @@ public interface PasswordService {
      * @param pswd
      * @return
      */
-    PasswordValidationResponse isPasswordValid(Password pswd) throws ObjectNotFoundException;
+    PasswordValidationResponse isPasswordValid(Password pswd);
 
 
     /**

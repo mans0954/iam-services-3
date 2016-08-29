@@ -1,9 +1,15 @@
 package org.openiam.rest;
 
+import org.openiam.base.request.RenewTokenRequest;
+import org.openiam.base.response.SSOTokenResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.base.request.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
-import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.base.response.AuthenticationResponse;
+import org.openiam.mq.constants.AuthenticationAPI;
+import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,14 +29,18 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/auth/")
-public class AuthenticationRestController {
-	
+public class AuthenticationRestController extends AbstractApiService {
+
 	@Autowired
 	private AuthenticationServiceService authenticationService;
 
+	public AuthenticationRestController() {
+		super(OpenIAMQueue.AuthenticationQueue);
+	}
+
 	@RequestMapping(value="/login", method=RequestMethod.POST)
 	public @ResponseBody AuthenticationResponse login(final @RequestBody AuthenticationRequest request) {
-		return authenticationService.login(request);
+		return this.manageApiRequest(AuthenticationAPI.Authenticate, request, AuthenticationResponse.class);
 	}
 	
 	@RequestMapping(value="/renewToken", method=RequestMethod.GET)
@@ -38,6 +48,13 @@ public class AuthenticationRestController {
 											 final @RequestParam(value="token", required=true) String token, 
 											 final @RequestParam(value="tokenType", required=true) String tokenType, 
 											 final @RequestParam(value="patternId", required=true) String patternId) {
-		return authenticationService.renewToken(principal, token, tokenType, patternId);
+		RenewTokenRequest request = new RenewTokenRequest();
+		request.setPrincipal(principal);
+		request.setToken(token);
+		request.setTokenType(tokenType);
+		request.setPatternId(patternId);
+
+		SSOTokenResponse response = this.manageApiRequest(AuthenticationAPI.RenewToken, request, SSOTokenResponse.class);
+		return response.convertToBase();
 	}
 }

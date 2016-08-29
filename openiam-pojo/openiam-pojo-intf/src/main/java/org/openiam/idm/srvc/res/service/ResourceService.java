@@ -38,14 +38,14 @@ public interface ResourceService {
 	public List<Resource> findResourcesDtoByIds(Collection<String> resourceIdCollection, Language language);
 	public ResourceEntity findResourceByName(final String name);
 	public int count(final ResourceSearchBean searchBean);
-	//public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
+	//public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity lang);
 	//public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size);
 	public List<ResourceEntity> findBeansLocalized(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
 	public List<Resource> findBeansLocalizedDto(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
 	public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
 	/*	public int getNumOfChildResources(final String resourceId);
 	public List<ResourceEntity> getParentResources(final  String resourceId, final int from, final int size);
-	public List<Resource> getParentResourcesDto(String resourceId, int from, int size, Language language);
+	public List<Resource> getParentResourcesDto(String resourceId, int from, int size, Language lang);
 	public int getNumOfParentResources(final String resourceId);
 	public List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean);*/
 	public List<Resource> getResourcesDtoForRole(String roleId, int from, int size, final ResourceSearchBean searchBean, Language language);
@@ -89,7 +89,7 @@ public interface ResourceService {
 
 	//public List<ResourceEntity> getChildResources(final String resourceId, final int from, final int size);
 
-	//public List<Resource> getChildResourcesDto(String resourceId, int from, int size, Language language);
+	//public List<Resource> getChildResourcesDto(String resourceId, int from, int size, Language lang);
 	public void addChildResource(final String parentResourceId, final String childResourceId, final Set<String> rights, final Date startDate, final Date endDate);
 	public void deleteChildResource(final String resourceId, final String childResourceId);
 
@@ -138,4 +138,29 @@ public interface ResourceService {
 	//public void addRoleToResourceWeb(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
 	public void removeRoleToResource(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
+
+	public void saveAttribute(final ResourcePropEntity attribute);
+
+	public Response addGroupToResource(final String resourceId, final String groupId,  final String requesterId,
+									   final Set<String> rightIds, final Date startDate, final Date endDate);
+
+	public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId);
+
+	public Response addUserToResource(final String resourceId, final String userId, final String requesterId,
+									  final Set<String> rightIds, final Date startDate, final Date endDate);
+
+	public Response removeUserFromResource(final String resourceId, final String userId, String requesterId);
+
+	public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId,
+									  final Set<String> rightIds, final Date startDate, final Date endDate);
+
+	public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId);
+
+	public Response addChildResource(final String resourceId, final String childResourceId, final String requesterId,
+									 final Set<String> rights, final Date startDate, final Date endDate);
+	public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId);
+
+	public Response deleteResource(final String resourceId, final String requesterId);
+
+	public Response saveResourceWeb(final Resource resource, final String requesterId);
 }

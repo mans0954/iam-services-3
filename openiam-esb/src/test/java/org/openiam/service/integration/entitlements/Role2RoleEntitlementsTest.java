@@ -6,16 +6,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
-import org.openiam.service.integration.AbstractEntitlementsTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.annotations.Test;
 
 public class Role2RoleEntitlementsTest extends AbstractCircularEntitlementTest<Role> {

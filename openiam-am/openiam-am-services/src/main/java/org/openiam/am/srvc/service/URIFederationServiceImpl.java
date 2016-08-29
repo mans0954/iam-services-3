@@ -48,12 +48,12 @@ import org.openiam.am.srvc.dto.URIPatternSubstitution;
 import org.openiam.am.srvc.groovy.AbstractRedirectURLGroovyProcessor;
 import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
 import org.openiam.am.srvc.model.URIPatternSearchResult;
-import org.openiam.am.srvc.uriauth.dto.URIAuthLevelAttribute;
-import org.openiam.am.srvc.uriauth.dto.URIAuthLevelToken;
-import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
-import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
-import org.openiam.am.srvc.uriauth.dto.URIPatternRuleValue;
-import org.openiam.am.srvc.uriauth.dto.URISubstitutionToken;
+import org.openiam.base.response.URIAuthLevelAttribute;
+import org.openiam.base.response.URIAuthLevelToken;
+import org.openiam.base.response.URIFederationResponse;
+import org.openiam.base.response.URIPatternRuleToken;
+import org.openiam.base.response.URIPatternRuleValue;
+import org.openiam.base.response.URISubstitutionToken;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
 import org.openiam.am.srvc.uriauth.model.ContentProviderTree;
 import org.openiam.am.srvc.uriauth.rule.URIPatternRule;
@@ -63,7 +63,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.base.request.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
@@ -568,17 +568,20 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
 				uriPattern = patternNode.getPattern();
 				uriMethod = patternNode.getMethod();
-				
-				if(!cp.getIsPublic() && !isEntitled(userId, cp.getResourceId())) {
-					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
-				}
-				
+
 				/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
 				if(uriPattern != null) {
 					
 					/* check entitlements and auth level on patterns */
-					if(!uriPattern.getIsPublic() && !isEntitled(userId, uriPattern.getResourceId())) {
-						throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, uriPattern.getPattern());
+					if(!uriPattern.getIsPublic()) {
+						if(!isEntitled(userId, uriPattern.getResourceId())) {
+							throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, uriPattern.getPattern());
+						}
+						
+						/* if the user is entitled to the URI pattern, now check that he has access tot he overall content provider */
+						if(!cp.getIsPublic() && !isEntitled(userId, cp.getResourceId())) {
+							throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
+						}
 					}
 					
 					if(uriMethod != null) {

@@ -7,7 +7,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.ProvisionService;
+import org.openiam.provision.service.ProvisioningDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,8 +29,7 @@ public class CreateIdmAccountUserCommand extends BaseReconciliationUserCommand {
     public static final String OPENIAM_MANAGED_SYS_ID = "0";
 
     @Autowired
-    @Qualifier("defaultProvision")
-    private ProvisionService provisionService;
+    private ProvisioningDataService provisionService;
 
     public CreateIdmAccountUserCommand() {
     }

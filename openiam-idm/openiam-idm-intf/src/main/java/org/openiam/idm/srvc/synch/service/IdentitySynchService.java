@@ -3,11 +3,14 @@ package org.openiam.idm.srvc.synch.service;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
-import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.base.request.BulkMigrationConfig;
+import org.openiam.base.response.SyncResponse;
+import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
+import org.openiam.base.response.SynchConfigResponse;
 
 import java.util.*;
 
@@ -84,4 +87,10 @@ public interface IdentitySynchService {
 
     void deleteAttributesMapList(List<AttributeMapEntity> attrMap);
 
+
+    public List<AttributeMap> getSynchConfigAttributeMapsDTO(String synchConfigId);
+    public SynchConfigResponse findDTOById(String id);
+    public Response testConnection(SynchConfig config);
+    public SyncResponse startSynchronization(SynchConfig config);
+    public SyncResponse startCustomSynchronization(SynchConfig config, String additionalValues);
 }

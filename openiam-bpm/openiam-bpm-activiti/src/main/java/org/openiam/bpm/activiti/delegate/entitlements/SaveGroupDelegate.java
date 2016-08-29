@@ -1,31 +1,27 @@
 package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.service.ObjectProvisionService;
+import org.openiam.provision.service.ObjectProvisionDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 public class SaveGroupDelegate extends AbstractActivitiJob {
 
 	@Autowired
-	@Qualifier("groupWS")
-	private GroupDataWebService groupDataService;
+	private GroupDataService groupDataService;
 
     @Autowired
-    @Qualifier("groupProvision")
-    private ObjectProvisionService<ProvisionGroup> groupProvisionService;
+    @Qualifier("groupProvisionDataService")
+    private ObjectProvisionDataService<ProvisionGroup> groupProvisionService;
 	
 	public SaveGroupDelegate() {
 		super();
@@ -47,11 +43,11 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
         try {
         	idmAuditLog.setTargetGroup(groupRequestModel.getTargetObject().getId(), groupRequestModel.getTargetObject().getName());
             groupRequestModel.setRequesterId(getRequestorId(execution));
-            final Response wsResponse =  groupDataService.saveGroupRequest(groupRequestModel);
+            final Response wsResponse =  groupDataService.saveGroupRequestWeb(groupRequestModel);
             if (wsResponse.isSuccess()) {
                 String groupId = (String) wsResponse.getResponseValue();
 
-                Group createdGroup  = groupDataService.getGroup(groupId, getRequestorId(execution));
+                Group createdGroup  = groupDataService.getGroupDtoLocalize(groupId, getRequestorId(execution), null);
                 ProvisionGroup provisionGroup = new ProvisionGroup(createdGroup);
                 Response groupResponse = (isNew) ? groupProvisionService.add(provisionGroup) :
                         groupProvisionService.modify(provisionGroup);

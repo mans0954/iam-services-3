@@ -18,6 +18,7 @@ import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldIndex;
@@ -30,6 +31,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Document(indexName = ESIndexName.PHONE, type= ESIndexType.PHONE)
 @AttributeOverride(name = "id", column = @Column(name = "PHONE_ID"))
+@Internationalized
 public class PhoneEntity extends AbstractMetdataTypeEntity {
    
     @Column(name="ACTIVE")

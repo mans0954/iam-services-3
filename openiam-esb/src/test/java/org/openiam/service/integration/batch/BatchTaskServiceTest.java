@@ -10,7 +10,7 @@ import org.openiam.idm.searchbeans.BatchTaskScheduleSearchBean;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.batch.dto.BatchTaskSchedule;
-import org.openiam.idm.srvc.batch.service.BatchDataService;
+import org.openiam.srvc.batch.BatchDataService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

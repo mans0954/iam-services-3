@@ -17,14 +17,16 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.request.SuspendResumeRequest;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.provision.PostProcessor;
+import org.openiam.provision.PreProcessor;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.CrudRequest;
+import org.openiam.provision.request.LookupRequest;
+import org.openiam.provision.request.SuspendResumeRequest;
+import org.openiam.base.response.ObjectResponse;
+import org.openiam.base.response.ResponseType;
+import org.openiam.base.response.SearchResponse;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.EncryptionException;
@@ -41,8 +43,8 @@ import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
@@ -53,10 +55,11 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.provision.utils.ProvisionUtils;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,15 +100,13 @@ public class ProvisionDispatcherTransactionHelper {
     private ResourceService resourceService;
 
     @Autowired
-    @Qualifier("defaultProvision")
-    private ProvisionService provisionService;
+    private ProvisioningDataService provisionService;
 
     @Autowired
     private ResourceDozerConverter resourceDozerConverter;
 
     @Autowired
-    @Qualifier("managedSysService")
-    private ManagedSystemWebService managedSystemWebService;
+    private ManagedSystemService managedSystemService;
 
     @Autowired
     private LoginDozerConverter loginDozerConverter;
@@ -257,7 +258,7 @@ public class ProvisionDispatcherTransactionHelper {
                 String requestId = data.getRequestId();
                 ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
                 Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-                ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
+                ManagedSysDto mSys = managedSystemService.getManagedSysDtoByResource(res.getId());
                 String managedSysId = (mSys != null) ? mSys.getId() : null;
 
                 Login targetSysLogin = data.getIdentity();
@@ -309,7 +310,7 @@ public class ProvisionDispatcherTransactionHelper {
                 String requestId = data.getRequestId();
                 ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
                 Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-                ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
+                ManagedSysDto mSys = managedSystemService.getManagedSysDtoByResource(res.getId());
                 String managedSysId = (mSys != null) ? mSys.getId() : null;
                 idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
                 Login targetSysLogin = data.getIdentity();
@@ -434,7 +435,7 @@ public class ProvisionDispatcherTransactionHelper {
         Login targetSysLogin = data.getIdentity();
         ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-        ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
+        ManagedSysDto mSys = managedSystemService.getManagedSysDtoByResource(res.getId());
         idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
         ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(targetSysLogin, data.getOperation().name());
 
@@ -531,7 +532,7 @@ public class ProvisionDispatcherTransactionHelper {
 
         ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-        ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
+        ManagedSysDto mSys = managedSystemService.getManagedSysDtoByResource(res.getId());
         String managedSysId = (mSys != null) ? mSys.getId() : null;
         ProvisionUser targetSysProvUser = data.getProvUser();
         idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
@@ -539,7 +540,7 @@ public class ProvisionDispatcherTransactionHelper {
             Login targetSysLogin = data.getIdentity();
             Map<String, Object> bindingMap = data.getBindingMap();
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] objArr = managedSystemWebService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
+            ManagedSystemObjectMatch[] objArr = managedSystemService.managedSysObjectParamDTO(managedSysId, ManagedSystemObjectMatch.USER);
 
             if (objArr != null && objArr.length > 0) {
                 matchObj = objArr[0];
@@ -582,7 +583,7 @@ public class ProvisionDispatcherTransactionHelper {
             if (StringUtils.isNotBlank(preProcessScript)) {
                 PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                 if (ppScript != null) {
-                    int executePreProcessResult = AbstractProvisioningService.executePreProcess(ppScript, bindingMap, targetSysProvUser, null, null,
+                    int executePreProcessResult = ProvisionUtils.executePreProcess(ppScript, bindingMap, targetSysProvUser, null, null,
                             targetSystemUserExists ? "MODIFY" : "ADD");
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePreProcessResult: "
                             + (targetSystemUserExists ? "[MODIFY]" : "[ADD] = ") + executePreProcessResult);
@@ -597,7 +598,7 @@ public class ProvisionDispatcherTransactionHelper {
             if (!targetSystemUserExists) {
 
                 // updates the attributes with the correct operation codes
-                extUser = ProvisionDispatcher.updateAttributeList(extUser, null);
+                extUser = ProvisionUtils.updateAttributeList(extUser, null);
 
                 ObjectResponse resp = provisionService.requestAddModify((ExtensibleUser) extUser, targetSysLogin, true, requestId,
                         idmAuditLog);
@@ -606,7 +607,7 @@ public class ProvisionDispatcherTransactionHelper {
             } else { // if user exists in target system
 
                 // updates the attributes with the correct operation codes
-                extUser = ProvisionDispatcher.updateAttributeList(extUser, currentValueMap);
+                extUser = ProvisionUtils.updateAttributeList(extUser, currentValueMap);
 
                 if (targetSysLogin.getOperation() == AttributeOperationEnum.REPLACE
                         && targetSysLogin.getOrigPrincipalName() != null) {
@@ -625,7 +626,7 @@ public class ProvisionDispatcherTransactionHelper {
             if (StringUtils.isNotBlank(postProcessScript)) {
                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                 if (ppScript != null) {
-                    int executePostProcessResult = AbstractProvisioningService.executePostProcess(ppScript, bindingMap, targetSysProvUser, null, null,
+                    int executePostProcessResult = ProvisionUtils.executePostProcess(ppScript, bindingMap, targetSysProvUser, null, null,
                             targetSystemUserExists ? "MODIFY" : "ADD", connectorSuccess);
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePostProcessResult "
                             + (targetSystemUserExists ? "[MODIFY]" : "[ADD] =") + executePostProcessResult);
@@ -689,7 +690,7 @@ public class ProvisionDispatcherTransactionHelper {
         if (StringUtils.isNotBlank(preProcessScript)) {
             PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
             if (ppScript != null) {
-                int executePreProcessResult = AbstractProvisioningService.executePreProcess(ppScript, bindingMap, null, null, reqType,
+                int executePreProcessResult = ProvisionUtils.executePreProcess(ppScript, bindingMap, null, null, reqType,
                         "LOOKUP");
                 if (executePreProcessResult == ProvisioningConstants.FAIL) {
                     return false;
@@ -704,7 +705,7 @@ public class ProvisionDispatcherTransactionHelper {
         if (StringUtils.isNotBlank(postProcessScript)) {
             PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
             if (ppScript != null) {
-                AbstractProvisioningService.executePostProcess(ppScript, bindingMap, null, null, lookupSearchResponse,
+                ProvisionUtils.executePostProcess(ppScript, bindingMap, null, null, lookupSearchResponse,
                         "LOOKUP", lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS);
             }
         }

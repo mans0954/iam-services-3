@@ -10,31 +10,31 @@
 
     <import resource="jmsContext.xml" />
 
-    <bean id="reportServiceClient" class="org.openiam.idm.srvc.report.ws.ReportWebService"
+    <bean id="reportServiceClient" class="org.openiam.srvc.report.ReportWebService"
           factory-bean="reportServiceFactory" factory-method="create" />
     <bean id="reportServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.report.ws.ReportWebService" />
+        <property name="serviceClass" value="org.openiam.srvc.report.ReportWebService" />
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}ReportWebService" />
     </bean>
 
-    <bean id="mailServiceClient" class="org.openiam.idm.srvc.msg.service.MailService"
+    <bean id="mailServiceClient" class="org.openiam.srvc.common.MailService"
           factory-bean="mailServiceFactory" factory-method="create" />
     <bean id="mailServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.msg.service.MailService" />
+        <property name="serviceClass" value="org.openiam.srvc.common.MailService" />
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}EmailWebService" />
     </bean>
 
-    <bean id="userServiceClient" class="org.openiam.idm.srvc.user.ws.UserDataWebService"
+    <bean id="userServiceClient" class="org.openiam.srvc.user.UserDataWebService"
           factory-bean="userServiceFactory" factory-method="create" lazy-init="false" />
     <bean id="userServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.user.ws.UserDataWebService" />
+        <property name="serviceClass" value="org.openiam.srvc.user.UserDataWebService" />
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}UserDataService" />
     </bean>
 
-    <!--<bean id="groupServiceClient" class="org.openiam.idm.srvc.grp.ws.GroupDataWebService"
+    <!--<bean id="groupServiceClient" class="org.openiam.srvc.am.GroupDataWebService"
           factory-bean="groupServiceFactory" factory-method="create" lazy-init="false" />
     <bean id="groupServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.grp.ws.GroupDataWebService" />
+        <property name="serviceClass" value="org.openiam.srvc.am.GroupDataWebService" />
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}GroupDataService" />
     </bean>-->
 

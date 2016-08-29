@@ -1,6 +1,6 @@
 package org.openiam.connector.orcl.command.user;
 
-import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.provision.constant.ErrorCode;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.connector.orcl.command.base.AbstractSearchOracleCommand;

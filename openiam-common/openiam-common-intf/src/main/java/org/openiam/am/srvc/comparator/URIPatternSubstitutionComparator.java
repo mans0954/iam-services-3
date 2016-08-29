@@ -1,10 +1,11 @@
 package org.openiam.am.srvc.comparator;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.openiam.am.srvc.dto.URIPatternSubstitution;
 
-public class URIPatternSubstitutionComparator implements Comparator<URIPatternSubstitution> {
+public class URIPatternSubstitutionComparator implements Comparator<URIPatternSubstitution>, Serializable {
 
 	@Override
 	public int compare(URIPatternSubstitution o1, URIPatternSubstitution o2) {

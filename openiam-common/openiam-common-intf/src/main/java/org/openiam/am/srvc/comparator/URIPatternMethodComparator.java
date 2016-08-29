@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.comparator;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -14,7 +15,7 @@ import org.openiam.am.srvc.dto.URIPatternMethodParameter;
  * @author Lev Bornovalov
  *
  */
-public class URIPatternMethodComparator implements Comparator<URIPatternMethod> {
+public class URIPatternMethodComparator implements Comparator<URIPatternMethod>, Serializable {
 	
 	private static final Log LOG = LogFactory.getLog(URIPatternMethodComparator.class);
 

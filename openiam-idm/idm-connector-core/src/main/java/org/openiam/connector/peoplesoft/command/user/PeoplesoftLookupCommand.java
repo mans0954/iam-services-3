@@ -1,23 +1,13 @@
 package org.openiam.connector.peoplesoft.command.user;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.peoplesoft.command.base.AbstractPeoplesoftCommand;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.ObjectValue;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.LookupRequest;
+import org.openiam.base.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,7 @@
 package org.openiam.connector.csv.command.base;
 
-import org.openiam.connector.type.request.RequestType;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.provision.request.RequestType;
+import org.openiam.base.response.ResponseType;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.springframework.beans.factory.annotation.Value;
 

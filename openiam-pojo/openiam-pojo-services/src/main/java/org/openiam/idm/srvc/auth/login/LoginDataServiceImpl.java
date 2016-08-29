@@ -7,7 +7,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.response.LoginResponse;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
@@ -19,15 +22,15 @@ import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
-import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.base.request.NotificationParam;
+import org.openiam.base.request.NotificationRequest;
+import org.openiam.idm.srvc.msg.service.MailDataService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.idm.srvc.policy.service.PolicyService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordPolicyProvider;
@@ -58,7 +61,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     protected UserDAO userDao;
 
     @Autowired
-    private PolicyDataService policyDataService;
+    private PolicyService policyService;
 
     @Autowired
     protected PasswordPolicyProvider passwordPolicyProvider;
@@ -82,7 +85,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     private EmailAddressDAO emailAddressDao;
 
     @Autowired
-    private MailService mailService;
+    private MailDataService mailService;
 
     boolean encrypt = true; // default encryption setting
     private static final Log log = LogFactory
@@ -112,6 +115,17 @@ public class LoginDataServiceImpl implements LoginDataService {
         return loginDao.getRecord(login, sysId);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Login getLoginDtoByManagedSys(String principal, String sysId){
+        LoginEntity entity = this.getLoginByManagedSys(principal, sysId);
+
+        if (entity != null ) {
+            return loginDozerConverter.convertToDTO(entity, false);
+        }else {
+            return null;
+        }
+    }
     @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getLoginDetailsByManagedSys(String principalName,
@@ -605,6 +619,17 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public Login getPrimaryIdentityDto(String userId) {
+        LoginEntity lg = this.getPrimaryIdentity(userId);
+        if (lg == null ) {
+            return null;
+        }else {
+            return loginDozerConverter.convertToDTO(lg, false);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public LoginEntity getByUserIdManagedSys(String userId, String managedSysId) {
 
         List<LoginEntity> loginList = getLoginByUser(userId);
@@ -713,5 +738,47 @@ public class LoginDataServiceImpl implements LoginDataService {
         notificationRequest.getParamList().add(
                 new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
         mailService.sendNotification(notificationRequest);
+    }
+
+
+    @Override
+    public Response saveLogin(final Login principal) {
+        final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
+        try {
+            if(principal == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            if(StringUtils.isBlank(principal.getManagedSysId()) ||
+                    StringUtils.isBlank(principal.getLogin())) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            final LoginEntity currentEntity = this.getLoginByManagedSys(principal.getLogin(), principal.getManagedSysId());
+            if(currentEntity != null) {
+                if(StringUtils.isBlank(principal.getId())) {
+                    throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+                } else if(!principal.getId().equals(currentEntity.getId())) {
+                    throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+                }
+            }
+
+            final LoginEntity entity = loginDozerConverter.convertToEntity(principal, true);
+            if(StringUtils.isNotBlank(entity.getId())) {
+                this.updateLogin(entity);
+            } else {
+                this.addLogin(entity);
+            }
+            resp.setResponseValue(entity.getId());
+        } catch(BasicDataServiceException e) {
+            log.warn(String.format("Error while saving login: %s", e.getMessage()));
+            resp.setErrorCode(e.getCode());
+            resp.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            log.error("Error while saving login", e);
+        }
+        return resp;
     }
 }

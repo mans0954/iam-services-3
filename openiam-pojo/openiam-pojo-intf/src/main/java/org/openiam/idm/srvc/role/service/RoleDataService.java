@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.role.service;
 
 import org.openiam.base.TreeObjectId;
+import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -228,4 +229,35 @@ public interface RoleDataService {
     void rebuildRoleHierarchyCache();
     
     public boolean hasChildEntities(String roleId);
+
+    public Response removeRole(String roleId, String requesterId);
+
+    public Response saveRole(Role role, final String requesterId);
+
+    public Response addGroupToRole(final String roleId,
+                                   final String groupId,
+                                   final String requesterId,
+                                   final Set<String> rightIds,
+                                   final Date startDate,
+                                   final Date endDate);
+
+    public Response addUserToRole(final String roleId,
+                                  final String userId,
+                                  final String requesterId,
+                                  final Set<String> rightIds,
+                                  final Date startDate,
+                                  final Date endDate);
+
+    public Response removeGroupFromRole(String roleId, String groupId, String requesterId);
+
+    public Response removeUserFromRole(String roleId, String userId, String requesterId);
+
+    public Response addChildRole(final String roleId,
+                                 final String childRoleId,
+                                 final String requesterId,
+                                 final Set<String> rights,
+                                 final Date startDate,
+                                 final Date endDate);
+
+    public Response removeChildRole(final String roleId, final String childRoleId, String requesterId);
 }

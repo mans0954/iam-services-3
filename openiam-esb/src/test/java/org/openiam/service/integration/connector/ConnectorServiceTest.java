@@ -6,10 +6,7 @@ import org.junit.Test;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 public class ConnectorServiceTest extends AbstractKeyNameServiceTest<ProvisionConnectorDto, ProvisionConnectorSearchBean> {
 	

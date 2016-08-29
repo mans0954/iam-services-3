@@ -9,10 +9,10 @@ import org.openiam.connector.common.data.ConnectorConfiguration;
 
 import org.openiam.connector.soap.command.base.AbstractSoapCommand;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.PasswordRequest;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.PasswordRequest;
+import org.openiam.base.response.ResponseType;
 import org.springframework.stereotype.Service;
 
 /**

@@ -2,9 +2,13 @@ package org.openiam.idm.srvc.msg.service;
 
 import javax.annotation.PostConstruct;
 
+import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.dto.MQRequest;
+import org.openiam.mq.gateway.RequestServiceGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class MailSender {
     
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RequestServiceGateway requestServiceGateway;
     
     @Autowired
     @Qualifier("scheduler")
@@ -27,7 +31,7 @@ public class MailSender {
     	if(mail.getProcessingTime() != null) {
     		scheduler.schedule(new ScheduledMail(mail), mail.getProcessingTime());
     	} else {
-    		redisTemplate.opsForList().leftPush("mailQueue", mail);
+			doSend(mail);
     	}
     }
     
@@ -41,8 +45,15 @@ public class MailSender {
 
 		@Override
 		public void run() {
-			redisTemplate.opsForList().leftPush("mailQueue", mail);
+			doSend(mail);
 		}
     	
     }
+
+	private void doSend(final Message mail){
+		MQRequest<Message, OpenIAMAPICommon> mqRequest = new MQRequest<>();
+		mqRequest.setRequestBody(mail);
+		mqRequest.setRequestApi(OpenIAMAPICommon.UpdateAttributesByMetadata);
+		requestServiceGateway.send(OpenIAMQueue.MailQueue, mqRequest);
+	}
 }

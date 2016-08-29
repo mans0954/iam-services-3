@@ -574,7 +574,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.add(Restrictions.in("ua.value", valueList));
             }
             if (CollectionUtils.isNotEmpty(elementIdList)) {
-                criteria.createAlias("ua.element", "mt").add(Restrictions.in("mt.id", elementIdList));
+                criteria.add(Restrictions.in("ua.metadataElementId", elementIdList));
             }
 
             if (from > -1) {

@@ -1,12 +1,11 @@
 package org.openiam.authmanager.service;
 
-import org.openiam.authmanager.common.SetStringResponse;
-import org.openiam.authmanager.model.ResourceEntitlementToken;
-import org.openiam.authmanager.model.UserEntitlementsMatrix;
+import org.openiam.base.response.SetStringResponse;
+import org.openiam.model.ResourceEntitlementToken;
+import org.openiam.model.UserEntitlementsMatrix;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 public interface AuthorizationManagerAdminService {

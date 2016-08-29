@@ -20,8 +20,6 @@
 
     <jaxws:endpoint id="resourceDataWebServiceEndpoint" implementor="#resourceDataService" address="/ResourceDataWebService"/>
 
-    <jaxws:endpoint id="categoryDataWebServiceEndpoint" implementor="#categorydataService" address="/CategoryDataWebService"/>
-
     <jaxws:endpoint id="managedSystemWebServiceEndpoint" implementor="#managedSysService" address="/ManagedSystemWebService"/>
 
     <jaxws:endpoint id="authorizationManagerWebServiceEndpoint" implementor="#authorizationManagerWebService" address="/AuthorizationManagerWebService"/>

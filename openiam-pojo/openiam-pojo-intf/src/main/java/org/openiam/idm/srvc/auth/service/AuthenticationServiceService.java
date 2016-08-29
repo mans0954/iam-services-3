@@ -1,12 +1,15 @@
 package org.openiam.idm.srvc.auth.service;
 
+import org.openiam.base.request.OTPServiceRequest;
 import org.openiam.base.ws.Response;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.LogoutRequest;
-import org.openiam.idm.srvc.auth.dto.OTPServiceRequest;
-import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.base.request.AuthenticationRequest;
+import org.openiam.base.request.LogoutRequest;
+import org.openiam.base.response.AuthenticationResponse;
+import org.openiam.idm.srvc.auth.dto.SSOToken;
+import org.openiam.idm.srvc.auth.dto.Subject;
 
 import java.util.List;
 
@@ -16,26 +19,24 @@ import java.util.List;
 
 public interface AuthenticationServiceService {
 
-    AuthenticationResponse login(AuthenticationRequest request);
+    Subject login(AuthenticationRequest request)  throws BasicDataServiceException;
 
-    void globalLogout(String userId) throws Throwable;
+    void globalLogoutRequest(final LogoutRequest request) throws BasicDataServiceException;
 
-    public Response renewToken(final String principal, final String token, final String tokenType, final String patternId);
-    List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean,
-                                    int from, int size);
+    SSOToken renewToken(final String principal, final String token, final String tokenType, final String patternId) throws BasicDataServiceException;
 
-    Response save(final AuthStateEntity entity);
+    List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean, int from, int size);
 
-    public Response getOTPSecretKey(OTPServiceRequest request);
+    void save(final AuthStateEntity entity);
 
-    public Response sendOTPToken(final OTPServiceRequest request);
+    String getOTPSecretKey(OTPServiceRequest request)  throws BasicDataServiceException;
 
-    public Response confirmOTPToken(final OTPServiceRequest request);
+    void sendOTPToken(final OTPServiceRequest request) throws BasicDataServiceException;
 
-    public Response clearOTPActiveStatus(final OTPServiceRequest request);
+    void confirmOTPToken(final OTPServiceRequest request) throws BasicDataServiceException;
 
-    public boolean isOTPActive(final OTPServiceRequest request);
+    void clearOTPActiveStatus(final OTPServiceRequest request)  throws BasicDataServiceException;
 
-    public Response globalLogoutRequest(final LogoutRequest request);
-    }
+    boolean isOTPActive(final OTPServiceRequest request) throws BasicDataServiceException;
+}
 

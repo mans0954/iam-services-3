@@ -7,13 +7,13 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class SaveOrganizationDelegate extends AbstractActivitiJob {
 	
 	@Autowired
-	private OrganizationDataService organizationService;
+	private OrganizationService organizationService;
 
 	public SaveOrganizationDelegate() {
 		super();

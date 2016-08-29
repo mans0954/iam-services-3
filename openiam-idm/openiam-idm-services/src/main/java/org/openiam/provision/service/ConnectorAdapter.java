@@ -23,33 +23,24 @@ package org.openiam.provision.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.cxf.endpoint.Client;
-import org.apache.cxf.endpoint.ClientImpl;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
-import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
-import org.openiam.base.id.UUIDGen;
-import org.openiam.connector.ConnectorService;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.*;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.LookupAttributeResponse;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.provision.constant.ErrorCode;
+import org.openiam.provision.constant.StatusCodeType;
+import org.openiam.provision.request.*;
+import org.openiam.base.response.ObjectResponse;
+import org.openiam.base.response.LookupAttributeResponse;
+import org.openiam.base.response.ResponseType;
+import org.openiam.base.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
+import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.srvc.idm.ConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Wraps around the connector interface and manages the calls to the varous
@@ -63,8 +54,7 @@ public class ConnectorAdapter {
     protected static final Log log = LogFactory.getLog(ConnectorAdapter.class);
 
     @Autowired
-    @Qualifier("provisionConnectorWebService")
-    private ProvisionConnectorWebService connectorService;
+    private ProvisionConnectorService connectorService;
 
     public ObjectResponse addRequest(ManagedSysDto managedSys,
                                       CrudRequest addReqType) {
@@ -80,8 +70,7 @@ public class ConnectorAdapter {
             log.info("ConnectorAdapter:addRequest called. Managed sys ="
                     + managedSys.getId());
 
-            ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getDto(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getId());
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
@@ -122,8 +111,7 @@ public class ConnectorAdapter {
             log.debug("ConnectorAdapter:modifyRequest called. Managed sys ="
                     + managedSys.getId());
 
-            ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getDto(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -163,7 +151,7 @@ public class ConnectorAdapter {
 
         try {
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getConnectorId());
+                    .getDto(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -209,7 +197,7 @@ public class ConnectorAdapter {
                 if (resp.getStatus() == StatusCodeType.SUCCESS
                         || resp.getObjectList().size() > 0) {
                     if (resp.getErrorMessage().size() > 0) {
-                        log.debug("Connector Search: error message = "
+                        log.debug("Connector Search: error mq = "
                                 + resp.getErrorMsgAsStr());
                     }
                     log.debug("Connector Search:"
@@ -244,7 +232,7 @@ public class ConnectorAdapter {
 
         try {
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getConnectorId());
+                    .getDto(managedSys.getConnectorId());
 
             log.debug("Connector found for " + connector.getId());
 
@@ -285,7 +273,7 @@ public class ConnectorAdapter {
 
         try {
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(connectorId);
+                    .getDto(connectorId);
 
             log.debug("Connector found for " + connector.getId());
 
@@ -327,7 +315,7 @@ public class ConnectorAdapter {
         try {
 
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getConnectorId());
+                    .getDto(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -367,7 +355,7 @@ public class ConnectorAdapter {
         try {
 
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getConnectorId());
+                    .getDto(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -409,7 +397,7 @@ public class ConnectorAdapter {
 
         try {
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getConnectorId());
+                    .getDto(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -450,7 +438,7 @@ public class ConnectorAdapter {
 
         try {
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getConnectorId());
+                    .getDto(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getId());
 
             if ((connector.getServiceUrl() != null && connector
@@ -490,7 +478,7 @@ public class ConnectorAdapter {
                 + managedSys.getId());
         try {
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getConnectorId());
+                    .getDto(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getId());
 
             if ((connector.getServiceUrl() != null && connector
@@ -533,7 +521,7 @@ public class ConnectorAdapter {
         }
         try {
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getId());
+                    .getDto(managedSys.getId());
             if(log.isDebugEnabled()) {
                 log.debug("Connector found for " + connector.getId());
             }
@@ -579,7 +567,7 @@ public class ConnectorAdapter {
 
         try {
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(managedSys.getConnectorId());
+                    .getDto(managedSys.getConnectorId());
 
             log.debug("Connector found for " + connector.getId());
 

@@ -18,8 +18,7 @@ import java.io.Serializable;
         "email",
         "emailMatchToken"
 })
-public class EmailSearchBean extends AbstractSearchBean<EmailAddress, String> implements SearchBean<EmailAddress, String>,
-        Serializable {
+public class EmailSearchBean extends AbstractSearchBean<EmailAddress, String> {
     private String name;
     private String parentId;
     //private String parentType;

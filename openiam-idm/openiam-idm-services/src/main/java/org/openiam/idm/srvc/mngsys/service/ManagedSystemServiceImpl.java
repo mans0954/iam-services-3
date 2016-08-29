@@ -623,14 +623,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         }
     }
 
-    private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
-        if (bean != null && StringUtils.isNotBlank(bean.getId())) {
-            return elementDAO.findById(bean.getId());
-        } else {
-            return null;
-        }
-    }
-
     @Override
     @Transactional
     @CacheKeyEviction(
@@ -661,7 +653,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                 for (final ResourcePropEntity transientAttribute : entity.getResource().getResourceProps()) {
                     for (final ResourcePropEntity persistentAttribute : resource.getResourceProps()) {
                         if (StringUtils.equals(transientAttribute.getId(), persistentAttribute.getId())) {
-                            persistentAttribute.setElement(getEntity(transientAttribute.getElement()));
+                            persistentAttribute.setMetadataElementId(transientAttribute.getMetadataElementId());
                             persistentAttribute.setIsMultivalued(transientAttribute.getIsMultivalued());
                             persistentAttribute.setName(transientAttribute.getName());
                             persistentAttribute.setValue(transientAttribute.getValue());
@@ -673,7 +665,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                 //add  new
                 for (final ResourcePropEntity transientAttribute : entity.getResource().getResourceProps()) {
                     if (StringUtils.isBlank(transientAttribute.getId())) {
-                        transientAttribute.setElement(getEntity(transientAttribute.getElement()));
+                        transientAttribute.setMetadataElementId(transientAttribute.getMetadataElementId());
                         transientAttribute.setResource(resource);
                         resource.getResourceProps().add(transientAttribute);
                     }
@@ -728,4 +720,93 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         sort.setOrderBy(OrderConstants.ASC);
         searchBean.addSortParam(sort);
     }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public ManagedSysDto getManagedSys(String sysId) {
+        ManagedSysDto sysDto = null;
+        if (sysId != null) {
+            ManagedSysEntity sys = this.getManagedSysById(sysId);
+            if (sys != null) {
+                sysDto = managedSysDozerConverter.convertToDTO(sys, true);
+                if (sysDto != null && sysDto.getPswd() != null) {
+                    try {
+                        final byte[] bytes = keyManagementService.getUserKey(systemUserId, KeyName.password.name());
+                        sysDto.setDecryptPassword(cryptor.decrypt(bytes, sys.getPswd()));
+                    } catch (Exception e) {
+                        log.error("Can't decrypt", e);
+                    }
+                }
+            }
+        }
+        return sysDto;
+    }
+
+    @Override
+    @Cacheable(value = "managedSysObjectParam", key = "{ #managedSystemId, #objectType}")
+    public ManagedSystemObjectMatch[] managedSysObjectParamDTO(String managedSystemId, String objectType) {
+
+        if (managedSystemId == null) {
+            throw new NullPointerException("managedSystemId is null");
+        }
+        if (objectType == null) {
+            throw new NullPointerException("objectType is null");
+        }
+        List<ManagedSystemObjectMatchEntity> objList = this.managedSysObjectParam(managedSystemId, objectType);
+        if (objList == null) {
+            return null;
+        }
+        int size = objList.size();
+        ManagedSystemObjectMatch[] objAry = new ManagedSystemObjectMatch[size];
+        managedSystemObjectMatchDozerConverter.convertToDTOList(objList, false)
+                .toArray(objAry);
+        return objAry;
+    }
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "resourceAttributeMapsByResource", key = "{ #resourceId}")
+    public List<AttributeMap> getResourceAttributeMapsDTO(final String resourceId) {
+        if (resourceId == null) {
+            throw new IllegalArgumentException("resourceId is null");
+        }
+        List<AttributeMapEntity> amEList = this.getResourceAttributeMaps(resourceId);
+        List<AttributeMap> mapList = new LinkedList<AttributeMap>();
+        if (amEList != null) {
+            for (AttributeMapEntity ame : amEList) {
+                AttributeMap am = attributeMapDozerConverter.convertToDTO(ame, true);
+                mapList.add(am);
+            }
+        }
+        return mapList;
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public ManagedSysDto getManagedSysDtoByResource(String resourceId) {
+        ManagedSysDto sysDto = null;
+        if (resourceId != null) {
+            ManagedSysEntity sys = this.getManagedSysByResource(resourceId, "ACTIVE");
+            if (sys != null) {
+                sysDto = managedSysDozerConverter.convertToDTO(sys, false);
+                if (sysDto != null && sysDto.getPswd() != null) {
+                    try {
+                        sysDto.setDecryptPassword(cryptor.decrypt(
+                                keyManagementService.getUserKey(systemUserId,
+                                        KeyName.password.name()), sys.getPswd()));
+                    } catch (Exception e) {
+                        log.error(e);
+                    }
+                }
+            }
+        }
+        return sysDto;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ManagedSysDto> getAllManagedSysDTO() {
+        final List<ManagedSysEntity> sysList = this.getAllManagedSys();
+        return managedSysDozerConverter.convertToDTOList(sysList, true);
+    }
+
 }

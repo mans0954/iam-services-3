@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="message" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="mq" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -34,7 +34,7 @@ public class Exception {
     protected String message;
 
     /**
-     * Gets the value of the message property.
+     * Gets the value of the mq property.
      * 
      * @return
      *     possible object is
@@ -46,7 +46,7 @@ public class Exception {
     }
 
     /**
-     * Sets the value of the message property.
+     * Sets the value of the mq property.
      * 
      * @param value
      *     allowed object is

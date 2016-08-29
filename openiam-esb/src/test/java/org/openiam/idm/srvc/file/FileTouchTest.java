@@ -1,6 +1,6 @@
 package org.openiam.idm.srvc.file;
 
-import org.openiam.idm.srvc.file.ws.FileWebService;
+import org.openiam.srvc.common.FileWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -17,7 +17,7 @@ public class FileTouchTest extends AbstractTestNGSpringContextTests {
 
 	@Test
 	public void touchFileTest() {
-		fileWebService.saveFile("test.txt", "Test message write");
+		fileWebService.saveFile("test.txt", "Test mq write");
 		fileWebService.getFile("test.txt");
 	}
 }

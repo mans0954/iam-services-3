@@ -24,7 +24,7 @@ package org.openiam.idm.srvc.auth.context;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.base.request.AuthenticationRequest;
 
 public class AuthenticationContext extends AuthenticationRequest {
 

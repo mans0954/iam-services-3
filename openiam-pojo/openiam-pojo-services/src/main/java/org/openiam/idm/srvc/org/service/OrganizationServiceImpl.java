@@ -15,7 +15,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.cache.CacheKeyEvictions;
@@ -50,6 +52,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -274,7 +277,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 /*    @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity language) {
+    public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity lang) {
         List<OrganizationEntity> organizationEntityList = orgDao.findOrganizationsByAttributeValue(attrName, attrValue);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, true);
     }*/
@@ -300,7 +303,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     /*AM-851 */
-    //@Cacheable(value = "organizationEntities", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
+    //@Cacheable(value = "organizationEntities", key = "{ #searchBean,#requesterId,#from,#size,#lang}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
         Set<String> filter = getDelegationFilter(requesterId, false);
         if(searchBean != null) {
@@ -877,7 +880,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                     if (StringUtils.isBlank(noa.getId())) {
                         //add
                         noa.setOrganization(curEntity);
-                        noa.setElement(getEntity(noa.getElement()));
+                        noa.setMetadataElementId(noa.getMetadataElementId());
                         toAdd.add(noa);
 
                     } else if (currIds.contains(noa.getId())) {
@@ -886,7 +889,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                         for (OrganizationAttributeEntity oae : curEntity.getAttributes()) {
                             if (StringUtils.equals(oae.getId(), noa.getId())) {
                                 oae.setValue(noa.getValue());
-                                oae.setElement(getEntity(noa.getElement()));
+                                oae.setMetadataElementId(noa.getMetadataElementId());
                                 oae.setName(noa.getName());
                                 oae.setIsMultivalued(noa.getIsMultivalued());
                                 oae.setValues(noa.getValues());
@@ -910,22 +913,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
 	}
     
-    private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
-    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
-    		return metadataElementDAO.findById(bean.getId());
-    	} else {
-    		return null;
-    	}
-    }
-    
-    private void setMetadataTypeOnOrgAttribute(final OrganizationAttributeEntity bean) {
-    	if(bean.getElement() != null && bean.getElement().getId() != null) {
-    		bean.setElement(metadataElementDAO.findById(bean.getElement().getId()));
-		} else {
-			bean.setElement(null);
-		}
-    }
-
     @Override
     @Transactional
     @CacheKeyEvictions({
@@ -1668,5 +1655,110 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private OrganizationService getProxyService() {
         OrganizationService service = (OrganizationService) ac.getBean("organizationService");
         return service;
+    }
+
+    @Override
+    @Transactional
+    public void saveAttribute(final OrganizationAttributeEntity attribute) {
+        if(StringUtils.isNotBlank(attribute.getId())) {
+            orgAttrDao.update(attribute);
+        } else {
+            orgAttrDao.save(attribute);
+        }
+    }
+
+
+    @Override
+    public Response saveOrganization(final Organization organization, final String requesterId) {
+        return saveOrganizationWithSkipPrePostProcessors(organization, requesterId, false);
+    }
+
+    @Override
+    public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            Organization org = this.save(organization, requestorId, skipPrePostProcessors);
+            response.setResponseValue(org.getId());
+
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+        } catch (Throwable e) {
+            log.error("Can't save organization", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+    @Override
+    public Response deleteOrganization(final String orgId, final String requestorId) {
+        return deleteOrganizationWithSkipPrePostProcessors(orgId, false, requestorId);
+    }
+
+    @Override
+    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors, final String requestorId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            this.deleteOrganization(orgId, skipPrePostProcessors);
+
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+
+        } catch (Throwable e) {
+            log.error("Can't save resource type", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response addUserToOrg(final String orgId,
+                                 final String userId,
+                                 final String requestorId,
+                                 final Set<String> rightIds,
+                                 final Date startDate,
+                                 final Date endDate) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (orgId == null || userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+                throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+
+            this.addUserToOrg(orgId, userId, rightIds, startDate, endDate);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't save resource type", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeUserFromOrg(String orgId, String userId, final String requestorId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (orgId == null || userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            this.removeUserFromOrg(orgId, userId);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't save resource type", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
     }
 }

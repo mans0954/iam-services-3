@@ -6,6 +6,7 @@ import java.util.List;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.dto.AccessRight;
+import org.openiam.idm.srvc.lang.dto.Language;
 
 public interface AccessRightService {
 
@@ -15,4 +16,7 @@ public interface AccessRightService {
 	List<AccessRightEntity> findBeans(final AccessRightSearchBean searchBean, final int from, final int size);
 	int count(AccessRightSearchBean searchBean);
 	List<AccessRightEntity> findByIds(Collection<String> ids);
+
+	public List<AccessRight> findBeansDTO(final AccessRightSearchBean searchBean, final int from, final int size, final Language language);
+
 }

@@ -2,7 +2,6 @@ package org.openiam.service.integration.contentprovider;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,26 +11,21 @@ import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.PatternMatchMode;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternParameter;
-import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
+import org.openiam.am.srvc.searchbean.ContentProviderSearchBean;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
-import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
+import org.openiam.base.response.URIFederationResponse;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.service.AuthenticationService;
-import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.base.request.AuthenticationRequest;
+import org.openiam.base.response.AuthenticationResponse;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.srvc.am.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestClientException;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -215,11 +209,13 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		String url = "http://www.example.com";
 		String method = null;
 		URIFederationResponse response = federateProxyURI(userId, url, method);
-		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
+		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
 		assertMetadataEquals(url, method, response);
 		
-		Response entitlementsResponse = resourceDataService.addUserToResource(cp.getResourceId(), userId, null, null, null, null);
-		Assert.assertTrue(entitlementsResponse.isSuccess());
+		cp.getPatternSet().forEach(pattern -> {
+			final Response entResponse = resourceDataService.addUserToResource(pattern.getResourceId(), userId, null, null, null, null);
+			Assert.assertTrue(entResponse.isSuccess());
+		});
 		
 		authorizationManagerServiceClient.refreshCache();
 		authorizationManagerServiceClient.refreshCache();
@@ -234,22 +230,25 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		method = null;
 		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
-		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
+		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 		assertMetadataEquals(url, method, response);
 		
 		url = "http://www.example.com/";
 		method = null;
 		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
-		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
+		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 		assertMetadataEquals(url, method, response);
 		
 		url = "http://www.example.com/ignore/foobar";
 		method = null;
 		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
-		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
+		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 		assertMetadataEquals(url, method, response);
+		
+		Response entitlementsResponse = resourceDataService.addUserToResource(cp.getResourceId(), userId, null, null, null, null);
+		Assert.assertTrue(entitlementsResponse.isSuccess());
 		
 		url = "http://www.example.com/paramsWithNoMethod/foobar";
 		method = null;
@@ -269,20 +268,15 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		method = null;
 		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
-		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
+		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 		assertMetadataEquals(url, method, response);
 		
 		url = "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5";
 		method = null;
 		response = federateProxyURI(userId, url, method);
 		Assert.assertTrue(response.isConfigured());
-		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
+		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 		assertMetadataEquals(url, method, response);
-		
-		cp.getPatternSet().forEach(pattern -> {
-			final Response entResponse = resourceDataService.addUserToResource(pattern.getResourceId(), userId, null, null, null, null);
-			Assert.assertTrue(entResponse.isSuccess());
-		});
 		
 		refreshAuthorizationManager();
 		

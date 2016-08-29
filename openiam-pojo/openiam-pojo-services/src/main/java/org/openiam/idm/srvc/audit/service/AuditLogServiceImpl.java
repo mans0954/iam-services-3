@@ -14,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
+import org.openiam.base.request.IdmAuditLogRequest;
 import org.openiam.elasticsearch.dao.AuditLogElasticSearchRepository;
 import org.openiam.elasticsearch.dao.GroupElasticSearchRepository;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
@@ -29,11 +30,15 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.OpenIAMAPICommon;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.dto.MQRequest;
+import org.openiam.mq.gateway.RequestServiceGateway;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,7 +69,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     protected SysConfiguration sysConfiguration;
     
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RequestServiceGateway  requestServiceGateway;
     
     @Autowired
     private LoginElasticSearchRepository loginDAO;
@@ -198,7 +203,13 @@ public class AuditLogServiceImpl implements AuditLogService {
 	}
 	
 	 private void send(final IdmAuditLogEntity log) {
-		 redisTemplate.opsForList().leftPush("logQueue", log);
+         IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
+         wrapper.setLogEntity(log);
+
+         MQRequest<IdmAuditLogRequest, OpenIAMAPICommon> request = new MQRequest<>();
+         request.setRequestBody(wrapper);
+         request.setRequestApi(OpenIAMAPICommon.AuditLogSave);
+         requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
 	 }
 
 	@Override

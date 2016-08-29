@@ -27,7 +27,7 @@ public interface LanguageDataService {
     List<Language> getUsedLanguages(Language language);
 
     /**
-     * Returns the language specified by the language
+     * Returns the lang specified by the lang
      * 
      * @param id
      * @return

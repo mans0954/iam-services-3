@@ -36,13 +36,11 @@ import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
@@ -51,7 +49,7 @@ import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultRow;
 import org.openiam.idm.srvc.recon.result.dto.ReconcliationFieldComparatorByField;
 import org.openiam.idm.srvc.recon.util.Serializer;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.provision.service.ConnectorAdapter;
@@ -80,7 +78,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
-    protected ResourceDataService resourceDataService;
+    protected ResourceService resourceDataService;
     @Autowired
     protected ManagedSystemObjectMatchDozerConverter objectMatchDozerConverter;
     @Autowired

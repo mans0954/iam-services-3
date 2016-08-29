@@ -12,15 +12,15 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 public class ReplaceSuperior extends AbstractActivitiJob {
     @Autowired
-    @Qualifier("userWS")
-    private UserDataWebService userDataWebService;
+    @Qualifier("userManager")
+    private UserDataService userManager;
 
     public ReplaceSuperior() {
         super();
@@ -44,7 +44,7 @@ public class ReplaceSuperior extends AbstractActivitiJob {
         try {
             if (subordinate != null) {
                 final ProvisionUser pUser = new ProvisionUser(subordinate);
-                List<User> superiors = userDataWebService.getSuperiors(subordinateId, 0, Integer.MAX_VALUE);
+                List<User> superiors = userManager.getSuperiorsDto(subordinateId, 0, Integer.MAX_VALUE);
                 superiors = (superiors != null) ? superiors : new LinkedList<User>();
 
                 if (currSuperior != null) {

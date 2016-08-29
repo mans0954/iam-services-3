@@ -64,19 +64,16 @@ public class SourceAdapterDispatcher implements Runnable {
     @Autowired
     private ProvisioningDataService provisioningDataService;
     @Autowired
-    private UserDataWebService userDataService;
+    @Qualifier("userManager")
+    protected UserDataService userManager;
     @Autowired
-    private GroupDataWebService groupDataWebService;
+    private GroupDataService groupDataService;
     @Autowired
-    private RoleDataWebService roleDataWebService;
+    private RoleDataService roleDataService;
     @Autowired
-    private ResourceDataService resourceDataService;
+    private ResourceService resourceDataService;
     @Autowired
-    private OrganizationDataService organizationDataService;
-    @Autowired
-    private MetadataWebService metadataWS;
-    @Autowired
-    private ManagedSystemWebService managedSysService;
+    private OrganizationService organizationDataService;
     @Autowired
     protected SysConfiguration sysConfiguration;
 
@@ -382,7 +379,7 @@ public class SourceAdapterDispatcher implements Runnable {
             sp.setValue(request.getEmployeeId());
             usb.setEmployeeIdMatchToken(sp);
             usb.setDeepCopy(true);
-            List<User> users = userDataService.findBeans(usb, 0, 2);
+            List<User> users = userManager.findBeansDto(usb, 0, 2);
             if (CollectionUtils.isNotEmpty(users)) {
                 if (users.size() == 1) {
                     u = users.get(0);
@@ -546,7 +543,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     GroupSearchBean gsb = new GroupSearchBean();
                     gsb.setName(group.getName());
                     gsb.setManagedSysId(group.getManagedSystemId());
-                    List<Group> dbGroups = groupDataWebService.findBeans(gsb, requestorId, -1, -1);
+                    List<Group> dbGroups = groupDataService.findDtoBeans(gsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbGroups)) {
                         if (dbGroups.size() > 1) {
                             warnings.append(this.getWarning("Not unique name. Skip it. Group Name=" + group.getName()));
@@ -656,7 +653,7 @@ public class SourceAdapterDispatcher implements Runnable {
             osb.addAttribute(org.getAttributeLookup().getName(), org.getAttributeLookup().getValue());
         }
         osb.setDeepCopy(false);
-        organization = organizationDataService.findBeans(osb, requestodId, 0, Integer.MAX_VALUE);
+        organization = organizationDataService.findBeansDto(osb, requestodId, 0, Integer.MAX_VALUE, null);
         return organization;
     }
 
@@ -776,7 +773,7 @@ public class SourceAdapterDispatcher implements Runnable {
         orgDB = organization.get(0);
 
         if (orgDB != null && orgDB.getId() != null) {
-            List<OrganizationAttribute> organizationAttributes = organizationDataService.getOrganizationAttributes(orgDB.getId());
+            List<OrganizationAttribute> organizationAttributes = organizationDataService.getOrgAttributesDtoList(orgDB.getId());
             if (CollectionUtils.isNotEmpty(organizationAttributes))
                 orgDB.setAttributes(new HashSet<OrganizationAttribute>(organizationAttributes));
         }
@@ -807,7 +804,7 @@ public class SourceAdapterDispatcher implements Runnable {
             boolean isFound = false;
             List<User> superiorsFromDB = null;
             if (pUser.getId() != null) {
-                superiorsFromDB = userDataService.getSuperiors(pUser.getId(), 0, Integer.MAX_VALUE);
+                superiorsFromDB = userManager.getSuperiorsDto(pUser.getId(), 0, Integer.MAX_VALUE);
             }
             if (CollectionUtils.isNotEmpty(superiorsFromDB)) {
                 pUser.setSuperiors(new HashSet<User>(superiorsFromDB));
@@ -887,7 +884,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     RoleSearchBean rsb = new RoleSearchBean();
                     rsb.setName(role.getName());
                     rsb.setManagedSysId(role.getManagedSystemId());
-                    List<Role> dbRoles = roleDataWebService.findBeans(rsb, requestorId, -1, -1);
+                    List<Role> dbRoles = roleDataService.findBeansDto(rsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbRoles)) {
                         if (dbRoles.size() > 1) {
                             warnings.append(this.getWarning("Not unique name. Skip it. Role Name=" + role.getName()));
@@ -929,7 +926,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 if (!isFound) {
                     ResourceSearchBean rsb = new ResourceSearchBean();
                     rsb.setName(resource.getName());
-                    List<Resource> dbResource = resourceDataService.findBeans(rsb, -1, -1, null);
+                    List<Resource> dbResource = resourceDataService.findBeansLocalizedDto(rsb, -1, -1, null);
                     if (CollectionUtils.isNotEmpty(dbResource)) {
                         if (dbResource.size() > 1) {
                             warnings.append(this.getWarning("Not unique name. Skip it. Resource Name=" + resource.getName()));

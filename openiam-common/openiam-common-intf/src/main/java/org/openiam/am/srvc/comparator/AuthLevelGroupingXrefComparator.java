@@ -1,10 +1,11 @@
 package org.openiam.am.srvc.comparator;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.openiam.am.srvc.dto.AbstractAuthLevelGroupingXref;
 
-public class AuthLevelGroupingXrefComparator implements Comparator<AbstractAuthLevelGroupingXref> {
+public class AuthLevelGroupingXrefComparator implements Comparator<AbstractAuthLevelGroupingXref>, Serializable {
 
 	@Override
 	public int compare(AbstractAuthLevelGroupingXref o1,
