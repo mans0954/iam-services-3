@@ -5,7 +5,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.*;
+import org.openiam.base.response.PasswordResponse;
+import org.openiam.base.response.PasswordValidationResponse;
+import org.openiam.base.response.ProvisionUserResponse;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -15,28 +20,24 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.meta.ws.MetadataWebService;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.*;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.common.UserSearchKey;
 import org.openiam.provision.dto.common.UserSearchKeyEnum;
 import org.openiam.provision.dto.common.UserSearchMemberhipKey;
 import org.openiam.provision.dto.srcadapter.*;
-import org.openiam.provision.resp.PasswordResponse;
-import org.openiam.provision.resp.ProvisionUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -1167,7 +1168,7 @@ public class SourceAdapterDispatcher implements Runnable {
             searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         }
         searchBean.setDeepCopy(true);
-        List<User> userList = userDataService.findBeans(searchBean, 0, Integer.MAX_VALUE);
+        List<User> userList = userManager.findBeansDto(searchBean, 0, Integer.MAX_VALUE);
         if (CollectionUtils.isNotEmpty(userList)) {
             if (userList.size() > 1) {
                 throw new Exception("Identifier not unique=" + matchAttrName + ":" + matchAttrValue);

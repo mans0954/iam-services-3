@@ -1,11 +1,7 @@
 package org.openiam.provision.service;
 
-import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.provision.dto.accessmodel.UserAccessControlRequest;
 import org.openiam.provision.dto.accessmodel.UserAccessControlResponse;
-import org.openiam.provision.dto.srcadapter.SourceAdapterInfoResponse;
-import org.openiam.provision.dto.srcadapter.SourceAdapterRequest;
-import org.openiam.provision.dto.srcadapter.SourceAdapterResponse;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
