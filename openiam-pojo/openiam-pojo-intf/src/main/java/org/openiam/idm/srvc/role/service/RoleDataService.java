@@ -125,6 +125,9 @@ public interface RoleDataService {
 
     public int getNumOfRolesForUser(final String userId, String requesterId);
 
+    public void canAddUserToRole(String userId, String roleId) throws BasicDataServiceException;
+
+    public void canRemoveUserFromRole(String userId, String roleId) throws BasicDataServiceException;
     /**
      * Adds a user to a role using the UserRole object. Similar to addUserToRole, but allows you to update attributes likes start and end date.
      */

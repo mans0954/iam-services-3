@@ -226,6 +226,30 @@ public class RoleDataServiceImpl implements RoleDataService {
      */
 
     @Override
+    public void canAddUserToRole(String userId, String roleId) throws BasicDataServiceException {
+        if (roleId == null || userId == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or UserId  is null");
+        }
+        final UserEntity parent = userDAO.findById(userId);
+        final RoleEntity child = roleDao.findById(roleId);
+        if (parent == null || child == null) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+    }
+
+    @Override
+    public void canRemoveUserFromRole(String userId, String roleId) throws BasicDataServiceException {
+        if (roleId == null || userId == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or UserId is null");
+        }
+        final UserEntity parent = userDAO.findById(userId);
+        final RoleEntity child = roleDao.findById(roleId);
+        if (parent == null || child == null) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+    }
+
+    @Override
     @Transactional
     public void addUserToRole(final String roleId,
                               final String userId,

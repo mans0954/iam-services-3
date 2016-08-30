@@ -51,8 +51,6 @@ import java.util.Set;
 @Service("roleWS")
 public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDataWebService {
 
-    private static final Log LOG = LogFactory.getLog(RoleDataWebServiceImpl.class);
-
     protected RoleDataWebServiceImpl() {
         super(OpenIAMQueue.RoleQueue);
     }
@@ -207,37 +205,74 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public Response addChildRole(String roleId, String childRoleId, String requesterId, Set<String> rights, Date startDate, Date endDate) {
-        return null;
+        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        request.setRoleId(roleId);
+        request.setLinkedObjectId(childRoleId);
+        request.setRightIds(rights);
+        request.setStartDate(startDate);
+        request.setEndDate(endDate);
+        request.setRequesterId(requesterId);
+        return this.manageApiRequest(RoleAPI.AddChildRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public Response canAddChildRole(String roleId, String childRoleId, Set<String> rights, Date startDate, Date endDate) {
-        return null;
+        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        request.setRoleId(roleId);
+        request.setLinkedObjectId(childRoleId);
+        request.setRightIds(rights);
+        request.setStartDate(startDate);
+        request.setEndDate(endDate);
+        return this.manageApiRequest(RoleAPI.CanAddChildRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public Response removeChildRole(String roleId, String childRoleId, String requesterId) {
-        return null;
+        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        request.setRoleId(roleId);
+        request.setLinkedObjectId(childRoleId);
+        return this.manageApiRequest(RoleAPI.RemoveChildRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public Response canAddUserToRole(String userId, String roleId) {
-        return null;
+        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        request.setRoleId(roleId);
+        request.setLinkedObjectId(userId);
+        return this.manageApiRequest(RoleAPI.CanAddUserToRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public Response canRemoveUserFromRole(String userId, String roleId) {
-        return null;
+        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        request.setRoleId(roleId);
+        request.setLinkedObjectId(userId);
+        return this.manageApiRequest(RoleAPI.CanRemoveUserFromRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
-        return null;
+        IdsServiceRequest request = new IdsServiceRequest();
+        request.setIds(roleIds);
+        request.setRequesterId(requesterId);
+        TreeObjectIdListServiceResponse response = this.manageApiRequest(RoleAPI.GetRolesWithSubRolesIds, request, TreeObjectIdListServiceResponse.class);
+        if (response.isSuccess()) {
+            return response.getTreeObjectIds();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public boolean hasChildEntities(String roleId) {
-        return false;
+        IdServiceRequest request = new IdServiceRequest();
+        request.setId(roleId);
+        BooleanResponse response = this.manageApiRequest(RoleAPI.HasChildEntities, request, BooleanResponse.class);
+        if (response.isSuccess()) {
+            return response.getValue();
+        } else {
+            return false;
+        }
     }
 
 //    @Autowired

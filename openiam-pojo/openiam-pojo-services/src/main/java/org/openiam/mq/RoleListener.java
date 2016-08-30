@@ -52,10 +52,25 @@ public class RoleListener extends AbstractRabbitMQListener<RoleAPI> {
     private RoleAddUserToRoleDispatcher addUserToRoleDispatcher;
 
     @Autowired
-    RoleRemoveUserFromRoleDispatcher roleRemoveUserFromRoleDispatcher;
+    private RoleRemoveUserFromRoleDispatcher roleRemoveUserFromRoleDispatcher;
 
     @Autowired
-    RoleGetParentsDispatcher roleGetParentsDispatcher;
+    private RoleGetParentsDispatcher roleGetParentsDispatcher;
+    @Autowired
+    private RoleAddChildRoleDispatcher roleAddChildRoleDispatcher;
+    @Autowired
+    private RoleCanAddChildRoleDispatcher roleCanAddChildRoleDispatcher;
+    @Autowired
+    private RoleRemoveChildRoleDispatcher removeChildRoleDispatcher;
+
+    @Autowired
+    private RoleCanAddUserToRoleDispatcher roleCanAddUserToRoleDispatcher;
+    @Autowired
+    private RoleCanRemoveUserFromRoleDispatcher roleCanRemoveUserFromRoleDispatcher;
+    @Autowired
+    private RoleGetTreeObjectIdsDispatcher roleGetTreeObjectIdsDispatcher;
+    @Autowired
+    private RoleHasChildEntitiesDispatcher roleHasChildEntitiesDispatcher;
 
     public RoleListener() {
         super(OpenIAMQueue.RoleQueue);
@@ -106,8 +121,29 @@ public class RoleListener extends AbstractRabbitMQListener<RoleAPI> {
                 break;
             case GetParentRoles:
                 addTask(roleGetParentsDispatcher, correlationId, message, apiName, isAsync);
-            default:
+            case AddChildRole:
+                addTask(roleAddChildRoleDispatcher, correlationId, message, apiName, isAsync);
                 break;
+            case CanAddChildRole:
+                addTask(roleCanAddChildRoleDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case RemoveChildRole:
+                addTask(removeChildRoleDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case CanAddUserToRole:
+                addTask(roleCanAddUserToRoleDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case CanRemoveUserFromRole:
+                addTask(roleCanRemoveUserFromRoleDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case GetRolesWithSubRolesIds:
+                addTask(roleGetTreeObjectIdsDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case HasChildEntities:
+                addTask(roleHasChildEntitiesDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            default:
+                throw new RejectMessageException();
         }
     }
 }

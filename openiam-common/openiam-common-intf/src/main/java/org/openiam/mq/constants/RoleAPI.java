@@ -17,5 +17,12 @@ public enum RoleAPI implements OpenIAMAPI {
     RemoveGroupFromRole,
     AddUserToRole,
     RemoveUserFromRole,
-    GetParentRoles;
+    GetParentRoles,
+    AddChildRole,
+    CanAddChildRole,
+    RemoveChildRole,
+    CanAddUserToRole,
+    CanRemoveUserFromRole,
+    GetRolesWithSubRolesIds,
+    HasChildEntities;
 }
