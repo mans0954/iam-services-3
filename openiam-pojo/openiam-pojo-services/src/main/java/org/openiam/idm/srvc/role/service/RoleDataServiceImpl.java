@@ -624,7 +624,7 @@ public class RoleDataServiceImpl implements RoleDataService {
                              final String childRoleId,
                              final Set<String> rights,
                              final Date startDate,
-                             final Date endDate) {
+                             final Date endDate) throws BasicDataServiceException{
         if (id != null && childRoleId != null && !id.equals(childRoleId)) {
             final RoleEntity child = roleDao.findById(childRoleId);
             final RoleEntity parent = roleDao.findById(id);
@@ -632,7 +632,8 @@ public class RoleDataServiceImpl implements RoleDataService {
                 parent.addChild(child, accessRightDAO.findByIds(rights), startDate, endDate);
             }
             roleDao.update(parent);
-        }
+        } else
+            throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD, "Could not process such combination of parent/child ids");
     }
 
     @Override
@@ -823,6 +824,7 @@ public class RoleDataServiceImpl implements RoleDataService {
         RoleDataService service = (RoleDataService) SpringContextProvider.getBean("roleDataService");
         return service;
     }
+
     @Override
     @Transactional(readOnly = true)
     public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
@@ -919,6 +921,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 
     @Override
+    @Transactional
     public void addUserToRole(final String roleId, final String userId, final String requesterId, final Set<String> rightIds,
                               final Date startDate, final Date endDate) throws BasicDataServiceException {
         final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
@@ -948,7 +951,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 
     @Override
-@Transactional
+    @Transactional
     public void removeGroupFromRole(String roleId, String groupId, String requesterId) throws BasicDataServiceException {
         final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
         idmAuditLog.setRequestorUserId(requesterId);

@@ -18,7 +18,7 @@ public class RoleAddChildRoleDispatcher extends AbstractRoleDispatcher<EntitleTo
     @Override
     protected BooleanResponse processingApiRequest(RoleAPI openIAMAPI, EntitleToRoleRequest requestBody) throws BasicDataServiceException {
         BooleanResponse response = new BooleanResponse();
-        roleDataService.addChildRole(requestBody.getRoleId(), requestBody.getLinkedObjectId(), requestBody.getRightIds(),
+        roleDataService.addChildRole(requestBody.getRoleId(), requestBody.getLinkedObjectId(), requestBody.getRequesterId(), requestBody.getRightIds(),
                 requestBody.getStartDate(), requestBody.getEndDate());
         response.setValue(Boolean.TRUE);
         return response;

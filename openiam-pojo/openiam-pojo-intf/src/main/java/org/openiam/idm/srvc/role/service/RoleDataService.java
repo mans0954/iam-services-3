@@ -192,7 +192,7 @@ public interface RoleDataService {
 
     //public List<Role> findRolesDtoByAttributeValue(String attrName, String attrValue);
 
-    public void addChildRole(final String roleId, final String childRoleId, final Set<String> rights, final Date startDate, final Date endDate);
+    public void addChildRole(final String roleId, final String childRoleId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException;
 
     public void removeChildRole(final String roleId, final String childRoleId);
 
