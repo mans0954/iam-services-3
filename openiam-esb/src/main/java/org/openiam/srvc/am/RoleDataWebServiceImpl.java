@@ -30,12 +30,11 @@ import javax.jws.WebService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.TreeObjectId;
+import org.openiam.base.request.EntitleToRoleRequest;
 import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
-import org.openiam.base.request.RoleValidateEditRequest;
-import org.openiam.base.response.BooleanResponse;
-import org.openiam.base.response.RoleFindBeansResponse;
-import org.openiam.base.response.RoleGetResponse;
+import org.openiam.base.request.RoleRequest;
+import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -64,7 +63,7 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public Response validateEdit(Role role) {
-        RoleValidateEditRequest request = new RoleValidateEditRequest();
+        RoleRequest request = new RoleRequest();
         request.setRole(role);
         return this.manageApiRequest(RoleAPI.ValidateEdit, request, BooleanResponse.class).convertToBase();
     }
@@ -92,61 +91,105 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public List<RoleAttribute> getRoleAttributes(String roleId) {
-        return null;
+        IdServiceRequest request = new IdServiceRequest();
+        request.setId(roleId);
+        RoleAttributeGetResponse response = this.manageApiRequest(RoleAPI.GetRoleAttributes, request, RoleAttributeGetResponse.class);
+        if (response.isSuccess()) {
+            return response.getRoleAttributes();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public Response saveRole(Role role, String requesterId) {
-        return null;
+        RoleRequest request = new RoleRequest();
+        request.setRole(role);
+        request.setRequesterId(requesterId);
+        return this.manageApiRequest(RoleAPI.SaveRole, request, Response.class);
     }
 
     @Override
     public Response removeRole(String roleId, String requesterId) {
-        return null;
+
+        IdServiceRequest request = new IdServiceRequest();
+        request.setId(roleId);
+        request.setRequesterId(requesterId);
+        return this.manageApiRequest(RoleAPI.RemoveRole, request, Response.class);
     }
 
     @Override
     public Role getRole(String roleId, String requesterId) {
-        return null;
+        return this.getRoleLocalized(roleId, requesterId, null);
     }
 
     @Override
     public Response addGroupToRole(String roleId, String groupId, String requesterId, Set<String> rightIds, Date startDate, Date endDate) {
-        return null;
+        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        request.setRequesterId(requesterId);
+        request.setRoleId(roleId);
+        request.setLinkedObjectId(groupId);
+        request.setRightIds(rightIds);
+        request.setStartDate(startDate);
+        request.setEndDate(endDate);
+        return this.manageApiRequest(RoleAPI.AddGroupToRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public Response validateGroup2RoleAddition(String roleId, String groupId) {
-        return null;
+        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        request.setRoleId(roleId);
+        request.setLinkedObjectId(groupId);
+        return this.manageApiRequest(RoleAPI.ValidateGroup2RoleAddition, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public Response removeGroupFromRole(String roleId, String groupId, String requesterId) {
-        return null;
+        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        request.setRoleId(roleId);
+        request.setLinkedObjectId(groupId);
+        request.setRequesterId(requesterId);
+        return this.manageApiRequest(RoleAPI.RemoveGroupFromRole, request, BooleanResponse.class).convertToBase();
+
     }
 
     @Override
     public Response addUserToRole(String roleId, String userId, String requesterId, Set<String> rightIds, Date startDate, Date endDate) {
-        return null;
+        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        request.setRoleId(roleId);
+        request.setLinkedObjectId(userId);
+        request.setRightIds(rightIds);
+        request.setStartDate(startDate);
+        request.setEndDate(endDate);
+        request.setRequesterId(requesterId);
+        return this.manageApiRequest(RoleAPI.AddUserToRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public Response removeUserFromRole(String roleId, String userId, String requesterId) {
-        return null;
+        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        request.setRoleId(roleId);
+        request.setLinkedObjectId(userId);
+        request.setRequesterId(requesterId);
+        return this.manageApiRequest(RoleAPI.RemoveUserFromRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public List<Role> findBeans(RoleSearchBean searchBean, String requesterId, int from, int size) {
         BaseSearchServiceRequest<RoleSearchBean> request = new BaseSearchServiceRequest<>(searchBean, from, size);
         RoleFindBeansResponse response = this.manageApiRequest(RoleAPI.FindBeans, request, RoleFindBeansResponse.class);
-        if (response.isSuccess())
+        if (response.isSuccess()) {
             return response.getRoles();
-        else return null;
+        } else {
+            return null;
+        }
     }
 
     @Override
     public int countBeans(RoleSearchBean searchBean, String requesterId) {
-        return 0;
+        BaseSearchServiceRequest<RoleSearchBean> request = new BaseSearchServiceRequest<>(searchBean);
+        CountResponse response = this.manageApiRequest(RoleAPI.CountBeans, request, CountResponse.class);
+        return response.getRowCount();
     }
 
     @Override

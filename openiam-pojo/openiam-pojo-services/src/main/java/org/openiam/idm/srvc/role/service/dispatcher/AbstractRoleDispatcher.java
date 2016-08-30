@@ -16,9 +16,6 @@ public abstract class AbstractRoleDispatcher<RequestBody extends BaseServiceRequ
     @Autowired
     protected RoleDataService roleDataService;
 
-    @Autowired
-    protected RoleDozerConverter roleDozerConverter;
-
     public AbstractRoleDispatcher(Class<ResponseBody> responseBodyClass) {
         super(responseBodyClass);
     }

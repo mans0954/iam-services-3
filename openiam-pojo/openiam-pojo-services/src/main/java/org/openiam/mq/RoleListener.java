@@ -1,10 +1,7 @@
 package org.openiam.mq;
 
 import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.idm.srvc.role.service.dispatcher.RoleFindBeansDispatcher;
-import org.openiam.idm.srvc.role.service.dispatcher.RoleGetRoleLocalizedDispatcher;
-import org.openiam.idm.srvc.role.service.dispatcher.RoleValidateDeleteDispatcher;
-import org.openiam.idm.srvc.role.service.dispatcher.RoleValidateEditDispatcher;
+import org.openiam.idm.srvc.role.service.dispatcher.*;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.constants.RoleAPI;
 import org.openiam.mq.dto.MQRequest;
@@ -30,6 +27,33 @@ public class RoleListener extends AbstractRabbitMQListener<RoleAPI> {
     @Autowired
     private RoleGetRoleLocalizedDispatcher roleGetRoleLocalizedDispatcher;
 
+    @Autowired
+    private RoleGetAttributesDispatcher roleGetAttributesDispatcher;
+
+    @Autowired
+    private RoleCountBeansDispatcher roleCountBeansDispatcher;
+
+    @Autowired
+    private RoleAddGroupToRoleDispatcher roleAddGroupToRoleDispatcher;
+
+    @Autowired
+    private RoleSaveRoleDispatcher roleSaveRoleDispatcher;
+
+    @Autowired
+    private RoleRemoveRoleDispatcher roleRemoveRoleDispatcher;
+
+    @Autowired
+    private RoleValidateGroupToRoleDispatcher roleValidateGroupToRoleDispatcher;
+
+    @Autowired
+    private RoleRemoveGroupFromRoleDispatcher roleRemoveGroupFromRoleDispatcher;
+
+    @Autowired
+    private RoleAddUserToRoleDispatcher addUserToRoleDispatcher;
+
+    @Autowired
+    RoleRemoveUserFromRoleDispatcher roleRemoveUserFromRoleDispatcher;
+
     public RoleListener() {
         super(OpenIAMQueue.RoleQueue);
     }
@@ -49,6 +73,33 @@ public class RoleListener extends AbstractRabbitMQListener<RoleAPI> {
                 break;
             case GetRoleLocalized:
                 addTask(roleGetRoleLocalizedDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case GetRoleAttributes:
+                addTask(roleGetAttributesDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case CountBeans:
+                addTask(roleCountBeansDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case AddGroupToRole:
+                addTask(roleAddGroupToRoleDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case SaveRole:
+                addTask(roleSaveRoleDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case RemoveRole:
+                addTask(roleRemoveRoleDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case ValidateGroup2RoleAddition:
+                addTask(roleValidateGroupToRoleDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case RemoveGroupFromRole:
+                addTask(roleRemoveGroupFromRoleDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case AddUserToRole:
+                addTask(addUserToRoleDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case RemoveUserFromRole:
+                addTask(roleRemoveUserFromRoleDispatcher, correlationId, message, apiName, isAsync);
                 break;
             default:
                 break;

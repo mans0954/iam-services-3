@@ -1,7 +1,6 @@
 package org.openiam.idm.srvc.role.service.dispatcher;
 
 import org.openiam.base.request.IdServiceRequest;
-import org.openiam.base.request.RoleValidateEditRequest;
 import org.openiam.base.response.BooleanResponse;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.RoleAPI;
