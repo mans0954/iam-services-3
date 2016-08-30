@@ -54,6 +54,9 @@ public class RoleListener extends AbstractRabbitMQListener<RoleAPI> {
     @Autowired
     RoleRemoveUserFromRoleDispatcher roleRemoveUserFromRoleDispatcher;
 
+    @Autowired
+    RoleGetParentsDispatcher roleGetParentsDispatcher;
+
     public RoleListener() {
         super(OpenIAMQueue.RoleQueue);
     }
@@ -101,6 +104,8 @@ public class RoleListener extends AbstractRabbitMQListener<RoleAPI> {
             case RemoveUserFromRole:
                 addTask(roleRemoveUserFromRoleDispatcher, correlationId, message, apiName, isAsync);
                 break;
+            case GetParentRoles:
+                addTask(roleGetParentsDispatcher, correlationId, message, apiName, isAsync);
             default:
                 break;
         }

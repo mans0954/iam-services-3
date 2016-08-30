@@ -16,5 +16,6 @@ public enum RoleAPI implements OpenIAMAPI {
     ValidateGroup2RoleAddition,
     RemoveGroupFromRole,
     AddUserToRole,
-    RemoveUserFromRole;
+    RemoveUserFromRole,
+    GetParentRoles;
 }

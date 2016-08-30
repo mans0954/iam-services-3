@@ -21,19 +21,10 @@
  */
 package org.openiam.srvc.am;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
-import javax.jws.WebService;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.TreeObjectId;
-import org.openiam.base.request.EntitleToRoleRequest;
-import org.openiam.base.request.BaseSearchServiceRequest;
-import org.openiam.base.request.IdServiceRequest;
-import org.openiam.base.request.RoleRequest;
+import org.openiam.base.request.*;
 import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.RoleSearchBean;
@@ -44,6 +35,11 @@ import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.constants.RoleAPI;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.stereotype.Service;
+
+import javax.jws.WebService;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author suneet
@@ -194,7 +190,19 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public List<Role> getParentRoles(String roleId, String requesterId, int from, int size) {
-        return null;
+        GetParentsRequest request = new GetParentsRequest();
+        request.setId(roleId);
+        request.setRequesterId(requesterId);
+        request.setFrom(from);
+        request.setSize(size);
+        RoleFindBeansResponse response = this.manageApiRequest(RoleAPI.GetParentRoles, request, RoleFindBeansResponse.class);
+        if (response.isSuccess()) {
+            return response.getRoles();
+        } else {
+            return null;
+        }
+
+
     }
 
     @Override
