@@ -77,13 +77,6 @@ public interface RoleDataWebService {
      * @param requesterId - the User ID who request this operation. This param is required if delegation filter is set
      * @return  a paged List of Role objects that are linked to a Group. if no roles are found returns null
      */
-    @WebMethod
-    @Deprecated
-    List<Role> getRolesInGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                               final @WebParam(name="requesterId", targetNamespace="") String requesterId,
-                               final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
-                               final @WebParam(name = "from", targetNamespace = "") int from,
-                               final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     Role getRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
@@ -148,33 +141,7 @@ public interface RoleDataWebService {
                                 @WebParam(name = "userId", targetNamespace = "") String userId,
                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
-    /**
-     * Gets a paged List of Roles directly entitled to the User specified by the userId
-     * @param userId - the User ID
-     * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
-     * @param deepFlag - shows that method returns Role List with all sub collections
-     * @param from - where to start in the paged list
-     * @param size - how many to return
-     * @return a paged List of  Roles directly entitled to the User specified by the userId
-     */
-    @WebMethod
-    @Deprecated
-    List<Role> getRolesForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
-                               final @WebParam(name="requesterId", targetNamespace="") String requesterId,
-                               final @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
-                               final @WebParam(name = "from", targetNamespace = "") int from,
-                               final @WebParam(name = "size", targetNamespace = "") int size);
 
-    /**
-     * Gets the number of Roles directly entitled to the User specified by the userId
-     * @param userId - the User ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
-     * @return the number of Roles directly entitled to the User specified by the userId
-     */
-    @WebMethod
-    @Deprecated
-    int getNumOfRolesForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
-                             final @WebParam(name="requesterId", targetNamespace="") String requesterId);
 
 
     /**
@@ -200,59 +167,8 @@ public interface RoleDataWebService {
     int countBeans(final @WebParam(name = "searchBean", targetNamespace = "") RoleSearchBean searchBean,
                    final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
-    /**
-     * Gets the number of Roles directly entitled to the Resource specified by the resourceId
-     * @param resourceId - the Resource ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
-     * @return the number of Roles directly entitled to the Resource specified by the resourceId
-     */
-    @WebMethod
-    @Deprecated
-    List<Role> getRolesForResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
-                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                   final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
-                                   final @WebParam(name = "from", targetNamespace = "") int from,
-                                   final @WebParam(name = "size", targetNamespace = "") int size);
 
-    /**
-     * Gets the number of Roles directly entitled to the Resource specified by the resourceId
-     * @param resourceId - the Resource ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
-     * @return the number of Roles directly entitled to the Resource specified by the resourceId
-     */
-    @WebMethod
-    @Deprecated
-    int getNumOfRolesForResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
-                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
-    /**
-     * Returns a paged List of child roles that are are direct members of this Role
-     *
-     * @param roleId - the Role ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
-     * @param deepFlag - shows if method returns Roles Collection with all sub collections
-     * @param from - where to start in the list
-     * @param size - how many to return
-     * @return a paged List of Role objects. Returns null if no roles are found.
-     */
-    @WebMethod
-    @Deprecated
-    List<Role> getChildRoles(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
-                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                             final @WebParam(name = "deepFlag", targetNamespace = "") Boolean deepFlag,
-                             final @WebParam(name = "from", targetNamespace = "") int from,
-                             final @WebParam(name = "size", targetNamespace = "") int size);
-
-    /**
-     * Gets the number of child roles that are direct members of this Role
-     * @param roleId - the Role ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
-     * @return Integer, total number of roles that are direct members of this Role
-     */
-    @WebMethod
-    @Deprecated
-    int getNumOfChildRoles(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
-                           final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
     /**
      * Returns a paged List of groups that are direct parents of this Role
      *
@@ -267,16 +183,6 @@ public interface RoleDataWebService {
                               final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                               final @WebParam(name = "from", targetNamespace = "") int from,
                               final @WebParam(name = "size", targetNamespace = "") int size);
-    /**
-     * Gets the number of roles that are direct parents of this Role
-     * @param roleId - the Role ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
-     * @return - Integer, total number of roles that are direct parents of this Role
-     */
-    @WebMethod
-    @Deprecated
-    int getNumOfParentRoles(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
-                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Makes Role specified by childRoleId a child of Role specified by roleId
@@ -309,17 +215,6 @@ public interface RoleDataWebService {
     Response removeChildRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
                              final @WebParam(name = "childRoleId", targetNamespace = "") String childRoleId,
                              final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-
-    /**
-     * Gets the number of Roles directly entitled to this Group specified by the groupId
-     * @param groupId - the Group ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
-     * @return the number of Roles directly entitled to this Group specified by the groupId
-     */
-    @WebMethod
-    @Deprecated
-    int getNumOfRolesForGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                              final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Checks if User specified by userId can be added to the Role specified by roleId as a member
