@@ -127,12 +127,6 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Autowired
     protected LanguageDAO languageDAO;
 
-    /**
-     * Cache for whole roles hierarchy
-     * Used when Roles number > 250k records
-     */
-    private final Map<String, TreeObjectId> rolesTree = new HashMap<String, TreeObjectId>();
-
     private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
     @Deprecated
@@ -224,8 +218,9 @@ public class RoleDataServiceImpl implements RoleDataService {
     /**
      * Adds a user to a role using the UserRole object. Similar to addUserToRole, but allows you to update attributes likes start and end date.
      */
-
+    //TODO fix Could not obtain transaction-synchronized Session for current thread;
     @Override
+    @Transactional(readOnly = true)
     public void canAddUserToRole(String userId, String roleId) throws BasicDataServiceException {
         if (roleId == null || userId == null) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or UserId  is null");
@@ -237,7 +232,9 @@ public class RoleDataServiceImpl implements RoleDataService {
         }
     }
 
+    //TODO fix Could not obtain transaction-synchronized Session for current thread;
     @Override
+    @Transactional(readOnly = true)
     public void canRemoveUserFromRole(String userId, String roleId) throws BasicDataServiceException {
         if (roleId == null || userId == null) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or UserId is null");
@@ -791,6 +788,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean hasChildEntities(String roleId) {
         final RoleEntity role = roleDao.findById(roleId);
         if (role != null) {
@@ -825,12 +823,14 @@ public class RoleDataServiceImpl implements RoleDataService {
         RoleDataService service = (RoleDataService) SpringContextProvider.getBean("roleDataService");
         return service;
     }
-
+    @Override
+    @Transactional(readOnly = true)
     public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
         return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
     }
 
-
+    @Override
+    @Transactional
     public Response removeRole(String roleId, String requesterId) throws BasicDataServiceException {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -854,6 +854,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 
     @Override
+    @Transactional
     public String saveRole(Role role, final String requesterId) throws BasicDataServiceException {
         String retVal = null;
         try {
@@ -891,6 +892,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 
     @Override
+    @Transactional
     public void addGroupToRole(final String roleId, final String groupId, final String requesterId,
                                final Set<String> rightIds, final Date startDate, final Date endDate) throws BasicDataServiceException {
         final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
@@ -946,6 +948,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 
     @Override
+@Transactional
     public void removeGroupFromRole(String roleId, String groupId, String requesterId) throws BasicDataServiceException {
         final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -970,6 +973,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 
     @Override
+    @Transactional
     public void removeUserFromRole(String roleId, String userId, String requesterId) throws BasicDataServiceException {
         final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
@@ -994,6 +998,8 @@ public class RoleDataServiceImpl implements RoleDataService {
         }
     }
 
+    @Override
+    @Transactional
     public void addChildRole(final String roleId,
                              final String childRoleId,
                              final String requesterId,
@@ -1019,6 +1025,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 
     @Override
+    @Transactional
     public void removeChildRole(final String roleId, final String childRoleId, String requesterId) throws BasicDataServiceException {
         try {
             if (roleId == null || childRoleId == null) {

@@ -18,7 +18,7 @@ public class RoleAddGroupToRoleDispatcher extends AbstractRoleDispatcher<Entitle
     @Override
     protected BooleanResponse processingApiRequest(RoleAPI openIAMAPI, EntitleToRoleRequest requestBody) throws BasicDataServiceException {
         BooleanResponse response = new BooleanResponse();
-        roleDataService.addGroupToRole(requestBody.getRoleId(), requestBody.getLinkedObjectId(), requestBody.getRightIds(),
+        roleDataService.addGroupToRole(requestBody.getRoleId(), requestBody.getLinkedObjectId(), requestBody.getRequesterId(), requestBody.getRightIds(),
                 requestBody.getStartDate(), requestBody.getEndDate());
         response.setValue(Boolean.TRUE);
         return response;

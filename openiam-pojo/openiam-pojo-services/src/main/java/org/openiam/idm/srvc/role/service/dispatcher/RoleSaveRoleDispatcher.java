@@ -18,7 +18,8 @@ public class RoleSaveRoleDispatcher extends AbstractRoleDispatcher<RoleRequest, 
     @Override
     protected Response processingApiRequest(RoleAPI openIAMAPI, RoleRequest requestBody) throws BasicDataServiceException {
         Response response = new Response();
-        roleDataService.saveRole(requestBody.getRole(), requestBody.getRequesterId());
+        String retVal = roleDataService.saveRole(requestBody.getRole(), requestBody.getRequesterId());
+        response.setResponseValue(retVal);
         return response;
     }
 }
