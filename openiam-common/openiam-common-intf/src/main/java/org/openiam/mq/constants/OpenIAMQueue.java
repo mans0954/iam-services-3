@@ -19,8 +19,7 @@ public enum OpenIAMQueue {
     AuditLog,
     ProvisionQueue,
     RoleQueue,
-
-
+    PolicyQueue,
     LanguageServiceQueue, URIFederationQueue, AuthenticationQueue, UserQueue, GroupQueue, ResourceQueue;
 
     private String routingKey=this.name();

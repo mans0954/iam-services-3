@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.exception.BasicDataServiceException;
@@ -34,14 +35,14 @@ public class PolicyServiceImpl implements PolicyService {
 
     private static final Log log = LogFactory.getLog(PolicyServiceImpl.class);
 
-	@Autowired
-	private PolicyDAO policyDao;
-	
-	@Autowired
-	private PolicyDefParamDAO policyDefParamDao;
-	
-	@Autowired
-	private PolicyDefDAO policyDefDAO;
+    @Autowired
+    private PolicyDAO policyDao;
+
+    @Autowired
+    private PolicyDefParamDAO policyDefParamDao;
+
+    @Autowired
+    private PolicyDefDAO policyDefDAO;
 
 /*    @Autowired
     PolicyObjectAssocDAO policyObjectAssocDAO;*/
@@ -77,45 +78,48 @@ public class PolicyServiceImpl implements PolicyService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "policies", key = "{#policyId}")
-    public Policy getPolicy(String policyId) {
+    public Policy getPolicy(String policyId) throws BasicDataServiceException {
+        if (policyId == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Policy Id is NULL");
+        }
         PolicyEntity policyEntity = policyDao.findById(policyId);
         return policyDozerConverter.convertToDTO(policyEntity, true);
-	}
+    }
 
-	@Override
+    @Override
     @Transactional
-	@CacheKeyEviction(
-    	evictions={
-            @CacheKeyEvict("policies")
-        }
+    @CacheKeyEviction(
+            evictions = {
+                    @CacheKeyEvict("policies")
+            }
     )
-	public void save(final Policy policy) {
-		final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
-		if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
-			for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
-				attribute.setPolicy(pe);
-				if(attribute.getDefParam() != null && StringUtils.isNotBlank(attribute.getDefParam().getId())) {
-					attribute.setDefParam(policyDefParamDao.findById(attribute.getDefParam().getId()));
-				} else {
-					attribute.setDefParam(null);
-				}
-			}
-		}
-		
-		if(pe.getPolicyDef() != null && pe.getPolicyDef().getId() != null) {
-			pe.setPolicyDef(policyDefDAO.findById(pe.getPolicyDef().getId()));
-		} else {
-			pe.setPolicyDef(null);
-		}
-		
-		if (StringUtils.isNotBlank(pe.getId())) {
-			final PolicyEntity dbEntity = policyDao.findById(pe.getId());
-			pe.setPasswordPolicyProviders(dbEntity.getPasswordPolicyProviders());
-			pe.setAuthenticationPolicyProviders(dbEntity.getAuthenticationPolicyProviders());
-			policyDao.merge(pe);
-		} else {
-			policyDao.save(pe);
-		}
+    public void save(final Policy policy) {
+        final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
+        if (CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
+            for (final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
+                attribute.setPolicy(pe);
+                if (attribute.getDefParam() != null && StringUtils.isNotBlank(attribute.getDefParam().getId())) {
+                    attribute.setDefParam(policyDefParamDao.findById(attribute.getDefParam().getId()));
+                } else {
+                    attribute.setDefParam(null);
+                }
+            }
+        }
+
+        if (pe.getPolicyDef() != null && pe.getPolicyDef().getId() != null) {
+            pe.setPolicyDef(policyDefDAO.findById(pe.getPolicyDef().getId()));
+        } else {
+            pe.setPolicyDef(null);
+        }
+
+        if (StringUtils.isNotBlank(pe.getId())) {
+            final PolicyEntity dbEntity = policyDao.findById(pe.getId());
+            pe.setPasswordPolicyProviders(dbEntity.getPasswordPolicyProviders());
+            pe.setAuthenticationPolicyProviders(dbEntity.getAuthenticationPolicyProviders());
+            policyDao.merge(pe);
+        } else {
+            policyDao.save(pe);
+        }
         try {
             this.policyPostProcessor(pe);
         } catch (Exception e) {
@@ -123,9 +127,9 @@ public class PolicyServiceImpl implements PolicyService {
             log.error(e);
         }
         policy.setId(pe.getId());
-	}
+    }
 
-	// TODO: check because added boolean parameter to call batchService.save(bte);
+    // TODO: check because added boolean parameter to call batchService.save(bte);
     private void policyPostProcessor(PolicyEntity pe) {
         // turn on Task Password near expiration
         PolicyAttributeEntity pae = pe.getAttribute("PWD_EXP_WARN");
@@ -137,27 +141,27 @@ public class PolicyServiceImpl implements PolicyService {
         }
     }
 
-	@Override
-	@Transactional
-	@CacheKeyEviction(
-    	evictions={
-            @CacheKeyEvict("policies")
-        }
+    @Override
+    @Transactional
+    @CacheKeyEviction(
+            evictions = {
+                    @CacheKeyEvict("policies")
+            }
     )
-	public void delete(final String policyId) throws BasicDataServiceException {
-		final PolicyEntity entity = policyDao.findById(policyId);
-		if(entity != null) {
-			if(CollectionUtils.isNotEmpty(entity.getPasswordPolicyProviders())) {
-				throw new BasicDataServiceException(ResponseCode.POLICY_HAS_AUTH_PROVIDERS);
-			}
-			
-			if(CollectionUtils.isNotEmpty(entity.getAuthenticationPolicyProviders())) {
-				throw new BasicDataServiceException(ResponseCode.POLICY_HAS_AUTH_PROVIDERS);
-			}
-			
-			policyDao.delete(entity);
-		}
-	}
+    public void delete(final String policyId) throws BasicDataServiceException {
+        final PolicyEntity entity = policyDao.findById(policyId);
+        if (entity != null) {
+            if (CollectionUtils.isNotEmpty(entity.getPasswordPolicyProviders())) {
+                throw new BasicDataServiceException(ResponseCode.POLICY_HAS_AUTH_PROVIDERS);
+            }
+
+            if (CollectionUtils.isNotEmpty(entity.getAuthenticationPolicyProviders())) {
+                throw new BasicDataServiceException(ResponseCode.POLICY_HAS_AUTH_PROVIDERS);
+            }
+
+            policyDao.delete(entity);
+        }
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -165,21 +169,29 @@ public class PolicyServiceImpl implements PolicyService {
         return policyDao.count(searchBean);
     }
 
-	@Override
-	@Transactional(readOnly=true)
-    @Cacheable(value = "policies", key = "{#searchBean, #from, #size}", condition="{#searchBean != null and #searchBean.findInCache}")
-	public List<Policy> findBeans(final PolicySearchBean searchBean, final int from, final int size) {
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "policies", key = "{#searchBean, #from, #size}", condition = "{#searchBean != null and #searchBean.findInCache}")
+    public List<Policy> findBeans(final PolicySearchBean searchBean, final int from, final int size) {
         List<PolicyEntity> entities = policyDao.getByExampleNoLocalize(searchBean, from, size);
         return policyDozerConverter.convertToDTOList(entities, true);
-	}
-	
-	@Override
-	@Transactional(readOnly=true)
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "policyDefParams", key = "{#policyDefId, #pswdGroup}")
-	public List<PolicyDefParam> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup) {
-		List<PolicyDefParamEntity> entities =  policyDefParamDao.findPolicyDefParamByGroup(policyDefId, pswdGroup);
-        return policyDefParamDozerConverter.convertToDTOList(entities, true);
-	}
+    public List<PolicyDefParam> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup) throws BasicDataServiceException {
+        if (policyDefId == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Policy Def Id is NULL");
+        }
+
+        List<PolicyDefParamEntity> entities = policyDefParamDao.findPolicyDefParamByGroup(policyDefId, pswdGroup);
+        if (CollectionUtils.isEmpty(entities)) {
+            return null;
+        } else {
+            return policyDefParamDozerConverter.convertToDTOList(entities, true);
+        }
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -191,16 +203,37 @@ public class PolicyServiceImpl implements PolicyService {
     @Transactional
     public void resetITPolicy() {
         ITPolicyEntity itPolicyEntity = itPolicyDao.findITPolicy();
-        if(itPolicyEntity != null){
+        if (itPolicyEntity != null) {
             itPolicyDao.delete(itPolicyEntity);
         }
     }
 
     @Override
     @Transactional
-    public void saveITPolicy(ITPolicy itPolicy) {
-        ITPolicyEntity pe = itPolicyDozerConverter.convertToEntity(itPolicy, true);
-        itPolicyDao.save(pe);
-        itPolicy.setId(pe.getId());
+    public void saveITPolicy(ITPolicy itPolicy) throws BasicDataServiceException {
+        try {
+            if (itPolicy == null) {
+                throw new BasicDataServiceException(
+                        ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            final ITPolicy found = findITPolicy();
+            if (found != null && !found.getId().equals(itPolicy.getId())) {
+                throw new BasicDataServiceException(ResponseCode.IT_POLICY_EXISTS);
+            }
+            if (found != null) {
+                itPolicy.setCreateDate(found.getCreateDate());
+                itPolicy.setCreatedBy(found.getCreatedBy());
+            }
+
+            ITPolicyEntity pe = itPolicyDozerConverter.convertToEntity(itPolicy, true);
+            itPolicyDao.save(pe);
+            itPolicy.setId(pe.getId());
+
+        } catch (BasicDataServiceException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR, e.getMessage());
+        }
     }
 }
