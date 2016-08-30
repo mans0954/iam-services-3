@@ -39,10 +39,14 @@ public abstract class OrderDaoImpl<T, PrimaryKey extends Serializable> extends B
                     criteria.addOrder(createOrder("lm.value", sort.getOrderBy()));
                 }
             } else if ("description".equals(sort.getSortBy()) || "name".equals(sort.getSortBy())) {
+            	/*
+            	 * Lev Bornovalov - no field 'description' on metadata type - removing
+            	 * 
                 if (sb instanceof MetadataElementSearchBean) {
                     criteria.createAlias("metadataType", "mt", Criteria.LEFT_JOIN);
                     criteria.addOrder(createOrder("mt.description", sort.getOrderBy()));
                 }
+                */
             } else {
                 criteria.addOrder(createOrder(sort.getSortBy(), sort.getOrderBy()));
             }
