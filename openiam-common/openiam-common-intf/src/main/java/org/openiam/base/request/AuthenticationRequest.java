@@ -19,7 +19,8 @@ import javax.xml.bind.annotation.XmlType;
         "methodId",
         "socialUserProfile",
         "authPolicyId",
-        "skipPasswordCheck"
+        "skipPasswordCheck",
+        "skipUserStatusCheck"
 })
 public class AuthenticationRequest  extends BaseServiceRequest  {
 	private String languageId;
@@ -32,6 +33,7 @@ public class AuthenticationRequest  extends BaseServiceRequest  {
     private String methodId;
     String authPolicyId; // auth policy for connection
     private String socialUserProfile; // user profile in socials networks
+    private boolean skipUserStatusCheck;
 
     /* replaces kerbAuth and certAuth flags */
     private boolean skipPasswordCheck;
@@ -125,6 +127,14 @@ public class AuthenticationRequest  extends BaseServiceRequest  {
 
 	public void setSkipPasswordCheck(boolean skipPasswordCheck) {
 		this.skipPasswordCheck = skipPasswordCheck;
+	}
+
+	public boolean isSkipUserStatusCheck() {
+		return skipUserStatusCheck;
+	}
+
+	public void setSkipUserStatusCheck(boolean skipUserStatusCheck) {
+		this.skipUserStatusCheck = skipUserStatusCheck;
 	}
 
     

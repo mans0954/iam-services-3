@@ -45,6 +45,7 @@ public class AuthenticationContext extends AuthenticationRequest {
 		super.setRequestSource(request.getRequestSource());
 		super.setSocialUserProfile(request.getSocialUserProfile());
 		super.setSkipPasswordCheck(request.isSkipPasswordCheck());
+		super.setSkipUserStatusCheck(request.isSkipUserStatusCheck());
 	}
 
 	public String getAuthProviderId() {
