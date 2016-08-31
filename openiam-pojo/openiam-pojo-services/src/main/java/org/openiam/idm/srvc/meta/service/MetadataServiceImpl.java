@@ -19,6 +19,7 @@ import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -34,6 +35,7 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.mq.constants.*;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.gateway.RequestServiceGateway;
+import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -122,7 +124,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@Transactional(readOnly=true)
     @Cacheable(value="metadataElements",  key="{ #searchBean, #from, #size, #language}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
-		List<MetadataElementEntity> retVal = findEntityBeans(searchBean, from,size);
+		List<MetadataElementEntity> retVal = getProxyService().findEntityBeans(searchBean, from,size);
         return (retVal != null) ? metaDataElementDozerConverter.convertToDTOList(retVal,true) : null;
 	}
 
@@ -138,6 +140,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     
     @Override
     @Transactional(readOnly=true)
+    @LocalizedServiceGet
     /*AM-851 */
 	//@Cacheable(value="metadataElementEntities",  key="{ #searchBean, #from, #size }", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size){
@@ -473,4 +476,9 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 		final List<MetadataTypeEntity> entitiesMarkedForSMSOTP = metadataTypeDao.getByExample(searchBean);
 		return  (entitiesMarkedForSMSOTP != null) ? metaDataTypeDozerConverter.convertToDTOList(entitiesMarkedForSMSOTP,true) : null;
 	}
+	
+	private MetadataService getProxyService() {
+		MetadataService service = (MetadataService) SpringContextProvider.getBean("metadataService");
+        return service;
+    }
 }
