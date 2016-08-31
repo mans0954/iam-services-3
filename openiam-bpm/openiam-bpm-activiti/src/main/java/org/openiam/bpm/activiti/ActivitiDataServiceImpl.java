@@ -221,7 +221,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
 
 		idmAuditLog.setAction(AuditAction.NEW_USER_WORKFLOW.value());
-		idmAuditLog.setBaseRequest(request);
+		idmAuditLog.setBaseObject(request);
 		idmAuditLog.setRequestorUserId(request.getRequesterId());
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
 		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
@@ -403,7 +403,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 		IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
 		idmAuditLog.setAction(AuditAction.EDIT_USER_WORKFLOW.value());
-		idmAuditLog.setBaseRequest(request);
+		idmAuditLog.setBaseObject(request);
 		idmAuditLog.setRequestorUserId(request.getRequesterId());
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
 		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);

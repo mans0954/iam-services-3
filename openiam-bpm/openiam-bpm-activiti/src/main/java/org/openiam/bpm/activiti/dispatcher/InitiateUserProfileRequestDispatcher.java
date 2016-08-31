@@ -1,5 +1,6 @@
 package org.openiam.bpm.activiti.dispatcher;
 
+import org.openiam.base.request.UserProfileServiceRequest;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.ActivitiDataService;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 29/08/16.
  */
 @Component
-public class InitiateUserProfileRequestDispatcher extends AbstractAPIDispatcher<UserProfileRequestModel, SaveTemplateProfileResponse, ActivitiAPI> {
+public class InitiateUserProfileRequestDispatcher extends AbstractAPIDispatcher<UserProfileServiceRequest, SaveTemplateProfileResponse, ActivitiAPI> {
 
     @Autowired
     private ActivitiDataService activitiDataService;
@@ -29,12 +30,12 @@ public class InitiateUserProfileRequestDispatcher extends AbstractAPIDispatcher<
     }
 
     @Override
-    protected SaveTemplateProfileResponse processingApiRequest(ActivitiAPI openIAMAPI, UserProfileRequestModel requestModel) throws BasicDataServiceException {
+    protected SaveTemplateProfileResponse processingApiRequest(ActivitiAPI openIAMAPI, UserProfileServiceRequest request) throws BasicDataServiceException {
         switch (openIAMAPI) {
             case InitiateNewHireRequest:
-                return activitiDataService.initiateNewHireRequest((NewUserProfileRequestModel) requestModel);
+                return activitiDataService.initiateNewHireRequest(((NewUserProfileRequestModel) request.getModel()));
             case InitiateEditUserWorkflow:
-                return activitiDataService.initiateEditUserWorkflow(requestModel);
+                return activitiDataService.initiateEditUserWorkflow(request.getModel());
             default:
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, String.format("Cannot find the handler for %s API", openIAMAPI.name()));
         }

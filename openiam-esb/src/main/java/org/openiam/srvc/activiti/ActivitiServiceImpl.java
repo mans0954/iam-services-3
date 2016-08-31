@@ -9,12 +9,10 @@ import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.ActivitiDataService;
 import org.openiam.bpm.dto.BasicWorkflowResponse;
 import org.openiam.activiti.model.dto.HistorySearchBean;
-import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.mq.constants.ActivitiAPI;
-import org.openiam.mq.constants.AuthenticationAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +48,10 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 	@Override
 	@WebMethod
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
-		return this.manageApiRequest(ActivitiAPI.InitiateNewHireRequest, request, SaveTemplateProfileResponse.class);
+		UserProfileServiceRequest wrapper = new UserProfileServiceRequest();
+		wrapper.setModel(request);
+
+		return this.manageApiRequest(ActivitiAPI.InitiateNewHireRequest, wrapper, SaveTemplateProfileResponse.class);
 	}
 
 	@Override
@@ -61,7 +62,9 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 
 	@Override
 	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) {
-		return this.manageApiRequest(ActivitiAPI.InitiateEditUserWorkflow, request, SaveTemplateProfileResponse.class);
+		UserProfileServiceRequest wrapper = new UserProfileServiceRequest();
+		wrapper.setModel(request);
+		return this.manageApiRequest(ActivitiAPI.InitiateEditUserWorkflow, wrapper, SaveTemplateProfileResponse.class);
 	}
 
 
