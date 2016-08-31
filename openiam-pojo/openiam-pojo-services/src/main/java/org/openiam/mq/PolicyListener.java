@@ -34,9 +34,13 @@ public class PolicyListener extends AbstractRabbitMQListener<PolicyAPI> {
     @Autowired
     private PolicyResetItPolicyDispatcher policyResetItPolicyDispatcher;
 
+    @Autowired
+    private PolicySavePolicyDispatcher policySavePolicyDispatcher;
+    @Autowired
+    private PolicyDeletePolicyDispatcher policyDeletePolicyDispatcher;
 
     public PolicyListener() {
-        super(OpenIAMQueue.RoleQueue);
+        super(OpenIAMQueue.PolicyQueue);
     }
 
     @Override
@@ -63,6 +67,12 @@ public class PolicyListener extends AbstractRabbitMQListener<PolicyAPI> {
                 break;
             case ResetITPolicy:
                 addTask(policyResetItPolicyDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case SavePolicy:
+                addTask(policySavePolicyDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case DeletePolicy:
+                addTask(policyDeletePolicyDispatcher, correlationId, message, apiName, isAsync);
                 break;
             default:
                 throw new RejectMessageException();

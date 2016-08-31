@@ -78,7 +78,7 @@ public class PolicyDataServiceImpl extends AbstractApiService implements PolicyD
     public Policy getPolicy(String policyId) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(policyId);
-        return this.manageApiRequest(PolicyAPI.FindBeans, request,
+        return this.manageApiRequest(PolicyAPI.GetPolicy, request,
                 PolicyGetResponse.class).getPolicy();
     }
 
@@ -94,98 +94,18 @@ public class PolicyDataServiceImpl extends AbstractApiService implements PolicyD
     }
 
     public Response savePolicy(final Policy policy) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (policy == null) {
-                throw new BasicDataServiceException(
-                        ResponseCode.INVALID_ARGUMENTS);
-            }
-            if (StringUtils.isBlank(policy.getName())) {
-                throw new BasicDataServiceException(
-                        ResponseCode.POLICY_NAME_NOT_SET);
-            }
-
-            final PolicySearchBean sb = new PolicySearchBean();
-            sb.setName(policy.getName());
-            sb.setPolicyDefId(policy.getPolicyDefId());
-
-            final List<Policy> found = policyService.findBeans(sb, 0, Integer.MAX_VALUE);
-            if (found != null && found.size() > 0) {
-                if (StringUtils.isBlank(policy.getId())) {
-                    throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-                }
-
-                if (StringUtils.isNotBlank(policy.getId())
-                        && !policy.getId().equals(
-                        found.get(0).getId())) {
-                    throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-                }
-            }
-
-            if (CollectionUtils.isNotEmpty(policy.getPolicyAttributes())) {
-                for (PolicyAttribute pa : policy.getPolicyAttributes()) {
-                    boolean isPasswordPolicy = PolicyConstants.PSWD_COMPOSITION.equals(pa.getOperation()) ||
-                            PolicyConstants.PSWD_CHANGE_RULE.equals(pa.getOperation()) || PolicyConstants.FORGET_PSWD.equals(pa.getOperation());
-                    String op = pa.getOperation();
-                    if ((isPasswordPolicy && StringUtils.isBlank(op)) || StringUtils.isBlank(pa.getName())) {
-                        throw new BasicDataServiceException(ResponseCode.INVALID_VALUE);
-                    }
-                    if (StringUtils.isNotBlank(op)) {
-                        switch (op) {
-                            case PolicyConstants.SELECT:
-                            case PolicyConstants.STRING:
-                                if (pa.isRequired() && StringUtils.isBlank(pa.getValue1())) {
-                                    throw new BasicDataServiceException(ResponseCode.POLICY_ATTRIBUTES_EMPTY_VALUE);
-                                }
-                                break;
-                            case PolicyConstants.RANGE:
-                                if (isPasswordPolicy && pa.isRequired() && StringUtils.isBlank(pa.getValue1()) && StringUtils.isBlank(pa.getValue2())) {
-                                    throw new BasicDataServiceException(ResponseCode.POLICY_ATTRIBUTES_EMPTY_VALUE);
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-            policyService.save(policy);
-
-            response.setResponseValue(policy.getId());
-        } catch (BasicDataServiceException e) {
-            log.warn("Can't save policty", e);
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-
-        return response;
+        PolicySavePolicyRequest policySavePolicyRequest = new PolicySavePolicyRequest();
+        policySavePolicyRequest.setPolicy(policy);
+        return this.manageApiRequest(PolicyAPI.SavePolicy, policySavePolicyRequest,
+                StringResponse.class).convertToBase();
     }
 
     @Override
     public Response deletePolicy(String policyId) {
-
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (policyId == null) {
-                throw new BasicDataServiceException(
-                        ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            policyService.delete(policyId);
-        } catch (BasicDataServiceException e) {
-
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch (Throwable e) {
-            log.error("Can't save policy type", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
+        IdServiceRequest request = new IdServiceRequest();
+        request.setId(policyId);
+        return this.manageApiRequest(PolicyAPI.DeletePolicy, request,
+                BooleanResponse.class).convertToBase();
     }
 
 
