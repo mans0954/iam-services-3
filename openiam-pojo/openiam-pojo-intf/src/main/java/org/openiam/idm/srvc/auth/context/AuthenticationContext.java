@@ -58,6 +58,9 @@ public interface AuthenticationContext {
     public void setSkipPasswordCheck(boolean skipPasswordCheck);
     
     public boolean isSkipPasswordCheck();
+    
+    public boolean isSkipUserStatusCheck();
+    public void setSkipUserStatusCheck(boolean skipUserStatusCheck);
 
     public User getUser();
 
