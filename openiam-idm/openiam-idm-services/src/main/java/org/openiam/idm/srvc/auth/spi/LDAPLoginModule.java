@@ -150,9 +150,11 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         AuthenticationException changePassword = null;
         try {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("distinguishedName", distinguishedName);
-            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, params);
+        	if(!authContext.isSkipUserStatusCheck()) {
+	            Map<String, Object> params = new HashMap<String, Object>();
+	            params.put("distinguishedName", distinguishedName);
+	            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, params);
+        	}
 
         } catch (AuthenticationException ae) {
             // we should validate password before change password

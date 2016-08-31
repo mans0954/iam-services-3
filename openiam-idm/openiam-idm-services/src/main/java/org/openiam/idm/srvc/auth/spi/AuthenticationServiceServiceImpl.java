@@ -317,6 +317,7 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
             ctx.setCredential(AuthenticationConstants.AUTHN_TYPE_PASSWORD, cred);
             /* skip password checking if this is a call from kerberos */
             ctx.setSkipPasswordCheck(request.isKerberosAuth());
+            ctx.setSkipUserStatusCheck(request.isSkipUserStatusCheck());
 
             Map<String, Object> authParamMap = new HashMap<String, Object>();
             authParamMap.put("AUTH_SYS_ID", sysConfiguration.getDefaultManagedSysId());
@@ -441,6 +442,17 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
         tokenParam.put("PRINCIPAL", principal);
 
 
+        /*
+         * Lev Bornovalov - AM-1034 - Skip checking user status on SAML Authentication
+         * Talked to Suneet on 30/8/2016 on Slack Voice Chat, and we came to the conclusion
+         * that it is better than remove this check in renewToken, because it is already
+         * checked on initial login
+         * 
+         *  The purpose of having this check here is to kick someone out at a random time.
+         *  However, we don't know how someone got into OpenIAM (i.e. SAML SP, OAuth, other auth method, etc),
+         *  and there are some cases where it is necessary to skip this check (i.e. login via SAML SP).
+         *  
+         * 
         AuthCredentialsValidator validator = authenticationUtils.getCredentialsValidator();
 
         UserEntity user = userManager.getUser(lg.getUserId());
@@ -453,6 +465,7 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
         }
+        */
 
         final AuthStateId id = new AuthStateId();
         id.setUserId(lg.getUserId());
