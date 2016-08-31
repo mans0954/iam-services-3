@@ -962,9 +962,14 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         }
         String requestorID = pUser.getRequestorUserId();
         UserEntity userEntity = !isAdd ? userMgr.getUser(pUser.getId()) : new UserEntity();
+        if (pUser.getLastDate() == null)
+            userEntity.setLastDate(null);
+        if (pUser.getStartDate() == null)
+            userEntity.setStartDate(null);
+
         if (userEntity == null) {
-            throw new IllegalArgumentException("UserId='" + pUser.getId() + "' is not valid");
-        }
+                throw new IllegalArgumentException("UserId='" + pUser.getId() + "' is not valid");
+            }
 
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
