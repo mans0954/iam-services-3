@@ -54,8 +54,8 @@ public class PhoneEntity implements Serializable{
     @Size(max = 10, message = "validator.phone.area.code.toolong")
     private String areaCd;
 
-    @Column(name="COUNTRY_CD", length=3)
-    @Size(max = 3, message = "validator.phone.country.code.toolong")
+    @Column(name="COUNTRY_CD", length=10)
+    @Size(max = 10, message = "validator.phone.country.code.toolong")
     private String countryCd;
 
     @Column(name="DESCRIPTION", length=100)
@@ -249,7 +249,7 @@ public class PhoneEntity implements Serializable{
 		result = prime * result
 				+ ((phoneType == null) ? 0 : phoneType.hashCode());
 		*/
-        result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
+        /*result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());*/
 		return result;
 	}
 
@@ -318,11 +318,11 @@ public class PhoneEntity implements Serializable{
 		} else if (!phoneType.equals(other.phoneType))
 			return false;
 		*/
-        if (metadataType == null) {
+        /*if (metadataType == null) {
             if (other.metadataType != null)
                 return false;
         } else if (!metadataType.equals(other.metadataType))
-            return false;
+            return false;*/
 		return true;
 	}
 

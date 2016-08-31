@@ -15,7 +15,8 @@ import javax.xml.bind.annotation.XmlType;
         "nodeIP",
         "requestSource",
         "authPolicyId",
-        "kerberosAuth"
+        "kerberosAuth",
+        "skipUserStatusCheck"
 })
 public class AuthenticationRequest {
 	private boolean kerberosAuth;
@@ -27,6 +28,7 @@ public class AuthenticationRequest {
     String authPolicyId; // auth policy for connection
     public final static String AUTH_POLICY_ID = "AUTH_POLICY_ID";
     public final static String MANAGED_SYS_ID = "MANAGED_SYS_ID";
+    private boolean skipUserStatusCheck;
     public AuthenticationRequest() {
     }
 
@@ -93,4 +95,16 @@ public class AuthenticationRequest {
     public void setAuthPolicyId(String authPolicyId) {
         this.authPolicyId = authPolicyId;
     }
+
+	public boolean isSkipUserStatusCheck() {
+		return skipUserStatusCheck;
+	}
+
+	public void setSkipUserStatusCheck(boolean skipUserStatusCheck) {
+		this.skipUserStatusCheck = skipUserStatusCheck;
+	}
+
+	
+    
+    
 }

@@ -7,6 +7,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -91,9 +92,6 @@ public class SourceAdapterDispatcher implements Runnable {
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
 
-    @Value("${org.openiam.idm.source.adapter.pre.processor}")
-    protected String preProcessorFile;
-
     final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     final static String WARNING = "Warning! %s.\n";
 
@@ -157,6 +155,7 @@ public class SourceAdapterDispatcher implements Runnable {
 //        MuleContextProvider.getCtx().getDefaultMessageReceiverThreadingProfile().get
         StringBuilder warnings = new StringBuilder();
         IdmAuditLog idmAuditLog = new IdmAuditLog();
+        boolean isSimulation = "SIMULATION".equalsIgnoreCase(request.getMode());
         try {
             idmAuditLog.addCustomRecord("Request XML", this.write(request));
         } catch (Exception e) {
@@ -164,7 +163,7 @@ public class SourceAdapterDispatcher implements Runnable {
         }
         long time = System.currentTimeMillis();
         //call Pre processor
-        SourceAdapterPreProcessor preProcessor = this.getSourceAdapterPreProcessor(preProcessorFile);
+        SourceAdapterPreProcessor preProcessor = this.getSourceAdapterPreProcessor(request.getPathToPreProcessor());
         try {
             int retVal = 0;
             if (preProcessor != null) {
@@ -236,73 +235,83 @@ public class SourceAdapterDispatcher implements Runnable {
             return;
 //            return response;
         }
-        switch (request.getAction()) {
-            case ADD: {
-                pUser.setOperation(AttributeOperationEnum.ADD);
-                ProvisionUserResponse provisionUserResponse = provisioningDataService.addUser(pUser);
-                break;
-            }
-            case MODIFY: {
-                pUser.setOperation(AttributeOperationEnum.REPLACE);
-                ProvisionUserResponse provisionUserResponse = provisioningDataService.modifyUser(pUser);
-                break;
-            }
-            case DELETE: {
-                ProvisionUserResponse provisionUserResponse = provisioningDataService.deleteByUserWithSkipManagedSysList(pUser.getId(), UserStatusEnum.REMOVE, requestorId, null);
-                break;
-            }
-            case ENABLE: {
-                Response resp = provisioningDataService.disableUser(pUser.getId(), false, requestorId);
-                break;
-            }
-            case DISABLE: {
-                Response resp = provisioningDataService.disableUser(pUser.getId(), true, requestorId);
-                break;
-            }
-            case CHANGE_PASSWORD: {
-                if (request.getPasswordRequest() != null) {
-                    PasswordSync passwordSync = new PasswordSync();
-                    passwordSync.setUserId(pUser.getId());
-                    passwordSync.setRequestorId(requestorId);
-                    passwordSync.setManagedSystemId(request.getPasswordRequest().getManagedSystemId());
-                    passwordSync.setPassword(request.getPasswordRequest().getPassword());
-                    passwordSync.setSendPasswordToUser(request.getPasswordRequest().isSendToUser());
-                    passwordSync.setUserActivateFlag(request.getPasswordRequest().isActivate());
-                    PasswordValidationResponse resetPasswordResponse = provisioningDataService.setPassword(passwordSync);
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason(warnings.toString());
-                } else {
-                    warnings.append("Change password request is empty");
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason(warnings.toString());
+        if (!isSimulation) {
+            switch (request.getAction()) {
+                case ADD: {
+                    pUser.setOperation(AttributeOperationEnum.ADD);
+                    ProvisionUserResponse provisionUserResponse = provisioningDataService.addUser(pUser);
+                    if (ResponseStatus.SUCCESS.equals(provisionUserResponse.getStatus()) && provisionUserResponse.getUser() != null) {
+                        idmAuditLog.setUserId(provisionUserResponse.getUser().getId());
+                    } else if (ResponseStatus.FAILURE.equals(provisionUserResponse.getStatus())) {
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason("Can't add user due to Internal error. Very possible that some of your fields is out of Max range");
+                    }
+                    break;
                 }
-                break;
-            }
-            case RESET_PASSWORD: {
-                if (request.getPasswordRequest() != null) {
-                    PasswordSync passwordSync = new PasswordSync();
-                    passwordSync.setUserId(pUser.getId());
-                    passwordSync.setRequestorId(requestorId);
-                    passwordSync.setManagedSystemId(request.getPasswordRequest().getManagedSystemId());
-                    passwordSync.setPassword(request.getPasswordRequest().getPassword());
-                    passwordSync.setSendPasswordToUser(request.getPasswordRequest().isSendToUser());
-                    passwordSync.setUserActivateFlag(request.getPasswordRequest().isActivate());
-                    PasswordResponse resetPasswordResponse = provisioningDataService.resetPassword(passwordSync);
-                } else {
-                    warnings.append("Reset password request is empty");
+                case MODIFY: {
+                    pUser.setOperation(AttributeOperationEnum.REPLACE);
+                    ProvisionUserResponse provisionUserResponse = provisioningDataService.modifyUser(pUser);
+                    break;
+                }
+                case DELETE: {
+                    ProvisionUserResponse provisionUserResponse = provisioningDataService.deleteByUserWithSkipManagedSysList(pUser.getId(), UserStatusEnum.REMOVE, requestorId, null);
+                    break;
+                }
+                case ENABLE: {
+                    Response resp = provisioningDataService.disableUser(pUser.getId(), false, requestorId);
+                    break;
+                }
+                case DISABLE: {
+                    Response resp = provisioningDataService.disableUser(pUser.getId(), true, requestorId);
+                    break;
+                }
+                case CHANGE_PASSWORD: {
+                    if (request.getPasswordRequest() != null) {
+                        PasswordSync passwordSync = new PasswordSync();
+                        passwordSync.setUserId(pUser.getId());
+                        passwordSync.setRequestorId(requestorId);
+                        passwordSync.setManagedSystemId(request.getPasswordRequest().getManagedSystemId());
+                        passwordSync.setPassword(request.getPasswordRequest().getPassword());
+                        passwordSync.setSendPasswordToUser(request.getPasswordRequest().isSendToUser());
+                        passwordSync.setUserActivateFlag(request.getPasswordRequest().isActivate());
+                        PasswordValidationResponse resetPasswordResponse = provisioningDataService.setPassword(passwordSync);
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(warnings.toString());
+                    } else {
+                        warnings.append("Change password request is empty");
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(warnings.toString());
+                    }
+                    break;
+                }
+                case RESET_PASSWORD: {
+                    if (request.getPasswordRequest() != null) {
+                        PasswordSync passwordSync = new PasswordSync();
+                        passwordSync.setUserId(pUser.getId());
+                        passwordSync.setRequestorId(requestorId);
+                        passwordSync.setManagedSystemId(request.getPasswordRequest().getManagedSystemId());
+                        passwordSync.setPassword(request.getPasswordRequest().getPassword());
+                        passwordSync.setSendPasswordToUser(request.getPasswordRequest().isSendToUser());
+                        passwordSync.setUserActivateFlag(request.getPasswordRequest().isActivate());
+                        PasswordResponse resetPasswordResponse = provisioningDataService.resetPassword(passwordSync);
+                    } else {
+                        warnings.append("Reset password request is empty");
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(warnings.toString());
+                    }
+                    break;
+                }
+                case NO_CHANGE: {
+                    break;
+                }
+                default:
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason("Operation not supported");
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(warnings.toString());
-                }
-                break;
             }
-            case NO_CHANGE: {
-                break;
-            }
-            default:
-                idmAuditLog.fail();
-                idmAuditLog.setFailureReason("Operation not supported");
-                idmAuditLog.fail();
-                idmAuditLog.setFailureReason(warnings.toString());
+        } else {
+            idmAuditLog.addCustomRecord("Simulation Mode", "True");
         }
         idmAuditLog.addCustomRecord(WARNING, warnings.toString());
         idmAuditLog.setAuditDescription("Processing time=" + ((System.currentTimeMillis() - time) / 1000) + "s");
@@ -1131,14 +1140,12 @@ public class SourceAdapterDispatcher implements Runnable {
 
         //Write it
         JAXBContext ctx = JAXBContext.newInstance(SourceAdapterRequest.class);
-
         Marshaller m = ctx.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
         StringWriter sw = new StringWriter();
         m.marshal(request, sw);
         sw.close();
-
         return prettyFormat(sw.toString(), 7);
     }
 

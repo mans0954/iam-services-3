@@ -63,6 +63,15 @@ public class ProvisionUserResponse extends Response{
 		this.user = user;
 	}
 
+	@Override
+	public String toString() {
+		return "ProvisionUserResponse [user=" + user + ", status=" + status
+				+ ", errorCode=" + errorCode + ", errorText=" + errorText
+				+ ", responseValue=" + responseValue + "]";
+	}
+
+
+
 
 
 

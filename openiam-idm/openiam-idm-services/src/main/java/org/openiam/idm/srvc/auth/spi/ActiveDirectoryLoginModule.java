@@ -20,6 +20,7 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
+import com.sun.jndi.ldap.LdapCtx;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -29,6 +30,7 @@ import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -96,8 +98,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         if (StringUtils.isEmpty(authPolicyId)) {
             authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
         }
-        if(log.isDebugEnabled()) {
-        	log.debug("Authentication policyid=" + authPolicyId);
+        if (log.isDebugEnabled()) {
+            log.debug("Authentication policyid=" + authPolicyId);
         }
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
         if (authPolicy == null) {
@@ -120,11 +122,24 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         if (lg == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
-
+        if (lg.getIsLocked() != 0) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_LOCKED);
+        }
+        if (LoginStatusEnum.INACTIVE.equals(lg.getStatus())) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_DISABLED);
+        }
         // checking if User is valid
         UserEntity user = userManager.getUser(lg.getUserId());
         if (user == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
+        }
+
+        if (UserStatusEnum.DISABLED.equals(user.getSecondaryStatus())) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_DISABLED);
+        }
+
+        if (UserStatusEnum.LEAVE.equals(user.getStatus())) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
         }
 
         // Find user in target system
@@ -133,17 +148,18 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         attrs.add(new ExtensibleAttribute("Enabled", null));
         attrs.add(new ExtensibleAttribute("AccountExpirationDate", null));
         attrs.add(new ExtensibleAttribute("ChangePasswordAtLogon", null));
-        if(log.isDebugEnabled()) {
-        	log.debug("AD_LOGIN_MODULE. Find in AD. Start");
+        attrs.add(new ExtensibleAttribute("msDS-UserPasswordExpiryTimeComputed", null));
+        if (log.isDebugEnabled()) {
+            log.debug("AD_LOGIN_MODULE. Find in AD. Start");
         }
         LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, attrs);
-        if(log.isDebugEnabled()) {
-        	log.debug("AD_LOGIN_MODULE. Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
+        if (log.isDebugEnabled()) {
+            log.debug("AD_LOGIN_MODULE. Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
         }
         if (resp.isFailure()) {
-        	if(log.isDebugEnabled()) {
-        		log.debug("AD_LOGIN_MODULE throws=" + AuthenticationConstants.RESULT_INVALID_LOGIN);
-        	}
+            if (log.isDebugEnabled()) {
+                log.debug("AD_LOGIN_MODULE throws=" + AuthenticationConstants.RESULT_INVALID_LOGIN);
+            }
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
 
@@ -155,20 +171,20 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
         }
         if (StringUtils.isEmpty(distinguishedName)) {
-        	if(log.isDebugEnabled()) {
-        		log.debug("AD_LOGIN_MODULE throws=" + AuthenticationConstants.RESULT_INVALID_LOGIN);
-        	}
+            if (log.isDebugEnabled()) {
+                log.debug("AD_LOGIN_MODULE throws=" + AuthenticationConstants.RESULT_INVALID_LOGIN);
+            }
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
-        if(log.isDebugEnabled()) {
-        	log.debug("AD_LOGIN_MODULE Find in AD distiguihed name=" + distinguishedName);
+        if (log.isDebugEnabled()) {
+            log.debug("AD_LOGIN_MODULE Find in AD distiguihed name=" + distinguishedName);
         }
         // checking password policy
         Policy passwordPolicy = passwordManager.getPasswordPolicy(principal, lg.getManagedSysId());
         if (passwordPolicy == null) {
-        	if(log.isDebugEnabled()) {
-        		log.debug("AD_LOGIN_MODULE throws=" + AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-        	}
+            if (log.isDebugEnabled()) {
+                log.debug("AD_LOGIN_MODULE throws=" + AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+            }
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
 
@@ -177,17 +193,17 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         try {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("distinguishedName", distinguishedName);
-            if(log.isDebugEnabled()) {
-            	log.debug("AD_LOGIN_MODULE. Validator stars");
+            if (log.isDebugEnabled()) {
+                log.debug("AD_LOGIN_MODULE. Validator stars");
             }
             validateFromAD(resp, lg, AuthCredentialsValidator.NEW, params);
-            if(log.isDebugEnabled()) {
-            	log.debug("AD_LOGIN_MODULE. Validator finish successfully");
+            if (log.isDebugEnabled()) {
+                log.debug("AD_LOGIN_MODULE. Validator finish successfully");
             }
         } catch (AuthenticationException ae) {
-        	if(log.isDebugEnabled()) {
-        		log.debug("AD_LOGIN_MODULE Validator throws=" + ae);
-        	}
+            if (log.isDebugEnabled()) {
+                log.debug("AD_LOGIN_MODULE Validator throws=" + ae);
+            }
             // we should validate password before change password
             if (AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
                     AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
@@ -202,18 +218,26 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         if (!authContext.isSkipPasswordCheck()) {
             // checking if provided Password is not empty
             if (StringUtils.isEmpty(password)) {
-            	if(log.isDebugEnabled()) {
-            		log.debug("AD_LOGIN_MODULE checking if provided Password is not empty throws=" + AuthenticationConstants.RESULT_INVALID_PASSWORD);
-            	}
+                if (log.isDebugEnabled()) {
+                    log.debug("AD_LOGIN_MODULE checking if provided Password is not empty throws=" + AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                }
                 throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
             }
             // try to login to AD with this user
-            LdapContext ldapCtx = connect(distinguishedName, password, mSys);
+            LdapContext ldapCtx = null;
+            Boolean isContextNotInitialized = true;
+            try {
+                ldapCtx = connect(distinguishedName, password, mSys);
+            } catch (AuthenticationException ae) {
+                if (AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET == ae.getErrorCode()) {
+                    isContextNotInitialized = false;
+                }
+            }
 
-            if (ldapCtx == null) {
-            	if(log.isDebugEnabled()) {
-            		log.debug("AD_LOGIN_MODULE. COntext is null for dn=" + distinguishedName);
-            	}
+            if (ldapCtx == null && isContextNotInitialized) {
+                if (log.isDebugEnabled()) {
+                    log.debug("AD_LOGIN_MODULE. COntext is null for dn=" + distinguishedName);
+                }
                 // get the authentication lock out policy
                 String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
@@ -255,6 +279,18 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
                 }
             }
 
+            for (ExtensibleAttribute extensibleAttributes : resp.getAttrList()) {
+                switch (extensibleAttributes.getName()) {
+                    case "msDS-UserPasswordExpiryTimeComputed":
+                        String pwdExp = extensibleAttributes.getValue();
+                        if (StringUtils.isNotBlank(pwdExp)) {
+                            Date pwdExpDate = converADdateToOIMdate(pwdExp);
+                            lg.setPwdExp(pwdExpDate);
+                        }
+                        break;
+                }
+            }
+
             // now we can change password
             if (changePassword != null) {
                 throw changePassword;
@@ -268,8 +304,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
                 }
             }
 
-            if(log.isDebugEnabled()) {
-            	log.debug("-login successful");
+            if (log.isDebugEnabled()) {
+                log.debug("-login successful");
             }
             // good login - reset the counters
 
@@ -286,8 +322,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
             lg.setAuthFailCount(0);
             lg.setChallengeResponseFailCount(0);
             lg.setFirstTimeLogin(0);
-            if(log.isDebugEnabled()) {
-            	log.debug("-Good Authn: Login object updated.");
+            if (log.isDebugEnabled()) {
+                log.debug("-Good Authn: Login object updated.");
             }
             loginManager.updateLogin(lg);
 
@@ -300,8 +336,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
             }
         }
         // Successful login
-        if(log.isDebugEnabled()) {
-        	log.debug("-Populating subject after authentication");
+        if (log.isDebugEnabled()) {
+            log.debug("-Populating subject after authentication");
         }
 
         String tokenType = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_TYPE");

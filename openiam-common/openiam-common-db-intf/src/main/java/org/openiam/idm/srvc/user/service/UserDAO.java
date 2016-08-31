@@ -5,21 +5,21 @@ import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.SearchAttribute;
+import org.openiam.idm.srvc.user.dto.*;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 /**
  * Data access interface for domain model class User.
- * 
+ *
  * @author Suneet Shah
  * @see org.openiam.idm.srvc.user
  */
 public interface UserDAO extends BaseDao<UserEntity, String> {
+
+    public List<String> getUserIds(UserSearchBean searchBean);
 
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter);
 
@@ -90,15 +90,19 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
 
     public List<UserEntity> getByEmail(String email);
 
-    public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean, int from, int size);
+    public List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean, int from, int size);
 
-    public  int countByIds(List<String> idCollection);
+    public int countByIds(List<String> idCollection);
 
     public List<UserEntity> getUserBetweenCreateDate(Date fromDate, Date toDate);
 
     public List<UserEntity> getUserBetweenLastDate(Date fromDate, Date toDate);
 
     public List<UserEntity> getUserBetweenUpdatedDate(Date fromDate, Date toDate);
+
     public List<UserEntity> getUserBetweenStartDate(Date fromDate, Date toDate);
+
     public List<UserEntity> getUserByIds(Set<String> ids);
+
+    public LightSearchResponse getLightSearchResult(LightSearchRequest request);
 }

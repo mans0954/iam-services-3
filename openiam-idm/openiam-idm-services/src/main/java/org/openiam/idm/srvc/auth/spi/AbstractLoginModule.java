@@ -60,6 +60,9 @@ import javax.naming.CommunicationException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -131,6 +134,7 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected AuthenticationUtils authenticationUtils;
 
     private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
+    private static final String LDAP_USER_MUST_RESET_PASSWORD = "AcceptSecurityContext error, data 773";
 
     public String decryptPassword(String userId, String encPassword)
             throws Exception {
@@ -159,9 +163,9 @@ public abstract class AbstractLoginModule implements LoginModule {
     }
 
     public void setResultCode(LoginEntity lg, Subject sub, Date curDate, Policy pwdPolicy, final boolean skipPasswordCheck) throws AuthenticationException {
-    	if(skipPasswordCheck) {
-    		sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
-    	} else if (lg.getFirstTimeLogin() == 1) {
+        if (skipPasswordCheck) {
+            sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
+        } else if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
             if ((curDate.after(lg.getPwdExp()) && curDate.before(lg.getGracePeriod()))) {
@@ -215,9 +219,9 @@ public abstract class AbstractLoginModule implements LoginModule {
     }
 
     protected SSOToken token(String userId, Map tokenParam) throws Exception {
-    	if(log.isDebugEnabled()) {
-    		log.debug("Generating Security Token");
-    	}
+        if (log.isDebugEnabled()) {
+            log.debug("Generating Security Token");
+        }
 
         tokenParam.put("USER_ID", userId);
 
@@ -242,7 +246,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         return null;
     }
 
-    public LdapContext connect(String userName, String password, ManagedSysDto managedSys) throws NamingException {
+    public LdapContext connect(String userName, String password, ManagedSysDto managedSys) throws NamingException, AuthenticationException {
 
         if (keystore != null && !keystore.isEmpty()) {
             System.setProperty("javax.net.ssl.trustStore", keystore);
@@ -250,9 +254,9 @@ public abstract class AbstractLoginModule implements LoginModule {
         }
 
         if (managedSys == null) {
-        	if(log.isDebugEnabled()) {
-        		log.debug("ManagedSys is null");
-        	}
+            if (log.isDebugEnabled()) {
+                log.debug("ManagedSys is null");
+            }
             return null;
         }
 
@@ -264,15 +268,15 @@ public abstract class AbstractLoginModule implements LoginModule {
             }
         }
 
-        if(log.isDebugEnabled()) {
-	        log.debug("connect: Connecting to target system: " + managedSys.getId());
-	        log.debug("connect: Managed System object : " + managedSys);
+        if (log.isDebugEnabled()) {
+            log.debug("connect: Connecting to target system: " + managedSys.getId());
+            log.debug("connect: Managed System object : " + managedSys);
         }
-        if(log.isInfoEnabled()) {
-	        log.info(" directory login = " + managedSys.getUserId());
-	        log.info(" directory login passwrd= *****");
-	        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
-	        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
+        if (log.isInfoEnabled()) {
+            log.info(" directory login = " + managedSys.getUserId());
+            log.info(" directory login passwrd= *****");
+            log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
+            log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
         }
 
         Hashtable<String, String> envDC = new Hashtable();
@@ -296,6 +300,10 @@ public abstract class AbstractLoginModule implements LoginModule {
         } catch (CommunicationException ce) {
             log.error("Throw communication exception.", ce);
 
+        } catch (javax.naming.AuthenticationException ae) {
+            if (ae.getExplanation().contains(LDAP_USER_MUST_RESET_PASSWORD)) {
+                throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+            }
         } catch (NamingException ne) {
             log.error(ne.toString(), ne);
 
@@ -304,6 +312,30 @@ public abstract class AbstractLoginModule implements LoginModule {
         }
 
         return ldapContext;
+    }
+
+
+    public Date converADdateToOIMdate(String ADdate1) {
+
+        long ADdate = Long.parseLong(ADdate1);
+        long javaTime = ADdate - 0x19db1ded53e8000L;
+
+        javaTime /= 10000;
+
+        Date theDate = new Date(javaTime);
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+
+        String newDateString = formatter.format(theDate);
+        Date finalDate;
+
+        try {
+            finalDate = formatter.parse(newDateString);
+            return finalDate;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 }

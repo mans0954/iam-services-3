@@ -3,9 +3,22 @@ package org.openiam.idm.srvc.msg.service;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.continfo.service.EmailDAO;
+import org.openiam.idm.srvc.key.ws.KeyManagementWS;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.continfo.domain.EmailEntity;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.sysprop.dto.SystemPropertyDto;
+import org.openiam.idm.srvc.sysprop.service.SystemPropertyService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
@@ -22,6 +35,7 @@ import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
 import javax.jws.WebService;
+import java.sql.ResultSet;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,6 +46,12 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     @Autowired
     private MailSender mailSender;
+
+    @Autowired
+    protected AuditLogService auditLogService;
+
+    @Autowired
+    private LoginDataService loginManager;
 
     @Value("${mail.defaultSender}")
     private String defaultSender;
@@ -46,7 +66,19 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
     private String MAIL_REGEXP;
 
     @Autowired
+    private SystemPropertyService systemPropertyService;
+
+    @Autowired
     protected UserDataService userManager;
+
+    @Autowired
+    protected UserDAO userDAO;
+
+    @Autowired
+    protected EmailDAO emailDAO;
+
+    @Autowired
+    protected KeyManagementWS keyManagementWS;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -91,25 +123,50 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                     + ", Format:" + isHtmlFormat);
         }
         Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, null);
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
+        idmAuditLog.setAuditDescription("Send email to :" + to + "  subject: " + subject);
+
         try {
             mailSender.send(message);
+            idmAuditLog.succeed();
         } catch (Throwable e) {
             log.error("can't send email", e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+        } finally {
+            storeEmailBody(message, null);
         }
+        auditLogService.enqueue(idmAuditLog);
     }
 
     public void sendEmailByDateTime(String from, String to, String cc, String subject, String msg, String attachment,
                                     boolean isHtmlFormat, Date executionDateTime) {
+        sendEmailByDateTimeExt(from, to, cc, subject, msg, attachment, isHtmlFormat, executionDateTime, null, null, AuditAction.SEND_EMAIL.value());
+    }
+
+    private void sendEmailByDateTimeExt(String from, String to, String cc, String subject, String msg, String attachment,
+                                        boolean isHtmlFormat, Date executionDateTime, String userId, String principal, String action) {
         if (log.isDebugEnabled()) {
             log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
                     + ", Format:" + isHtmlFormat);
         }
         Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, executionDateTime);
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(action);
+        idmAuditLog.setTargetUser(userId, principal);
+        idmAuditLog.setAuditDescription("Send email to :" + to + "  subject: " + subject + "   -  principal:" + principal);
         try {
             mailSender.send(message);
+            idmAuditLog.succeed();
         } catch (Throwable e) {
             log.error("can't send email", e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+        } finally {
+            storeEmailBody(message, userId);
         }
+        auditLogService.enqueue(idmAuditLog);
     }
 
     /*
@@ -126,22 +183,51 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                     + ", Attachment:" + attachmentPath);
         }
         Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, null);
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
+        if (cc != null) {
+            idmAuditLog.setAuditDescription("Send email to :" + Arrays.toString(to) + " and CC :" + Arrays.toString(cc) + " with subject: " + subject);
+        } else {
+            idmAuditLog.setAuditDescription("Send email to :" + Arrays.toString(to) + " with subject: " + subject);
+        }
         try {
             mailSender.send(message);
+            idmAuditLog.succeed();
         } catch (Exception e) {
             log.error(e.toString());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+        }finally {
+            storeEmailBody(message, null);
         }
+        auditLogService.enqueue(idmAuditLog);
     }
 
     @Override
-    public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime) {
+    public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat,
+                                     String[] attachmentPath, Date executionDateTime) {
+        sendEmailsByDateTimeExt(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, executionDateTime, null, null, AuditAction.SEND_EMAIL);
+    }
+
+    private void sendEmailsByDateTimeExt(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat,
+                                         String[] attachmentPath, Date executionDateTime, String userId, String principal, AuditAction action) {
         Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, executionDateTime);
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
+        idmAuditLog.setAuditDescription("Send email to :" + to + "  subject: " + subject);
 
         try {
             mailSender.send(message);
+            idmAuditLog.succeed();
         } catch (Exception e) {
             log.error(e.toString());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+        } finally {
+            storeEmailBody(message, userId);
+
         }
+        auditLogService.enqueue(idmAuditLog);
     }
 
     private Message fillMessage(String from, String to, String cc, String bcc, String subject, String msg, boolean isHtmlFormat, String attachment, Date executionDateTime) {
@@ -160,12 +246,12 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         if (from != null && from.length() > 0) {
             message.setFrom(from);
             if (log.isDebugEnabled()) {
-                log.debug("MailServiceImpl adding From:"+from);
+                log.debug("MailServiceImpl adding From:" + from);
             }
         } else {
             message.setFrom(defaultSender);
             if (log.isDebugEnabled()) {
-                log.debug("MailServiceImpl adding From:"+defaultSender);
+                log.debug("MailServiceImpl adding From:" + defaultSender);
             }
         }
         if (to != null && to.length > 0) {
@@ -173,7 +259,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                 if (StringUtils.isNotBlank(toString)) {
                     message.addTo(toString);
                     if (log.isDebugEnabled()) {
-                        log.debug("MailServiceImpl adding To:"+toString);
+                        log.debug("MailServiceImpl adding To:" + toString);
                     }
                 }
 
@@ -184,7 +270,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                 if (StringUtils.isNotBlank(ccString)) {
                     message.addCc(ccString);
                     if (log.isDebugEnabled()) {
-                        log.debug("MailServiceImpl adding CC:"+ccString);
+                        log.debug("MailServiceImpl adding CC:" + ccString);
                     }
                 }
             }
@@ -195,7 +281,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                 if (StringUtils.isNotBlank(bccString)) {
                     message.addBcc(bccString);
                     if (log.isDebugEnabled()) {
-                        log.debug("MailServiceImpl adding BCC:"+bccString);
+                        log.debug("MailServiceImpl adding BCC:" + bccString);
                     }
                 }
             }
@@ -305,6 +391,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             log.debug(String.format("sendNotification userId = %s", req.getUserId()));
         }
         // get the user object
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.SEND_EMAIL.value());
+
         if (req.getUserId() == null) {
             log.warn("UserID is null");
             return false;
@@ -312,8 +401,15 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         UserEntity usr = userManager.getUser(req.getUserId());
         if (usr == null) {
             log.warn(String.format("Can't find user with id '%s", req.getUserId()));
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(String.format("Can't find user with id '%s", req.getUserId()));
+            auditLogService.enqueue(idmAuditLog);
             return false;
         }
+        String targetPrincipal = loginManager.getPrimaryIdentity(usr.getId()).getLogin();
+        idmAuditLog.setTargetUser(usr.getUserOwnerId(), targetPrincipal);
+        idmAuditLog.setPrincipal(targetPrincipal);
+
         if (log.isDebugEnabled()) {
             log.debug(String.format("Email address=%s", usr.getEmail()));
         }
@@ -321,24 +417,50 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         if (StringUtils.isBlank(usr.getEmail())) {
 
             log.error(String.format("Send notification failed. Email was null for userId=%s", usr.getId()));
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(String.format("Send notification failed. Email was null for userId=%s", usr.getId()));
+            auditLogService.enqueue(idmAuditLog);
             return false;
         }
 
         if (!isEmailValid(usr.getEmail())) {
             log.error(String.format("Send notfication failed. Email was is not valid for userId=%s - %s", usr.getId(),
                     usr.getEmail()));
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(String.format("Send notfication failed. Email was is not valid for userId=%s - %s", usr.getId(),
+                    usr.getEmail()));
+            auditLogService.enqueue(idmAuditLog);
             return false;
         }
         String[] emailDetails = fetchEmailDetails(req.getNotificationType());
         if (emailDetails == null) {
             log.warn(String.format("Email details were null for notification type '%s'", req.getNotificationType()));
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(String.format("Email details were null for notification type '%s'", req.getNotificationType()));
+            auditLogService.enqueue(idmAuditLog);
             return false;
+
+
+
+
         }
 
         if (CollectionUtils.isEmpty(req.getParamList())) {
             req.setParamList(new LinkedList<NotificationParam>());
         }
         req.getParamList().add(new NotificationParam("APPLICATION_CONTEXT", ac));
+
+        String action = AuditAction.SEND_EMAIL.value();
+        if (req.getNotificationParam(MailTemplateParameters.AUDIT_ACTION.value()) != null) {
+            action = req.getNotificationParam(MailTemplateParameters.AUDIT_ACTION.value()).getValue();
+            log.warn("Audit Action :" + action);
+        }
+
+        LoginEntity principal = loginManager.getPrimaryIdentity(usr.getId());
+        String login = null;
+        if (principal != null) {
+            login = principal.getLogin();
+        }
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("user", usr);
@@ -347,14 +469,17 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
         if (emailBody != null) {
             if (req.getNotificationParam(MailTemplateParameters.SUBJECT.value()) != null)
-                sendEmailByDateTime(null, usr.getEmail(), null, String.valueOf(req.getNotificationParam(MailTemplateParameters.SUBJECT.value()).getValueObj()), emailBody, null,
-                        isHtmlFormat(emailDetails), req.getExecutionDateTime());
+                sendEmailByDateTimeExt(null, usr.getEmail(), null, String.valueOf(req.getNotificationParam(MailTemplateParameters.SUBJECT.value()).getValueObj()), emailBody, null,
+                        isHtmlFormat(emailDetails), req.getExecutionDateTime(), usr.getId(), login, action);
             else
-                sendEmailByDateTime(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX], emailBody, null,
-                        isHtmlFormat(emailDetails), req.getExecutionDateTime());
+                sendEmailByDateTimeExt(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX], emailBody, null,
+                        isHtmlFormat(emailDetails), req.getExecutionDateTime(), usr.getId(), login, action);
             return true;
         }
         log.warn("Email not sent - failure occurred");
+        idmAuditLog.fail();
+        idmAuditLog.setFailureReason("Email not sent - failure occurred");
+        auditLogService.enqueue(idmAuditLog);
         return false;
     }
 
@@ -457,6 +582,55 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         }
     }
+
+
+    @Override
+    public List<EmailEntity> getEmailsForUser(String userId, int from, int size) {
+        if (userId == null) {
+            log.warn("UserID is null");
+            return null;
+        }
+        return emailDAO.getEmailsForUser(userId, from, size);
+
+    }
+
+    @Override
+    public EmailEntity getEmailById(String id) {
+        if (id == null) {
+            log.warn("User's Email id is null");
+            return null;
+        }
+        return emailDAO.findById(id);
+
+    }
+
+    private boolean storeEmailBody(Message message, String userId) {
+        if (userId == null) {
+            List<SystemPropertyDto> propertyDtos = systemPropertyService.getByType("STORE_EMAIL_PROP");
+            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(propertyDtos))
+                for (SystemPropertyDto systemPropertyDto : propertyDtos) {
+                    if ("DEFAULT_EMAIL_HOLDER".equalsIgnoreCase(systemPropertyDto.getName()))
+                        userId = systemPropertyDto.getValue();
+
+                }
+        }
+        String emailBody = message.getBody();
+        emailBody = keyManagementWS.encryptData(emailBody);
+        if ((message.getTo()).isEmpty()) {
+            log.error(String.format("Store email failed. Email was null for userId=%s", userId));
+            return false;
+        }
+        EmailEntity emailEntity = new EmailEntity();
+        emailEntity.setSubject(message.getSubject());
+        emailEntity.setEmailBody(emailBody);
+        String address = message.getTo().get(0).getAddress();
+        emailEntity.setAddress(address);
+        emailEntity.setParentId(userId);
+        emailEntity.setTimeStamp(message.getProcessingTime());
+        emailDAO.add(emailEntity);
+        return true;
+    }
+
 
     private Twitter getTwitterInstance() {
         ConfigurationBuilder cb = new ConfigurationBuilder();

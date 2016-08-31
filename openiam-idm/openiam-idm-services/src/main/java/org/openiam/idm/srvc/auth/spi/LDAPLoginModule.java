@@ -123,6 +123,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         // Find user in target system
         List<ExtensibleAttribute> attrs = new ArrayList<ExtensibleAttribute>();
         attrs.add(new ExtensibleAttribute("distinguishedName", null));
+        attrs.add(new ExtensibleAttribute("msDS-UserPasswordExpiryTimeComputed", null));
         LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, attrs);
         if(log.isDebugEnabled()) {
         	log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
@@ -149,9 +150,11 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         AuthenticationException changePassword = null;
         try {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("distinguishedName", distinguishedName);
-            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, params);
+        	if(!authContext.isSkipUserStatusCheck()) {
+	            Map<String, Object> params = new HashMap<String, Object>();
+	            params.put("distinguishedName", distinguishedName);
+	            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, params);
+        	}
 
         } catch (AuthenticationException ae) {
             // we should validate password before change password

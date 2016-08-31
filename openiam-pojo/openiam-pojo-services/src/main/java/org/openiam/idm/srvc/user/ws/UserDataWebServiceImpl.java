@@ -43,10 +43,12 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.continfo.domain.EmailEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
@@ -119,6 +121,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Autowired
     private UserProfileService userProfileService;
+
+    @Autowired
+    private KeyManagementService keyManagementService;
+
 
     @Override
     public Response addAddress(final Address val) {
@@ -1351,4 +1357,40 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     public List<Supervisor> findSupervisors(SupervisorSearchBean supervisorSearchBean) {
         return userManager.findSupervisors(supervisorSearchBean);
     }
+
+    @Override
+    public Response resendEmail(String id, String cc) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+
+        EmailEntity ee = mailService.getEmailById(id);
+
+        if (ee != null) {
+            if (StringUtils.isNotBlank(ee.getEmailBody()) && StringUtils.isNotBlank(ee.getAddress())) {
+                try {
+                    String emailBody = keyManagementService.decryptData(ee.getEmailBody());
+                    if (cc != null) {
+                        String[] copies = cc.split(";");
+                        String[] to = new String[1];
+                        to[0] = ee.getAddress();
+                        mailService.sendEmails(null, to, copies, null, ee.getSubject(), emailBody, true, null);
+                    } else {
+                        mailService.sendEmail(null, ee.getAddress(), null, ee.getSubject(), emailBody, null, true);
+                    }
+
+                } catch (Exception ex) {
+                    response.setErrorText("Cann't send email");
+                    response.setStatus(ResponseStatus.FAILURE);
+                }
+            }
+        }
+        return response;
+    }
+
+    @Override
+    public LightSearchResponse getLightSearchResult(LightSearchRequest request) {
+        return userManager.getLightSearchResult(request);
+    }
+
 }
+
+

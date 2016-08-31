@@ -235,7 +235,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
             variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
             variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
-            variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), request.getRequestorUserId());
+        //    variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), request.getRequestorUserId());
             if (identifier.getCustomActivitiAttributes() != null) {
                 variables.putAll(identifier.getCustomActivitiAttributes());
             }
@@ -869,7 +869,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         if(toDate != null) {
             query.taskCreatedBefore(toDate);
         }
-        final List<Task> candidateTasks = query.taskCandidateUser(userId).list();
+        final List<Task> candidateTasks = query.taskCandidateUser(userId).listPage(from, size);
         Collections.sort(candidateTasks, taskCreatedTimeComparator);
         taskListWrapper.addCandidateTasks(candidateTasks, runtimeService, loginService);
         if(description != null && taskListWrapper.getCandidateTasks() != null){
@@ -879,11 +879,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
                     results.add(wrapper);
                 }
             }
-            if(from+size < results.size()) {
-                taskListWrapper.setCandidateTasks(results.subList(from, from + size));
-            } else {
-                taskListWrapper.setCandidateTasks(results.subList(from, results.size()));
-            }
+            taskListWrapper.setCandidateTasks(results);
+
         }
         return taskListWrapper;
     }
@@ -898,7 +895,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         if(toDate != null) {
             query.taskCreatedBefore(toDate);
         }
-        final List<Task> assignedTasks = query.taskAssignee(userId).list();
+        final List<Task> assignedTasks = query.taskAssignee(userId).listPage(from, size);
         Collections.sort(assignedTasks, taskCreatedTimeComparator);
         taskListWrapper.addAssignedTasks(assignedTasks, runtimeService, loginService);
         if(description != null && taskListWrapper.getAssignedTasks() != null){
@@ -908,11 +905,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
                     results.add(wrapper);
                 }
             }
-            if(from+size < results.size()) {
-                taskListWrapper.setAssignedTasks(results.subList(from, from + size));
-            } else {
-                taskListWrapper.setAssignedTasks(results.subList(from, results.size()));
-            }
+
+            taskListWrapper.setAssignedTasks(results);
+
         } else if(requesterId != null && taskListWrapper.getAssignedTasks() != null){
             List<TaskWrapper> results = new ArrayList<TaskWrapper>();
             for(TaskWrapper wrapper : taskListWrapper.getAssignedTasks()) {
@@ -922,11 +917,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
                     }
                 }
             }
-            if(from+size < results.size()) {
-                taskListWrapper.setAssignedTasks(results.subList(from, from + size));
-            } else {
-                taskListWrapper.setAssignedTasks(results.subList(from, results.size()));
-            }
+
+            taskListWrapper.setAssignedTasks(results);
+
         }
 
         return taskListWrapper;
