@@ -1,18 +1,13 @@
-package org.openiam.provision.dto.srcadapter;
+package org.openiam.provision.dto.common;
 
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.xml.bind.annotation.*;
-import java.util.Date;
 
 /**
  * Created by zaporozhec on 10/29/15.
  */
 @XmlType(name = "key_name")
 @XmlEnum(String.class)
-public enum SourceAdapterKeyEnum {
+public enum UserSearchKeyEnum {
     @XmlEnumValue("user_id")
     USERID(0),
     @XmlEnumValue("principal")
@@ -25,7 +20,7 @@ public enum SourceAdapterKeyEnum {
 
     private int value;
 
-    SourceAdapterKeyEnum(int val) {
+    UserSearchKeyEnum(int val) {
         value = val;
     }
 

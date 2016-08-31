@@ -19,67 +19,69 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
         "inheritFromParent",
         "isPublic",
         "risk",
-		"coorelatedName"
+        "coorelatedName", "metadataTypeId"
 })
-public class AuthorizationResource extends AbstractAuthorizationEntity implements Serializable  {
+public class AuthorizationResource extends AbstractAuthorizationEntity implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	
-	@XmlTransient
-	private Set<ResourceResourceXref> parentResources;
+    private static final long serialVersionUID = 1L;
+
+    @XmlTransient
+    private Set<ResourceResourceXref> parentResources;
 
     private String resourceTypeId;
 
-	private boolean inheritFromParent = true;
-	
-	private boolean isPublic = false;
+    private boolean inheritFromParent = true;
+
+    private boolean isPublic = false;
 
     private String risk;
 
-	private String coorelatedName;
+    private String coorelatedName;
+    private String metadataTypeId;
 
 	/*
-	private BitSet linearBitSet = new BitSet();
+    private BitSet linearBitSet = new BitSet();
 	*/
-	
-	public AuthorizationResource() {
-		
-	}
-	
-	public AuthorizationResource(final AuthorizationMenu menu) {
-		super.setId(menu.getId());
-	}
-	
-	public AuthorizationResource(final ResourceEntity entity) {
-		super(entity);
-	}
-	
-	public AuthorizationResource(final AuthorizationResource entity, final int bitIdx) {
-		super(entity);
-		super.setBitSetIdx(bitIdx);
-		this.isPublic = entity.isPublic();
-		this.risk = entity.getRisk();
-		this.resourceTypeId = entity.getResourceTypeId();
-	}
-		
-	public boolean isInheritFromParent() {
-		return inheritFromParent;
-	}
 
-	public boolean isPublic() {
-		return isPublic;
-	}
+    public AuthorizationResource() {
 
-	public void setPublic(boolean isPublic) {
-		this.isPublic = isPublic;
-	}
+    }
 
-	public void addParentResoruce(final ResourceResourceXref entity) {
-		if(parentResources == null) {
-			parentResources = new HashSet<ResourceResourceXref>();
-		}
-		parentResources.add(entity);
-	}
+    public AuthorizationResource(final AuthorizationMenu menu) {
+        super.setId(menu.getId());
+    }
+
+    public AuthorizationResource(final ResourceEntity entity) {
+        super(entity);
+    }
+
+    public AuthorizationResource(final AuthorizationResource entity, final int bitIdx) {
+        super(entity);
+        super.setBitSetIdx(bitIdx);
+        this.isPublic = entity.isPublic();
+        this.risk = entity.getRisk();
+        this.resourceTypeId = entity.getResourceTypeId();
+        this.metadataTypeId = entity.getMetadataTypeId();
+    }
+
+    public boolean isInheritFromParent() {
+        return inheritFromParent;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public void addParentResoruce(final ResourceResourceXref entity) {
+        if (parentResources == null) {
+            parentResources = new HashSet<ResourceResourceXref>();
+        }
+        parentResources.add(entity);
+    }
 
     public String getResourceTypeId() {
         return resourceTypeId;
@@ -97,33 +99,42 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
         this.risk = risk;
     }
 
-	public String getCoorelatedName() {
-		return coorelatedName;
-	}
+    public String getCoorelatedName() {
+        return coorelatedName;
+    }
 
-	public void setCoorelatedName(String coorelatedName) {
-		this.coorelatedName = coorelatedName;
-	}
+    public void setCoorelatedName(String coorelatedName) {
+        this.coorelatedName = coorelatedName;
+    }
 
-	public Set<AbstractResourceXref> visitResources(final Set<AuthorizationResource> visitedSet) {
-		final Set<AbstractResourceXref> compiledResourceBitSet = new HashSet<AbstractResourceXref>();
-		if(!visitedSet.contains(this)) {
-			visitedSet.add(this);
-			if(inheritFromParent) {
-				if(parentResources != null) {
-					for(final ResourceResourceXref xref : parentResources) {
-						compiledResourceBitSet.add(xref);
-						compiledResourceBitSet.addAll(xref.getResource().visitResources(visitedSet));
-					}
-				}
-			}
-		}
-		return compiledResourceBitSet;
-	}
-	
-	public AuthorizationResource shallowCopy() {
-		final AuthorizationResource copy = new AuthorizationResource();
-		super.makeCopy(copy);
-		return copy;
-	}
+    public String getMetadataTypeId() {
+        return metadataTypeId;
+    }
+
+    public void setMetadataTypeId(String metadataTypeId) {
+        this.metadataTypeId = metadataTypeId;
+    }
+
+    public Set<AbstractResourceXref> visitResources(final Set<AuthorizationResource> visitedSet) {
+        final Set<AbstractResourceXref> compiledResourceBitSet = new HashSet<AbstractResourceXref>();
+        if (!visitedSet.contains(this)) {
+            visitedSet.add(this);
+            if (inheritFromParent) {
+                if (parentResources != null) {
+                    for (final ResourceResourceXref xref : parentResources) {
+                        compiledResourceBitSet.add(xref);
+                        compiledResourceBitSet.addAll(xref.getResource().visitResources(visitedSet));
+                    }
+                }
+            }
+        }
+        return compiledResourceBitSet;
+    }
+
+    public AuthorizationResource shallowCopy() {
+        final AuthorizationResource copy = new AuthorizationResource();
+        super.makeCopy(copy);
+        return copy;
+    }
+
 }
