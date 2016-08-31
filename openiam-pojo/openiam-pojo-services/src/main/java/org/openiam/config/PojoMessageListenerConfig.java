@@ -94,4 +94,11 @@ public class PojoMessageListenerConfig {
         return rabbitMQAdminUtils.createMessageListenerContainer("roleListenerContainer",
                 OpenIAMQueue.RoleQueue, listener, connectionFactory, String.format("AMQP-%s-", OpenIAMQueue.RoleQueue.name()));
     }
+
+    @Bean
+    @Autowired
+    public SimpleMessageListenerContainer policyListenerContainer(PolicyListener listener, ConnectionFactory connectionFactory) {
+        return rabbitMQAdminUtils.createMessageListenerContainer("policyListenerContainer",
+                OpenIAMQueue.PolicyQueue, listener, connectionFactory, String.format("AMQP-%s-", OpenIAMQueue.PolicyQueue.name()));
+    }
 }
