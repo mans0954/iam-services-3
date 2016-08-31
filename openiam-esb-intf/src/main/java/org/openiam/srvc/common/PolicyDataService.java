@@ -46,39 +46,12 @@ public interface PolicyDataService {
 	int count(final PolicySearchBean searchBean);
 	
 	/**
-	 * @param policyDefId
-	 * @return
-	 */
-	@Deprecated
-	List<Policy> getAllPolicies(String policyDefId, final int from, final int size);
-
-	/**
 	 * @param policyId
 	 * @return
 	 */
 	Policy getPolicy(String policyId);
 
 
-   /**
-    * Adds the policy.
-    *
-    * @param policy the policy
-    * @return the response
-    */
-	@Deprecated
-   Response addPolicy(Policy policy);
-	
-	
-	/**
-	 * Update policy.
-	 *
-	 * @param policy the policy
-	 * @return the response
-	 */
-	@Deprecated
-	Response updatePolicy(Policy  policy);
-	
-	
 	Response savePolicy(final Policy policy);
 	
 	/**

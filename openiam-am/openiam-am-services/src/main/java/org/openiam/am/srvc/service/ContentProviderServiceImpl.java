@@ -917,7 +917,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 		final Set<URIPatternEntity> userProfilePatterns = patternSet.stream().filter(e -> 
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/selfRegistration") ||
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editProfile") ||
-			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/newUser")
+			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/newUser") ||
+			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editUser")
 		).collect(Collectors.toSet());
 		
 		final Set<URIPatternEntity> groupTemplatePatterns = patternSet.stream().filter(e ->

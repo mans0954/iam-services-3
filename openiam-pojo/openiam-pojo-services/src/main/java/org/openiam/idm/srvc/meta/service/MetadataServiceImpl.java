@@ -137,6 +137,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     }
     
     @Override
+    @Transactional(readOnly=true)
     /*AM-851 */
 	//@Cacheable(value="metadataElementEntities",  key="{ #searchBean, #from, #size }", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size){

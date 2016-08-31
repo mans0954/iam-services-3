@@ -5,6 +5,7 @@ import org.openiam.base.OrderConstants;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 
 /**
  * Created by: Alexander Duckardt
@@ -15,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
         "orderBy",
         "sortBy"
 })
-public class SortParam {
+public class SortParam implements Serializable{
     private OrderConstants orderBy = OrderConstants.ASC;
     private String sortBy;
 
