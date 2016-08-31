@@ -89,9 +89,9 @@
     <jaxws:endpoint id="uiThemeWebServiceEndpoint" implementor="#uiThemeWS" address="/UIThemeWebService"/>
 
     <jaxws:endpoint id="activitiServiceEndpoint" implementor="#activitiBPMService" address="/ActivitiService"/>
-    
+
     <jaxws:endpoint id="propertyValueServiceEndpoint" implementor="#propertyValueWS" address="/PropertyValueWebService"/>
-    
+
     <jaxws:endpoint id="accessRightServiceEndpoint" implementor="#accessRightWS" address="/AccessRightDataService"/>
 <!--let it it for now-->
     <jaxws:endpoint id="genericScriptConnectorEndpoint" implementor="#genericScriptConnector" address="/ScriptConnectorService"/>
@@ -103,4 +103,9 @@
     <jaxws:endpoint id="oauthWebServiceEndpoint" implementor="#OAuthWS" address="/OAuthWebService"/>
 
 	<jaxws:endpoint id="elasticSearchWebServiceEndpoint" implementor="#elasticSearchWS" address="/ElasticSearchWebService"/>
+
+
+    <jaxws:endpoint id="sourceAdapterEndpoint" implementor="#sourceAdapter" address="/SourceAdapterService"/>
+
+    <jaxws:endpoint id="userAccessControlEndpoint" implementor="#userAccessControlService" address="/UserAccessControlService"/>
 </beans>

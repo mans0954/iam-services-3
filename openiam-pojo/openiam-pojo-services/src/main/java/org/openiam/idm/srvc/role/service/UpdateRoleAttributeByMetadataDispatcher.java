@@ -31,41 +31,53 @@ public class UpdateRoleAttributeByMetadataDispatcher extends UpdateAttributeByMe
     protected void process(UpdateAttributeByMetadataRequest request) {
         RoleSearchBean searchBean = new RoleSearchBean();
         searchBean.setType(request.getMetadataTypeId());
-        List<RoleEntity> roleList = roleDataService.findBeans(searchBean,null, -1,-1);
-        if(CollectionUtils.isNotEmpty(roleList)){
-            for(RoleEntity role: roleList){
+        List<RoleEntity> roleList = roleDataService.findBeans(searchBean, null, -1, -1);
+        if (CollectionUtils.isNotEmpty(roleList)) {
+            for (RoleEntity role : roleList) {
                 Set<RoleAttributeEntity> roleAttributes = role.getRoleAttributes();
-                if(CollectionUtils.isEmpty(roleAttributes)){
-                    roleDataService.addAttribute(buildRoleAttribute(role, request));
+                if (CollectionUtils.isEmpty(roleAttributes)) {
+                    try {
+                        roleDataService.addAttribute(buildRoleAttribute(role, request));
+                    } catch (BasicDataServiceException e) {
+                        log.error(e.getCode().name());
+                    }
                 } else {
                     boolean isFound = false;
-                    for(RoleAttributeEntity attr: roleAttributes){
-                        if(request.getMetadataElementId().equals(attr.getMetadataElementId())){
-                            isFound=true;
-                            if(StringUtils.isBlank(attr.getValue())
-                                    && CollectionUtils.isEmpty(attr.getValues())){
+                    for (RoleAttributeEntity attr : roleAttributes) {
+                        if (request.getMetadataElementId().equals(attr.getMetadataElementId())) {
+                            isFound = true;
+                            if (StringUtils.isBlank(attr.getValue())
+                                    && CollectionUtils.isEmpty(attr.getValues())) {
                                 attr.setValue(request.getDefaultValue());
                                 attr.setRole(role);
                                 attr.setMetadataElementId(request.getMetadataElementId());
-                                roleDataService.updateAttribute(attr);
+                                try {
+                                    roleDataService.updateAttribute(attr);
+                                } catch (BasicDataServiceException e) {
+                                    log.error(e.getCode().name());
+                                }
                             }
                         }
                     }
-                    if(!isFound){
-                        roleDataService.addAttribute(buildRoleAttribute(role, request));
+                    if (!isFound) {
+                        try {
+                            roleDataService.addAttribute(buildRoleAttribute(role, request));
+                        } catch (BasicDataServiceException e) {
+                            log.error(e.getCode().name());
+                        }
                     }
                 }
             }
         }
     }
 
-    public RoleAttributeEntity buildRoleAttribute(RoleEntity role, UpdateAttributeByMetadataRequest request){
+    public RoleAttributeEntity buildRoleAttribute(RoleEntity role, UpdateAttributeByMetadataRequest request) {
         RoleAttributeEntity attribute = new RoleAttributeEntity();
         attribute.setRole(role);
-        if(request!=null){
+        if (request != null) {
             attribute.setMetadataElementId(request.getMetadataElementId());
             attribute.setName(request.getName());
-            attribute.setValue(StringUtils.isNotBlank(request.getDefaultValue()) ? request.getDefaultValue():null);
+            attribute.setValue(StringUtils.isNotBlank(request.getDefaultValue()) ? request.getDefaultValue() : null);
         }
         return attribute;
     }

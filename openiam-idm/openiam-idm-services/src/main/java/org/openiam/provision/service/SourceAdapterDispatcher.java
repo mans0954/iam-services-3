@@ -5,7 +5,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.*;
+import org.openiam.base.response.PasswordResponse;
+import org.openiam.base.response.PasswordValidationResponse;
+import org.openiam.base.response.ProvisionUserResponse;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -18,7 +23,6 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.base.response.PasswordValidationResponse;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceService;
@@ -28,9 +32,10 @@ import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.dto.common.UserSearchKey;
+import org.openiam.provision.dto.common.UserSearchKeyEnum;
+import org.openiam.provision.dto.common.UserSearchMemberhipKey;
 import org.openiam.provision.dto.srcadapter.*;
-import org.openiam.base.response.PasswordResponse;
-import org.openiam.base.response.ProvisionUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -778,7 +783,7 @@ public class SourceAdapterDispatcher implements Runnable {
 
     private void fillAlternativeContact(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
             Exception {
-        SourceAdapterKey alternativeContact = request.getAlternativeContact();
+        UserSearchKey alternativeContact = request.getAlternativeContact();
         if (alternativeContact == null || alternativeContact.getName() == null || StringUtils.isBlank(alternativeContact.getValue())) {
             return;
         }
@@ -806,7 +811,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 pUser.setSuperiors(new HashSet<User>(superiorsFromDB));
             }
             List<User> result = new ArrayList<User>();
-            for (SourceAdapterMemberhipKey superUser : request.getSupervisors()) {
+            for (UserSearchMemberhipKey superUser : request.getSupervisors()) {
                 if (superUser.getValue() == null || "NULL".equalsIgnoreCase(superUser.getValue())) {
                     warnings.append(this.getWarning("Supervisor has NULL identifier value."));
                     continue;
@@ -1122,7 +1127,7 @@ public class SourceAdapterDispatcher implements Runnable {
         return (source == null || "NULL".equals(source)) ? null : source;
     }
 
-    private User getUser(SourceAdapterKey keyPair, SourceAdapterRequest request) throws Exception {
+    private User getUser(UserSearchKey keyPair, SourceAdapterRequest request) throws Exception {
         if (keyPair == null && SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
             //create
             return new User();
@@ -1131,7 +1136,7 @@ public class SourceAdapterDispatcher implements Runnable {
             return new User();
         } else if (keyPair != null && keyPair.getName() == null && StringUtils.isNotBlank(keyPair.getValue())) {
             User u = null;
-            for (SourceAdapterKeyEnum keyEnum : SourceAdapterKeyEnum.values()) {
+            for (UserSearchKeyEnum keyEnum : UserSearchKeyEnum.values()) {
                 u = this.findByKey(keyEnum, keyPair.getValue(), request);
                 if (u != null) {
                     break;
@@ -1147,19 +1152,19 @@ public class SourceAdapterDispatcher implements Runnable {
     }
 
 
-    private User findByKey(SourceAdapterKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request) throws Exception {
+    private User findByKey(UserSearchKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request) throws Exception {
         UserSearchBean searchBean = new UserSearchBean();
-        if (SourceAdapterKeyEnum.USERID.equals(matchAttrName)) {
+        if (UserSearchKeyEnum.USERID.equals(matchAttrName)) {
             searchBean.setKey(matchAttrValue);
             searchBean.setUserId(matchAttrValue);
-        } else if (SourceAdapterKeyEnum.PRINCIPAL.equals(matchAttrName)) {
+        } else if (UserSearchKeyEnum.PRINCIPAL.equals(matchAttrName)) {
             LoginSearchBean lsb = new LoginSearchBean();
             lsb.setLoginMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
             lsb.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
             searchBean.setPrincipal(lsb);
-        } else if (SourceAdapterKeyEnum.EMAIL.equals(matchAttrName)) {
+        } else if (UserSearchKeyEnum.EMAIL.equals(matchAttrName)) {
             searchBean.setEmailAddressMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
-        } else if (SourceAdapterKeyEnum.EMPLOYEE_ID.equals(matchAttrName)) {
+        } else if (UserSearchKeyEnum.EMPLOYEE_ID.equals(matchAttrName)) {
             searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         }
         searchBean.setDeepCopy(true);
