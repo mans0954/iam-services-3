@@ -68,7 +68,7 @@ public class GroupAttestationInitializer {
                         request.setCustomApproverIds(groupOwnerResponse.getSetString());
                         request.addParameter(ActivitiConstants.EMPLOYEE_ID.getName(), groupId);
                         request.addParameter(ActivitiConstants.ATTESTATION_URL.getName(), attestationURL);
-                        request.setRequestorUserId(systemUserId);
+                        request.setRequesterId(systemUserId);
                         request.setDeletable(false);
                         final BasicWorkflowResponse response = activitiService.initiateWorkflow(request);
                         if(!ResponseStatus.SUCCESS.equals(response.getStatus())) {

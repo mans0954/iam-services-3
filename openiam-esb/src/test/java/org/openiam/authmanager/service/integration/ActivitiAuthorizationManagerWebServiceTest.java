@@ -122,7 +122,7 @@ public class ActivitiAuthorizationManagerWebServiceTest extends AbstractAuthoriz
 		request.setAccessRights(rightIds);
 		request.setStartDate(startDate);
 		request.setEndDate(endDate);
-		request.setRequestorUserId(requestorId);
+		request.setRequesterId(requestorId);
 		request.setAssociationId(associationId);
 		request.setAssociationType(associationType);
 		request.setMemberAssociationId(memberAssociationId);
@@ -168,7 +168,7 @@ public class ActivitiAuthorizationManagerWebServiceTest extends AbstractAuthoriz
 		if(CollectionUtils.isNotEmpty(tasks)) {
 			tasks.forEach(task -> {
 				final ActivitiClaimRequest claimRequest = new ActivitiClaimRequest();
-				claimRequest.setRequestorUserId(requestorId);
+				claimRequest.setRequesterId(requestorId);
 				claimRequest.setTestRequest(true);
 				claimRequest.setTaskId(task.getId());
 				final Response wsResponse = activitiClient.claimRequest(claimRequest);
@@ -186,7 +186,7 @@ public class ActivitiAuthorizationManagerWebServiceTest extends AbstractAuthoriz
 			decision.setAccepted(true);
 			decision.setTaskId(task.getId());
 			decision.setTestRequest(true);
-			decision.setRequestorUserId(requestorId);
+			decision.setRequesterId(requestorId);
 			final Response wsResponse = activitiClient.makeDecision(decision);
 			Assert.assertNotNull(wsResponse);
 			Assert.assertTrue(wsResponse.isSuccess());

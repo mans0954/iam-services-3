@@ -21,7 +21,7 @@ public abstract class AbstractApiService {
     @Autowired
     private RequestServiceGateway requestServiceGateway;
 
-    protected AbstractApiService(OpenIAMQueue rabbitMqQueue){
+    public AbstractApiService(OpenIAMQueue rabbitMqQueue){
         this.rabbitMqQueue=rabbitMqQueue;
     }
 

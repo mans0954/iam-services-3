@@ -1,5 +1,6 @@
 package org.openiam.base;
 
+import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
 
@@ -18,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
                 "languageId",
                 "requesterId"
         })
-public abstract class BaseRequestModel<TargetObject extends KeyDTO> extends KeyDTO {
+public abstract class BaseRequestModel<TargetObject extends KeyDTO> extends BaseServiceRequest {
     private ActivitiRequestType activitiRequestType;
     private PageTempate pageTemplate;
     private String languageId;

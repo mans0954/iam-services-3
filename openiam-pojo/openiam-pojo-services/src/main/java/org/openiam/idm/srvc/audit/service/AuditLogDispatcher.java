@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.request.IdmAuditLogRequest;
+import org.openiam.base.response.AuditLogResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
@@ -17,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component("auditLogDispatcher")
-public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogRequest, Response, OpenIAMAPICommon> {
+public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogRequest, AuditLogResponse, OpenIAMAPICommon> {
 
 	private static final Log LOG = LogFactory.getLog(AuditLogDispatcher.class);
 
@@ -25,10 +26,10 @@ public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogRequest
     private AuditLogService auditLogService;
 
     public AuditLogDispatcher() {
-        super(Response.class);
+        super(AuditLogResponse.class);
     }
 
-    private void process(final IdmAuditLogRequest request) {
+    private IdmAuditLogEntity process(final IdmAuditLogRequest request) {
         IdmAuditLogEntity event = request.getLogEntity();
         if (StringUtils.isNotEmpty(event.getId())) {
         	final IdmAuditLogEntity srcLog = auditLogService.findById(event.getId());
@@ -50,16 +51,19 @@ public class AuditLogDispatcher extends AbstractAPIDispatcher<IdmAuditLogRequest
                     }
                 }
 
-                auditLogService.save(srcLog);
+                event =auditLogService.save(srcLog);
             }
         } else {
-            auditLogService.save(event);
+            event =auditLogService.save(event);
         }
+        return event;
     }
 
     @Override
-    protected Response processingApiRequest(final OpenIAMAPICommon openIAMAPI, final IdmAuditLogRequest idmAuditLogRequest) throws BasicDataServiceException {
-        process(idmAuditLogRequest);
-        return new Response(ResponseStatus.SUCCESS);
+    protected AuditLogResponse processingApiRequest(final OpenIAMAPICommon openIAMAPI, final IdmAuditLogRequest idmAuditLogRequest) throws BasicDataServiceException {
+        AuditLogResponse response =  new AuditLogResponse();
+        IdmAuditLogEntity event = process(idmAuditLogRequest);
+        response.setEvent(event);
+        return response;
     }
 }

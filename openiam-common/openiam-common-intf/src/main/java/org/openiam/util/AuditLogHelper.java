@@ -1,0 +1,46 @@
+package org.openiam.util;
+
+import org.openiam.base.request.IdmAuditLogRequest;
+import org.openiam.base.response.AuditLogResponse;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.mq.constants.OpenIAMAPICommon;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.dto.MQRequest;
+import org.openiam.mq.dto.MQResponse;
+import org.openiam.mq.gateway.RequestServiceGateway;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+/**
+ * Created by alexander on 29/08/16.
+ */
+@Component
+public class AuditLogHelper {
+
+    @Autowired
+    private RequestServiceGateway requestServiceGateway;
+
+    public IdmAuditLogEntity save(IdmAuditLogEntity event){
+        IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
+        wrapper.setLogEntity(event);
+
+        MQRequest<IdmAuditLogRequest, OpenIAMAPICommon> request = new MQRequest<>();
+        request.setRequestBody(wrapper);
+        request.setRequestApi(OpenIAMAPICommon.AuditLogSave);
+        MQResponse<AuditLogResponse> response = (MQResponse<AuditLogResponse>)requestServiceGateway.sendAndReceive(OpenIAMQueue.AuditLog, request);
+
+        return response.getResponseBody().getEvent();
+    }
+
+    public void enqueue(final IdmAuditLogEntity event){
+        if(event!=null){
+            IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
+            wrapper.setLogEntity(event);
+
+            MQRequest<IdmAuditLogRequest, OpenIAMAPICommon> request = new MQRequest<>();
+            request.setRequestBody(wrapper);
+            request.setRequestApi(OpenIAMAPICommon.AuditLogSave);
+            requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
+        }
+    }
+}

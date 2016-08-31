@@ -34,7 +34,7 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
         "endDate",
         "userNotes"
 })
-public class GenericWorkflowRequest extends BaseObject {
+public class GenericWorkflowRequest extends BaseServiceRequest {
 
     private String associationId;
     private AssociationType associationType;
@@ -117,7 +117,7 @@ public class GenericWorkflowRequest extends BaseObject {
     }
 
     public boolean isEmpty() {
-        return StringUtils.isBlank(activitiRequestType) || StringUtils.isBlank(requestorUserId);
+        return StringUtils.isBlank(activitiRequestType) || StringUtils.isBlank(requesterId);
     }
 
     public List<String> getCustomApproverAssociationIds() {

@@ -8,8 +8,6 @@ import javax.jws.WebMethod;
 import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -23,8 +21,6 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -34,19 +30,15 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDataService;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
-import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.audit.IdmAuditLogWebDataService;
-import org.openiam.util.UserUtils;
-import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -663,15 +655,15 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
 
             groupManager.saveGroupRequest(request);
             response.setResponseValue(request.getTargetObject().getId());
-        } catch(BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
         } catch (PageTemplateException e){
             response.setCurrentValue(e.getCurrentValue());
             response.setElementName(e.getElementName());
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
-        }catch(Throwable e) {
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
             log.error("Exception", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
@@ -683,15 +675,15 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
         final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
         try {
             groupManager.validateGroupRequest(request);
-        } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-            response.setErrorTokenList(e.getErrorTokenList());
         } catch (PageTemplateException e){
             response.setCurrentValue(e.getCurrentValue());
             response.setElementName(e.getElementName());
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
         } catch (Throwable e) {
             log.error("Can't validate", e);
             response.setStatus(ResponseStatus.FAILURE);

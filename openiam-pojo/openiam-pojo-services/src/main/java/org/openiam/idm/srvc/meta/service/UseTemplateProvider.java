@@ -1,18 +1,8 @@
 package org.openiam.idm.srvc.meta.service;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.openiam.base.domain.AbstractAttributeEntity;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
-import org.openiam.idm.srvc.meta.dto.PageElement;
-import org.openiam.idm.srvc.meta.dto.PageElementValue;
-import org.openiam.idm.srvc.meta.dto.PageTempate;
-import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
-import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;

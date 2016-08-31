@@ -101,7 +101,7 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 		decision.setAccepted(true);
 		decision.setComment(getRandomName());
 		decision.setTaskId(wrappers.get(0).getId());
-		decision.setRequestorUserId(requestor.getId());
+		decision.setRequesterId(requestor.getId());
 		final Response response = activitiClient.makeDecision(decision);
 		Assert.assertTrue(response.isSuccess());
 		Thread.sleep(5000L);
@@ -319,7 +319,7 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 		
 		request.setTestRequest(true);
 		request.addCustomApproverId(requestor.getId());
-		request.setRequestorUserId(requestor.getId());
+		request.setRequesterId(requestor.getId());
 		return request;
 	}
 	

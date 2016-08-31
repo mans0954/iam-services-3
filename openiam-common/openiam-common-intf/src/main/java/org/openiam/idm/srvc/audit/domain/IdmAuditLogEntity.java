@@ -31,6 +31,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openiam.base.BaseObject;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.elasticsearch.annotation.NestedFieldType;
@@ -641,6 +642,13 @@ public class IdmAuditLogEntity extends KeyEntity {
         setSessionID(baseObject.getRequestorSessionID());
         setRequestorPrincipal(baseObject.getRequestorLogin());
         setRequestorUserId(baseObject.getRequestorUserId());
+    }
+
+    public void setBaseRequest(BaseServiceRequest baseRequest){
+        setClientIP(baseRequest.getRequestClientIP());
+        setSessionID(baseRequest.getRequestorSessionID());
+        setRequestorPrincipal(baseRequest.getRequestorLogin());
+        setRequestorUserId(baseRequest.getRequesterId());
     }
 
     public void setFailureReason(final String value) {

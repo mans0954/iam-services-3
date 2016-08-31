@@ -5,10 +5,12 @@ import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.request.IdmAuditLogRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.concurrent.AbstractBaseRunnableBackgroundTask;
 import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.concurrent.IBaseRunnableBackgroundTask;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMAPICommon;
@@ -17,6 +19,7 @@ import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.dto.MQResponse;
 import org.openiam.mq.gateway.RequestServiceGateway;
 import org.openiam.mq.gateway.ResponseServiceGateway;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -33,6 +36,8 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
     private ResponseServiceGateway responseServiceGateway;
     @Autowired
     private RequestServiceGateway requestServiceGateway;
+    @Autowired
+    private AuditLogHelper auditLogHelper;
 
     private OpenIAMAPI apiName;
     private boolean isRunning = false;
@@ -95,7 +100,9 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
                 apiResponse = processingApiRequest(apiRequest.getRequestApi(),apiRequest.getRequestBody());
                 apiResponse.succeed();
                 auditEvent.succeed();
-            } catch (BasicDataServiceException ex) {
+            } catch (PageTemplateException e) {
+                handleTemplateException(e, apiResponse);
+		    } catch (BasicDataServiceException ex) {
                 log.error(ex.getCode().name(), ex);
                 apiResponse.setErrorCode(ex.getCode());
                 apiResponse.setErrorText(ex.getResponseValue());
@@ -136,12 +143,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
     protected void submitAuditLog(){
         IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         if(event!=null && StringUtils.isNotBlank(event.getAction())){
-            IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
-            wrapper.setLogEntity(event);
-            MQRequest<IdmAuditLogRequest, OpenIAMAPICommon> request = new MQRequest<>();
-            request.setRequestBody(wrapper);
-            request.setRequestApi(OpenIAMAPICommon.AuditLogSave);
-            requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
+            auditLogHelper.enqueue(event);
         }
         //remove auditLog event reference from this thread
         AuditLogHolder.remove();
@@ -161,5 +163,14 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
     protected abstract ResponseBody processingApiRequest(final API openIAMAPI, final RequestBody requestBody) throws BasicDataServiceException;
     protected void rollbackTaransaction() {
         log.debug("There is no data which should be rollbacked");
+    }
+
+    protected void handleTemplateException(PageTemplateException e, final ResponseBody responseBody){
+        IdmAuditLogEntity auditEvent = AuditLogHolder.getInstance().getEvent();
+        auditEvent.fail();
+        auditEvent.setFailureReason(e.getCode());
+        auditEvent.setException(e);
+        responseBody.setErrorCode(e.getCode());
+        responseBody.setStatus(ResponseStatus.FAILURE);
     }
 }

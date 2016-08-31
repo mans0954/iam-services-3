@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.ManagementService;
@@ -28,9 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.activiti.model.dto.TaskSearchBean;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.bpm.activiti.groovy.DefaultEditUserApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultGenericWorkflowRequestApproverAssociationIdentifier;
@@ -51,12 +50,12 @@ import org.openiam.base.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.bpm.utils.ActivitiUtils;
+import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.dozer.converter.AddressDozerConverter;
 import org.openiam.dozer.converter.EmailAddressDozerConverter;
 import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.exception.CustomActivitiException;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -71,7 +70,6 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
-import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -85,6 +83,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -191,6 +190,9 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 	@Value("${org.openiam.workflow.resource.type}")
 	private String workflowResourceType;
 
+	@Autowired
+	private AuditLogHelper auditLogHelper;
+
 	@Override
 	public String sayHello() {
 		return "Hello";
@@ -213,142 +215,111 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 	@Override
 	@Transactional
-	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
+	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) throws BasicDataServiceException {
 		log.info("Initializing workflow");
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
-		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+		IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
+
 		idmAuditLog.setAction(AuditAction.NEW_USER_WORKFLOW.value());
-		idmAuditLog.setBaseObject(request);
-		idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+		idmAuditLog.setBaseRequest(request);
+		idmAuditLog.setRequestorUserId(request.getRequesterId());
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-		try {
-			idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 
-			if(request == null || request.getActivitiRequestType() == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-			}
-			
-			/* throws exception if invalid - caught in try/catch */
-			userProfileService.validate(request);
-
-			validateUserRequest(request);
-
-			final Map<String, Object> bindingMap = new HashMap<String, Object>();
-			bindingMap.put("REQUEST", request);
-			bindingMap.put("BUILDER", idmAuditLog);
-
-			DefaultNewHireRequestApproverAssociationIdentifier identifier = null;
-			try {
-				identifier = (DefaultNewHireRequestApproverAssociationIdentifier)
-						scriptRunner.instantiateClass(bindingMap, newUserApproverAssociationGroovyScript);
-				if(identifier == null) {
-					throw new Exception("Did not instantiate script - was null");
-				}
-			} catch(Throwable e) {
-				log.error(String.format("Can't instantiate '%s' - using default", newUserApproverAssociationGroovyScript), e);
-				identifier = new DefaultNewHireRequestApproverAssociationIdentifier();
-			}
-
-			identifier.init(bindingMap);
-
-			List<String> approverAssociationIds = null;
-			List<String> approverUserIds = null;
-			if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
-				approverUserIds = request.getCustomApproverIds();
-			} else {
-				approverAssociationIds = identifier.getApproverAssociationIds();
-				approverUserIds = identifier.getApproverIds();
-			}
-
-			idmAuditLog.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssociationIds, jacksonMapper);
-			idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
-
-			//if(CollectionUtils.isEmpty(approverAssociationIds) && CollectionUtils.isEmpty(approverUserIds)) {
-			//	throw new BasicDataServiceException(ResponseCode.NO_REQUEST_APPROVERS);
-			//}
-	        
-			/* populate the provision request with required values */
-
-			final ActivitiRequestType requestType = request.getActivitiRequestType();
-			final String taskName = String.format("%s Request for %s", requestType.getDescription(), request.getUser().getDisplayName());
-			final String taskDescription = taskName;
-			
-			/* pass required variables to Activiti, and start the process */
-			final List<Object> approverCardinatlity = new LinkedList<Object>();
-			if(CollectionUtils.isNotEmpty(approverAssociationIds)) {
-				approverCardinatlity.addAll(approverAssociationIds);
-			} else {
-				approverCardinatlity.add(approverUserIds);
-			}
-
-			final ResourceEntity resource = createAndSaveWorkflowResource(taskName, request.getRequestorUserId());
-
-			final Map<String, Object> variables = new HashMap<String, Object>();
-			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
-			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysConfiguration.getProjectVersion());
-			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
-			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
-			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
-			variables.put(ActivitiConstants.TASK_NAME.getName(), taskName);
-			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
-			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
-			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
-			variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), request.getRequestorUserId());
-			if(identifier.getCustomActivitiAttributes() != null) {
-				variables.putAll(identifier.getCustomActivitiAttributes());
-			}
-
-			for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-				idmAuditLog.put(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
-			}
-
-			idmAuditLog = auditLogService.save(idmAuditLog);
-			variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
-
-			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
-			resource.setReferenceId(processInstance.getId());
-			resourceService.save(resource, request.getRequestorUserId());
-			populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequestorUserId());
-
-			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
-			idmAuditLog.setTargetTask(processInstance.getId(), taskName);
-			response.succeed();
-			idmAuditLog.succeed();
-		} catch (PageTemplateException e) {
-			idmAuditLog.fail();
-			idmAuditLog.setFailureReason(e.getCode());
-			idmAuditLog.setException(e);
-			response.setCurrentValue(e.getCurrentValue());
-			response.setElementName(e.getElementName());
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch(BasicDataServiceException e) {
-			idmAuditLog.fail();
-			idmAuditLog.setFailureReason(e.getCode());
-			idmAuditLog.setException(e);
-			response.setErrorTokenList(e.getErrorTokenList());
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch(ActivitiException e) {
-			idmAuditLog.fail();
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			log.info("Activiti Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-		} catch(Throwable e) {
-			idmAuditLog.fail();
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			log.error("Error while creating newhire request", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-		} finally {
-			log.info("Persisting activiti log..");
-			idmAuditLog = auditLogService.save(idmAuditLog);
+		if(request == null || request.getActivitiRequestType() == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 		}
+
+		/* throws exception if invalid - caught in try/catch */
+		userProfileService.validate(request);
+
+		validateUserRequest(request);
+
+		final Map<String, Object> bindingMap = new HashMap<String, Object>();
+		bindingMap.put("REQUEST", request);
+		bindingMap.put("BUILDER", idmAuditLog);
+
+		DefaultNewHireRequestApproverAssociationIdentifier identifier = null;
+		try {
+			identifier = (DefaultNewHireRequestApproverAssociationIdentifier)
+					scriptRunner.instantiateClass(bindingMap, newUserApproverAssociationGroovyScript);
+			if(identifier == null) {
+				throw new Exception("Did not instantiate script - was null");
+			}
+		} catch(Throwable e) {
+			log.error(String.format("Can't instantiate '%s' - using default", newUserApproverAssociationGroovyScript), e);
+			identifier = new DefaultNewHireRequestApproverAssociationIdentifier();
+		}
+
+		identifier.init(bindingMap);
+
+		List<String> approverAssociationIds = null;
+		List<String> approverUserIds = null;
+		if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
+			approverUserIds = request.getCustomApproverIds();
+		} else {
+			approverAssociationIds = identifier.getApproverAssociationIds();
+			approverUserIds = identifier.getApproverIds();
+		}
+
+		idmAuditLog.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssociationIds, jacksonMapper);
+		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+
+		//if(CollectionUtils.isEmpty(approverAssociationIds) && CollectionUtils.isEmpty(approverUserIds)) {
+		//	throw new BasicDataServiceException(ResponseCode.NO_REQUEST_APPROVERS);
+		//}
+
+		/* populate the provision request with required values */
+
+		final ActivitiRequestType requestType = request.getActivitiRequestType();
+		final String taskName = String.format("%s Request for %s", requestType.getDescription(), request.getUser().getDisplayName());
+		final String taskDescription = taskName;
+
+		/* pass required variables to Activiti, and start the process */
+		final List<Object> approverCardinatlity = new LinkedList<Object>();
+		if(CollectionUtils.isNotEmpty(approverAssociationIds)) {
+			approverCardinatlity.addAll(approverAssociationIds);
+		} else {
+			approverCardinatlity.add(approverUserIds);
+		}
+
+		final ResourceEntity resource = createAndSaveWorkflowResource(taskName, request.getRequesterId());
+
+		final Map<String, Object> variables = new HashMap<String, Object>();
+		variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
+		variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysConfiguration.getProjectVersion());
+		variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+		variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+		try {
+			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
+		} catch (JsonProcessingException e) {
+			throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR, "Cannot serialize request to JSON");
+		}
+		variables.put(ActivitiConstants.TASK_NAME.getName(), taskName);
+		variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
+		variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequesterId());
+		variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
+		variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), request.getRequesterId());
+		if(identifier.getCustomActivitiAttributes() != null) {
+			variables.putAll(identifier.getCustomActivitiAttributes());
+		}
+
+		for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
+			idmAuditLog.put(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+		}
+
+		//idmAuditLog = auditLogService.save(idmAuditLog);
+		idmAuditLog = auditLogHelper.save(idmAuditLog);
+		AuditLogHolder.getInstance().setEvent(idmAuditLog);
+		variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
+
+		final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
+		resource.setReferenceId(processInstance.getId());
+		resourceService.save(resource, request.getRequesterId());
+		populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequesterId());
+
+		idmAuditLog = auditLogService.findById(idmAuditLog.getId());
+		idmAuditLog.setTargetTask(processInstance.getId(), taskName);
 		return response;
 	}
 
@@ -378,205 +349,137 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 	@Override
 	@Transactional
-	public Response claimRequest(final ActivitiClaimRequest request) {
-		final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+	public void claimRequest(final ActivitiClaimRequest request) throws BasicDataServiceException {
+		final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
 		idmAuditLog.setAction(AuditAction.CLAIM_REQUEST.value());
-		idmAuditLog.setBaseObject(request);
-		idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+		idmAuditLog.setBaseRequest(request);
+		idmAuditLog.setRequestorUserId(request.getRequesterId());
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
 
-		final Response response = new Response();
-		String parentAuditLogId = null;
-		try {
+//		final Response response = new Response();
+			String parentAuditLogId = null;
 			idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
-
-			final List<Task> taskList = taskService.createTaskQuery().taskCandidateUser(request.getRequestorUserId()).list();
-			if(CollectionUtils.isEmpty(taskList)) {
-				throw new ActivitiException("No Candidate Task available");
+		try {
+			final List<Task> taskList = taskService.createTaskQuery().taskCandidateUser(request.getRequesterId()).list();
+			if (CollectionUtils.isEmpty(taskList)) {
+				throw new BasicDataServiceException(ResponseCode.USER_STATUS, "No Candidate Task available");
 			}
 
-			if(StringUtils.isBlank(request.getTaskId())) {
-				throw new ActivitiException("No Task specified");
+			if (StringUtils.isBlank(request.getTaskId())) {
+				throw new BasicDataServiceException(ResponseCode.USER_STATUS, "No Task specified");
 			}
 
 			Task potentialTaskToClaim = null;
-			for(final Task task : taskList) {
-				if(task.getId().equals(request.getTaskId())) {
+			for (final Task task : taskList) {
+				if (task.getId().equals(request.getTaskId())) {
 					potentialTaskToClaim = task;
 					break;
 				}
 			}
 
-			if(potentialTaskToClaim == null) {
-				throw new ActivitiException(String.format("Task with ID: '%s' not assigned to user", request.getTaskId()));
+			if (potentialTaskToClaim == null) {
+				throw new BasicDataServiceException(ResponseCode.USER_STATUS, String.format("Task with ID: '%s' not assigned to user", request.getTaskId()));
 			}
 
-			idmAuditLog.setTargetTask(potentialTaskToClaim.getId(),potentialTaskToClaim.getName());
-			/* claim the process, and set the assignee */
-			taskService.claim(potentialTaskToClaim.getId(), request.getRequestorUserId());
-			taskService.setAssignee(potentialTaskToClaim.getId(), request.getRequestorUserId());
+			idmAuditLog.setTargetTask(potentialTaskToClaim.getId(), potentialTaskToClaim.getName());
+		/* claim the process, and set the assignee */
+			taskService.claim(potentialTaskToClaim.getId(), request.getRequesterId());
+			taskService.setAssignee(potentialTaskToClaim.getId(), request.getRequesterId());
 
-			taskService.setVariableLocal(potentialTaskToClaim.getId(), ActivitiConstants.ASSIGNEE_ID.getName(), request.getRequestorUserId());
+			taskService.setVariableLocal(potentialTaskToClaim.getId(), ActivitiConstants.ASSIGNEE_ID.getName(), request.getRequesterId());
 			final Object auditLogId = taskService.getVariable(potentialTaskToClaim.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
-			if(auditLogId != null && auditLogId instanceof String) {
-				parentAuditLogId = (String)auditLogId;
+			if (auditLogId != null && auditLogId instanceof String) {
+				parentAuditLogId = (String) auditLogId;
 			}
-
-			response.succeed();
-			idmAuditLog.succeed();
-		} catch(ActivitiException e) {
-			idmAuditLog.fail();
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			log.info("Activiti Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-		} catch(Throwable e) {
-			idmAuditLog.fail();
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			log.error("Error while creating newhire request", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
 		} finally {
-			if (parentAuditLogId != null) {
-				IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
-				if (parent != null) {
-					parent.addChild(idmAuditLog);
-					//idmAuditLog.addParent(parent);
-					parent = auditLogService.save(parent);
-				}
-			}
+			updateParentAuditLog(parentAuditLogId, idmAuditLog);
 		}
-
-		return response;
 	}
 
 	@Override
 	@Transactional
-	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) {
+	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) throws BasicDataServiceException{
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
 
-		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+		IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
 		idmAuditLog.setAction(AuditAction.EDIT_USER_WORKFLOW.value());
-		idmAuditLog.setBaseObject(request);
-		idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+		idmAuditLog.setBaseRequest(request);
+		idmAuditLog.setRequestorUserId(request.getRequesterId());
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+
+		pageTemplateService.validate(request);
+		validateUserRequest(request);
+
+		final String description = String.format("Edit User %s", request.getUser().getDisplayName());
+
+		final Map<String, Object> bindingMap = new HashMap<String, Object>();
+		bindingMap.put("REQUEST", request);
+		bindingMap.put("BUILDER", idmAuditLog);
+
+		DefaultEditUserApproverAssociationIdentifier identifier = null;
 		try {
-			idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
-
-			pageTemplateService.validate(request);
-			validateUserRequest(request);
-
-			final String description = String.format("Edit User %s", request.getUser().getDisplayName());
-
-			final Map<String, Object> bindingMap = new HashMap<String, Object>();
-			bindingMap.put("REQUEST", request);
-			bindingMap.put("BUILDER", idmAuditLog);
-
-			DefaultEditUserApproverAssociationIdentifier identifier = null;
-			try {
-				identifier = (DefaultEditUserApproverAssociationIdentifier)
-						scriptRunner.instantiateClass(bindingMap, editUserApproverAssociationGroovyScript);
-				if(identifier == null) {
-					throw new Exception("Did not instantiate script - was null");
-				}
-			} catch(Throwable e) {
-				log.error(String.format("Can't instantiate '%s' - using default", editUserApproverAssociationGroovyScript), e);
-				identifier = new DefaultEditUserApproverAssociationIdentifier();
+			identifier = (DefaultEditUserApproverAssociationIdentifier)
+					scriptRunner.instantiateClass(bindingMap, editUserApproverAssociationGroovyScript);
+			if(identifier == null) {
+				throw new Exception("Did not instantiate script - was null");
 			}
-
-			identifier.init(bindingMap);
-
-			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
-			final List<String> approverUserIds = identifier.getApproverIds();
-
-			idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
-
-			final List<Object> approverCardinatlity = new LinkedList<Object>();
-			if(CollectionUtils.isNotEmpty(approverAssociationIds)) {
-				approverCardinatlity.addAll(approverAssociationIds);
-			} else {
-				approverCardinatlity.add(approverUserIds);
-			}
-
-			final ResourceEntity resource = createAndSaveWorkflowResource(description, request.getRequestorUserId());
-
-			final Map<String, Object> variables = new HashMap<String, Object>();
-			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
-			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysConfiguration.getProjectVersion());
-			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
-			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
-			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
-			variables.put(ActivitiConstants.TASK_NAME.getName(), description);
-			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), description);
-			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
-			variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getUser().getId());
-			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), ActivitiRequestType.EDIT_USER.getKey());
-			if(identifier.getCustomActivitiAttributes() != null) {
-				variables.putAll(identifier.getCustomActivitiAttributes());
-			}
-
-			idmAuditLog = auditLogService.save(idmAuditLog);
-			variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
-
-			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
-			resource.setReferenceId(processInstance.getId());
-			resourceService.save(resource, request.getRequestorUserId());
-			populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequestorUserId());
-
-			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
-			for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-				idmAuditLog.put(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
-			}
-
-			idmAuditLog.setTargetTask(processInstance.getId(), description);
-			/* throws exception if invalid - caught in try/catch */
-			//userProfileService.validate(request);
-
-			response.succeed();
-			idmAuditLog.succeed();
-		} catch(CustomActivitiException e) {
-			log.warn("Can't perform task", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-			response.setErrorText(e.getMessage());
-		} catch (PageTemplateException e) {
-			idmAuditLog.fail();
-			idmAuditLog.setFailureReason(e.getCode());
-			idmAuditLog.setException(e);
-			response.setCurrentValue(e.getCurrentValue());
-			response.setElementName(e.getElementName());
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch(BasicDataServiceException e) {
-			idmAuditLog.fail();
-			idmAuditLog.setFailureReason(e.getCode());
-			idmAuditLog.setException(e);
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorTokenList(e.getErrorTokenList());
-		} catch(ActivitiException e) {
-			idmAuditLog.fail();
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			log.info("Activiti Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
 		} catch(Throwable e) {
-			idmAuditLog.fail();
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			log.error("Error while creating newhire request", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-		} finally {
-			idmAuditLog = auditLogService.save(idmAuditLog);
+			log.error(String.format("Can't instantiate '%s' - using default", editUserApproverAssociationGroovyScript), e);
+			identifier = new DefaultEditUserApproverAssociationIdentifier();
 		}
+
+		identifier.init(bindingMap);
+
+		final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
+		final List<String> approverUserIds = identifier.getApproverIds();
+
+		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+
+		final List<Object> approverCardinatlity = new LinkedList<Object>();
+		if(CollectionUtils.isNotEmpty(approverAssociationIds)) {
+			approverCardinatlity.addAll(approverAssociationIds);
+		} else {
+			approverCardinatlity.add(approverUserIds);
+		}
+
+		final ResourceEntity resource = createAndSaveWorkflowResource(description, request.getRequesterId());
+
+		final Map<String, Object> variables = new HashMap<String, Object>();
+		variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
+		variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysConfiguration.getProjectVersion());
+		variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+		variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+		try {
+			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
+		} catch (JsonProcessingException e) {
+			throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR, "Cannot serialize request to JSON");
+		}
+		variables.put(ActivitiConstants.TASK_NAME.getName(), description);
+		variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), description);
+		variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequesterId());
+		variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getUser().getId());
+		variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), ActivitiRequestType.EDIT_USER.getKey());
+		if(identifier.getCustomActivitiAttributes() != null) {
+			variables.putAll(identifier.getCustomActivitiAttributes());
+		}
+
+		//idmAuditLog = auditLogService.save(idmAuditLog);
+		idmAuditLog = auditLogHelper.save(idmAuditLog);
+		AuditLogHolder.getInstance().setEvent(idmAuditLog);
+		variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
+
+		final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
+		resource.setReferenceId(processInstance.getId());
+		resourceService.save(resource, request.getRequesterId());
+		populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequesterId());
+
+		idmAuditLog = auditLogService.findById(idmAuditLog.getId());
+		for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
+			idmAuditLog.put(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+		}
+
+		idmAuditLog.setTargetTask(processInstance.getId(), description);
 		return response;
 	}
 
@@ -605,203 +508,176 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 	@Override
 	@Transactional
-	public BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request) {
-		final String requestorId = request.getRequestorUserId();
-		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+	public BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request) throws BasicDataServiceException {
+		final String requestorId = request.getRequesterId();
+		IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
 		idmAuditLog.setRequestorUserId(requestorId);
 		//idmAuditLog.setAction(AuditAction.INITIATE_WORKFLOW.value());
 		idmAuditLog.setAction(request.getActivitiRequestType());
-		idmAuditLog.setBaseObject(request);
+		idmAuditLog.setBaseRequest(request);
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
 		final BasicWorkflowResponse response = new BasicWorkflowResponse();
+		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+
+		if (request == null || request.isEmpty()) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
+
+		final Map<String, Object> bindingMap = new HashMap<String, Object>();
+		bindingMap.put("REQUEST", request);
+		bindingMap.put("BUILDER", idmAuditLog);
+
+		DefaultGenericWorkflowRequestApproverAssociationIdentifier identifier = null;
 		try {
-			idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+			identifier = (DefaultGenericWorkflowRequestApproverAssociationIdentifier)
+					scriptRunner.instantiateClass(bindingMap, membershipApproverAssociationGroovyScript);
 
-			if (request == null || request.isEmpty()) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			if (identifier == null) {
+				throw new Exception("Did not instantiate script - was null");
 			}
+		} catch (Throwable e) {
+			log.error(String.format("Can't instantiate '%s' - using default", membershipApproverAssociationGroovyScript), e);
+			identifier = new DefaultGenericWorkflowRequestApproverAssociationIdentifier();
+		}
 
-			final Map<String, Object> bindingMap = new HashMap<String, Object>();
-			bindingMap.put("REQUEST", request);
-			bindingMap.put("BUILDER", idmAuditLog);
+		identifier.init(bindingMap);
 
-			DefaultGenericWorkflowRequestApproverAssociationIdentifier identifier = null;
-			try {
-				identifier = (DefaultGenericWorkflowRequestApproverAssociationIdentifier)
-						scriptRunner.instantiateClass(bindingMap, membershipApproverAssociationGroovyScript);
+		final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
+		final List<String> approverUserIds = identifier.getApproverIds();
 
-				if (identifier == null) {
-					throw new Exception("Did not instantiate script - was null");
-				}
-			} catch (Throwable e) {
-				log.error(String.format("Can't instantiate '%s' - using default", membershipApproverAssociationGroovyScript), e);
-				identifier = new DefaultGenericWorkflowRequestApproverAssociationIdentifier();
+		List<Object> approverCardinatlity = new LinkedList<Object>();
+		if(propertyValueSweeper.getBoolean("org.openiam.idm.activiti.merge.custom.approver.with.approver.associations")){
+			final List<String> mergedIds = new LinkedList<String>();
+
+			if (CollectionUtils.isNotEmpty(approverUserIds)) {
+				mergedIds.addAll(approverUserIds);
 			}
-
-			identifier.init(bindingMap);
-
-			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
-			final List<String> approverUserIds = identifier.getApproverIds();
-
-			List<Object> approverCardinatlity = new LinkedList<Object>();
-			if(propertyValueSweeper.getBoolean("org.openiam.idm.activiti.merge.custom.approver.with.approver.associations")){
-				final List<String> mergedIds = new LinkedList<String>();
-
-				if (CollectionUtils.isNotEmpty(approverUserIds)) {
-					mergedIds.addAll(approverUserIds);
-				}
-				if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
-					mergedIds.addAll(getCandidateUserIdsFromApproverAssociations(request,approverAssociationIds));
-				}
-				approverCardinatlity = buildApproverCardinatlity(request, mergedIds);
+			if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
+				mergedIds.addAll(getCandidateUserIdsFromApproverAssociations(request,approverAssociationIds));
+			}
+			approverCardinatlity = buildApproverCardinatlity(request, mergedIds);
+		} else {
+			if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
+				approverCardinatlity.addAll(approverAssociationIds);
 			} else {
-				if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
-					approverCardinatlity.addAll(approverAssociationIds);
-				} else {
-					approverCardinatlity = buildApproverCardinatlity(request, approverUserIds);
-				}
+				approverCardinatlity = buildApproverCardinatlity(request, approverUserIds);
 			}
+		}
 
-			final ResourceEntity resource = createAndSaveWorkflowResource(request.getName(), request.getRequestorUserId());
+		final ResourceEntity resource = createAndSaveWorkflowResource(request.getName(), request.getRequesterId());
 
-			idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
-			final Map<String, Object> variables = new HashMap<String, Object>();
-			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
-			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysConfiguration.getProjectVersion());
-			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), request.getActivitiRequestType());
-			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
-			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
-			variables.put(ActivitiConstants.TASK_NAME.getName(), request.getName());
-			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), request.getDescription());
-			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
-			variables.put(ActivitiConstants.DELETABLE.getName(), Boolean.valueOf(request.isDeletable()));
-			variables.put(ActivitiConstants.ACCESS_RIGHTS.getName(), request.getAccessRights());
+		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+		final Map<String, Object> variables = new HashMap<String, Object>();
+		variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
+		variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysConfiguration.getProjectVersion());
+		variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), request.getActivitiRequestType());
+		variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+		variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+		variables.put(ActivitiConstants.TASK_NAME.getName(), request.getName());
+		variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), request.getDescription());
+		variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequesterId());
+		variables.put(ActivitiConstants.DELETABLE.getName(), Boolean.valueOf(request.isDeletable()));
+		variables.put(ActivitiConstants.ACCESS_RIGHTS.getName(), request.getAccessRights());
 
-			if(request.getStartDate() != null) {
-				variables.put(ActivitiConstants.START_DATE.getName(), request.getStartDate());
-			}
-			if(request.getEndDate() != null) {
-				variables.put(ActivitiConstants.END_DATE.getName(), request.getEndDate());
-			}
-			if(request.getUserNotes() != null) {
-				variables.put(ActivitiConstants.USER_NOTE.getName(), request.getUserNotes());
-			}
+		if(request.getStartDate() != null) {
+			variables.put(ActivitiConstants.START_DATE.getName(), request.getStartDate());
+		}
+		if(request.getEndDate() != null) {
+			variables.put(ActivitiConstants.END_DATE.getName(), request.getEndDate());
+		}
+		if(request.getUserNotes() != null) {
+			variables.put(ActivitiConstants.USER_NOTE.getName(), request.getUserNotes());
+		}
 
-			if(request.getAssociationId() != null) {
-				variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
+		if(request.getAssociationId() != null) {
+			variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
+		}
+		if(request.getAssociationType() != null) {
+			variables.put(ActivitiConstants.ASSOCIATION_TYPE.getName(), request.getAssociationType().getValue());
+		}
+		if(request.getMemberAssociationId() != null) {
+			variables.put(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), request.getMemberAssociationId());
+		}
+		if(request.getMemberAssociationType() != null) {
+			variables.put(ActivitiConstants.MEMBER_ASSOCIATION_TYPE.getName(), request.getMemberAssociationType().getValue());
+		}
+		if(request.getParameters() != null) {
+			variables.putAll(request.getParameters());
+		}
+		if(request.getJsonSerializedParams() != null) {
+			for(final String key : request.getJsonSerializedParams().keySet()) {
+				final String value = request.getJsonSerializedParams().get(key);
+				variables.put(key, new ActivitiJSONStringWrapper(value));
 			}
-			if(request.getAssociationType() != null) {
-				variables.put(ActivitiConstants.ASSOCIATION_TYPE.getName(), request.getAssociationType().getValue());
-			}
-			if(request.getMemberAssociationId() != null) {
-				variables.put(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), request.getMemberAssociationId());
-			}
-			if(request.getMemberAssociationType() != null) {
-				variables.put(ActivitiConstants.MEMBER_ASSOCIATION_TYPE.getName(), request.getMemberAssociationType().getValue());
-			}
-			if(request.getParameters() != null) {
-				variables.putAll(request.getParameters());
-			}
-			if(request.getJsonSerializedParams() != null) {
-				for(final String key : request.getJsonSerializedParams().keySet()) {
-					final String value = request.getJsonSerializedParams().get(key);
-					variables.put(key, new ActivitiJSONStringWrapper(value));
-				}
-			}
+		}
 
-			if(identifier.getCustomActivitiAttributes() != null) {
-				variables.putAll(identifier.getCustomActivitiAttributes());
+		if(identifier.getCustomActivitiAttributes() != null) {
+			variables.putAll(identifier.getCustomActivitiAttributes());
+		}
+
+		boolean isAdmin = false;
+		if((request.getAssociationId() != null) && (request.getAssociationType() != null)) {
+			switch(request.getAssociationType()) {
+				case GROUP:
+					isAdmin = authManagerService.isMemberOfGroup(requestorId, request.getAssociationId(), adminRightId);
+					break;
+				case ORGANIZATION:
+					isAdmin = authManagerService.isMemberOfOrganization(requestorId, request.getAssociationId(), adminRightId);
+					break;
+				case RESOURCE:
+					isAdmin = authManagerService.isEntitled(requestorId, request.getAssociationId(), adminRightId);
+					break;
+				case ROLE:
+					isAdmin = authManagerService.isMemberOfRole(requestorId, request.getAssociationId(), adminRightId);
+					break;
+				default:
+					break;
 			}
+		}
 
-			boolean isAdmin = false;
-			if((request.getAssociationId() != null) && (request.getAssociationType() != null)) {
-				switch(request.getAssociationType()) {
-					case GROUP:
-						isAdmin = authManagerService.isMemberOfGroup(requestorId, request.getAssociationId(), adminRightId);
-						break;
-					case ORGANIZATION:
-						isAdmin = authManagerService.isMemberOfOrganization(requestorId, request.getAssociationId(), adminRightId);
-						break;
-					case RESOURCE:
-						isAdmin = authManagerService.isEntitled(requestorId, request.getAssociationId(), adminRightId);
-						break;
-					case ROLE:
-						isAdmin = authManagerService.isMemberOfRole(requestorId, request.getAssociationId(), adminRightId);
-						break;
-					default:
-						break;
-				}
+		if((request.getMemberAssociationId() != null) && (request.getMemberAssociationType() != null)) {
+			switch(request.getMemberAssociationType()) {
+				case GROUP:
+					isAdmin = authManagerService.isMemberOfGroup(requestorId, request.getMemberAssociationId(), adminRightId);
+					break;
+				case ORGANIZATION:
+					isAdmin = authManagerService.isMemberOfOrganization(requestorId, request.getMemberAssociationId(), adminRightId);
+					break;
+				case RESOURCE:
+					isAdmin = authManagerService.isEntitled(requestorId, request.getMemberAssociationId(), adminRightId);
+					break;
+				case ROLE:
+					isAdmin = authManagerService.isMemberOfRole(requestorId, request.getMemberAssociationId(), adminRightId);
+					break;
+				default:
+					break;
 			}
+		}
+		variables.put(ActivitiConstants.IS_ADMIN.getName(), isAdmin);
 
-			if((request.getMemberAssociationId() != null) && (request.getMemberAssociationType() != null)) {
-				switch(request.getMemberAssociationType()) {
-					case GROUP:
-						isAdmin = authManagerService.isMemberOfGroup(requestorId, request.getMemberAssociationId(), adminRightId);
-						break;
-					case ORGANIZATION:
-						isAdmin = authManagerService.isMemberOfOrganization(requestorId, request.getMemberAssociationId(), adminRightId);
-						break;
-					case RESOURCE:
-						isAdmin = authManagerService.isEntitled(requestorId, request.getMemberAssociationId(), adminRightId);
-						break;
-					case ROLE:
-						isAdmin = authManagerService.isMemberOfRole(requestorId, request.getMemberAssociationId(), adminRightId);
-						break;
-					default:
-						break;
-				}
-			}
-			variables.put(ActivitiConstants.IS_ADMIN.getName(), isAdmin);
+		//idmAuditLog = auditLogService.save(idmAuditLog);
+		idmAuditLog = auditLogHelper.save(idmAuditLog);
+		AuditLogHolder.getInstance().setEvent(idmAuditLog);
+		variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
 
-			idmAuditLog = auditLogService.save(idmAuditLog);
-			variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
+		final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
+		resource.setReferenceId(processInstance.getId());
+		resourceService.save(resource, request.getRequesterId());
+		populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequesterId());
 
-			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
-			resource.setReferenceId(processInstance.getId());
-			resourceService.save(resource, request.getRequestorUserId());
-			populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequestorUserId());
-
-			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
-			idmAuditLog.setTargetTask(processInstance.getId(), request.getName());
-			for (Map.Entry<String, Object> varEntry : variables.entrySet()) {
-				idmAuditLog.put(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
-			}
-
-			response.succeed();
-			idmAuditLog.succeed();
-		} catch(CustomActivitiException e) {
-			log.warn("Can't perform task", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-			response.setErrorText(e.getMessage());
-		} catch(BasicDataServiceException e) {
-			idmAuditLog.setFailureReason(e.getCode());
-			idmAuditLog.setException(e);
-			log.info("Could not initialize task", e);
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch(ActivitiException e) {
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			log.info("Activiti Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-		} catch(Throwable e) {
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			log.error("Error while creating newhire request", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-		} finally {
-			idmAuditLog = auditLogService.save(idmAuditLog);
+		idmAuditLog = auditLogService.findById(idmAuditLog.getId());
+		idmAuditLog.setTargetTask(processInstance.getId(), request.getName());
+		for (Map.Entry<String, Object> varEntry : variables.entrySet()) {
+			idmAuditLog.put(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
 		}
 		return response;
 	}
 
 	@Override
-	public String getProcessInstanceIdByExecutionId(String executionId) {
+	public String getProcessInstanceIdByExecutionId(String executionId) throws BasicDataServiceException {
+		if(StringUtils.isBlank(executionId)){
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ExcecutionID is not set");
+		}
 		final List<HistoricActivityInstance> results = historyService.createHistoricActivityInstanceQuery().executionId(executionId).list();
 		return (CollectionUtils.isNotEmpty(results)) ? results.get(0).getProcessInstanceId() : null;
 	}
@@ -831,12 +707,11 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 	}
 
 	@Override
-	public Response makeDecision(final ActivitiRequestDecision request) {
-		final Response response = new Response();
-		final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-		idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+	public void makeDecision(final ActivitiRequestDecision request)  throws BasicDataServiceException {
+		final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
+		idmAuditLog.setRequestorUserId(request.getRequesterId());
 		idmAuditLog.setAction(AuditAction.COMPLETE_WORKFLOW.value());
-		idmAuditLog.setBaseObject(request);
+		idmAuditLog.setBaseRequest(request);
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
 		String parentAuditLogId = null;
 		try {
@@ -847,7 +722,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.COMMENT.getName(), request.getComment());
 			variables.put(ActivitiConstants.IS_TASK_APPROVED.getName(), request.isAccepted());
-			variables.put(ActivitiConstants.EXECUTOR_ID.getName(), request.getRequestorUserId());
+			variables.put(ActivitiConstants.EXECUTOR_ID.getName(), request.getRequesterId());
 			if(request.getCustomVariables() != null) {
 				variables.putAll(request.getCustomVariables());
 			}
@@ -870,44 +745,9 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 				taskService.addComment(assignedTask.getId(), task.getProcessInstanceId(), request.getComment());
 			}
 			taskService.complete(assignedTask.getId(), variables);
-			response.succeed();
-			idmAuditLog.succeed();
-
-		} catch(CustomActivitiException e) {
-			idmAuditLog.setFailureReason(e.getCode());
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
-			log.warn("Can't perform task", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-			response.setErrorText(e.getMessage());
-		} catch(ActivitiException e) {
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
-			log.info("Activiti Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.INTERNAL_ERROR);
-			response.setErrorText(e.getMessage());
-		} catch(Throwable e) {
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
-			log.error("Error while creating newhire request", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.INTERNAL_ERROR);
-			response.setErrorText(e.getMessage());
 		} finally {
-			if (parentAuditLogId != null) {
-				IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
-				if (parent != null) {
-					parent.addChild(idmAuditLog);
-					//idmAuditLog.addParent(parent);
-					parent = auditLogService.save(parent);
-				}
-			}
+			updateParentAuditLog(parentAuditLogId, idmAuditLog);
 		}
-		return response;
 	}
 
 	private Task getTaskAssignee(final String taskId, final String userId) {
@@ -920,7 +760,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 	}
 
 	private Task getTaskAssignee(final ActivitiRequestDecision newHireRequest) throws ActivitiException {
-		return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getRequestorUserId());
+		return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getRequesterId());
 	}
 
 
@@ -940,7 +780,10 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 	@Override
 	@Transactional
-	public TaskWrapper getTask(String taskId) {
+	public TaskWrapper getTask(String taskId) throws BasicDataServiceException {
+		if(StringUtils.isBlank(taskId)){
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Task ID is not set");
+		}
 		TaskWrapper retVal = null;
 		final List<Task> taskList = taskService.createTaskQuery().taskId(taskId).list();
 		if(CollectionUtils.isNotEmpty(taskList)) {
@@ -1410,9 +1253,8 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 	@Override
 	@Transactional
-	public Response deleteTask(String taskId, final String userId) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+	public void deleteTask(String taskId, final String userId)throws BasicDataServiceException {
+		final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
 		idmAuditLog.setRequestorUserId(userId);
 		idmAuditLog.setAction(AuditAction.TERMINATED_WORKFLOW.value());
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
@@ -1420,7 +1262,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		try {
 			final Task task = taskService.createTaskQuery().taskOwner(userId).taskId(taskId).singleResult();
 			if(task == null) {
-				throw new ActivitiException(String.format("Task ID '%s' does not exist, or is not owned by '%s'", taskId, userId));
+				throw new BasicDataServiceException(ResponseCode.USER_STATUS, String.format("Task ID '%s' does not exist, or is not owned by '%s'", taskId, userId));
 			}
 			idmAuditLog.setTargetTask(task.getId(), task.getName());
 			final Object auditLogId = taskService.getVariable(task.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
@@ -1436,62 +1278,15 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 			taskService.deleteTask(task.getId());
 			//taskService.deleteTask(task.getId(), true);
-			idmAuditLog.succeed();
-		} catch(ActivitiException e) {
-			log.info("Activiti Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
-		} catch(Throwable e) {
-			log.error("Error while creating newhire request", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
 		} finally {
-			if (parentAuditLogId != null) {
-				IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
-				if (parent != null) {
-					parent.addChild(idmAuditLog);
-					//idmAuditLog.addParent(parent);
-					parent = auditLogService.save(parent);
-				}
-			}
+			updateParentAuditLog(parentAuditLogId, idmAuditLog);
 		}
-		return response;
-    	/*
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-        	taskService.unclaim(taskId);
-        	// as of activiti 5.17.0, you can't delete a task that's part of a running process, so we just unclaim it
-        	//taskService.deleteCandidateUser(taskId, null);
-			//taskService.deleteTask(taskId, true);
-		} catch(ActivitiException e) {
-			log.info("Activiti Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-		} catch(Throwable e) {
-			log.error("Error while deleting task", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-		}
-
-        return response;
-        */
 	}
 
 	@Override
 	@Transactional
-	public Response unclaimTask(String taskId, String userId) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+	public void unclaimTask(String taskId, String userId) throws BasicDataServiceException{
+		final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
 		idmAuditLog.setRequestorUserId(userId);
 		idmAuditLog.setAction(AuditAction.UNCLAIM_TASK.value());
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
@@ -1508,33 +1303,9 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 			taskService.unclaim(taskId);
 			//taskService.deleteTask(task.getId(), true);
 			idmAuditLog.succeed();
-		} catch(ActivitiException e) {
-			log.info("Activiti Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
-		} catch(Throwable e) {
-			log.error("Error while creating newhire request", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
 		} finally {
-			if (parentAuditLogId != null) {
-				IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
-				if (parent != null) {
-					parent.addChild(idmAuditLog);
-					//idmAuditLog.addParent(parent);
-					parent = auditLogService.save(parent);
-				}
-			}
+			updateParentAuditLog(parentAuditLogId, idmAuditLog);
 		}
-		return response;
 	}
 
 	@Override
@@ -1553,9 +1324,8 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 	@Override
 	@Transactional
-	public Response deleteTasksForUser(final String userId) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+	public void  deleteTasksForUser(final String userId)throws BasicDataServiceException {
+		final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
 		idmAuditLog.setRequestorUserId(userId);
 		idmAuditLog.setAction(AuditAction.DELETE_ALL_USER_TASKS.value());
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
@@ -1574,33 +1344,14 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 					taskService.deleteTask(task.getId());
 				}
 			}
-
-			idmAuditLog.succeed();
-		} catch(ActivitiException e) {
-			log.info("Activiti Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
-		} catch(Throwable e) {
-			log.error("Error while deleting tasks for user", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-			idmAuditLog.setFailureReason(e.getMessage());
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
 		} finally {
 			if(parentAuditLogId != null) {
 				IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
 				parent.addChild(idmAuditLog);
 				//idmAuditLog.addParent(parent);
-				parent = auditLogService.save(parent);
+				AuditLogHolder.getInstance().setEvent(parent);
 			}
 		}
-		return response;
 	}
 
 	@Override
@@ -1656,6 +1407,16 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 	@Transactional(readOnly=true)
 	public List<String> getApproverUserIds(List<String> associationIds, final String targetUserId) {
 		return activitiHelper.getCandidateUserIds(associationIds, targetUserId, null);
+	}
+
+	private void updateParentAuditLog(String parentAuditLogId, IdmAuditLogEntity child){
+		if (parentAuditLogId != null) {
+			IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
+			if (parent != null) {
+				parent.addChild(child);
+				AuditLogHolder.getInstance().setEvent(parent);
+			}
+		}
 	}
 }
 

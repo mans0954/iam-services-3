@@ -18,7 +18,7 @@ import com.thoughtworks.xstream.*;
     "accepted",
     "customVariables"
 })
-public class ActivitiRequestDecision extends BaseObject {
+public class ActivitiRequestDecision extends BaseServiceRequest {
 
 	private String taskId;
 	private String comment;
