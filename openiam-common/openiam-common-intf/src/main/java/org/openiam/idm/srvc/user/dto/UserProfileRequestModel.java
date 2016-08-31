@@ -6,13 +6,10 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.openiam.base.BaseObject;
-import org.openiam.base.BaseRequestModel;
-import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.base.BaseTemplateRequestModel;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -25,7 +22,7 @@ import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 		"supervisors",
 		"organizationsUser"
 })
-public class UserProfileRequestModel extends BaseRequestModel<User> {
+public class UserProfileRequestModel extends BaseTemplateRequestModel<User> {
 
 	private List<EmailAddress> emails;
 	private List<Phone> phones;
