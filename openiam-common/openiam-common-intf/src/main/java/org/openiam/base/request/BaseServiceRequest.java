@@ -55,6 +55,9 @@ public class BaseServiceRequest implements Serializable{
         this.language = new Language();
         this.language.setId(languageId);
     }
+    public String getLanguageId() {
+        return (language!=null)? language.getId():null;
+    }
 
     public String getRequestorSessionID() {
         return requestorSessionID;

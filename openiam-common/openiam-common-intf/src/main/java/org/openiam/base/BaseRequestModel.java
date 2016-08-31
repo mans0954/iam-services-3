@@ -16,14 +16,10 @@ import javax.xml.bind.annotation.XmlType;
         propOrder = {
                 "activitiRequestType",
                 "pageTemplate",
-                "languageId",
-                "requesterId"
         })
 public abstract class BaseRequestModel<TargetObject extends KeyDTO> extends BaseServiceRequest {
     private ActivitiRequestType activitiRequestType;
     private PageTempate pageTemplate;
-    private String languageId;
-    private String requesterId;
 
     public ActivitiRequestType getActivitiRequestType() {
         return activitiRequestType;
@@ -39,14 +35,6 @@ public abstract class BaseRequestModel<TargetObject extends KeyDTO> extends Base
 
     public void setPageTemplate(PageTempate pageTemplate) {
         this.pageTemplate = pageTemplate;
-    }
-
-    public String getLanguageId() {
-        return languageId;
-    }
-
-    public void setLanguageId(String languageId) {
-        this.languageId = languageId;
     }
 
     public abstract TargetObject getTargetObject();
@@ -71,7 +59,7 @@ public abstract class BaseRequestModel<TargetObject extends KeyDTO> extends Base
         if (activitiRequestType != that.activitiRequestType) return false;
         if (pageTemplate != null ? !pageTemplate.equals(that.pageTemplate) : that.pageTemplate != null) return false;
         if (requesterId != null ? !requesterId.equals(that.requesterId) : that.requesterId != null) return false;
-        return languageId != null ? languageId.equals(that.languageId) : that.languageId == null;
+        return getLanguageId() != null ? getLanguageId().equals(that.getLanguageId()) : that.getLanguageId() == null;
 
     }
 
@@ -80,7 +68,7 @@ public abstract class BaseRequestModel<TargetObject extends KeyDTO> extends Base
         int result = super.hashCode();
         result = 31 * result + (activitiRequestType != null ? activitiRequestType.hashCode() : 0);
         result = 31 * result + (pageTemplate != null ? pageTemplate.hashCode() : 0);
-        result = 31 * result + (languageId != null ? languageId.hashCode() : 0);
+        result = 31 * result + (this.getLanguageId() != null ? getLanguageId().hashCode() : 0);
         result = 31 * result + (requesterId != null ? requesterId.hashCode() : 0);
         return result;
     }
@@ -90,7 +78,7 @@ public abstract class BaseRequestModel<TargetObject extends KeyDTO> extends Base
         return "BaseRequestModel{" +
                 "activitiRequestType=" + activitiRequestType +
                 ", pageTemplate=" + pageTemplate +
-                ", languageId='" + languageId + '\'' +
+                ", languageId='" + getLanguageId() + '\'' +
                 ", requesterId='" + requesterId + '\'' +
                 '}';
     }

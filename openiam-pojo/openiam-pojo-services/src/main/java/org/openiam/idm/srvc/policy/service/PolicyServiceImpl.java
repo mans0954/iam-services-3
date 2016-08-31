@@ -31,7 +31,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Service("policyService")
 public class PolicyServiceImpl implements PolicyService {
 
     private static final Log log = LogFactory.getLog(PolicyServiceImpl.class);
