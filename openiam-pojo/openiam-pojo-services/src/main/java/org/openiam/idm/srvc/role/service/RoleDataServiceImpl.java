@@ -517,6 +517,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean validateEdit(Role role) throws BasicDataServiceException {
         try {
             validate(role);
@@ -873,6 +874,7 @@ public class RoleDataServiceImpl implements RoleDataService {
         return retVal;
     }
 
+    @Transactional(readOnly = true)
     private void validate(final Role role) throws BasicDataServiceException {
         if (role == null) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Role object is null");
