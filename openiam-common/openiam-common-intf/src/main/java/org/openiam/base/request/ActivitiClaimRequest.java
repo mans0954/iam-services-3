@@ -10,7 +10,7 @@ import org.openiam.base.BaseObject;
 @XmlType(name = "ActivitiClaimRequest", propOrder = {
     "taskId"
 })
-public class ActivitiClaimRequest extends BaseObject {
+public class ActivitiClaimRequest extends BaseServiceRequest {
 
 	private String taskId;
 	

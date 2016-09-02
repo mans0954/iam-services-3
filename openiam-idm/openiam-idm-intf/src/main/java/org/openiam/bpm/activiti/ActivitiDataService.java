@@ -10,6 +10,7 @@ import org.openiam.activiti.model.dto.HistorySearchBean;
 import org.openiam.base.response.TaskHistoryWrapper;
 import org.openiam.base.response.TaskListWrapper;
 import org.openiam.base.response.TaskWrapper;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
@@ -21,15 +22,15 @@ public interface ActivitiDataService {
 
 	String sayHello();
 	
-	BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request);
+	BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request) throws BasicDataServiceException;
 	
-	SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request);
+	SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) throws BasicDataServiceException;
 	
-	SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel newHireRequest);
+	SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel newHireRequest) throws BasicDataServiceException;
 	
-	Response claimRequest(final ActivitiClaimRequest newHireRequest);
+	void claimRequest(final ActivitiClaimRequest newHireRequest) throws BasicDataServiceException;
 	
-	Response makeDecision(final ActivitiRequestDecision newHireRequest);
+	void makeDecision(final ActivitiRequestDecision newHireRequest)  throws BasicDataServiceException;
 	
     /* use findTasks */
     @Deprecated
@@ -55,7 +56,7 @@ public interface ActivitiDataService {
 
     public int getNumOfCandidateTasksWithFilter(final String userId, String description, Date fromDate, Date toDate);
 	
-	TaskWrapper getTask(final String taskId);
+	TaskWrapper getTask(final String taskId) throws BasicDataServiceException;
 	
 	TaskWrapper getTaskFromHistory(final String executionId, final String taskId);
 	
@@ -65,17 +66,17 @@ public interface ActivitiDataService {
 	
 	int count(final HistorySearchBean searchBean);
 	
-	Response deleteTask(final String taskId, final String userId);
+	void deleteTask(final String taskId, final String userId) throws BasicDataServiceException;
+
+	void unclaimTask(final String taskId, final String userId) throws BasicDataServiceException;
 	
-	Response unclaimTask(final String taskId, final String userId);
-	
-	Response deleteTasksForUser(final String userId);
+	void deleteTasksForUser(final String userId) throws BasicDataServiceException;
 	
 	List<TaskWrapper> findTasks(final TaskSearchBean searchBean, final int from, final int size);
 	
 	int countTasks(final TaskSearchBean searchBean);
 	
-	String getProcessInstanceIdByExecutionId(final String executionId);
+	String getProcessInstanceIdByExecutionId(final String executionId)throws BasicDataServiceException;
 
 	public List<String> getApproverUserIds(List<String> associationIds, final String targetUserId);
 

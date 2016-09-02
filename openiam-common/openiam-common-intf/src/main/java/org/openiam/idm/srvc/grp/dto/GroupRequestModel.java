@@ -1,8 +1,6 @@
 package org.openiam.idm.srvc.grp.dto;
 
-import org.openiam.base.BaseObject;
-import org.openiam.base.BaseRequestModel;
-import org.openiam.base.KeyDTO;
+import org.openiam.base.BaseTemplateRequestModel;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -16,7 +14,7 @@ import javax.xml.bind.annotation.XmlType;
         propOrder = {
                 "group"
         })
-public class GroupRequestModel extends BaseRequestModel<Group> {
+public class GroupRequestModel extends BaseTemplateRequestModel<Group> {
     private Group group;
 
     public Group getTargetObject(){

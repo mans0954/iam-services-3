@@ -1,20 +1,17 @@
-package org.openiam.idm.srvc.meta.exception;
+package org.openiam.exception;
 
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
 
-public class PageTemplateException extends Exception {
+public class PageTemplateException extends BasicDataServiceException {
 
-	private ResponseCode code;
 	private String currentValue;
 	private String elementName;
 	
 	public PageTemplateException(final ResponseCode code) {
-		this.code = code;
+		super(code);
 	}
 	
-	public ResponseCode getCode() {
-		return code;
-	}
 
 	public String getCurrentValue() {
 		return currentValue;
@@ -22,10 +19,6 @@ public class PageTemplateException extends Exception {
 
 	public void setCurrentValue(String currentValue) {
 		this.currentValue = currentValue;
-	}
-
-	public void setCode(ResponseCode code) {
-		this.code = code;
 	}
 
 	public String getElementName() {

@@ -79,7 +79,7 @@ public class AttestationInitializer {
 					request.setCustomApproverIds(supervisorIds);
 					request.addParameter(ActivitiConstants.EMPLOYEE_ID.getName(), employeeId);
 					request.addParameter(ActivitiConstants.ATTESTATION_URL.getName(), attestationURL);
-					request.setRequestorUserId(systemUserId);
+					request.setRequesterId(systemUserId);
 					request.setDeletable(false);
 					final BasicWorkflowResponse response = activitiService.initiateWorkflow(request);
 					if(!ResponseStatus.SUCCESS.equals(response.getStatus())) {

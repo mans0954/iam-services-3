@@ -50,7 +50,7 @@ import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
-import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
@@ -1268,14 +1268,14 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
             getProxyService().saveGroupRequest(request);
             response.setResponseValue(request.getTargetObject().getId());
-        } catch(BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
         } catch (PageTemplateException e){
             response.setCurrentValue(e.getCurrentValue());
             response.setElementName(e.getElementName());
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
         }catch(Throwable e) {
             log.error("Exception", e);
             response.setStatus(ResponseStatus.FAILURE);

@@ -2,43 +2,31 @@ package org.openiam.idm.srvc.user.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditTarget;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
-import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
-import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
-import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.user.domain.ProfilePictureEntity;
-import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.ProfilePicture;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.validator.EntityValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -231,7 +219,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 	}
 	
 	@Override
-	public void validate(NewUserProfileRequestModel request) throws Exception {
+	public void validate(NewUserProfileRequestModel request) throws BasicDataServiceException {
 		final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
 		if(StringUtils.isBlank(userEntity.getFirstName())) {
 			throw new BasicDataServiceException(ResponseCode.FIRST_NAME_REQUIRED);

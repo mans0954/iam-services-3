@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -59,7 +58,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
-import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.exception.PageTemplateException;
 import org.openiam.base.request.NotificationParam;
 import org.openiam.base.request.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;

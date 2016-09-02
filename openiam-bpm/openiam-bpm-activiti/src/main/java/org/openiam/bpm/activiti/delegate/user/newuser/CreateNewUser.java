@@ -7,7 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.exception.CustomActivitiException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -60,7 +60,7 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 			} else {
 				final String message = String.format("Could not save User Profile using Provisioning Service - can't continue.  Response Error Code: %s.  Response Error Text: %s", response.getErrorCode(), response.getErrorText());
 				idmAuditLog.addWarning(message);
-				throw new CustomActivitiException(response.getErrorCode(), message);
+				throw new BasicDataServiceException(response.getErrorCode(), message);
 			}
 			idmAuditLog.succeed();
 		} catch(Throwable e) {

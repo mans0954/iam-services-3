@@ -1,5 +1,6 @@
 package org.openiam.base;
 
+import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
 
@@ -11,14 +12,14 @@ import javax.xml.bind.annotation.XmlType;
  * Created by alexander on 28/12/15.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "BaseRequestModel",
+@XmlType(name = "BaseTemplateRequestModel",
         propOrder = {
                 "activitiRequestType",
                 "pageTemplate",
                 "languageId",
                 "requesterId"
         })
-public abstract class BaseRequestModel<TargetObject extends KeyDTO> extends KeyDTO {
+public abstract class BaseTemplateRequestModel<TargetObject extends KeyDTO> extends KeyDTO  {
     private ActivitiRequestType activitiRequestType;
     private PageTempate pageTemplate;
     private String languageId;
@@ -40,14 +41,6 @@ public abstract class BaseRequestModel<TargetObject extends KeyDTO> extends KeyD
         this.pageTemplate = pageTemplate;
     }
 
-    public String getLanguageId() {
-        return languageId;
-    }
-
-    public void setLanguageId(String languageId) {
-        this.languageId = languageId;
-    }
-
     public abstract TargetObject getTargetObject();
     public abstract void setTargetObject(TargetObject obj);
 
@@ -59,13 +52,21 @@ public abstract class BaseRequestModel<TargetObject extends KeyDTO> extends KeyD
         this.requesterId = requesterId;
     }
 
+    public String getLanguageId() {
+        return languageId;
+    }
+
+    public void setLanguageId(String languageId) {
+        this.languageId = languageId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        BaseRequestModel that = (BaseRequestModel) o;
+        BaseTemplateRequestModel that = (BaseTemplateRequestModel) o;
 
         if (activitiRequestType != that.activitiRequestType) return false;
         if (pageTemplate != null ? !pageTemplate.equals(that.pageTemplate) : that.pageTemplate != null) return false;

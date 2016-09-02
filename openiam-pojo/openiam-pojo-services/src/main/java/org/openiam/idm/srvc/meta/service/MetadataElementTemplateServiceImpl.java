@@ -21,7 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.authmanager.service.AuthorizationManagerService;
-import org.openiam.base.BaseRequestModel;
+import org.openiam.base.BaseTemplateRequestModel;
 import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
@@ -47,12 +47,11 @@ import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 import org.openiam.idm.srvc.meta.dto.TemplateUIField;
-import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.service.UserAttributeDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -462,7 +461,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	
 	@Override
 	@Transactional(readOnly=true)
-	public void validate(BaseRequestModel request) throws Exception {
+	public void validate(BaseTemplateRequestModel request) throws Exception {
 		final PageTempate pageTemplate = request.getPageTemplate();
 		final String objectId = (request.getTargetObject() != null) ? request.getTargetObject().getId() : null;
 		final LanguageEntity targetLanguage = getLanguage(request.getLanguageId());
@@ -548,7 +547,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		}
 	}
 	
-	private PageTemplateAttributeToken getAttributesFromTokenInternal(final BaseRequestModel request) throws PageTemplateException {
+	private PageTemplateAttributeToken getAttributesFromTokenInternal(final BaseTemplateRequestModel request) throws PageTemplateException {
 		PageTemplateAttributeToken token = new PageTemplateAttributeToken();
 
 		/* sets to hold persistent and new attributes */
@@ -690,7 +689,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 
 	@Override
 	@Transactional(readOnly = true)
-	public PageTemplateAttributeToken getAttributesFromTemplate(final BaseRequestModel request) {
+	public PageTemplateAttributeToken getAttributesFromTemplate(final BaseTemplateRequestModel request) {
 		PageTemplateAttributeToken token = null;
 		try {
 			token = getAttributesFromTokenInternal(request);
