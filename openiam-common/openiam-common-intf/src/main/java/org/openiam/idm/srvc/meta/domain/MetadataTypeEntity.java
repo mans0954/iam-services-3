@@ -64,7 +64,7 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
     @JoinColumn(name = "TYPE_ID", referencedColumnName = "TYPE_ID")
     @MapKeyColumn(name = "ATTRIBUTE_NAME")
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, MetadataElementEntity> elementAttributes = new HashMap<String, MetadataElementEntity>(0);
     /*
      * @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch =
