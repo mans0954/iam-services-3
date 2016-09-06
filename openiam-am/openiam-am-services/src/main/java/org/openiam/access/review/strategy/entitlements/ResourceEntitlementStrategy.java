@@ -3,6 +3,7 @@ package org.openiam.access.review.strategy.entitlements;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.model.AccessViewBean;
 import org.openiam.am.srvc.dto.jdbc.AbstractAuthorizationEntity;
 import org.openiam.am.srvc.dto.jdbc.AuthorizationGroup;
@@ -26,7 +27,7 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
     @Override
     public Set<AccessViewBean> getRoles(AccessViewBean parent) {
         Set<AccessViewBean> retVal = new HashSet<>();
-        ManagedSysEntity mngsys = accessReviewData.getMngsysMap().get(parent.getId());
+        ManagedSysDto mngsys = accessReviewData.getMngsysMap().get(parent.getId());
         if(mngsys!=null){
             Set<String> rolesIds = accessReviewData.getMatrix().getCompiledRoleIds().keySet();
             if(CollectionUtils.isNotEmpty(rolesIds)){
@@ -46,7 +47,7 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
     @Override
     public Set<AccessViewBean> getGroups(AccessViewBean parent) {
         Set<AccessViewBean> retVal = new HashSet<>();
-        ManagedSysEntity mngsys = accessReviewData.getMngsysMap().get(parent.getId());
+        ManagedSysDto mngsys = accessReviewData.getMngsysMap().get(parent.getId());
         if(mngsys!=null){
             Set<String> groupsIds = accessReviewData.getMatrix().getCompiledGroupIds().keySet();
             //groupIds.addAll(getCompiledGroupsForResource(parent.getId()));

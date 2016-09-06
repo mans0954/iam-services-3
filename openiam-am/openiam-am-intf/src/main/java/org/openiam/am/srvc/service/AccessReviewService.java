@@ -1,4 +1,4 @@
-package org.openiam.access.review.service;
+package org.openiam.am.srvc.service;
 
 import java.util.Date;
 

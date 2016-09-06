@@ -66,6 +66,7 @@ public class AccessRightServiceImpl implements AccessRightService {
 
 
 	@Override
+	@Transactional(readOnly=true)
 	@LocalizedServiceGet
 	public List<AccessRight> findBeansDTO(final AccessRightSearchBean searchBean, final int from, final int size, final Language language) {
 		final List<AccessRightEntity> entities = this.findBeans(searchBean, from, size);

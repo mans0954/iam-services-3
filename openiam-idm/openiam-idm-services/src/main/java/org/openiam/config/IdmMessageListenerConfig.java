@@ -1,5 +1,6 @@
 package org.openiam.config;
 
+import org.openiam.mq.ManagedSystemMessageListener;
 import org.openiam.mq.MetaDataListener;
 import org.openiam.mq.ProvisionMessageListener;
 import org.openiam.mq.constants.OpenIAMQueue;
@@ -23,6 +24,14 @@ public class IdmMessageListenerConfig {
     @Autowired
     public SimpleMessageListenerContainer provisionListenerContainer(ProvisionMessageListener listener, ConnectionFactory connectionFactory) {
         return rabbitMQAdminUtils.createMessageListenerContainer("provisionListenerContainerContainer",
-                OpenIAMQueue.ProvisionQueue,  listener, connectionFactory, String.format("AMQP-%s-", OpenIAMQueue.ProvisionQueue.name()));
+                OpenIAMQueue.ProvisionQueue,  listener, connectionFactory);
     }
+    @Bean
+    @Autowired
+    public SimpleMessageListenerContainer managedSystemMessageListenerContainer(ManagedSystemMessageListener listener, ConnectionFactory connectionFactory) {
+        return rabbitMQAdminUtils.createMessageListenerContainer("managedSystemMessageListenerContainer",
+                OpenIAMQueue.ManagedSysQueue,  listener, connectionFactory);
+    }
+
+
 }

@@ -31,6 +31,7 @@ import org.openiam.membership.MembershipDTO;
 import org.openiam.membership.MembershipRightDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class AuthorizationManagerDataProvider {
@@ -73,7 +74,7 @@ public class AuthorizationManagerDataProvider {
 		return list.stream().collect(Collectors.groupingBy(MembershipRightDTO::getId,
 				Collectors.mapping(MembershipRightDTO::getRightId, Collectors.toSet())));
 	}
-	
+	@Transactional(readOnly = true)
 	public AuthorizationManagerDataModel getModel(final Date date) {
 		final AuthorizationManagerDataModel model = new AuthorizationManagerDataModel();
 		

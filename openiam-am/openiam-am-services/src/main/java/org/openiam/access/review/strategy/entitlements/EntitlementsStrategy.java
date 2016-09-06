@@ -1,12 +1,13 @@
 package org.openiam.access.review.strategy.entitlements;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.model.AccessViewBean;
 import org.openiam.am.srvc.dto.jdbc.AbstractAuthorizationEntity;
 import org.openiam.am.srvc.dto.jdbc.AuthorizationGroup;
 import org.openiam.am.srvc.dto.jdbc.AuthorizationResource;
 import org.openiam.am.srvc.dto.jdbc.AuthorizationRole;
-import org.openiam.access.review.constant.AccessReviewConstant;
+import org.openiam.constants.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -24,7 +25,7 @@ public abstract class EntitlementsStrategy {
         this.accessReviewData=accessReviewData;
     }
 
-    protected void setIdentityForResource(AccessViewBean bean, ManagedSysEntity mngsys, List<LoginEntity> loginList){
+    protected void setIdentityForResource(AccessViewBean bean, ManagedSysDto mngsys, List<LoginEntity> loginList){
         if(CollectionUtils.isNotEmpty(loginList) && mngsys!=null) {
             for(final LoginEntity login : loginList) {
                 if(mngsys.getId().equals(login.getManagedSysId())){
