@@ -2,6 +2,7 @@ package org.openiam.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.openiam.base.TreeNode;
+import org.openiam.base.ws.Response;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -21,7 +22,7 @@ import java.util.List;
         "exceptions",
         "isEmptySearchBean"
 })
-public class AccessViewResponse {
+public class AccessViewResponse extends Response {
     public static final AccessViewResponse EMPTY_RESPONSE = new AccessViewResponse();
     static {
         EMPTY_RESPONSE.setEmptySearchBean(true);

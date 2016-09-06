@@ -1,4 +1,4 @@
-package org.openiam.access.review.constant;
+package org.openiam.constants;
 
 /**
  * Created by: Alexander Duckardt

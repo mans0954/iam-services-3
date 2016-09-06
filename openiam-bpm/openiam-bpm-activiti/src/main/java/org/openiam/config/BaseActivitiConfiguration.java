@@ -22,7 +22,7 @@ public class BaseActivitiConfiguration {
     @Autowired
     public SimpleMessageListenerContainer activitiMessageListenerContainer(ActivitiMessageListener listener, ConnectionFactory connectionFactory) {
         return rabbitMQAdminUtils.createMessageListenerContainer("activitiMessageListenerContainer",
-                OpenIAMQueue.ActivitiQueue,  listener, connectionFactory, String.format("AMQP-%s-", OpenIAMQueue.ActivitiQueue.name()));
+                OpenIAMQueue.ActivitiQueue,  listener, connectionFactory);
     }
 
 }

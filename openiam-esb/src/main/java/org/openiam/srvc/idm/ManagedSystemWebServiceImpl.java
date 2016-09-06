@@ -52,6 +52,8 @@ import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.util.SSLCert;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -63,7 +65,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service("managedSysService")
 @WebService(endpointInterface = "org.openiam.srvc.idm.ManagedSystemWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", portName = "ManagedSystemWebServicePort", serviceName = "ManagedSystemWebService")
-public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
+public class ManagedSystemWebServiceImpl extends AbstractApiService implements ManagedSystemWebService {
 
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
@@ -122,9 +124,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     boolean encrypt = true; // default encryption setting
 
+    public ManagedSystemWebServiceImpl() {
+        super(OpenIAMQueue.ManagedSysQueue);
+    }
+
     @Override
-    public int getManagedSystemsCount(
-            @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean) {
+    public int getManagedSystemsCount(@WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean) {
         return managedSystemService.count(searchBean);
     }
 

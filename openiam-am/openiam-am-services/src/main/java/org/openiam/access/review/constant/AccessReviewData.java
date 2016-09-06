@@ -3,6 +3,8 @@ package org.openiam.access.review.constant;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.constants.AccessReviewConstant;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.model.AccessViewBean;
 import org.openiam.model.AccessViewFilterBean;
 import org.openiam.am.srvc.dto.jdbc.AbstractAuthorizationEntity;
@@ -15,7 +17,6 @@ import org.openiam.base.response.TaskWrapper;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.dto.ResourceType;
 
 import java.util.*;
@@ -32,10 +33,10 @@ public class AccessReviewData {
     private final  String groupClass = AuthorizationGroup.class.getSimpleName();
     private final  String resourceClass = AuthorizationResource.class.getSimpleName();
 
-    private String view=AccessReviewConstant.RESOURCE_VIEW;
+    private String view= AccessReviewConstant.RESOURCE_VIEW;
     private UserEntitlementsMatrix matrix;
     private Set<String> targetResourceIds;
-    private Map<String, ManagedSysEntity> mngsysMap;
+    private Map<String, ManagedSysDto> mngsysMap;
     private Map<String, ResourceType>  resourceTypeMap;
     private List<LoginEntity> loginList;
     private AccessViewFilterBean filter;
@@ -56,11 +57,11 @@ public class AccessReviewData {
         this.matrix = matrix;
     }
 
-    public Map<String, ManagedSysEntity> getMngsysMap() {
+    public Map<String, ManagedSysDto> getMngsysMap() {
         return mngsysMap;
     }
 
-    public void setMngsysMap(Map<String, ManagedSysEntity> mngsysMap) {
+    public void setMngsysMap(Map<String, ManagedSysDto> mngsysMap) {
         this.mngsysMap = mngsysMap;
     }
 

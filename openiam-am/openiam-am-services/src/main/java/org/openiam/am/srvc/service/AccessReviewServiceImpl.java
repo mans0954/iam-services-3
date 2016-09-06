@@ -1,12 +1,19 @@
-package org.openiam.access.review.service;
+package org.openiam.am.srvc.service;
 
 import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
-import org.openiam.access.review.constant.AccessReviewConstant;
+import org.openiam.constants.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
+import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.request.TaskSearchRequest;
+import org.openiam.base.response.ManagedSysListResponse;
+import org.openiam.base.response.TaskListResponse;
+import org.openiam.base.response.TaskWrapperResponse;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.model.AccessViewBean;
 import org.openiam.model.AccessViewFilterBean;
 import org.openiam.model.AccessViewResponse;
@@ -17,22 +24,22 @@ import org.openiam.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
-import org.openiam.srvc.activiti.ActivitiService;
+import org.openiam.mq.constants.ActivitiAPI;
+import org.openiam.mq.constants.ManagedSystemAPI;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.utils.RabbitMQSender;
 import org.openiam.base.response.TaskWrapper;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
 import org.openiam.idm.srvc.res.dto.ResourceType;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 /**
@@ -47,18 +54,16 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     @Autowired
     private LoginDataService loginDS;
     @Autowired
-    private ManagedSystemService managedSystemService;
-    @Autowired
     private ResourceService resourceService;
-    @Autowired
-    @Qualifier("activitiBPMService")
-    private ActivitiService activitiService;
     @Autowired
     protected SysConfiguration sysConfiguration;
     @Autowired
     private AccessRightService accessRightDataService;
     @Autowired
     private PropertyValueSweeper propertyValueSweeper;
+
+    @Autowired
+    protected RabbitMQSender rabbitMQSender;
 
 /*    @Value("${org.openiam.attestation.exclude.menus}")
     private Boolean excludeMenus;*/
@@ -133,7 +138,13 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId(), date);
 
         if(StringUtils.isNotBlank(filter.getAttestationTaskId())){
-            TaskWrapper attestationTask = activitiService.getTask(filter.getAttestationTaskId());
+            TaskWrapper attestationTask = null;
+            IdServiceRequest request = new IdServiceRequest();
+            request.setId(filter.getAttestationTaskId());
+            TaskWrapperResponse resp = rabbitMQSender.sendAndReceive(OpenIAMQueue.ActivitiQueue, ActivitiAPI.GetTask, request, TaskWrapperResponse.class);
+            if(resp.isSuccess()){
+                attestationTask = resp.getTask();
+            }
             if(attestationTask!=null){
                 filter.setAttestationManagedSysFilter(new HashSet<String>(attestationTask.getAttestationManagedSysFilter()));
             }
@@ -153,7 +164,15 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         TaskSearchBean searchBean = new TaskSearchBean();
         searchBean.setMemberAssociationId(filter.getUserId());
 
-        accessReviewData.setWorkflowsMaps(activitiService.findTasks(searchBean, 0, Integer.MAX_VALUE));
+        TaskSearchRequest request = new TaskSearchRequest();
+        request.setSearchBean(searchBean);
+        request.setFrom(0);
+        request.setSize(Integer.MAX_VALUE);
+
+        TaskListResponse response = rabbitMQSender.sendAndReceive(OpenIAMQueue.ActivitiQueue, ActivitiAPI.FindTasks, request, TaskListResponse.class);
+        if(response.isSuccess()){
+            accessReviewData.setWorkflowsMaps(response.getTaskList());
+        }
         accessReviewData.setExcludeMenus(this.isExcludeMenus());
 
         AccessReviewStrategy strategy = null;
@@ -168,12 +187,17 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     }
 
 
-    private Map<String, ManagedSysEntity> getManagedSysMap() {
-        Map<String, ManagedSysEntity> managedSysMap = new HashMap<>();
+    private Map<String, ManagedSysDto> getManagedSysMap() {
+        Map<String, ManagedSysDto> managedSysMap = new HashMap<>();
 //        ManagedSysSearchBean searchBean = new ManagedSysSearchBean();
-        List<ManagedSysEntity> results = managedSystemService.getAllManagedSys();
+
+        ManagedSysListResponse response = rabbitMQSender.sendAndReceive(OpenIAMQueue.ManagedSysQueue, ManagedSystemAPI.GetAllManagedSys, new BaseServiceRequest(), ManagedSysListResponse.class);
+        List<ManagedSysDto> results = null;
+        if(response.isSuccess()){
+            results = response.getManagedSysList();
+        }
         if (CollectionUtils.isNotEmpty(results)) {
-            for(ManagedSysEntity mngsys : results){
+            for(ManagedSysDto mngsys : results){
                 managedSysMap.put(mngsys.getResource().getId(), mngsys);
             }
         }

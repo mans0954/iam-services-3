@@ -12,7 +12,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.access.review.constant.AccessReviewConstant;
+import org.openiam.constants.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
 import org.openiam.model.AccessViewBean;
 import org.openiam.model.AccessViewFilterBean;

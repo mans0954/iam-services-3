@@ -86,16 +86,14 @@ public class RabbitMQAdminUtils {
     }
     @SuppressWarnings("rawtypes")
     public <Listener extends AbstractRabbitMQListener> SimpleMessageListenerContainer createMessageListenerContainer(
-            final String beanName, OpenIAMQueue rabbitMqQueue, Listener listener, ConnectionFactory connectionFactory,
-            String taskExecutorPrefix) {
+            final String beanName, OpenIAMQueue rabbitMqQueue, Listener listener, ConnectionFactory connectionFactory) {
         bindQueues(rabbitMqQueue);
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames(rabbitMqQueue.name());
         container.setMessageListener(new MessageListenerAdapter(listener));
         container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
-        container.setTaskExecutor(new SimpleAsyncTaskExecutor(
-                taskExecutorPrefix));
+        container.setTaskExecutor(new SimpleAsyncTaskExecutor(String.format("AMQP-%s-", rabbitMqQueue.name())));
         container.setConcurrentConsumers(concurrentConsumer);
         container.setPrefetchCount(1);
         container.setErrorHandler(new ErrorHandler() {

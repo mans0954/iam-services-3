@@ -3,12 +3,12 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
-import org.openiam.access.review.constant.AccessReviewConstant;
+import org.openiam.constants.AccessReviewConstant;
+import org.openiam.base.request.AccessReviewRequest;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.model.AccessViewBean;
 import org.openiam.model.AccessViewFilterBean;
 import org.openiam.model.AccessViewResponse;
-import org.openiam.access.review.service.AccessReviewService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
@@ -22,6 +22,9 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.mq.constants.AccessReviewAPI;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.utils.RabbitMQSender;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,7 +35,7 @@ import java.util.Set;
 
 public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
     @Autowired
-    private AccessReviewService accessReviewService;
+    protected RabbitMQSender rabbitMQSender;
     @Autowired
     protected SysConfiguration sysConfiguration;
 
@@ -147,7 +150,17 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 // delete whole access subtree
                                 AccessViewFilterBean filterBean = new AccessViewFilterBean();
                                 filterBean.setUserId(memberAssociationId);
-                                AccessViewResponse accessViewResponse = accessReviewService.getAccessReviewSubTree(associationId, AccessReviewConstant.RESOURCE_TYPE, false, filterBean, AccessReviewConstant.RESOURCE_VIEW, null, null);
+
+                                AccessReviewRequest request = new AccessReviewRequest();
+                                request.setParentId(associationId);
+                                request.setParentBeanType(AccessReviewConstant.RESOURCE_TYPE);
+                                request.setRootOnly(false);
+                                request.setFilterBean(filterBean);
+                                request.setViewType(AccessReviewConstant.RESOURCE_VIEW);
+                                request.setDate(null);
+                                request.setLanguage(null);
+                                AccessViewResponse accessViewResponse = rabbitMQSender.sendAndReceive(OpenIAMQueue.AccessReviewQueue, AccessReviewAPI.AccessReviewSubTree, request, AccessViewResponse.class);
+
                                 if (accessViewResponse != null && CollectionUtils.isNotEmpty(accessViewResponse.getBeans())) {
                                     // look through the tree for direct entitlements
                                     List<TreeNode<AccessViewBean>> treeNodes = accessViewResponse.getBeans();
