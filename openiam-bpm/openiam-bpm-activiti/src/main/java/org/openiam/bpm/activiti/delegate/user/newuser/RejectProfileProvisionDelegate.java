@@ -49,7 +49,8 @@ public class RejectProfileProvisionDelegate extends RejectEntitlementsNotifierDe
         idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
  		try {
 	    	 final String reqeustorId = getRequestorId(execution);
-	             
+			 final String executorId = getExecutorId(execution);
+
 	    	 final Set<String> emails = new HashSet<String>();
 	             
 	    	 final NewUserProfileRequestModel profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
@@ -64,7 +65,8 @@ public class RejectProfileProvisionDelegate extends RejectEntitlementsNotifierDe
 	         final Collection<String> userIds = activitiHelper.getOnRejectUserIds(execution, null, profileModel.getSupervisorIds());
 	         
 	         final UserEntity requestor = getUserEntity(reqeustorId);
-	         sendEmails(profileModel, requestor, execution, profileModel.getUser(), userIds, emails);
+			 final UserEntity executor = getUserEntity(executorId);
+	         sendEmails(profileModel, requestor, executor, execution, profileModel.getUser(), userIds, emails);
 	         idmAuditLog.succeed();
 		} catch(Throwable e) {
 			idmAuditLog.setException(e);
@@ -75,21 +77,21 @@ public class RejectProfileProvisionDelegate extends RejectEntitlementsNotifierDe
 		}
      }
      
-     private void sendEmails(final NewUserProfileRequestModel profileModel, final UserEntity requestor, final DelegateExecution execution, final User user, final Collection<String> userIds, final Collection<String> emailAddresses) {
+     private void sendEmails(final NewUserProfileRequestModel profileModel, final UserEntity requestor, final UserEntity executor, final DelegateExecution execution, final User user, final Collection<String> userIds, final Collection<String> emailAddresses) {
          if(CollectionUtils.isNotEmpty(userIds)) {
              for(final String userId : userIds) {
-                     sendEmail(profileModel, requestor, execution, user, userId, null);
+                     sendEmail(profileModel, requestor, executor, execution, user, userId, null);
              }
          }
          
          if(CollectionUtils.isNotEmpty(emailAddresses)) {
              for(final String email : emailAddresses) {
-                     sendEmail(profileModel, requestor, execution, user, null, email);
+                     sendEmail(profileModel, requestor, executor, execution, user, null, email);
              }
          }
      }
      
-     private void sendEmail(final NewUserProfileRequestModel profileModel, final UserEntity requestor, final DelegateExecution execution, final User user, final String userId, final String email) {
+     private void sendEmail(final NewUserProfileRequestModel profileModel, final UserEntity requestor, final UserEntity executor, final DelegateExecution execution, final User user, final String userId, final String email) {
 	     final NotificationRequest request = new NotificationRequest();
 	     request.setUserId(userId);
 	     request.setNotificationType(getNotificationType(execution));
@@ -102,6 +104,9 @@ public class RejectProfileProvisionDelegate extends RejectEntitlementsNotifierDe
 	     if(requestor != null) {
 	    	 request.getParamList().add(new NotificationParam("REQUESTOR", requestor.getDisplayName()));
 	     }
+		 if (executor != null) {
+			 request.getParamList().add(new NotificationParam("EXECUTOR", executor.getDisplayName()));
+		 }
 	     mailService.sendNotification(request);
      }
 }

@@ -388,15 +388,7 @@ public class ImportProcessor {
         }
         //**************************************************************************************************************
         syncConfig.setLastRecProcessed(lastRecProcessed);
-        new
-
-                SyncConfigEntityParser()
-
-                .
-
-                        update(syncConfig, syncConfig.getSynchConfigId()
-
-                        );
+        new SyncConfigEntityParser().update(syncConfig, syncConfig.getSynchConfigId() );
         // do generate user keys
         KeyManagementWSClient keyManagementWSClient = new KeyManagementWSClient(DataHolder.getInstance().getProperty(ImportPropertiesKey.KEY_SERVICE_WSDL));
         keyManagementWSClient.generateKeysForUserList(newUserIds);
@@ -583,6 +575,8 @@ public class ImportProcessor {
             retVal = userEntityParser.add(user);
         } else {
             userId = user.getId();
+            System.out.println("Partner Name="+user.getPartnerName());
+            System.out.println("Prefix Partner Name="+user.getPrefixPartnerName());
             retVal = userEntityParser.update(user, userId);
         }
         if (retVal == 0) {
@@ -787,11 +781,18 @@ public class ImportProcessor {
 
     private void saveEmails(UserEntity user, EmailAddressEntityParser parser) throws Exception {
         List<EmailAddressEntity> forADD = new ArrayList<EmailAddressEntity>();
+        String sqlDELETE = "DELETE FROM EMAIL_ADDRESS WHERE EMAIL_ID=?";
         Map<String, EmailAddressEntity> forUpdate = new HashMap<String, EmailAddressEntity>();
-
+        List<List<Object>> forDelete = new ArrayList<List<Object>>();
         if (user.getEmailAddresses() != null) {
             for (EmailAddressEntity entry : user.getEmailAddresses()) {
                 if (entry == null) continue;
+                if ("DELETE_FROM_DB".equals(entry.getDescription())) {
+                    List<Object> vals = new ArrayList<>();
+                    vals.add(entry.getEmailId());
+                    forDelete.add(vals);
+                    continue;
+                }
                 if (entry.getEmailId() == null) {
                     entry.setParent(user);
                     entry.setEmailId(UUIDGen.getUUID());
@@ -801,8 +802,10 @@ public class ImportProcessor {
                 }
             }
         }
+        parser.executeNativeCRUD(sqlDELETE, forDelete);
         parser.addAll(forADD);
         parser.update(forUpdate);
+
     }
 
     private void savePhones(UserEntity user, PhoneEntityParser parser) throws Exception {

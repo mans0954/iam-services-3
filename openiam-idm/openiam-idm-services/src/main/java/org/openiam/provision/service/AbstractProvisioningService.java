@@ -2045,7 +2045,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
     protected ResponseType resetPassword(String requestId, Login login,
                                          String password, ManagedSysDto mSys,
-                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser, String operation) {
+                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser, String operation, boolean forceChangePassword) {
 
         PasswordRequest req = new PasswordRequest();
         req.setObjectIdentity(login.getLogin());
@@ -2053,6 +2053,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
         req.setExtensibleObject(extensibleUser);
+        req.setForceChange(forceChangePassword);
         String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         req.setHostLoginPassword(passwordDecoded);

@@ -363,11 +363,11 @@ public class UserEntityParser extends BaseParser<UserEntity> {
                 break;
             }
             case USERS_PARTNER_NAME: {
-                this.putStringToList(list, column, entity.getPrefixLastName(), 60);
+                this.putStringToList(list, column, entity.getPartnerName(), 60);
                 break;
             }
             case USERS_PREFIX_PARTNER_NAME: {
-                this.putStringToList(list, column, entity.getPrefixLastName(), 10);
+                this.putStringToList(list, column, entity.getPrefixPartnerName(), 10);
                 break;
             }
             default:

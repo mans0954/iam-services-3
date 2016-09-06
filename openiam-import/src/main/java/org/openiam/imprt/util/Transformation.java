@@ -3,7 +3,6 @@ package org.openiam.imprt.util;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.criterion.MatchMode;
 import org.openiam.base.ws.MatchType;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -41,6 +40,8 @@ public class Transformation {
     private final String PDD_EMAIL = "PDDUser@cog.akzonobel.com";
 
     final String ARCHIVE_CACHE_ENABLED = "g_gss_eus_maas_vaultcache_enabled - vv";
+    final String g_GSS_MDMUsers = "g_GSS_MDMUsers".toLowerCase();
+    final String g_GSS_MDMEmailWMS = "g_GSS_MDMEmailWMS".toLowerCase();
     final String ARCHIVE_CACHE_DISABLED = "g_gss_eus_maas_vaultcache_disabled - vv";
     final String INTERNET_GROUP_MASK = "a_.*_internetaccess";
 
@@ -74,8 +75,6 @@ public class Transformation {
         Map<String, GroupEntity> groupsMapEntities = (Map<String, GroupEntity>) bindingMap.get("GROUPS_MAP_ENTITY");
         List<LocationEntity> locations = (List<LocationEntity>) bindingMap.get("LOCATIONS");
 
-        boolean changeDisplayName = false;
-        boolean isNewUser = (user.getId() == null);
         //DistiguishedName
         String distinguishedName = this.getValue(lo.get("distinguishedName"));
 
@@ -135,28 +134,13 @@ public class Transformation {
             user.setFirstName("Admin");
         }
 
-        //Last Name
-        String surname = this.getValue(lo.get("sn"));
-        if (StringUtils.isNotBlank(surname)) {
-            String prefixLastName = user.getPrefixLastName();
-            if (StringUtils.isNotBlank(prefixLastName)) {
-                surname = surname.replace(prefixLastName.trim(), "").trim();
-                if (',' == surname.charAt(surname.length() - 1)) {
-                    surname = surname.substring(0, surname.length() - 1);
-                }
-            } else {
-                user.setPrefixLastName(null);
-            }
-            user.setLastName(surname);
-        } else {
-            user.setLastName(samAccountName);
-        }
 
         //Initials
         String initials = this.getValue(lo.get("initials"));
         if (StringUtils.isBlank(initials) || "null".equalsIgnoreCase(initials)) {
             initials = user.getFirstName().substring(0, 1);
         }
+        initials = initials.replace(" ", "");
         user.setMiddleInit(initials);
 
         //displayName
@@ -168,6 +152,13 @@ public class Transformation {
         //NickName
         user.setNickname(displayName);
         addUserAttribute(user, new UserAttributeEntity("displayName", displayName));
+        //Last Name
+        String surname = this.getValue(lo.get("sn"));
+        if (StringUtils.isNotBlank(surname)) {
+            this.processLastName(user, surname, displayName);
+        } else {
+            user.setLastName(samAccountName);
+        }
         //Title
         user.setTitle(this.getValue(lo.get("title")));
         // Bu Code (extenstionAttribute15)
@@ -303,6 +294,7 @@ public class Transformation {
         //Primary Email
 
         attr = this.getValue(lo.get("mail"));
+        addUserAttribute(user, new UserAttributeEntity("Mail", attr));
         String emailAddressValue = "";
         if (StringUtils.isNotBlank(attr)) {
             emailAddressValue = attr;
@@ -314,20 +306,32 @@ public class Transformation {
             e.setDescription("DELETE_FROM_DB");
         }
 
-        attr = this.getValue(lo.get("telephoneNumber"));
-        if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("OfficePhone", attr));
-            addPhone(attr, "OFFICE_PHONE", user);
+        String mobilePhone = this.getValue(lo.get("mobile"));
+        String mobilePhoneExt = this.getValue(lo.get("msExchExtensionAttribute17"));
+        String officePhone = this.getValue(lo.get("telephoneNumber"));
+
+        boolean hideMobilePhone = StringUtils.isNotBlank(mobilePhoneExt) && StringUtils.isBlank(mobilePhone);
+        addUserAttribute(user, new UserAttributeEntity("hideMobilePhone", hideMobilePhone ? "On" : "Off"));
+        boolean isDefaultSet = false;
+        if (StringUtils.isNotBlank(mobilePhoneExt)) {
+            addUserAttribute(user, new UserAttributeEntity("MobilePhone", mobilePhoneExt));
+            addPhone(mobilePhoneExt, "CELL_PHONE", user, !hideMobilePhone);
+            isDefaultSet = !hideMobilePhone;
         }
-        attr = this.getValue(lo.get("mobile"));
-        if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("MobilePhone", attr));
-            addPhone(attr, "CELL_PHONE", user);
+
+
+        if (StringUtils.isNotBlank(officePhone)) {
+            addUserAttribute(user, new UserAttributeEntity("OfficePhone", officePhone));
+            isDefaultSet = hideMobilePhone || StringUtils.isBlank(mobilePhoneExt);
+            addPhone(officePhone, "OFFICE_PHONE", user, isDefaultSet);
+
         }
+
         attr = this.getValue(lo.get("fax"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("Fax", attr));
-            addPhone(attr, "FAX", user);
+            addPhone(attr, "FAX", user, !isDefaultSet);
+            isDefaultSet = true;
         }
 
         String attr13 = this.getValue(lo.get("extensionAttribute13"));
@@ -344,19 +348,27 @@ public class Transformation {
                     if (curPh.length == 2) {
                         if (StringUtils.isNotBlank(curPh[1]) && StringUtils.isNotBlank(curPh[0])) {
                             if ("tablet".equalsIgnoreCase(curPh[0])) {
-                                addPhone(curPh[1].trim(), "tablet", user);
+                                addPhone(curPh[1].trim(), "tablet", user, !isDefaultSet);
+                                isDefaultSet = true;
                             } else if ("voice".equalsIgnoreCase(curPh[0])) {
-                                addPhone(curPh[1].trim(), "voice", user);
+                                addPhone(curPh[1].trim(), "voice", user, !isDefaultSet);
+                                isDefaultSet = true;
                             } else if ("data".equalsIgnoreCase(curPh[0])) {
-                                addPhone(curPh[1].trim(), "data", user);
+                                addPhone(curPh[1].trim(), "data", user, !isDefaultSet);
+                                isDefaultSet = true;
                             } else if ("dongle".equalsIgnoreCase(curPh[0])) {
-                                addPhone(curPh[1].trim(), "dongle", user);
+                                addPhone(curPh[1].trim(), "dongle", user, !isDefaultSet);
+                                isDefaultSet = true;
                             }
                         }
                     }
                 }
             }
         }
+
+        //if hideMobilePhone set default phone Office Phone
+        // else set defaultPhone mobilePhone
+
 
         //Drive & Directory
         attr = this.getValue(lo.get("homeDirectory"));
@@ -385,7 +397,6 @@ public class Transformation {
 
         attr = this.getValue(lo.get("extensionAttribute14"));
         addUserAttribute(user, new UserAttributeEntity("extensionAttribute14", attr));
-        boolean isMDM = "MDM".equalsIgnoreCase(attr);
         String classification = attr == null ? "None" : attr;
         addUserAttribute(user, new UserAttributeEntity("classification", attr));
         if (samAccountName.length() > 4) {
@@ -473,6 +484,9 @@ public class Transformation {
                 memberOf = mOfAttr.getValue() == null ? null : mOfAttr.getValue().split("/\\,/");
             }
         }
+
+        boolean isMDM = containsNameGroup(memberOf, groupsMap, g_GSS_MDMEmailWMS)
+                || containsNameGroup(memberOf, groupsMap, g_GSS_MDMUsers);
         boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
         boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
         boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
@@ -480,7 +494,7 @@ public class Transformation {
         boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
 //        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
-        addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
+        //  addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
         addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
 //
@@ -491,9 +505,7 @@ public class Transformation {
         } else {
             addUserAttribute(user, new UserAttributeEntity("archieve", null));
         }
-        if (isMDM) {
-            classification = "MDM";
-        } else if (isPDD) {
+        if (isPDD) {
             classification = "PDD";
         }
         if (isMDM) {
@@ -544,7 +556,7 @@ public class Transformation {
         updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
 
         // STAGING
-        //updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
+//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
 
         // lync
         String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
@@ -581,10 +593,39 @@ public class Transformation {
             userAttributeEntity.setName("proxyAddress");
             if (proxyAttr.getValueList() != null) {
                 userAttributeEntity.setValue(StringUtils.join(proxyAttr.getValueList(), "\n"));
+                //process secondary emails
+                processSecondaryEmails(proxyAttr.getValueList(), user);
             } else {
                 userAttributeEntity.setValue(proxyAttr.getValue());
+                processSecondaryEmails(new ArrayList<String>(), user);
             }
-            user.addUserAttribute(userAttributeEntity);
+            addUserAttribute(user, userAttributeEntity);
+        }
+    }
+
+    private void processSecondaryEmails(List<String> values, UserEntity user) {
+        if (CollectionUtils.isNotEmpty(user.getEmailAddresses())) {
+            for (EmailAddressEntity ea : user.getEmailAddresses()) {
+                if (ea.getMetadataType() == null || "SECONDARY_EMAIL".equalsIgnoreCase(ea.getMetadataType().getId())) {
+                    ea.setDescription("DELETE_FROM_DB");
+                }
+            }
+
+            for (String val : values) {
+                if (val.startsWith("smtp:")) {
+                    String email = val.substring("smtp:".length());
+                    EmailAddressEntity secEmail = new EmailAddressEntity();
+                    secEmail.setName("SECONDARY_EMAIL");
+                    MetadataTypeEntity metadataTypeEntity = new MetadataTypeEntity();
+                    metadataTypeEntity.setId("SECONDARY_EMAIL");
+                    secEmail.setMetadataType(metadataTypeEntity);
+                    secEmail.setIsDefault(false);
+                    secEmail.setIsActive(true);
+                    secEmail.setEmailAddress(email);
+                    user.getEmailAddresses().add(secEmail);
+                }
+
+            }
         }
     }
 
@@ -835,13 +876,14 @@ public class Transformation {
         user.getEmailAddresses().add(email);
     }
 
-    private void addPhone(String phoneValue, String metatypeId, UserEntity user) {
+    private void addPhone(String phoneValue, String metatypeId, UserEntity user, boolean defaultPhone) {
         PhoneEntity ph = new PhoneEntity();
         MetadataTypeEntity metatype = new MetadataTypeEntity();
         metatype.setId(metatypeId);
         ph.setName(metatype.getId().replaceAll("_", " "));
         ph.setMetadataType(metatype);
-        ph.setIsDefault(false);
+        ph.setIsDefault(defaultPhone);
+        ph.setIsActive(true);
         String[] parts = phoneValue.split(" ");
         if (parts != null && parts.length > 1) {
             String newP = "";
@@ -857,7 +899,7 @@ public class Transformation {
     }
 
     private String fixNull(String phoneNumber) {
-        return phoneNumber.replace("(null)", "").replace("null","");
+        return phoneNumber.replace("(null)", "").replace("null", "");
     }
 
     private void addPhone(UserEntity user, PhoneEntity phone) {
@@ -1099,4 +1141,82 @@ public class Transformation {
 
     }
 
+
+    private void processLastName(UserEntity user, String surname, String displayName) {
+        System.out.println("Surname=" + surname);
+        List<String> formatValues = Arrays.asList("00", "0", "50", "51", "52", "53");
+        UserAttributeEntity a = this.getUserAttributeByName(user, "USER_DISPLAY_NAME");
+        UserAttributeEntity savedFormat = this.getUserAttributeByName(user, "USER_SAVED_NAME");
+        String savedFormatString = savedFormat == null ? null : savedFormat.getValue();
+        String format = null;
+        if (a != null && a.getValue() != null) {
+            format = a.getValue();
+            System.out.println("Format from USER_DISPLAY_NAME=" + format);
+        } else if (savedFormatString != null) {
+            format = savedFormatString;
+            System.out.println("Format from savedFormatString=" + format);
+        } else {
+            format = "50";
+        }
+        if (!formatValues.contains(format)) {
+            format = savedFormatString;
+            if (!formatValues.contains(format)) {
+                format = "50";
+            }
+        }
+        System.out.println("Format=" + format);
+        if ("51".equals(format.trim())) { //LastName + "-" + partnerInfix + " "+partnerName +", " + infix
+            String[] snParts = surname.split("-");
+            if (snParts != null) {
+                if (snParts.length > 1) {
+                    user.setLastName(snParts[0]);
+                } else {
+                    proceessDefaultNameFormatIndicator(surname, user);
+                }
+            }
+        } else if ("53".equals(format.trim())) { //partnerName + "-" + infix+" " + LastName + ", " + partnerPrefix
+            String[] snParts = surname.split("-");
+            if (snParts != null && snParts.length > 1) {
+                String partName = snParts[1];
+                if (snParts.length > 2) {
+                    partName = surname.replace(user.getPartnerName() + "-", "");
+                }
+                String[] sn2Parrs = partName.split(" ");
+                if (sn2Parrs != null) {
+                    for (String s : sn2Parrs) {
+                        if (s.contains(",")) {
+                            if (',' == s.charAt(s.length() - 1)) {
+                                user.setLastName(s.substring(0, s.length() - 1));
+                                break;
+                            }
+                        }
+                    }
+                }
+
+            }
+        } else {
+            proceessDefaultNameFormatIndicator(surname, user);
+        }
+        this.addUserAttribute(user, new UserAttributeEntity("USER_DISPLAY_NAME", displayName));
+        this.addUserAttribute(user, new UserAttributeEntity("USER_SAVED_NAME", format));
+    }
+
+
+    private void proceessDefaultNameFormatIndicator(String surname, UserEntity user) {
+        String prefixLastName = user.getPrefixLastName();
+        if (StringUtils.isNotBlank(prefixLastName)) {
+            surname = surname.replace(prefixLastName.trim(), "").trim();
+            if (',' == surname.charAt(surname.length() - 1)) {
+                surname = surname.substring(0, surname.length() - 1);
+                user.setLastName(surname);
+            }
+        } else {
+            user.setPrefixLastName(null);
+        }
+    }
+
+    private UserAttributeEntity getUserAttributeByName(UserEntity user, String attrName) {
+        UserAttributeEntity attr = user.getUserAttributes().get(attrName);
+        return attr;
+    }
 }

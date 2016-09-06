@@ -57,6 +57,7 @@ import java.util.*;
  * @param <E>
  * @param <E>
  * @param <E>
+ * @param <E>
  */
 /**
  *
@@ -394,7 +395,8 @@ public abstract class AbstractJDBCAgent<E> {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            ps.close();
+            if (ps != null)
+                ps.close();
             this.disconnect();
         }
         return internalCount;
