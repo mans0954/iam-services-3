@@ -1,7 +1,10 @@
 package org.openiam.elasticsearch.dao;
 
-import org.openiam.idm.searchbeans.UserSearchBean;
+import java.util.List;
 
-public interface UserElasticSearchRepositoryCustom extends AbstractCustomElasticSearchRepository<UserSearchBean, String> {
+import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+
+public interface UserElasticSearchRepositoryCustom extends AbstractCustomElasticSearchRepository<UserEntity, UserSearchBean, String> {
 
 }

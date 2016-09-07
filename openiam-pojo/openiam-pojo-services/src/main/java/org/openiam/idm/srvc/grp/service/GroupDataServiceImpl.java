@@ -19,11 +19,14 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.response.SetStringResponse;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.LanguageDozerConverter;
+import org.openiam.elasticsearch.dao.GroupElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
@@ -80,6 +83,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -153,6 +157,9 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
     @Autowired
     private LanguageDozerConverter languageConverter;
+    
+    @Autowired
+    private GroupElasticSearchRepository groupElasticSearchRepo;
 
     @Autowired
     private MetadataElementTemplateService pageTemplateService;
@@ -241,7 +248,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     @Transactional(readOnly = true)
     public GroupEntity getGroupByNameLocalize(final String groupName, final String requesterId, final LanguageEntity language) {
         final GroupSearchBean searchBean = new GroupSearchBean();
-        searchBean.setName(groupName);
+        searchBean.setNameToken(new SearchParam(groupName, MatchType.EXACT));
         final List<GroupEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
     }
@@ -250,11 +257,12 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     @LocalizedServiceGet
     public GroupEntity getGroupByNameAndManagedSystem(final String groupName, final String managedSystemId, final String requesterId, final LanguageEntity language) {
         final GroupSearchBean searchBean = new GroupSearchBean();
-        searchBean.setName(groupName);
+        searchBean.setNameToken(new SearchParam(groupName, MatchType.EXACT));
         searchBean.setManagedSysId(managedSystemId);
+        searchBean.setLanguage(language);
         
         /* can only ever return 1 due to DB constraint */
-        final List<GroupEntity> foundList = findBeansLocalize(searchBean, requesterId, 0, Integer.MAX_VALUE, language);
+        final List<GroupEntity> foundList = findBeans(searchBean, requesterId, 0, Integer.MAX_VALUE);
         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
     }
 
@@ -302,15 +310,14 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     }
 
     @Override
-    /**
-     * Without @localization for internal use only
-     */
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<GroupEntity> findBeans(final GroupSearchBean searchBean, final  String requesterId, int from, int size) {
         return getGroupEntities(searchBean, requesterId, from, size);
     }
 
     @Override
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<Group> findDtoBeans(final GroupSearchBean searchBean, final  String requesterId, int from, int size) {
 
@@ -328,7 +335,11 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
             return new ArrayList<GroupEntity>(0);
         }
-        return groupDao.getByExample(searchBean, from, size);
+        if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	return groupElasticSearchRepo.findBeans(searchBean, new PageRequest(Math.floorDiv(from, size), size));
+        } else {
+        	return groupDao.getByExample(searchBean, from, size);
+        }
     }
 
     @Override
@@ -339,19 +350,9 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     }
 
     @Override
-    @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Group> findBeansDtoLocalize(final GroupSearchBean searchBean, final  String requesterId, int from, int size, final Language language) {
-        //List<GroupEntity> groupEntities = getGroupEntities(searchBean, requesterId, from, size);
-        List<GroupEntity> groupEntities = this.getProxyService().findBeansLocalize(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntities, false);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId,
-                                                int from, int size, LanguageEntity languageEntity){
-        List<GroupEntity> finalizedGroups = getGroupListForOwner(searchBean, requesterId, ownerId, getDefaultLanguage());
+    public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size){
+        List<GroupEntity> finalizedGroups = getGroupListForOwner(searchBean, requesterId, ownerId);
 
         if (from > -1 && size > -1) {
             if (finalizedGroups != null && finalizedGroups.size() >= from) {
@@ -366,9 +367,9 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     }
 
     @Override
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Group> findGroupsDtoForOwner(GroupSearchBean searchBean, String requesterId, String ownerId,
-                                                int from, int size, Language language){
+    public List<Group> findGroupsDtoForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size){
         /*List<GroupEntity> finalizedGroups = getGroupListForOwner(searchBean, requesterId, ownerId, getDefaultLanguage());
 
         if (from > -1 && size > -1) {
@@ -380,7 +381,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                 finalizedGroups = new ArrayList<GroupEntity>(finalizedGroups.subList(from, to));
             }
         }*/
-        List<GroupEntity> finalizedGroups = this.getProxyService().findGroupsForOwner(searchBean, requesterId, ownerId, from, size, languageConverter.convertToEntity(language, false));
+        List<GroupEntity> finalizedGroups = this.getProxyService().findGroupsForOwner(searchBean, requesterId, ownerId, from, size);
 
         return groupDozerConverter.convertToDTOList(finalizedGroups, false);
     }
@@ -390,7 +391,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     public List<Group> getGroupsDtoForUser(String userId, String requesterId, int from, int size) {
     	final GroupSearchBean sb = new GroupSearchBean();
     	sb.addUserId(userId);
-        final List<GroupEntity> groupEntities = findBeansLocalize(sb, requesterId, from, size, null);
+        final List<GroupEntity> groupEntities = findBeans(sb, requesterId, from, size);
         return groupDozerConverter.convertToDTOList(groupEntities, false);
     }
 
@@ -503,7 +504,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     @Override
     @Transactional(readOnly = true)
     public int countGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId){
-        List<GroupEntity> finalizedGroups = getGroupListForOwner(searchBean, requesterId, ownerId, getDefaultLanguage());
+        List<GroupEntity> finalizedGroups = getGroupListForOwner(searchBean, requesterId, ownerId);
         return finalizedGroups.size();
     }
 /*
@@ -548,8 +549,8 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         return result;
     }*/
 
-    private List<GroupEntity> getGroupListForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, LanguageEntity languageEntity){
-        List<GroupEntity> foundGroups = findBeansLocalize(searchBean, requesterId, -1, -1, languageEntity);
+    private List<GroupEntity> getGroupListForOwner(GroupSearchBean searchBean, String requesterId, String ownerId){
+        List<GroupEntity> foundGroups = findBeans(searchBean, requesterId, -1, -1);
         List<GroupEntity> finalizedGroups = new ArrayList<>();
 
         Set<String> foundGroupsId = new HashSet<>();
@@ -593,7 +594,8 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     public List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language) {
     	final GroupSearchBean sb = new GroupSearchBean();
     	sb.addUserId(userId);
-        final List<GroupEntity> groupList = findBeansLocalize(sb, null, 0, Integer.MAX_VALUE, null);
+    	sb.setLanguage(language);
+        final List<GroupEntity> groupList = findBeans(sb, null, 0, Integer.MAX_VALUE);
         final Set<GroupEntity> visitedSet = new HashSet<GroupEntity>();
         if(CollectionUtils.isNotEmpty(groupList)) {
             for(final GroupEntity group : groupList) {

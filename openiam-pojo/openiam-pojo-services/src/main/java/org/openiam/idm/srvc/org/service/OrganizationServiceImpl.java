@@ -15,9 +15,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.cache.CacheKeyEvictions;
@@ -213,7 +215,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Transactional(readOnly = true)
     public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity langauge) {
         final OrganizationSearchBean searchBean = new OrganizationSearchBean();
-        searchBean.setName(name);
+        searchBean.setNameToken(new SearchParam(name, MatchType.EXACT));
         final List<OrganizationEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1, null);
         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
     }
@@ -1311,7 +1313,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     private OrganizationEntity getByNameAndType(final String name, final String typeId) {
     	final OrganizationSearchBean sb = new OrganizationSearchBean();
-        sb.setName(name);
+    	sb.setNameToken(new SearchParam(name, MatchType.EXACT));
         sb.addOrganizationTypeId(typeId);
         
         /* db constraing would prevent more than 1 */
@@ -1328,7 +1330,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
         
         final OrganizationSearchBean sb = new OrganizationSearchBean();
-        sb.setName(entity.getName());
+        sb.setNameToken(new SearchParam(entity.getName(), MatchType.EXACT));
         if(entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
         	sb.addOrganizationTypeId(entity.getType().getId());
         }

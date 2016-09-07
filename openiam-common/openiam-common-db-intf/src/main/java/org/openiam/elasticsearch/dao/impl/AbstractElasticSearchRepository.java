@@ -17,7 +17,9 @@ import org.openiam.base.domain.KeyEntity;
 import org.openiam.base.ws.MatchType;
 import org.openiam.elasticsearch.dao.AbstractCustomElasticSearchRepository;
 import org.openiam.idm.searchbeans.SearchBean;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
@@ -26,7 +28,7 @@ import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 public abstract class AbstractElasticSearchRepository<T extends BaseIdentity, ID extends Serializable, S extends SearchBean> 
-implements AbstractCustomElasticSearchRepository<S, ID>{
+implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	
 	protected AbstractElasticSearchRepository() {
 		document = getEntityClass().getAnnotation(Document.class);
@@ -171,6 +173,30 @@ implements AbstractCustomElasticSearchRepository<S, ID>{
 		return retval;
 	}
 	
+	@Override
+	public List<T> findByIds(Collection<String> ids, Pageable pageable) {
+		final CriteriaQuery criteria = new CriteriaQuery(new Criteria("id").in(ids));
+		criteria.addIndices(document.indexName());
+		criteria.addTypes(document.type());
+		criteria.setPageable(pageable);
+		final List<T> retval = elasticSearchTemplate.queryForList(criteria, getEntityClass()).stream().collect(Collectors.toList());
+		return retval;
+	}
+	
+	
+	
+	@Override
+	public List<T> findBeans(S searchBean, Pageable pageable) {
+		List<T> retval = Collections.EMPTY_LIST;
+		final CriteriaQuery criteria = getCriteria(searchBean);
+		if(criteria != null) {
+			criteria.addIndices(document.indexName());
+			criteria.addTypes(document.type());
+			criteria.setPageable(pageable);
+			retval = elasticSearchTemplate.queryForList(criteria, getEntityClass()).stream().collect(Collectors.toList());
+		}
+		return retval;
+	}
 	@Override
 	public int count(final S searchBean) {
 		final CriteriaQuery criteria = getCriteria(searchBean);

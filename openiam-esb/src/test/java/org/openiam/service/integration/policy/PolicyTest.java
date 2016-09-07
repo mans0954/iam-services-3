@@ -3,7 +3,9 @@ package org.openiam.service.integration.policy;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.AfterClass;
 import org.mortbay.log.Log;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
@@ -136,7 +138,7 @@ public class PolicyTest extends AbstractKeyNameServiceTest<Policy, PolicySearchB
 		final PolicySearchBean sb = new PolicySearchBean();
 		sb.setFindInCache(true);
 		sb.setDeepCopy(true);
-		sb.setName(entity.getName());
+		sb.setNameToken(new SearchParam(entity.getName(), MatchType.EXACT));
 		return sb;
 	}
 	

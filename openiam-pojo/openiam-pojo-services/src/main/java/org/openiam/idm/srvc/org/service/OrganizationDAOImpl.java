@@ -20,6 +20,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
 import static org.hibernate.criterion.Projections.rowCount;
 
 /**
@@ -129,25 +130,9 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
                 criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
             }
             
-            if (StringUtils.isNotEmpty(sb.getName())) {
-                String name = sb.getName();
-                MatchMode matchMode = null;
-                if (StringUtils.indexOf(name, "*") == 0) {
-                    matchMode = MatchMode.START;
-                    name = name.substring(1);
-                }
-                if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-                    name = name.substring(0, name.length() - 1);
-                    matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
-                }
-
-                if (StringUtils.isNotEmpty(name)) {
-                    if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("name", name, matchMode));
-                    } else {
-                        criteria.add(Restrictions.eq("name", name));
-                    }
-                }
+            final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+            if(nameCriterion != null) {
+            	criteria.add(nameCriterion);
             }
 
             if (StringUtils.isNotBlank(sb.getInternalOrgId())) {

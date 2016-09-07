@@ -14,8 +14,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.provision.PostProcessor;
 import org.openiam.provision.PreProcessor;
@@ -550,11 +552,11 @@ public class ProvisionDispatcherTransactionHelper {
             sb.setFindInCache(true);
             sb.setResourceId(data.getResourceId());
             
-            sb.setName("PRE_PROCESS");
+            sb.setNameToken(new SearchParam("PRE_PROCESS", MatchType.EXACT));
             List<ResourcePropEntity> props = resourceService.findBeans(sb, 0, Integer.MAX_VALUE);
             String preProcessScript = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
             
-            sb.setName("POST_PROCESS");
+            sb.setNameToken(new SearchParam("POST_PROCESS", MatchType.EXACT));
             props = resourceService.findBeans(sb, 0, Integer.MAX_VALUE);
             String postProcessScript = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
 

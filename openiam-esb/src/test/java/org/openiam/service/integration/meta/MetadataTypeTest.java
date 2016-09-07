@@ -3,7 +3,9 @@ package org.openiam.service.integration.meta;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
@@ -63,7 +65,7 @@ public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, M
 		final MetadataTypeSearchBean sb = new MetadataTypeSearchBean();
 		sb.setFindInCache(true);
 		sb.setDeepCopy(true);
-		sb.setName(entity.getName());
+		sb.setNameToken(new SearchParam(entity.getName(), MatchType.EXACT));
 		return sb;
 	}
 	

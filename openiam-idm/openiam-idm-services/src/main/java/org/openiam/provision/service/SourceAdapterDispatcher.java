@@ -542,7 +542,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 }*/
                 if (!isFound) {
                     GroupSearchBean gsb = new GroupSearchBean();
-                    gsb.setName(group.getName());
+                    gsb.setNameToken(new SearchParam(group.getName(), MatchType.EXACT));
                     gsb.setManagedSysId(group.getManagedSystemId());
                     List<Group> dbGroups = groupDataService.findDtoBeans(gsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbGroups)) {
@@ -648,7 +648,7 @@ public class SourceAdapterDispatcher implements Runnable {
         List<Organization> organization = null;
         OrganizationSearchBean osb = new OrganizationSearchBean();
         if (StringUtils.isNotBlank(org.getName()) && StringUtils.isNotBlank(org.getOrganizationTypeId())) {
-            osb.setName(org.getName());
+            osb.setNameToken(new SearchParam(org.getName(), MatchType.EXACT));
             osb.setOrganizationTypeId(org.getOrganizationTypeId());
         } else if (org.getAttributeLookup() != null && StringUtils.isNotBlank(org.getAttributeLookup().getName()) && StringUtils.isNotBlank(org.getAttributeLookup().getValue())) {
             osb.addAttribute(org.getAttributeLookup().getName(), org.getAttributeLookup().getValue());
@@ -883,7 +883,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 }
                 if (!isFound) {
                     RoleSearchBean rsb = new RoleSearchBean();
-                    rsb.setName(role.getName());
+                    rsb.setNameToken(new SearchParam(role.getName(), MatchType.EXACT));
                     rsb.setManagedSysId(role.getManagedSystemId());
                     List<Role> dbRoles = roleDataService.findBeansDto(rsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbRoles)) {
@@ -926,7 +926,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 }
                 if (!isFound) {
                     ResourceSearchBean rsb = new ResourceSearchBean();
-                    rsb.setName(resource.getName());
+                    rsb.setNameToken(new SearchParam(resource.getName(), MatchType.EXACT));
                     List<Resource> dbResource = resourceDataService.findBeansLocalizedDto(rsb, -1, -1, null);
                     if (CollectionUtils.isNotEmpty(dbResource)) {
                         if (dbResource.size() > 1) {

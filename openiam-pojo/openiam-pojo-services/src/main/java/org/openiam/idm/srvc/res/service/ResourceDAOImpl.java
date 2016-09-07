@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -75,25 +76,9 @@ public class ResourceDAOImpl extends OrderDaoImpl<ResourceEntity, String>
                 criteria.add(Restrictions.eq("referenceId", sb.getReferenceId()));
             }
 
-            if (StringUtils.isNotEmpty(sb.getName())) {
-                String resourceName = sb.getName();
-                MatchMode matchMode = null;
-                if (StringUtils.indexOf(resourceName, "*") == 0) {
-                    matchMode = MatchMode.END;
-                    resourceName = resourceName.substring(1);
-                }
-                if (StringUtils.isNotEmpty(resourceName) && StringUtils.indexOf(resourceName, "*") == resourceName.length() - 1) {
-                    resourceName = resourceName.substring(0, resourceName.length() - 1);
-                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                }
-
-                if (StringUtils.isNotEmpty(resourceName)) {
-                    if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("name", resourceName, matchMode));
-                    } else {
-                        criteria.add(Restrictions.eq("name", resourceName));
-                    }
-                }
+            final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+            if(nameCriterion != null) {
+            	criteria.add(nameCriterion);
             }
 
             if (StringUtils.isNotEmpty(sb.getURL())) {

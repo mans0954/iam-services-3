@@ -3,6 +3,7 @@ package org.openiam.am.srvc.dao;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
@@ -36,26 +37,11 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
 	            criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
 	        } else {
 
-	            if (StringUtils.isNotEmpty(sb.getName())) {
-	                String name = sb.getName();
-	                MatchMode matchMode = null;
-	                if (StringUtils.indexOf(name, "*") == 0) {
-	                    matchMode = MatchMode.END;
-	                    name = name.substring(1);
-	                }
-	                if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-	                    name = name.substring(0, name.length() - 1);
-	                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-	                }
-
-	                if (StringUtils.isNotEmpty(name)) {
-	                    if (matchMode != null) {
-	                        criteria.add(Restrictions.ilike("name", name, matchMode));
-	                    } else {
-	                        criteria.add(Restrictions.eq("name", name));
-	                    }
-	                }
-	            }
+	        	final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
+                }
+                
 	            if (StringUtils.isNotEmpty(sb.getDomainPattern())) {
 	                criteria.add(Restrictions.eq("domainPattern", sb.getDomainPattern()));
 	            }

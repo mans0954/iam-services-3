@@ -2,7 +2,9 @@ package org.openiam.validator;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -41,7 +43,7 @@ public class GroupEntityValidator extends AbstractEntityValidator {
         }
         //final GroupEntity found = groupManager.getGroupByNameAndManagedSys(group.getName(), group.getManagedSysId(), null);
         GroupSearchBean groupSearchBean = new GroupSearchBean();
-        groupSearchBean.setName(group.getName());
+        groupSearchBean.setNameToken(new SearchParam(group.getName(), MatchType.EXACT));
         groupSearchBean.setManagedSysId(group.getManagedSystem().getId());
         final List<GroupEntity> foundList = groupDao.getByExample(groupSearchBean, 0, 1);
         final GroupEntity found = (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;

@@ -77,7 +77,8 @@ public class Group2RoleEntitlementsTest extends AbstractEntitlementsTest<Group, 
 		searchBean.addRoleId(child.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
-		final List<Group> dtos = groupServiceClient.findBeansLocalize(searchBean, "3000", 0, 100, getDefaultLanguage());
+		searchBean.setLanguage(getDefaultLanguage());
+		final List<Group> dtos = groupServiceClient.findBeans(searchBean, "3000", 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Group> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child"), optional.isPresent());

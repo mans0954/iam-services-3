@@ -1422,7 +1422,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         // Additional operation is required for managed system with property ON_DELETE = DISABLE
                         final ResourcePropSearchBean sb = new ResourcePropSearchBean();
                         sb.setResourceId(res.getId());
-                        sb.setName("ON_DELETE");
+                        sb.setNameToken(new SearchParam("ON_DELETE", MatchType.EXACT));
                         sb.setFindInCache(true);
                         final List<ResourcePropEntity> props = resourceService.findBeans(sb, 0, Integer.MAX_VALUE);
                         String onDeleteProp = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;

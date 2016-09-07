@@ -4,8 +4,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -137,7 +139,7 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 		final OrganizationSearchBean sb = new OrganizationSearchBean();
 		sb.setFindInCache(true);
 		sb.setDeepCopy(true);
-		sb.setName(organization.getName());
+		sb.setNameToken(new SearchParam(organization.getName(), MatchType.EXACT));
 		sb.setOrganizationTypeId(organization.getOrganizationTypeId());
 		return sb;
 	}

@@ -29,6 +29,9 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.base.OrderConstants;
+import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.base.ws.SortParam;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
@@ -53,6 +56,10 @@ implements BaseDao<T, PrimaryKey> {
     protected boolean cachable() {
     	return false;
     }
+    
+
+    @Autowired
+    protected SysConfiguration sysConfig;
 
 	@Autowired
 	public void setTemplate(final @Qualifier("sessionFactory") SessionFactory sessionFactory) {
@@ -109,6 +116,21 @@ implements BaseDao<T, PrimaryKey> {
         return orderDir.equals(OrderConstants.DESC) ? Order.desc(field) : Order.asc(field);
     }
     
+    protected Criterion getStringCriterion(final String fieldName, final SearchParam nameToken, final boolean caseInsensitive) {
+    	Criterion criterion = null;
+        if(nameToken != null && nameToken.isValid()) {
+            final String value = nameToken.getValue();
+            final MatchMode matchMode = getMatchMode(nameToken);
+            if (StringUtils.isNotEmpty(value)) {
+                if (matchMode != null) {
+                    criterion = Restrictions.ilike(fieldName, value, matchMode);
+                } else {
+                    criterion = (caseInsensitive) ? Restrictions.eq(fieldName, value).ignoreCase() : Restrictions.eq(fieldName, value);
+                }
+            }
+        }
+        return criterion;
+    }
 
     protected Criterion getStringCriterion(String fieldName, String value, boolean caseInsensitive) {
         Criterion criterion = null;
@@ -230,6 +252,28 @@ implements BaseDao<T, PrimaryKey> {
 
     protected Criteria getCriteria() {
         return getSession().createCriteria(domainClass).setCacheable(cachable());
+    }
+    
+    protected MatchMode getMatchMode(final SearchParam token) {
+    	MatchMode mode = null;
+    	if(token != null && token.isValid() && token.getMatchType() != null) {
+    		switch(token.getMatchType()) {
+    			case CONTAINS:
+    				mode = MatchMode.ANYWHERE;
+    				break;
+    			case END_WITH:
+    				mode = MatchMode.END;
+    				break;
+    			case EXACT:
+    				break;
+    			case STARTS_WITH:
+    				mode = MatchMode.START;
+    				break;
+    			default:
+    				break;
+    		}
+    	}
+    	return mode;
     }
 
     @SuppressWarnings({ "unchecked" })

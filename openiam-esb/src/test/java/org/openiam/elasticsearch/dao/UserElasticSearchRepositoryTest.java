@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
@@ -67,6 +68,22 @@ public class UserElasticSearchRepositoryTest extends AbstractElasticSearchReposi
 	
 	private String random() {
 		return RandomStringUtils.randomAlphanumeric(10);
+	}
+	
+	@Test
+	public void testFindUsingORCriteria() {
+		final UserSearchBean sb = new UserSearchBean();
+		sb.setFirstNameMatchToken(new SearchParam(user.getFirstName(), MatchType.CONTAINS));
+		sb.setLastNameMatchToken(new SearchParam(user.getLastName(), MatchType.CONTAINS));
+		sb.setMaidenNameMatchToken(new SearchParam(user.getMaidenName(), MatchType.CONTAINS));
+		sb.setEmployeeIdMatchToken(new SearchParam(user.getEmployeeId(), MatchType.CONTAINS));
+		sb.setSearchMode(SearchMode.AND);
+		List<String> page = repo.findIds(sb, new PageRequest(0, 10));
+		Assert.assertTrue(CollectionUtils.isEmpty(page));
+		
+		sb.setSearchMode(SearchMode.OR);
+		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
+		
 	}
 
 	@Test

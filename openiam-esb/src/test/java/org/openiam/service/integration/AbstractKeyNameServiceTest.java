@@ -3,7 +3,9 @@ package org.openiam.service.integration;
 import java.util.List;
 
 import org.openiam.base.KeyNameDTO;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 
 public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends AbstractKeyNameSearchBean<T, String>> extends AbstractKeyServiceTest<T, S> {
@@ -31,7 +33,7 @@ public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends
 		/* find */
 		final S searchBean = newSearchBean();
 		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
-    	searchBean.setName(instance.getName());
+    	searchBean.setNameToken(new SearchParam(instance.getName(), MatchType.EXACT));
     	
     	/* confirm save on both nodes */
     	instance = assertClusteredSave(searchBean);
@@ -41,7 +43,7 @@ public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends
     	response = saveAndAssert(instance);
     	
     	/* confirm update went through on both nodes */
-    	searchBean.setName(instance.getName());
+    	searchBean.setNameToken(new SearchParam(instance.getName(), MatchType.EXACT));
     	instance = assertClusteredSave(searchBean);
     	return new ClusterKey<T, S>(instance, searchBean);
 	}

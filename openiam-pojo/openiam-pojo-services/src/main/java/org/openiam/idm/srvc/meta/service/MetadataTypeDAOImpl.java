@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.meta.service;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -47,26 +48,10 @@ public class MetadataTypeDAOImpl extends OrderDaoImpl<MetadataTypeEntity, String
 				    	criteria.add(Restrictions.eq("grouping", sb.getGrouping()));
 				    }
 					
-					if (StringUtils.isNotEmpty(sb.getName())) {
-						String name = sb.getName();
-						MatchMode matchMode = null;
-						if (StringUtils.indexOf(name, "*") == 0) {
-							matchMode = MatchMode.END;
-							name = name.substring(1);
-						}
-						if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-							name = name.substring(0, name.length() - 1);
-							matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-						}
-
-						if (StringUtils.isNotEmpty(name)) {
-							if (matchMode != null) {
-								criteria.add(Restrictions.ilike("name", name, matchMode));
-							} else {
-								criteria.add(Restrictions.eq("name", name));
-							}
-						}
-					}
+					final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+	                if(nameCriterion != null) {
+	                	criteria.add(nameCriterion);
+	                }
 				    
 				}
 			}

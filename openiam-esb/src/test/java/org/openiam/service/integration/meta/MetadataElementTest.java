@@ -3,7 +3,9 @@ package org.openiam.service.integration.meta;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
@@ -75,7 +77,7 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 		final MetadataElementSearchBean sb = new MetadataElementSearchBean();
 		sb.setFindInCache(true);
 		sb.setDeepCopy(true);
-		sb.setName(entity.getName());
+		sb.setNameToken(new SearchParam(entity.getName(), MatchType.EXACT));
 		return sb;
 	}
 	

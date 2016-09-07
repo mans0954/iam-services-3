@@ -2,6 +2,7 @@ package org.openiam.am.srvc.dao;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
@@ -30,27 +31,11 @@ public class AuthResourceAttributeMapDaoImpl extends BaseDaoImpl<AuthResourceAtt
 	            if (StringUtils.isNotEmpty(sb.getProviderId())) {
 	                criteria.add(Restrictions.eq("provider.id", sb.getProviderId()));
 	            }
-
-	            if (StringUtils.isNotEmpty(sb.getName())) {
-	                String targetAttributeName = sb.getName();
-	                MatchMode matchMode = null;
-	                if (StringUtils.indexOf(targetAttributeName, "*") == 0) {
-	                    matchMode = MatchMode.END;
-	                    targetAttributeName = targetAttributeName.substring(1);
-	                }
-	                if (StringUtils.isNotEmpty(targetAttributeName) && StringUtils.indexOf(targetAttributeName, "*") == targetAttributeName.length() - 1) {
-	                    targetAttributeName = targetAttributeName.substring(0, targetAttributeName.length() - 1);
-	                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-	                }
-
-	                if (StringUtils.isNotEmpty(targetAttributeName)) {
-	                    if (matchMode != null) {
-	                        criteria.add(Restrictions.ilike("name", targetAttributeName, matchMode));
-	                    } else {
-	                        criteria.add(Restrictions.eq("name", targetAttributeName));
-	                    }
-	                }
-	            }
+	            
+	            final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
+                }
 
 	            if (StringUtils.isNotEmpty(sb.getAmAttributeId())) {
 	                criteria.add(Restrictions.eq("amAttribute.id", sb.getAmAttributeId()));

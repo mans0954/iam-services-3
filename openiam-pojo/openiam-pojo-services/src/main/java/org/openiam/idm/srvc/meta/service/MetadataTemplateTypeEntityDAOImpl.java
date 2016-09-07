@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.meta.service;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
@@ -27,9 +28,10 @@ public class MetadataTemplateTypeEntityDAOImpl extends BaseDaoImpl<MetadataTempl
 			if(StringUtils.isNotBlank(sb.getKey())) {
 				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
 			} else {
-				if(StringUtils.isNotBlank(sb.getName())) {
-					criteria.add(Restrictions.eq("name", sb.getName()));
-				}
+				final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
+                }
 			}
 		}
 		return criteria;

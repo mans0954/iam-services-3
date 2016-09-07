@@ -143,7 +143,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
         if (matchAttrName.equalsIgnoreCase("NAME")) {
             searchBean = new GroupSearchBean();
-            searchBean.setName(matchAttrValue);
+            searchBean.setNameToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
             System.out.println("- cofiguring search by attribute..");
             System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
@@ -189,7 +189,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
         }
 
         if (matchAttrName.equalsIgnoreCase("NAME")) {
-            searchBean.setName(matchAttrValue);
+            searchBean.setNameToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
             System.out.println("- cofiguring search by attribute..");
             System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
@@ -232,7 +232,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
         }
 
         if (matchAttrName.equalsIgnoreCase("NAME")) {
-            searchBean.setName(matchAttrValue);
+            searchBean.setNameToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
             System.out.println("- cofiguring search by attribute..");
             System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());

@@ -29,9 +29,6 @@ import static org.hibernate.criterion.Projections.rowCount;
 
 @Repository("groupDAO")
 public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements GroupDAO {
-    
-    @Autowired
-    private SysConfiguration sysConfig;
 
     @Override
     protected String getPKfieldName() {
@@ -49,8 +46,9 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             }else if(StringUtils.isNotBlank(sb.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
             } else {
-    			if (StringUtils.isNotEmpty(sb.getName())) {
-    				criteria.add(getStringCriterion("name", sb.getName(), sysConfig.isCaseInSensitiveDatabase()));
+            	final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
                 }
     			
     			if(StringUtils.isNotBlank(sb.getManagedSysId())) {

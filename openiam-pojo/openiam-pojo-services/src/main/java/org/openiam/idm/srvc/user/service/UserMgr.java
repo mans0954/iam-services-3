@@ -787,7 +787,12 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                 entityList.add(entity);
             }
         } else {
-            entityList = userDao.findByIds(getUserIds(searchBean), searchBean, from, size);
+        	final List<String> userIds = getUserIds(searchBean);
+        	if(searchBean == null || searchBean.isUseElasticSearch()) {
+        		entityList = userRepo.findByIds(userIds, new PageRequest(Math.floorDiv(from, size), size));
+        	} else {
+        		entityList = userDao.findByIds(userIds, searchBean, from, size);
+        	}
         }
 
         if(CollectionUtils.isNotEmpty(entityList)

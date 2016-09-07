@@ -12,7 +12,9 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttributeContainer;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -123,7 +125,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                     final ResourcePropSearchBean sb = new ResourcePropSearchBean();
                                     sb.setFindInCache(true);
                                     sb.setResourceId(res.getId());
-                                    sb.setName("ON_DELETE");
+                                    sb.setNameToken(new SearchParam("ON_DELETE", MatchType.EXACT));
                                     final List<ResourceProp> props = resourceService.findBeansDTO(sb, 0, Integer.MAX_VALUE);
                                     String onDeleteProp = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
                                     if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
@@ -215,7 +217,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             final ResourcePropSearchBean sb = new ResourcePropSearchBean();
             sb.setFindInCache(true);
             sb.setResourceId(res.getId());
-            sb.setName("ON_DELETE");
+            sb.setNameToken(new SearchParam("ON_DELETE", MatchType.EXACT));
             final List<ResourceProp> props = resourceService.findBeansDTO(sb, 0, Integer.MAX_VALUE);
             String onDeleteProp = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
             if (StringUtils.isEmpty(onDeleteProp)) {

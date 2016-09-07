@@ -641,7 +641,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             sb.setDeepCopy(false);
             
             
-            final List<org.openiam.idm.srvc.grp.dto.Group> curGroupList =groupDataWebService.findBeansDtoLocalize(sb, null, -1, -1, null);
+            final List<org.openiam.idm.srvc.grp.dto.Group> curGroupList =groupDataWebService.findDtoBeans(sb, null, -1, -1);
 
             String decPassword;
 			if (StringUtils.isEmpty(identity.getUserId())) {

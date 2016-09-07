@@ -54,9 +54,11 @@ import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.ContentProviderService;
 import org.openiam.am.srvc.uriauth.exception.InvalidPatternException;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
@@ -334,7 +336,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         }
 
         final ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
-        searchBean.setName(provider.getName());
+        searchBean.setNameToken(new SearchParam(provider.getName(), MatchType.EXACT));
         searchBean.setDeepCopy(false);
         final List<ContentProvider> cpEntityWithNameList = findBeans(searchBean, 0, Integer.MAX_VALUE);
         if(CollectionUtils.isNotEmpty(cpEntityWithNameList)) {

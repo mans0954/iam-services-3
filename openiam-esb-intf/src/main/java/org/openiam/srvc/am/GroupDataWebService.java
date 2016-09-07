@@ -223,25 +223,11 @@ public interface GroupDataWebService {
      * @return List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
-    @Deprecated
     public List<Group> findBeans(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     							 final @WebParam(name = "from", targetNamespace = "") int from,
     							 final @WebParam(name = "size", targetNamespace = "") int size);
-    /**
-     * Return a paged List of Groups based on parameters, which are specified in GroupSearchBean object
-     * @param searchBean -  GroupSearchBean object
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
-     * @param from - where to start in the list
-     * @param size - how many to return
-     * @return List of Group objects. Returns null if no groups are found.
-     */
-    @WebMethod
-    public List<Group> findBeansLocalize(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
-                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                 final @WebParam(name = "from", targetNamespace = "") int from,
-                                 final @WebParam(name = "size", targetNamespace = "") int size,
-                                 final @WebParam(name = "lang", targetNamespace = "") Language language);
+    
     /**
      * Return a paged List of Groups  for given groupOwner based on parameters, which are specified in GroupSearchBean object
      * @param searchBean -  GroupSearchBean object
@@ -256,8 +242,7 @@ public interface GroupDataWebService {
                                           final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                           final @WebParam(name = "ownerId", targetNamespace = "") String ownerId,
                                           final @WebParam(name = "from", targetNamespace = "") int from,
-                                          final @WebParam(name = "size", targetNamespace = "") int size,
-                                          final @WebParam(name = "lang", targetNamespace = "") Language language);
+                                          final @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Returns total number of Groups based on parameters, which are specified in GroupSearchBean object

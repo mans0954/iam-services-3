@@ -17,7 +17,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
@@ -253,7 +255,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
         if(attributeMapMap!=null && !attributeMapMap.isEmpty()){
             String roleName = attributeMapMap.get("DEFAULT_ROLE").getAttributeValue();
             RoleSearchBean roleSearchBean = new RoleSearchBean();
-            searchBean.setName(roleName);
+            searchBean.setNameToken(new SearchParam(roleName, MatchType.EXACT));
 
             List<RoleEntity> roleList = roleDao.getByExample(roleSearchBean);
             if(CollectionUtils.isNotEmpty(roleList)){

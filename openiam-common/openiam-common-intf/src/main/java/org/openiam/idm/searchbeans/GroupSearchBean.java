@@ -22,7 +22,7 @@ import java.util.*;
         "updatedSince",
         "type"
 })
-public class GroupSearchBean extends EntitlementsSearchBean<Group, String> implements SearchBean<Group, String>, Serializable {
+public class GroupSearchBean extends EntitlementsSearchBean<Group, String> {
 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;

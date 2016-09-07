@@ -59,7 +59,7 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 
 	@Override
 	public List<Group> find(GroupSearchBean searchBean, int from, int size) {
-		return groupServiceClient.findBeansLocalize(searchBean, null, from, size, null);
+		return groupServiceClient.findBeans(searchBean, null, from, size);
 	}
 
 /*	@Override

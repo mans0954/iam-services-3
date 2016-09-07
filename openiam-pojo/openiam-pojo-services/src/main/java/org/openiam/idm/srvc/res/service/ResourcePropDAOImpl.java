@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -28,9 +29,10 @@ public class ResourcePropDAOImpl extends BaseDaoImpl<ResourcePropEntity, String>
 			if(StringUtils.isNotBlank(sb.getKey())) {
 				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
 			} else {
-				if(StringUtils.isNotBlank(sb.getName())) {
-					criteria.add(Restrictions.eq("name", sb.getName()));
-				}
+				final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
+                }
 				if(StringUtils.isNotBlank(sb.getResourceId())) {
 					criteria.add(Restrictions.eq("resource.id", sb.getResourceId()));
 				}

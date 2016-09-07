@@ -91,11 +91,12 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                     criteria.add(Subqueries.propertyIn("id", crit));
                 }
             }
-
-            Criterion c = getStringCriterion("name", roleSearchBean.getName(), sysConfig.isCaseInSensitiveDatabase());
+            
+            Criterion c = getStringCriterion("name", roleSearchBean.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
             if(c != null) {
                 criteria.add(c);
             }
+
             if(StringUtils.isNotBlank(roleSearchBean.getManagedSysId())){
                 criteria.add(Restrictions.eq("managedSystem.id", roleSearchBean.getManagedSysId()));
             }

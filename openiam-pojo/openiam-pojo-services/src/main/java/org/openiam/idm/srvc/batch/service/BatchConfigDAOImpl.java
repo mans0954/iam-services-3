@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;
@@ -35,8 +36,9 @@ public class BatchConfigDAOImpl extends BaseDaoImpl<BatchTaskEntity, String> imp
             if(StringUtils.isNotBlank(taskSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), taskSearchBean.getKey()));
             } else {
-                if(StringUtils.isNotBlank(taskSearchBean.getName())) {
-                    criteria.add(Restrictions.eq("name", taskSearchBean.getName()));
+            	final Criterion nameCriterion = getStringCriterion("name", taskSearchBean.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
                 }
                 
                 if(taskSearchBean.getEnabled() != null) {

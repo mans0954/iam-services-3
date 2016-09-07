@@ -5,11 +5,14 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.searchbean.AuthProviderSearchBean;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.springframework.stereotype.Repository;
@@ -37,25 +40,9 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
                     criteria.add(Restrictions.eq("managedSystem.id", sb.getManagedSysId()));
                 }
 
-                if (StringUtils.isNotEmpty(sb.getName())) {
-                    String name = sb.getName();
-                    MatchMode matchMode = null;
-                    if (StringUtils.indexOf(name, "*") == 0) {
-                        matchMode = MatchMode.END;
-                        name = name.substring(1);
-                    }
-                    if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-                        name = name.substring(0, name.length() - 1);
-                        matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                    }
-
-                    if (StringUtils.isNotEmpty(name)) {
-                        if (matchMode != null) {
-                            criteria.add(Restrictions.ilike("name", name, matchMode));
-                        } else {
-                            criteria.add(Restrictions.eq("name", name));
-                        }
-                    }
+                final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
                 }
                 
                 if(StringUtils.isNotEmpty(sb.getResourceId())) {

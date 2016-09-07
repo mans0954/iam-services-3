@@ -61,7 +61,6 @@ public interface GroupDataService {
     public List<GroupEntity> getGroupsForRole(final String roleId, String requesterId, final int from, final int size);
 
     public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
-    public List<Group> findBeansDtoLocalize(final GroupSearchBean searchBean, String requesterId, final int from, final int size, final Language language);
     public List<GroupEntity> getChildGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
     public List<Group> getChildGroupsDtoLocalize(final String groupId, final String requesterId, final int from, final int size, final Language language);
     public List<GroupEntity> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
@@ -128,10 +127,10 @@ public interface GroupDataService {
     //public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity lang);
 
     public int countGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId);
-    public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, LanguageEntity languageEntity);
+    public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size);
     
     public boolean hasAttachedEntities(String groupId);
-    public List<Group> findGroupsDtoForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, Language language);
+    public List<Group> findGroupsDtoForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size);
     public void removeRoleFromGroup(String roleId, String groupId);
 
     public void saveGroupRequest(final GroupRequestModel request) throws Exception;

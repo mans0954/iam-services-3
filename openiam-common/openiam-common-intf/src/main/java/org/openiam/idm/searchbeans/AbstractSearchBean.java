@@ -2,6 +2,7 @@ package org.openiam.idm.searchbeans;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.SortParam;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -18,13 +19,19 @@ import java.util.List;
         "deepCopy",
         "sortBy",
         "findInCache",
-        "languageId"
+        "languageId",
+        "useElasticSearch"
 })
 public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType>, Serializable {
 
 	private boolean deepCopy = true;
 	private KeyType key;
 	private boolean findInCache;
+	
+	/*
+	 * if set to true, the implementer *should* use ElasticSearch to search for the ojbect
+	 */
+	private boolean useElasticSearch;
 	
 	/* if set, the provider SHOULD return a localized object */
 	private String languageId;
@@ -87,8 +94,22 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 		}
 	}
 	
+	public void setLanguage(final LanguageEntity language) {
+		if(language != null) {
+			this.languageId = language.getId();
+		}
+	}
+	
 	public void setLanguageId(String languageId) {
 		this.languageId = languageId;
+	}
+
+	public boolean isUseElasticSearch() {
+		return useElasticSearch;
+	}
+
+	public void setUseElasticSearch(boolean useElasticSearch) {
+		this.useElasticSearch = useElasticSearch;
 	}
 
 	@Override
@@ -101,6 +122,7 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 		result = prime * result
 				+ ((languageId == null) ? 0 : languageId.hashCode());
 		result = prime * result + ((sortBy == null) ? 0 : sortBy.hashCode());
+		result = prime * result + (useElasticSearch ? 1231 : 1237);
 		return result;
 	}
 
@@ -132,14 +154,17 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 				return false;
 		} else if (!sortBy.equals(other.sortBy))
 			return false;
+		if (useElasticSearch != other.useElasticSearch)
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return "AbstractSearchBean [deepCopy=" + deepCopy + ", key=" + key
-				+ ", findInCache=" + findInCache + ", languageId=" + languageId
-				+ ", sortBy=" + sortBy + "]";
+				+ ", findInCache=" + findInCache + ", useElasticSearch="
+				+ useElasticSearch + ", languageId=" + languageId + ", sortBy="
+				+ sortBy + "]";
 	}
 
 	

@@ -10,7 +10,9 @@ import org.joda.time.DateTime;
 import org.junit.runner.RunWith;
 import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.srvc.common.LanguageWebService;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.srvc.audit.IdmAuditLogWebDataService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.srvc.user.LoginDataWebService;
@@ -118,7 +120,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             // Save Connector
             provisionConnectorWebServiceClient.addProvisionConnector(connectorDto);
             ProvisionConnectorSearchBean provisionConnectorSearchBean = new ProvisionConnectorSearchBean();
-            provisionConnectorSearchBean.setName("TEST-USER-POWERSHELL-AD-CONNECTOR");
+            provisionConnectorSearchBean.setNameToken(new SearchParam("TEST-USER-POWERSHELL-AD-CONNECTOR", MatchType.EXACT));
             List<ProvisionConnectorDto> provisionConnectorDtoList = provisionConnectorWebServiceClient.getProvisionConnectors(provisionConnectorSearchBean, 0, 10);
             Assert.assertNotNull(provisionConnectorDtoList);
             Assert.assertEquals(provisionConnectorDtoList.size(), 1);

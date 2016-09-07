@@ -61,8 +61,7 @@ import java.util.*;
         "initDefaulLoginFlag",
         "userType"
 })
-public class UserSearchBean extends EntitlementsSearchBean<User, String> implements SearchBean<User, String>,
-        Serializable {
+public class UserSearchBean extends EntitlementsSearchBean<User, String> {
 
 	/**
 	 * Job code of the user

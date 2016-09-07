@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.meta.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -54,9 +55,10 @@ public class MetadataElementDAOImpl extends OrderDaoImpl<MetadataElementEntity, 
 					criteria.add(Restrictions.eq("dataType", metaSearchBean.getDataType()));
 				}
 				
-				if(StringUtils.isNotBlank(metaSearchBean.getName())) {
-					criteria.add(Restrictions.eq("name", metaSearchBean.getName()));
-				}
+				final Criterion nameCriterion = getStringCriterion("name", metaSearchBean.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
+                }
 				
 				if(CollectionUtils.isNotEmpty(metaSearchBean.getTypeIdSet())) {
 					criteria.add(Restrictions.in("metadataType.id", metaSearchBean.getTypeIdSet()));

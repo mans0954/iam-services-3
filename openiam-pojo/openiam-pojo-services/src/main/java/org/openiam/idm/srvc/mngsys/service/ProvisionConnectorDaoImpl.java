@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.mngsys.service;
 
 import org.elasticsearch.common.lang3.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
@@ -40,9 +41,10 @@ public class ProvisionConnectorDaoImpl extends BaseDaoImpl<ProvisionConnectorEnt
 			if(StringUtils.isNotBlank(sb.getKey())) {
 				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
 			} else {
-				if(StringUtils.isNotBlank(sb.getName())) {
-					criteria.add(Restrictions.eq("name", sb.getName()));
-				}
+				final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
+                }
 				if(StringUtils.isNotBlank(sb.getTypeId())) {
 					criteria.add(Restrictions.eq("metadataTypeId", sb.getTypeId()));
 				}

@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -38,26 +39,13 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements 
             if(StringUtils.isNotBlank(sb.getPolicyDefId())) {
                 criteria.add(Restrictions.eq("policyDef.id", sb.getPolicyDefId()));
             }
-            if(StringUtils.isNotBlank(sb.getName())) {
-                String name = sb.getName();
-                MatchMode matchMode = null;
-                if (org.apache.commons.lang.StringUtils.indexOf(name, "*") == 0) {
-                    matchMode = MatchMode.END;
-                    name = name.substring(1);
-                }
-                if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-                    name = name.substring(0, name.length() - 1);
-                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                }
-                if (matchMode != null) {
-					criteria.add(Restrictions.ilike("name", name, matchMode));
-				} else {
-					criteria.add(Restrictions.eq("name", name));
-				}
+            final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+            if(nameCriterion != null) {
+            	criteria.add(nameCriterion);
+            }
                 
-                if(StringUtils.isNotBlank(sb.getPolicyDefId())) {
-                	criteria.add(Restrictions.eq("policyDef.id", sb.getPolicyDefId()));
-                }
+            if(StringUtils.isNotBlank(sb.getPolicyDefId())) {
+            	criteria.add(Restrictions.eq("policyDef.id", sb.getPolicyDefId()));
             }
         }
         return criteria;

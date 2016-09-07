@@ -4,9 +4,11 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.exception.BasicDataServiceException;
@@ -216,7 +218,7 @@ public class PolicyServiceImpl implements PolicyService {
             }
 
             final PolicySearchBean sb = new PolicySearchBean();
-            sb.setName(policy.getName());
+            sb.setNameToken(new SearchParam(policy.getName(), MatchType.EXACT));
             sb.setPolicyDefId(policy.getPolicyDefId());
 
             final List<Policy> found = this.findBeans(sb, 0, Integer.MAX_VALUE);

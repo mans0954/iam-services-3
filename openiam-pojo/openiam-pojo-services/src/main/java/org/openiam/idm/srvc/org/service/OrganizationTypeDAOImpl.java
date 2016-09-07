@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.OrderDaoImpl;
@@ -32,9 +33,10 @@ public class OrganizationTypeDAOImpl extends OrderDaoImpl<OrganizationTypeEntity
 				 criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
 			 } else {
 				 
-				 if(StringUtils.isNotBlank(sb.getName())) {
-					 criteria.add(Restrictions.eq("name", sb.getName()));
-				 }
+				 final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
+                }
 			 
 				 if(CollectionUtils.isNotEmpty(sb.getChildIds())) {
 					 criteria.createAlias("childTypes", "child").add(Restrictions.in("child.id", sb.getChildIds()));

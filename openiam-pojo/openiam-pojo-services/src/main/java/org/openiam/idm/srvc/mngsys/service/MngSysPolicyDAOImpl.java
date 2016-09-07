@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.mngsys.service;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -59,25 +60,9 @@ public class MngSysPolicyDAOImpl extends BaseDaoImpl<MngSysPolicyEntity, String>
                 if(StringUtils.isNotBlank(searchBean.getKey())) {
                     criteria.add(Restrictions.idEq(searchBean.getKey()));
                 }
-                if(StringUtils.isNotBlank(searchBean.getName())) {
-                    String name = searchBean.getName();
-                    MatchMode matchMode = null;
-                    if (StringUtils.indexOf(name, "*") == 0) {
-                        matchMode = MatchMode.END;
-                        name = name.substring(1);
-                    }
-                    if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-                        name = name.substring(0, name.length() - 1);
-                        matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                    }
-
-                    if (StringUtils.isNotEmpty(name)) {
-                        if (matchMode != null) {
-                            criteria.add(Restrictions.ilike("name", name, matchMode));
-                        } else {
-                            criteria.add(Restrictions.eq("name", name));
-                        }
-                    }
+                final Criterion nameCriterion = getStringCriterion("name", searchBean.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+                if(nameCriterion != null) {
+                	criteria.add(nameCriterion);
                 }
                 if(StringUtils.isNotBlank(searchBean.getManagedSysId())) {
                     criteria.add(Restrictions.eq("managedSystem.id", searchBean.getManagedSysId()));

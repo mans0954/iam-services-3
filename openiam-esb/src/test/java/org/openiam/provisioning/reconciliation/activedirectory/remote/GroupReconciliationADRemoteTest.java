@@ -9,7 +9,9 @@ import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.joda.time.DateTime;
 import org.junit.runner.RunWith;
 import org.openiam.am.srvc.constants.SearchScopeType;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.srvc.idm.IdentityWebService;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -97,7 +99,7 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
             // Save Connector
             provisionConnectorWebServiceClient.addProvisionConnector(connectorDto);
             ProvisionConnectorSearchBean provisionConnectorSearchBean = new ProvisionConnectorSearchBean();
-            provisionConnectorSearchBean.setName("TEST-GROUP-POWERSHELL-AD-CONNECTOR");
+            provisionConnectorSearchBean.setNameToken(new SearchParam("TEST-GROUP-POWERSHELL-AD-CONNECTOR", MatchType.EXACT));
             List<ProvisionConnectorDto> provisionConnectorDtoList = provisionConnectorWebServiceClient.getProvisionConnectors(provisionConnectorSearchBean, 0, 10);
             Assert.assertNotNull(provisionConnectorDtoList);
             Assert.assertEquals(provisionConnectorDtoList.size(), 1);
@@ -210,7 +212,7 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
             Assert.assertEquals(reconciliationConfig1.getSituationSet().size(), 4);
 
             GroupSearchBean groupSearchBean = new GroupSearchBean();
-            groupSearchBean.setName(TestGroupCN);
+            groupSearchBean.setNameToken(new SearchParam(TestGroupCN, MatchType.EXACT));
             groupSearchBean.setDeepCopy(false);
             List<Group> groupsByName = groupDataWebService.findBeans(groupSearchBean, null, 0, 10);
             Assert.assertNull(groupsByName);
@@ -265,7 +267,7 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
             // Check situation => IDM[not exists] and Resource[exists] => New group should be created in OpenIAM
             // SET Timeout for waiting WS response
             GroupSearchBean groupSearchBean = new GroupSearchBean();
-            groupSearchBean.setName(TestGroupCN);
+            groupSearchBean.setNameToken(new SearchParam(TestGroupCN, MatchType.EXACT));
             groupSearchBean.setDeepCopy(false);
             List<Group> groupsByName = groupDataWebService.findBeans(groupSearchBean, null, 0, 10);
             Assert.assertNull(groupsByName);

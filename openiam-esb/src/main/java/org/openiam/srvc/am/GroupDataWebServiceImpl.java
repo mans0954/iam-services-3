@@ -220,7 +220,8 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
         final GroupSearchBean sb = new GroupSearchBean();
         sb.addParentId(groupId);
         sb.setDeepCopy(deepFlag);
-        return findBeansLocalize(sb, requesterId, from, size, language);
+        sb.setLanguage(getDefaultLanguage());
+        return findBeans(sb, requesterId, from, size);
     }
 
     @Override
@@ -243,7 +244,8 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     public List<Group> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final Language language) {
     	final GroupSearchBean sb = new GroupSearchBean();
         sb.addChildId(groupId);
-        return findBeansLocalize(sb, requesterId, from, size, language);
+        sb.setLanguage(language);
+        return findBeans(sb, requesterId, from, size);
     }
 
     @Override
@@ -383,24 +385,12 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     }
 
     @Override
-    /**
-     * Without @Localization for internal use only
-     */
+    @LocalizedServiceGet
     @Transactional(readOnly=true)
     public List<Group> findBeans(final GroupSearchBean searchBean, final String requesterId, final int from,
             final int size) {
         final List<GroupEntity> entityList = groupManager.findBeans(searchBean, requesterId, from, size);
         List<Group> dtoList = groupDozerConverter.convertToDTOList(entityList, false);
-        accessRightProcessor.process(searchBean, dtoList, entityList);
-        return dtoList;
-    }
-
-    @Override
-    @LocalizedServiceGet
-    public List<Group> findBeansLocalize(final GroupSearchBean searchBean, final String requesterId, final int from, final int size,
-                                         final Language language) {
-        final List<GroupEntity> entityList = groupManager.findBeansLocalize(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        final List<Group> dtoList = groupDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
         accessRightProcessor.process(searchBean, dtoList, entityList);
         return dtoList;
     }
@@ -412,11 +402,9 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
 
     @Override
     @LocalizedServiceGet
-    public List<Group> findGroupsForOwner(final GroupSearchBean searchBean, final String requesterId, String ownerId, final int from, final int size,
-                                         final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.findGroupsForOwner(searchBean, requesterId, ownerId, from, size, languageConverter.convertToEntity(language, false));
-        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-        return groupList;
+    public List<Group> findGroupsForOwner(final GroupSearchBean searchBean, final String requesterId, String ownerId, final int from, final int size) {
+        final List<Group> groupEntityList = groupManager.findGroupsDtoForOwner(searchBean, requesterId, ownerId, from, size);
+        return groupEntityList;
     }
     @Override
     public int countGroupsForOwner(final GroupSearchBean searchBean, final String requesterId, String ownerId) {
@@ -441,7 +429,8 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     	final GroupSearchBean sb = new GroupSearchBean();
     	sb.addUserId(userId);
     	sb.setDeepCopy(deepFlag);
-    	return findBeansLocalize(sb, requesterId, from, size, language);
+    	sb.setLanguage(language);
+    	return findBeans(sb, requesterId, from, size);
     }
 
     @Override
@@ -467,7 +456,8 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     	final GroupSearchBean sb = new GroupSearchBean();
         sb.addResourceId(resourceId);
         sb.setDeepCopy(deepFlag);
-        return findBeansLocalize(sb, requesterId, from, size, language);
+        sb.setLanguage(language);
+        return findBeans(sb, requesterId, from, size);
     }
 
     @Override

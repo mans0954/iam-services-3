@@ -7,9 +7,11 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.common.i18n.Exception;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeObjectId;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.concurrent.AuditLogHolder;
@@ -804,7 +806,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Transactional(readOnly = true)
     public RoleEntity getRoleByNameAndManagedSysId(final String roleName, final String managedSysId) {
         final RoleSearchBean sb = new RoleSearchBean();
-        sb.setName(roleName);
+        sb.setNameToken(new SearchParam(roleName, MatchType.EXACT));
         sb.setManagedSysId(managedSysId);
         final List<RoleEntity> roles = roleDao.getByExample(sb);
         if (roles != null) {

@@ -5,7 +5,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.srvc.base.AbstractBaseService;
@@ -54,7 +56,7 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 	@Override
 	public OrganizationTypeEntity findByName(String name) {
 		final OrganizationTypeSearchBean sb = new OrganizationTypeSearchBean();
-		sb.setName(name);
+		sb.setNameToken(new SearchParam(name, MatchType.EXACT));
 		final List<OrganizationTypeEntity> entityList = organizationTypeDAO.getByExample(sb);
 		return (CollectionUtils.isNotEmpty(entityList)) ? entityList.get(0) : null;
 	}

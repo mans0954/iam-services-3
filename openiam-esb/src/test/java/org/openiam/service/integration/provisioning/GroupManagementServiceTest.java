@@ -3,7 +3,9 @@ package org.openiam.service.integration.provisioning;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.srvc.idm.IdentityWebService;
@@ -440,8 +442,9 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     
     private void deleteGroupsByName(final String name) {
     	final GroupSearchBean sb = new GroupSearchBean();
-    	sb.setName(name);
-    	final List<Group> groups = groupServiceClient.findBeansLocalize(sb, REQUESTER_ID, 0, Integer.MAX_VALUE, getDefaultLanguage());
+    	sb.setNameToken(new SearchParam(name, MatchType.EXACT));
+    	sb.setLanguage(getDefaultLanguage());
+    	final List<Group> groups = groupServiceClient.findBeans(sb, REQUESTER_ID, 0, Integer.MAX_VALUE);
     	if(CollectionUtils.isNotEmpty(groups)) {
     		groups.forEach(e -> {
     			assertSuccess(groupServiceClient.deleteGroup(e.getId(), REQUESTER_ID));

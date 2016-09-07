@@ -10,7 +10,9 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
 import org.openiam.base.Tuple;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -211,7 +213,7 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 		final ResourceSearchBean sb = new ResourceSearchBean();
 		sb.setFindInCache(true);
 		sb.setDeepCopy(true);
-		sb.setName(resource.getName());
+		sb.setNameToken(new SearchParam(resource.getName(), MatchType.EXACT));
 		return sb;
 	}
 	
