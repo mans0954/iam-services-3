@@ -12,8 +12,7 @@ import java.io.Serializable;
 @XmlType(name = "SynchReviewSearchBean", propOrder = {
         "synchConfigId"
 })
-public class SynchReviewSearchBean extends AbstractSearchBean<SynchReview, String> implements SearchBean<SynchReview, String>,
-        Serializable {
+public class SynchReviewSearchBean extends AbstractSearchBean<SynchReview, String> {
 
     private static final long serialVersionUID = 2028343104270477314L;
 

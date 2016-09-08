@@ -14,7 +14,7 @@ import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 	"questionText",
 	"isEncrypted"
 })
-public class IdentityAnswerSearchBean extends AbstractSearchBean<UserIdentityAnswer, String> implements SearchBean<UserIdentityAnswer, String> {
+public class IdentityAnswerSearchBean extends AbstractSearchBean<UserIdentityAnswer, String> {
 
 	private String questionId;
 	private String userId;

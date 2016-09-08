@@ -336,7 +336,11 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             return new ArrayList<GroupEntity>(0);
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {
-        	return groupElasticSearchRepo.findBeans(searchBean, new PageRequest(Math.floorDiv(from, size), size));
+        	if(groupElasticSearchRepo.isValidSearchBean(searchBean)) {
+        		return groupElasticSearchRepo.findBeans(searchBean, from, size);
+        	} else {
+        		return groupElasticSearchRepo.findAll(groupElasticSearchRepo.getPageable(searchBean, from, size)).getContent();
+        	}
         } else {
         	return groupDao.getByExample(searchBean, from, size);
         }

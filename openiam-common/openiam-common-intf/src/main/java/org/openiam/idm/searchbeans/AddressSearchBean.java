@@ -15,8 +15,7 @@ import java.io.Serializable;
         "metadataTypeId"/*,
         "parentType"*/
 })
-public class AddressSearchBean  extends AbstractSearchBean<Address, String> implements SearchBean<Address, String>,
-        Serializable {
+public class AddressSearchBean  extends AbstractSearchBean<Address, String> {
     private String parentId;
     private String metadataTypeId;
     //private String parentType;

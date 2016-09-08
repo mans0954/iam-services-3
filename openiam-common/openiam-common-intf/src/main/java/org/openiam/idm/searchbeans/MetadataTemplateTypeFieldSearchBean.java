@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 	"templateTypeId",
 	"name"
 })
-public class MetadataTemplateTypeFieldSearchBean extends AbstractSearchBean<MetadataTemplateTypeField, String> implements SearchBean<MetadataTemplateTypeField, String> {
+public class MetadataTemplateTypeFieldSearchBean extends AbstractSearchBean<MetadataTemplateTypeField, String> {
 
 	private String templateId;
 	private String templateTypeId;

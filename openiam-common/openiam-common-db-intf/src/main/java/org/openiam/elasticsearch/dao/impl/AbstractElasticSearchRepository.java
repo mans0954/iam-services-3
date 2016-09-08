@@ -13,21 +13,27 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.base.BaseIdentity;
+import org.openiam.base.OrderConstants;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SortParam;
 import org.openiam.elasticsearch.dao.AbstractCustomElasticSearchRepository;
+import org.openiam.elasticsearch.dao.OpeniamElasticSearchRepository;
+import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
-public abstract class AbstractElasticSearchRepository<T extends BaseIdentity, ID extends Serializable, S extends SearchBean> 
+public abstract class AbstractElasticSearchRepository<T extends BaseIdentity, ID extends Serializable, S extends AbstractSearchBean> 
 implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	
 	protected AbstractElasticSearchRepository() {
@@ -52,6 +58,11 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	
 	public void prepare(final T entity) {
 		
+	}
+	
+	@Override
+	public boolean isValidSearchBean(final S searchBean) {
+		return getCriteria(searchBean) != null;
 	}
 	
 	protected Criteria inCriteria(final String term, final Collection<String> values) {
@@ -158,9 +169,31 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 		}
         return criteria;
     }
+	
+	protected Sort getSort(final S searchBean) {
+		Sort sortBy = null;
+		final List<SortParam> sortParamList = searchBean.getSortBy();
+		if(CollectionUtils.isNotEmpty(sortParamList)) {
+			for (final SortParam sort : sortParamList) {
+				final Direction direction = OrderConstants.ASC.equals(sort.getOrderBy()) ? Direction.ASC : Direction.DESC;
+				final Sort currentSort = new Sort(direction, sort.getSortBy());
+				if(sortBy == null) {
+					sortBy = currentSort;
+				} else {
+					sortBy.and(currentSort);
+				}
+			}
+		}
+		return sortBy;
+	}
+	
+	public Pageable getPageable(final S searchBean, final int from, final int size) {
+		return new PageRequest(Math.floorDiv(from, size), size, getSort(searchBean));
+	}
 
 	@Override
-	public List<String> findIds(S searchBean, Pageable pageable) {
+	public List<String> findIds(S searchBean, int from, int size) {
+		final Pageable pageable = getPageable(searchBean, from, size);
 		List<String> retval = Collections.EMPTY_LIST;
 		final CriteriaQuery criteria = getCriteria(searchBean);
 		if(criteria != null) {
@@ -186,9 +219,10 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	
 	
 	@Override
-	public List<T> findBeans(S searchBean, Pageable pageable) {
+	public List<T> findBeans(S searchBean, int from, int size) {
+		final Pageable pageable = getPageable(searchBean, from, size);
 		List<T> retval = Collections.EMPTY_LIST;
-		final CriteriaQuery criteria = getCriteria(searchBean);
+		CriteriaQuery criteria = getCriteria(searchBean);
 		if(criteria != null) {
 			criteria.addIndices(document.indexName());
 			criteria.addTypes(document.type());

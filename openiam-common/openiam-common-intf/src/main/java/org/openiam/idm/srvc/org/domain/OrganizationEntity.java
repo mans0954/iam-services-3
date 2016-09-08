@@ -47,6 +47,9 @@ import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Entity
 @Table(name = "COMPANY")
@@ -89,8 +92,9 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     private Date lstUpdate;
 
     @Column(name="LST_UPDATED_BY", length=32)
-        private String lstUpdatedBy;
+    private String lstUpdatedBy;
 
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     @Column(name="COMPANY_NAME", length=200)
     @Size(max = 200, message = "organization.name.too.long")
     private String name;

@@ -20,8 +20,7 @@ import org.openiam.idm.srvc.res.dto.ResourceType;
 				"selectAll"
 		}
 )
-public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, String> implements
-        SearchBean<ResourceType, String>, Serializable {
+public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, String> {
 
     private Boolean searchable;
     private String description;

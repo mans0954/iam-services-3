@@ -18,8 +18,7 @@ import java.io.Serializable;
         "userId",
         "name"
 })
-public class LocationSearchBean extends AbstractSearchBean<Location, String> implements SearchBean<Location, String>,
-        Serializable {
+public class LocationSearchBean extends AbstractSearchBean<Location, String> {
 	private String city;
     private String organizationId;
     private String country;

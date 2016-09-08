@@ -15,7 +15,7 @@ import java.io.Serializable;
         "managedSysId",
         "reconType"
 })
-public class ReconConfigSearchBean extends AbstractSearchBean<ReconciliationConfig, String> implements SearchBean<ReconciliationConfig, String>, Serializable {
+public class ReconConfigSearchBean extends AbstractSearchBean<ReconciliationConfig, String> {
     private String name;
     private String resourceId;
     private String reconType;

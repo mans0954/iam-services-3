@@ -28,6 +28,7 @@ import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
+import org.openiam.elasticsearch.dao.OrganizationElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
@@ -80,6 +81,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -140,6 +142,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     @Autowired
     private RoleDAO roleDAO;
+    
+    @Autowired
+    private OrganizationElasticSearchRepository organizationElasticSearchRepository;
 
     private Map<String, Set<String>> organizationTree;
     private Map<String, String> organizationInvertedTree;
@@ -213,10 +218,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity langauge) {
+    public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity language) {
         final OrganizationSearchBean searchBean = new OrganizationSearchBean();
         searchBean.setNameToken(new SearchParam(name, MatchType.EXACT));
-        final List<OrganizationEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1, null);
+        searchBean.setLanguage(language);
+        final List<OrganizationEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
     }
 
@@ -306,7 +312,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Transactional(readOnly = true)
     /*AM-851 */
     //@Cacheable(value = "organizationEntities", key = "{ #searchBean,#requesterId,#from,#size,#lang}", condition="{#searchBean != null and #searchBean.findInCache}")
-    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
+    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId, false);
         if(searchBean != null) {
         	if (StringUtils.isBlank(searchBean.getKey())) {
@@ -315,7 +321,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         		return new ArrayList<OrganizationEntity>(0);
         	}
         }
-        return orgDao.getByExample(searchBean, from, size);
+        if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	if(organizationElasticSearchRepository.isValidSearchBean(searchBean)) {
+        		return organizationElasticSearchRepository.findBeans(searchBean, from, size);
+        	} else {
+        		return organizationElasticSearchRepository.findAll(organizationElasticSearchRepository.getPageable(searchBean, from, size)).getContent();
+        	}
+        } else {
+        	return orgDao.getByExample(searchBean, from, size);
+        }
     }
 
     /**
@@ -344,7 +358,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         final StopWatch sw = new StopWatch();
         sw.start();
         //List<OrganizationEntity> organizationEntityList = orgDao.getByExample(searchBean, from, size);
-        List<OrganizationEntity> organizationEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size, language);
+        List<OrganizationEntity> organizationEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size);
         if (CollectionUtils.isNotEmpty(organizationEntityList) && searchBean.isDeepCopy() && searchBean.isForCurrentUsersOnly() && CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
         	UserToOrganizationMembershipXrefEntity organizationUserEntity = null;
             Iterator<UserToOrganizationMembershipXrefEntity> organizationUserEntityIterator = null;

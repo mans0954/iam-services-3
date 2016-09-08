@@ -109,7 +109,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     	final OrganizationSearchBean sb = new OrganizationSearchBean();
     	sb.addUserId(userId);
     	sb.setDeepCopy(false);
-    	return findBeansLocalized(sb, requesterId, from, size, null);
+    	return findBeans(sb, requesterId, from, size);
     }
 
     @Override
@@ -119,15 +119,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @Deprecated
-    public List<Organization> findBeans(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size) {
-        return this.findBeansLocalized(searchBean, requesterId, from, size, getDefaultLanguage());
-    }
-
-    @Override
     @LocalizedServiceGet
-    public List<Organization> findBeansLocalized(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size, final Language language) {
-        final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
+    public List<Organization> findBeans(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size) {
+    	final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size);
         final List<Organization> dtoList = organizationDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
         accessRightProcessor.process(searchBean, dtoList, entityList);
         return dtoList;
@@ -145,7 +139,8 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public List<Organization> getParentOrganizationsLocalized(String orgId, String requesterId, final int from, final int size, final Language language) {
         final OrganizationSearchBean sb = new OrganizationSearchBean();
         sb.addChildId(orgId);
-        return findBeansLocalized(sb, requesterId, from, size, language);
+        sb.setLanguage(language);
+        return findBeans(sb, requesterId, from, size);
     }
 
     @Override
@@ -160,7 +155,8 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public List<Organization> getChildOrganizationsLocalized(String orgId, String requesterId, final int from, final int size, final Language language) {
         final OrganizationSearchBean sb = new OrganizationSearchBean();
         sb.addParentId(orgId);
-        return findBeansLocalized(sb, requesterId, from, size, language);
+        sb.setLanguage(language);
+        return findBeans(sb, requesterId, from, size);
     }
 
     @Override
@@ -221,7 +217,8 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 		searchBean.addUserId(userId);
 		searchBean.setOrganizationTypeId(organizationTypeId);
 		searchBean.setDeepCopy(false);
-		return findBeansLocalized(searchBean, requesterId, 0, Integer.MAX_VALUE, language);
+		searchBean.setLanguage(language);
+		return findBeans(searchBean, requesterId, 0, Integer.MAX_VALUE);
 	}
 
     @Override
@@ -674,7 +671,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         final Set<String> orgsId = new HashSet<String>();
         final OrganizationSearchBean sb = new OrganizationSearchBean();
         sb.addUserId(userId);
-        List<OrganizationEntity> orgList = organizationService.findBeans(sb, null, from, size, languageConverter.convertToEntity(getDefaultLanguage(), false));
+        List<OrganizationEntity> orgList = organizationService.findBeans(sb, null, from, size);
         for (OrganizationEntity org : orgList) {
             orgsId.add(org.getId());
         }

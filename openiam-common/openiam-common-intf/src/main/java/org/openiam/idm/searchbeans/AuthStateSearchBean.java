@@ -15,7 +15,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 	"onlyActive",
 	"aa"
 })
-public class AuthStateSearchBean extends AbstractSearchBean<AuthStateEntity, AuthStateId> implements SearchBean<AuthStateEntity, AuthStateId>, Serializable {
+public class AuthStateSearchBean extends AbstractSearchBean<AuthStateEntity, AuthStateId> {
 
 	private boolean onlyActive;
 	private String aa;

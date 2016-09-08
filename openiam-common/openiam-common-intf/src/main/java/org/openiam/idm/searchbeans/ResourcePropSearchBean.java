@@ -10,7 +10,7 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 @XmlType(name = "ResourcePropSearchBean", propOrder = {
 	"resourceId"
 })
-public class ResourcePropSearchBean extends AbstractKeyNameSearchBean<ResourceProp, String> implements SearchBean<ResourceProp, String> {
+public class ResourcePropSearchBean extends AbstractKeyNameSearchBean<ResourceProp, String> {
 
 	private String resourceId;
 

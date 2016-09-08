@@ -26,7 +26,7 @@ import java.util.Set;
 	"dataType",
 	"resourceId"
 })
-public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<MetadataElement, String> implements SearchBean<MetadataElement, String> {
+public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<MetadataElement, String> {
 
 	private String resourceId;
 	private String dataType;

@@ -125,13 +125,13 @@ public class LoginElasticSearchRepositoryTest extends AbstractElasticSearchRepos
 	@Test
 	public void testFindIds() {
 		LoginSearchBean sb = null;
-		Assert.assertTrue(CollectionUtils.isEmpty(repo.findIds(sb, new PageRequest(0, 10))));
+		Assert.assertTrue(CollectionUtils.isEmpty(repo.findIds(sb, 0, 10)));
 		
 		sb = new LoginSearchBean();
-		Assert.assertTrue(CollectionUtils.isEmpty(repo.findIds(sb, new PageRequest(0, 10))));
+		Assert.assertTrue(CollectionUtils.isEmpty(repo.findIds(sb, 0, 10)));
 		
 		sb = new LoginSearchBean();
 		sb.setUserId("3000");
-		Assert.assertTrue(CollectionUtils.isNotEmpty(repo.findIds(sb, new PageRequest(0, 10))));
+		Assert.assertTrue(CollectionUtils.isNotEmpty(repo.findIds(sb, 0, 10)));
 	}
 }

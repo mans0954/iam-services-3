@@ -20,7 +20,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 	"keySet",
 	"usedForSMSOTP"
 })
-public class MetadataTypeSearchBean extends AbstractLanguageSearchBean<MetadataType, String> implements SearchBean<MetadataType, String> {
+public class MetadataTypeSearchBean extends AbstractLanguageSearchBean<MetadataType, String> {
 
     private Set<String> keySet;
     private Boolean active;

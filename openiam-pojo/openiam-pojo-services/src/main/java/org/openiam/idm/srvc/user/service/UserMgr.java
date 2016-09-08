@@ -652,7 +652,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         }
         List<String> idList = null;
         if(isSearchByPrimaryAttributes(searchBean)) {
-            idList = userRepo.findIds(searchBean, new PageRequest(0, Integer.MAX_VALUE));
+            idList = userRepo.findIds(searchBean, 0, Integer.MAX_VALUE);
         }
 
         if (idList!=null) {

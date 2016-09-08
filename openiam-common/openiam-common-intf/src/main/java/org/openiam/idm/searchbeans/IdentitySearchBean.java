@@ -23,7 +23,7 @@ import java.util.Date;
         "createdBy",
         "managedSysId"
 })
-public class IdentitySearchBean extends AbstractSearchBean<IdentityDto, String> implements SearchBean<IdentityDto, String>, Serializable {
+public class IdentitySearchBean extends AbstractSearchBean<IdentityDto, String> {
     private static final long serialVersionUID = 1L;
 
     private String identity;

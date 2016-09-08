@@ -17,7 +17,7 @@ import java.util.Set;
 	"childIds",
     "excludeIds"
 })
-public class OrganizationTypeSearchBean extends AbstractKeyNameSearchBean<OrganizationType, String> implements SearchBean<OrganizationType, String> {
+public class OrganizationTypeSearchBean extends AbstractKeyNameSearchBean<OrganizationType, String> {
 
 	private Set<String> keySet;
 	private Set<String> parentIds;

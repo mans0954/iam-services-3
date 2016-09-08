@@ -17,8 +17,7 @@ import java.io.Serializable;
         "metadataTypeId",
         "isDefault"
 })
-public class PhoneSearchBean extends AbstractSearchBean<Phone, String> implements SearchBean<Phone, String>,
-        Serializable {
+public class PhoneSearchBean extends AbstractSearchBean<Phone, String> {
     private String parentId;
     //private String parentType;
     private String phoneNbr;

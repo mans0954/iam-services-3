@@ -85,7 +85,8 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 	@Override
 	public List<Organization> find(OrganizationSearchBean searchBean, int from,
 			int size) {
-		return organizationServiceClient.findBeansLocalized(searchBean, null, from, size, null);
+		searchBean.setLanguage(getDefaultLanguage());
+		return organizationServiceClient.findBeans(searchBean, null, from, size);
 	}
 
 	@Test

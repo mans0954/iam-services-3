@@ -224,8 +224,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     @Override
     @Transactional(readOnly=true)
     public List<String> findIDs(AuditLogSearchBean searchBean, int from, int size) {
-    	final int page = Math.floorDiv(from, size);
-    	return auditLogRepo.findIds(searchBean, new PageRequest(page, size));
+    	return auditLogRepo.findIds(searchBean, from, size);
     }
 
     @Override

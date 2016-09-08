@@ -13,8 +13,7 @@ import java.io.Serializable;
         "resourceId",
         "synchConfigId"
 })
-public class AttributeMapSearchBean extends AbstractSearchBean<AttributeMap, String> implements SearchBean<AttributeMap, String>,
-        Serializable {
+public class AttributeMapSearchBean extends AbstractSearchBean<AttributeMap, String> {
     private static final long serialVersionUID = 1L;
 
     private String resourceId;

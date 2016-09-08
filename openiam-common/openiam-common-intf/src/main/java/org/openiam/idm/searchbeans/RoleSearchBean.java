@@ -24,7 +24,7 @@ import java.util.Set;
         "attributes",
         "type"
 })
-public class RoleSearchBean extends EntitlementsSearchBean<Role, String> implements SearchBean<Role, String>, Serializable {
+public class RoleSearchBean extends EntitlementsSearchBean<Role, String> {
 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;

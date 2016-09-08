@@ -12,5 +12,4 @@ public interface LoginElasticSearchRepositoryCustom extends AbstractCustomElasti
 
 	public Page<String> findUserIds(final LoginSearchBean searchBean, final Pageable pageable);
 	public int count(final LoginSearchBean searchBean);
-	public List<String> findIds(final LoginSearchBean searchBean, final Pageable pageable);
 }

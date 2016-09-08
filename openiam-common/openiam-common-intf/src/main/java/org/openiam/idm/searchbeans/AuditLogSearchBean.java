@@ -36,7 +36,7 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
     "userVsTargetAndFlag",
     "attributes"
 })
-public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLogEntity, String> implements SearchBean<IdmAuditLogEntity, String> {
+public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLogEntity, String> {
 
 	private String authProviderId;
     private String contentProviderId;

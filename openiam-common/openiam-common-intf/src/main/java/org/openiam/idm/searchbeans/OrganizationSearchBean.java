@@ -37,7 +37,7 @@ import java.util.Set;
         "domainName",
         "uncoverParents"
 })
-public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String> {
+public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> {
     private static final long serialVersionUID = 1L;
     private Set<String> keySet;
     private Set<String> organizationTypeIdSet;

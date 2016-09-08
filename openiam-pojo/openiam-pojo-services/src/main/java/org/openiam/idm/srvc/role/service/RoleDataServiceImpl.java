@@ -17,6 +17,7 @@ import org.openiam.cache.CacheKeyEviction;
 import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
+import org.openiam.elasticsearch.dao.RoleElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
@@ -29,7 +30,6 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -58,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,6 +122,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Autowired
     protected AccessRightProcessor accessRightProcessor;
+    
+    @Autowired
+    private RoleElasticSearchRepository roleElasticSearchRepository;
 
     public void setApplicationContext(final ApplicationContext ac) throws BeansException {
         this.ac = ac;
@@ -487,6 +491,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional(readOnly = true)
+    @LocalizedServiceGet
     public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId);
         if (StringUtils.isBlank(searchBean.getKey()))
@@ -494,11 +499,20 @@ public class RoleDataServiceImpl implements RoleDataService {
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
             return new ArrayList<RoleEntity>(0);
         }
-        return roleDao.getByExample(searchBean, from, size);
+        if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	if(roleElasticSearchRepository.isValidSearchBean(searchBean)) {
+        		return roleElasticSearchRepository.findBeans(searchBean, from, size);
+        	} else {
+        		return roleElasticSearchRepository.findAll(roleElasticSearchRepository.getPageable(searchBean, from, size)).getContent();
+        	}
+        } else {
+        	return roleDao.getByExample(searchBean, from, size);
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
+    @LocalizedServiceGet
     public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size) {
         List<RoleEntity> roleEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size);
         List<Role> dtoList = roleDozerConverter.convertToDTOList(roleEntityList, searchBean.isDeepCopy());

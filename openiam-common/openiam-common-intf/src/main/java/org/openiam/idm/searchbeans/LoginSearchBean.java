@@ -21,7 +21,7 @@ import java.io.Serializable;
 	"userId",
 	"loginMatchToken"
 })
-public class LoginSearchBean extends AbstractSearchBean<Login, String> implements SearchBean<Login, String>, Serializable {
+public class LoginSearchBean extends AbstractSearchBean<Login, String> {
 	
 	/**
 	 * The managed system ID of the login 

@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlType;
         "employee",
         "supervisor"
 })
-public class SupervisorSearchBean extends AbstractSearchBean<Supervisor, String> implements SearchBean<Supervisor, String> {
+public class SupervisorSearchBean extends AbstractSearchBean<Supervisor, String> {
 
 
     private SupervisorID id;

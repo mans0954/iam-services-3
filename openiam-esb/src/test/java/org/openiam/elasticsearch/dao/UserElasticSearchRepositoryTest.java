@@ -78,7 +78,7 @@ public class UserElasticSearchRepositoryTest extends AbstractElasticSearchReposi
 		sb.setMaidenNameMatchToken(new SearchParam(user.getMaidenName(), MatchType.CONTAINS));
 		sb.setEmployeeIdMatchToken(new SearchParam(user.getEmployeeId(), MatchType.CONTAINS));
 		sb.setSearchMode(SearchMode.AND);
-		List<String> page = repo.findIds(sb, new PageRequest(0, 10));
+		List<String> page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isEmpty(page));
 		
 		sb.setSearchMode(SearchMode.OR);
@@ -88,15 +88,15 @@ public class UserElasticSearchRepositoryTest extends AbstractElasticSearchReposi
 
 	@Test
 	public void testFindEmpty() {
-		List<String> page = repo.findIds(null, new PageRequest(0, 10));
+		List<String> page = repo.findIds(null, 0, 10);
 		Assert.assertTrue(CollectionUtils.isEmpty(page));
 		
 		final UserSearchBean sb = new UserSearchBean();
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isEmpty(page));
 		
 		sb.setFirstNameMatchToken(new SearchParam(random(), MatchType.STARTS_WITH));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isEmpty(page));
 	}
 	
@@ -104,17 +104,17 @@ public class UserElasticSearchRepositoryTest extends AbstractElasticSearchReposi
 	public void testFindNotEmpty() {
 		final UserSearchBean sb = new UserSearchBean();
 		sb.setFirstNameMatchToken(new SearchParam(user.getFirstName().substring(0, 5), MatchType.STARTS_WITH));
-		List<String> page = repo.findIds(sb, new PageRequest(0, 10));
+		List<String> page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setFirstNameMatchToken(new SearchParam(user.getFirstName().substring(5, 10), MatchType.END_WITH));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setFirstNameMatchToken(new SearchParam(user.getFirstName(), MatchType.EXACT));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
@@ -123,17 +123,17 @@ public class UserElasticSearchRepositoryTest extends AbstractElasticSearchReposi
 		
 		
 		sb.setLastNameMatchToken(new SearchParam(user.getLastName().substring(0, 5), MatchType.STARTS_WITH));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setLastNameMatchToken(new SearchParam(user.getLastName().substring(5, 10), MatchType.END_WITH));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setLastNameMatchToken(new SearchParam(user.getLastName(), MatchType.EXACT));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
@@ -142,17 +142,17 @@ public class UserElasticSearchRepositoryTest extends AbstractElasticSearchReposi
 		
 		
 		sb.setMaidenNameMatchToken(new SearchParam(user.getMaidenName().substring(0, 5), MatchType.STARTS_WITH));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setMaidenNameMatchToken(new SearchParam(user.getMaidenName().substring(5, 10), MatchType.END_WITH));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setMaidenNameMatchToken(new SearchParam(user.getMaidenName(), MatchType.EXACT));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
@@ -160,42 +160,42 @@ public class UserElasticSearchRepositoryTest extends AbstractElasticSearchReposi
 		
 		
 		sb.setEmployeeIdMatchToken(new SearchParam(user.getEmployeeId().substring(0, 5), MatchType.STARTS_WITH));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setEmployeeIdMatchToken(new SearchParam(user.getEmployeeId().substring(5, 10), MatchType.END_WITH));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setEmployeeIdMatchToken(new SearchParam(user.getEmployeeId(), MatchType.EXACT));
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 
 		sb.setUserStatus(user.getStatus().getValue());
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setAccountStatus(user.getSecondaryStatus().getValue());
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setJobCode(user.getJobCode().getId());
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setEmployeeType(user.getEmployeeType().getId());
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setUserType(user.getType().getId());
-		page = repo.findIds(sb, new PageRequest(0, 10));
+		page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 	}
@@ -207,12 +207,12 @@ public class UserElasticSearchRepositoryTest extends AbstractElasticSearchReposi
 		
 		final UserSearchBean sb = new UserSearchBean();
 		sb.setLastNameMatchToken(new SearchParam(searchTerm, MatchType.STARTS_WITH));
-		List<String> page = page = repo.findIds(sb, new PageRequest(0, 10));
+		List<String> page = page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 		
 		sb.setLastNameMatchToken(new SearchParam(searchTerm, MatchType.CONTAINS));
-		page = page = repo.findIds(sb, new PageRequest(0, 10));
+		page = page = repo.findIds(sb, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 	}

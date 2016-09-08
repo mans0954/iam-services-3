@@ -53,7 +53,8 @@ public class Organization2OrganizationEntitlementsTest extends AbstractCircularE
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
 		searchBean.addChildId(child.getId());
 		searchBean.setIncludeAccessRights(true);
-		final List<Organization> dtos = organizationServiceClient.findBeansLocalized(searchBean, null, 0, 100, getDefaultLanguage());
+		searchBean.setLanguage(getDefaultLanguage());
+		final List<Organization> dtos = organizationServiceClient.findBeans(searchBean, null, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child org"), optional.isPresent());
@@ -74,7 +75,8 @@ public class Organization2OrganizationEntitlementsTest extends AbstractCircularE
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
 		searchBean.addParentId(parent.getId());
 		searchBean.setIncludeAccessRights(true);
-		final List<Organization> dtos = organizationServiceClient.findBeansLocalized(searchBean, null, 0, 100, getDefaultLanguage());
+		searchBean.setLanguage(getDefaultLanguage());
+		final List<Organization> dtos = organizationServiceClient.findBeans(searchBean, null, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(child.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find parent organization"), optional.isPresent());

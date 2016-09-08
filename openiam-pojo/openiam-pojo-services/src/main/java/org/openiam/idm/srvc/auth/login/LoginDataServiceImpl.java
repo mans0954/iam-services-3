@@ -217,7 +217,7 @@ public class LoginDataServiceImpl implements LoginDataService {
                 retVal.add(entity);
             }
         } else {
-        	final List<String> ids = loginRepo.findIds(searchBean, new PageRequest(Math.floorDiv(from, size), size));
+        	final List<String> ids = loginRepo.findIds(searchBean, from, size);
         	if(CollectionUtils.isNotEmpty(ids)) {
         		retVal = loginDao.findByIds(ids);
         	}
