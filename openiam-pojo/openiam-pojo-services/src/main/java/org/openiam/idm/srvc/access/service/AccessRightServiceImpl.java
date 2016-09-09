@@ -3,7 +3,10 @@ package org.openiam.idm.srvc.access.service;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.AccessRightDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.dto.AccessRight;
@@ -20,20 +23,29 @@ public class AccessRightServiceImpl implements AccessRightService {
 	private AccessRightDAO dao;
 	@Autowired
 	private AccessRightDozerConverter converter;
+
 	@Override
 	@Transactional
-	public void save(AccessRightEntity entity) {
+	public String save(AccessRight dto) throws BasicDataServiceException {
+		if(dto == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "AccessRight is not passed as argument");
+		}
+		final AccessRightEntity entity = converter.convertToEntity(dto, true);
 		if(entity.getId() != null) {
 			dao.merge(entity);
 		} else {
 			dao.save(entity);
 		}
+		return entity.getId();
 	}
 
 	@Override
 	@Transactional
-	public void delete(String id) {
-		final AccessRightEntity entity = get(id);
+	public void delete(String id) throws BasicDataServiceException {
+		if(StringUtils.isBlank(id)) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "AccessRight ID is not passed as argument");
+		}
+		final AccessRightEntity entity = dao.findById(id);
 		if(entity != null) {
 			dao.delete(entity);
 		}
@@ -41,15 +53,15 @@ public class AccessRightServiceImpl implements AccessRightService {
 
 	@Override
 	@Transactional(readOnly=true)
-	public AccessRightEntity get(String id) {
-		return dao.findById(id);
+	public AccessRight get(String id) {
+		return converter.convertToDTO(dao.findById(id), true);
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<AccessRightEntity> findBeans(AccessRightSearchBean sb,
-			int from, int size) {
-		return dao.getByExample(sb, from, size);
+	@LocalizedServiceGet
+	public List<AccessRight> findBeans(AccessRightSearchBean sb, int from, int size, final Language language) {
+		return converter.convertToDTOList(dao.getByExample(sb, from, size), true);
 	}
 
 	@Override
@@ -60,18 +72,7 @@ public class AccessRightServiceImpl implements AccessRightService {
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<AccessRightEntity> findByIds(Collection<String> ids) {
-		return dao.findByIds(ids);
+	public List<AccessRight> findByIds(Collection<String> ids) {
+		return converter.convertToDTOList(dao.findByIds(ids), true);
 	}
-
-
-	@Override
-	@Transactional(readOnly=true)
-	@LocalizedServiceGet
-	public List<AccessRight> findBeansDTO(final AccessRightSearchBean searchBean, final int from, final int size, final Language language) {
-		final List<AccessRightEntity> entities = this.findBeans(searchBean, from, size);
-		final List<AccessRight> dtos = converter.convertToDTOList(entities, true);
-		return dtos;
-	}
-
 }
