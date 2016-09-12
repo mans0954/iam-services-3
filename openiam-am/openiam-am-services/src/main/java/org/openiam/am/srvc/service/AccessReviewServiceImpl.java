@@ -134,7 +134,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
 
     private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Date date, Language language) {
         final List<LoginEntity> loginList = loginDS.getLoginByUser(filter.getUserId());
-        final List<AccessRight> accessRights = accessRightDataService.findBeansDTO(new AccessRightSearchBean(), 0, Integer.MAX_VALUE, language);
+        final List<AccessRight> accessRights = accessRightDataService.findBeans(new AccessRightSearchBean(), 0, Integer.MAX_VALUE, language);
         UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId(), date);
 
         if(StringUtils.isNotBlank(filter.getAttestationTaskId())){

@@ -1,5 +1,6 @@
 package org.openiam.srvc.am;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -8,6 +9,14 @@ import javax.jws.WebService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.request.BaseGrudServiceRequest;
+import org.openiam.base.request.BaseSearchServiceRequest;
+import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.request.IdsServiceRequest;
+import org.openiam.base.response.AccessRightListResponse;
+import org.openiam.base.response.AccessRightResponse;
+import org.openiam.base.response.IntResponse;
+import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -20,90 +29,86 @@ import org.openiam.idm.srvc.access.service.AccessRightService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.model.AccessViewResponse;
+import org.openiam.mq.constants.AccessReviewAPI;
+import org.openiam.mq.constants.AccessRightAPI;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service("accessRightWS")
 @WebService(endpointInterface = "org.openiam.srvc.am.AccessRightDataService", targetNamespace = "urn:idm.openiam.org/srvc/access/service", portName = "AccessRightDataServicePort", serviceName = "AccessRightDataService")
-public class AccessRightDataServiceImpl extends AbstractBaseService implements AccessRightDataService {
+public class AccessRightDataServiceImpl extends AbstractApiService implements AccessRightDataService {
 
-	private static final Log log = LogFactory.getLog(AccessRightDataServiceImpl.class);
-	
-	@Autowired
-	private AccessRightService service;
-	
-	@Autowired
-	private AccessRightDozerConverter converter;
-	
+	public AccessRightDataServiceImpl() {
+		super(OpenIAMQueue.AccessRightQueue);
+	}
+
 	@Override
 	public Response save(final AccessRight dto) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-        	if(dto == null) {
-        		throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-        	}
-        	
-        	final AccessRightEntity entity = converter.convertToEntity(dto, true);
-        	service.save(entity);
-            response.setResponseValue(entity.getId());
-        } catch (BasicDataServiceException e) {
-            response.fail();
-            response.setErrorCode(e.getCode());
-            response.setErrorTokenList(e.getErrorTokenList());
-        } catch (Throwable e) {
-            log.error("Can't save or update object", e);
-            response.setErrorText(e.getMessage());
-            response.fail();
-        }
-        return response;
+		BaseGrudServiceRequest<AccessRight> request = new BaseGrudServiceRequest<>(dto);
+		StringResponse response= this.manageApiRequest(AccessRightAPI.Save, request, StringResponse.class);
+		return response.convertToBase();
 	}
 
 	@Override
 	public Response delete(String id) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-        	if(StringUtils.isBlank(id)) {
-        		throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-        	}
-        	
-        	service.delete(id);
-        } catch (BasicDataServiceException e) {
-            response.fail();
-            response.setErrorCode(e.getCode());
-            response.setErrorTokenList(e.getErrorTokenList());
-        } catch (Throwable e) {
-            log.error("Can't save or delete object", e);
-            response.setErrorText(e.getMessage());
-            response.fail();
-        }
-        return response;
+		IdServiceRequest request= new IdServiceRequest();
+		request.setId(id);
+		return this.manageApiRequest(AccessRightAPI.Delete, request, Response.class);
 	}
 
 	@Override
 	public AccessRight get(String id) {
-		final AccessRightEntity entity = service.get(id);
-		final AccessRight dto = converter.convertToDTO(entity, true);
-		return dto;
+		IdServiceRequest request= new IdServiceRequest();
+		request.setId(id);
+		AccessRightResponse response = this.manageApiRequest(AccessRightAPI.GetAccessRight, request, AccessRightResponse.class);
+		if(response.isFailure()){
+			return null;
+		}
+		return response.getAccessRight();
 	}
 
 	@Override
 	@LocalizedServiceGet
 	public List<AccessRight> findBeans(final AccessRightSearchBean searchBean, final int from, final int size, final Language language) {
-		final List<AccessRightEntity> entities = service.findBeans(searchBean, from, size);
-		final List<AccessRight> dtos = converter.convertToDTOList(entities, true);
-		return dtos;
+		BaseSearchServiceRequest<AccessRightSearchBean> request = new BaseSearchServiceRequest();
+		request.setSearchBean(searchBean);
+		request.setFrom(from);
+		request.setSize(size);
+		request.setLanguage(language);
+
+
+		AccessRightListResponse response = this.manageApiRequest(AccessRightAPI.FindBeans, request, AccessRightListResponse.class);
+		if(response.isFailure()){
+			return null;
+		}
+		return response.getAccessRightList();
 	}
 
 	@Override
 	public int count(AccessRightSearchBean searchBean) {
-		return service.count(searchBean);
+		BaseSearchServiceRequest<AccessRightSearchBean> request = new BaseSearchServiceRequest();
+		request.setSearchBean(searchBean);
+
+		IntResponse response = this.manageApiRequest(AccessRightAPI.Count, request, IntResponse.class);
+		if(response.isFailure()){
+			return 0;
+		}
+		return response.getValue();
 	}
 
 	@Override
 	public List<AccessRight> getByIds(final Collection<String> ids) {
-		final List<AccessRightEntity> entities = service.findByIds(ids);
-		final List<AccessRight> dtos = converter.convertToDTOList(entities, true);
-		return dtos;
+
+		IdsServiceRequest request= new IdsServiceRequest();
+		request.setIds(new ArrayList<>(ids));
+		AccessRightListResponse response = this.manageApiRequest(AccessRightAPI.GetByIds, request, AccessRightListResponse.class);
+		if(response.isFailure()){
+			return null;
+		}
+		return response.getAccessRightList();
 	}
 
 }

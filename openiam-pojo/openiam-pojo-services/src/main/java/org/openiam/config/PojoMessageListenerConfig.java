@@ -101,4 +101,12 @@ public class PojoMessageListenerConfig {
         return rabbitMQAdminUtils.createMessageListenerContainer("policyListenerContainer",
                 OpenIAMQueue.PolicyQueue, listener, connectionFactory);
     }
+    @Bean
+    @Autowired
+    public SimpleMessageListenerContainer accessRightListenerContainer(AccessRightMessageListener listener, ConnectionFactory connectionFactory) {
+        return rabbitMQAdminUtils.createMessageListenerContainer("accessRightListenerContainer",
+                OpenIAMQueue.AccessRightQueue, listener, connectionFactory);
+    }
+
+
 }
