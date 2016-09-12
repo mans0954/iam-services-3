@@ -27,7 +27,7 @@ public enum OpenIAMQueue {
     GroupQueue,
     ResourceQueue,
     ActivitiQueue,
-    AccessReviewQueue, ManagedSysQueue, AccessRightQueue;
+    AccessReviewQueue, ManagedSysQueue, AccessRightQueue, AMAdminQueue;
 
     private String routingKey=this.name();
     private RabbitMqExchange exchange;
