@@ -495,7 +495,6 @@ public class Transformation {
 //        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
         //  addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
-        addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
 //
         if (isCacheEnabled) {
@@ -563,6 +562,8 @@ public class Transformation {
         sipAddress = StringUtils.isNotBlank(sipAddress) && sipAddress.startsWith("sip:") ? sipAddress.substring(4) : null;
         updateLoginAndRole(sipAddress, LYNC_MNG_SYS_ID, user, "LYNC_ROLE_ID");
         addUserAttribute(user, new UserAttributeEntity("lync", StringUtils.isNotBlank(sipAddress) ? "On" : null));
+        //addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("lyncMobility", StringUtils.isNotBlank(sipAddress) ? "On" : null));
 
         //Update mdType for user
         if (StringUtils.isNotBlank(mdTypeId)) {
