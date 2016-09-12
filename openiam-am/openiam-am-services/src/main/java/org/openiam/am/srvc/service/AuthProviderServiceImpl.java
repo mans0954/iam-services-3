@@ -5,6 +5,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
+import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
+import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -15,6 +17,7 @@ import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,9 +41,13 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     @Autowired
     private AuthResourceAttributeService authResourceAttributeService;
     @Autowired
+    private AuthProviderDozerConverter authProviderDozerConverter;
+    @Autowired
     private ResourceTypeDAO resourceTypeDAO;
     @Autowired
     private ResourceService resourceService;
+
+    private Map<String, AuthProvider> authProviderCache = new HashMap<String, AuthProvider>();
 
     /*
     *==================================================
@@ -423,6 +430,36 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         for (AuthResourceAttributeMapEntity attribute : newAttributes.values()) {
             attribute.setProviderId(provider.getProviderId());
             authResourceAttributeService.saveAttributeMap(attribute);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly=true)
+    public AuthProvider getProvider(final String id) {
+        return authProviderDozerConverter.convertToDTO(authProviderDao.findById(id), true);
+    }
+
+    @Override
+    public AuthProvider getCachedAuthProvider(String id) {
+        return authProviderCache.get(id);
+    }
+
+    @Override
+    @Transactional
+    @Scheduled(fixedDelay=300000)
+    public void sweep() {
+        Map<String, AuthProvider> tempAuthProviderCache = new HashMap<String, AuthProvider>();
+        final List<AuthProviderEntity> entities = authProviderDao.findAll();
+        if(CollectionUtils.isNotEmpty(entities)) {
+            for (AuthProviderEntity ape : entities) {
+                tempAuthProviderCache.put(ape.getProviderId(), authProviderDozerConverter.convertToDTO(ape, true));
+            }
+
+            tempAuthProviderCache =
+                    entities.stream().map(e -> authProviderDozerConverter.convertToDTO(e, true)).collect(Collectors.toMap(AuthProvider::getId, Function.identity()));
+        }
+        synchronized(authProviderCache) {
+            authProviderCache = tempAuthProviderCache;
         }
     }
 }

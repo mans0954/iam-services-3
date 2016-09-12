@@ -57,6 +57,16 @@ public class AuthProviderEntity implements Serializable {
     @Lob
     private byte[] privateKey=null;
 
+    @Column(name="SUPPORTS_CERT_AUTH")
+    @Type(type = "yes_no")
+    private boolean supportsCertAuth;
+
+    @Column(name="CERT_AUTH_REGEX",length=19)
+    private String certRegex;
+
+    @Column(name="CERT_AUTH_REGEX_SCRIPT",length=19)
+    private String certGroovyScript;
+
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name="PROVIDER_TYPE", referencedColumnName = "PROVIDER_TYPE", insertable = false, updatable = false)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -216,6 +226,30 @@ public class AuthProviderEntity implements Serializable {
 		this.nextAuthProvider = nextAuthProvider;
 	}
 
+    public boolean isSupportsCertAuth() {
+        return supportsCertAuth;
+    }
+
+    public void setSupportsCertAuth(boolean supportsCertAuth) {
+        this.supportsCertAuth = supportsCertAuth;
+    }
+
+    public String getCertRegex() {
+        return certRegex;
+    }
+
+    public void setCertRegex(String certRegex) {
+        this.certRegex = certRegex;
+    }
+
+    public String getCertGroovyScript() {
+        return certGroovyScript;
+    }
+
+    public void setCertGroovyScript(String certGroovyScript) {
+        this.certGroovyScript = certGroovyScript;
+    }
+    
 	@Override
 	public int hashCode() {
 		final int prime = 31;

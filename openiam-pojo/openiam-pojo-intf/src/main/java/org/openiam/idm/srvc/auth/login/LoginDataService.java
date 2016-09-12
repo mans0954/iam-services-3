@@ -35,6 +35,7 @@ public interface LoginDataService {
     public Login getLoginDTO(final String loginId);
 
     public LoginEntity getLoginByManagedSys(String principal, String sysId);
+    Login getLoginDtoByManagedSys(String principal, String sysId);
 
     /**
      * Returns a list of Login objects for the managed system specified by the sysId

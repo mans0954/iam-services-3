@@ -4,6 +4,7 @@ import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
+import org.openiam.am.srvc.dto.AuthProvider;
 
 import java.util.List;
 
@@ -53,6 +54,8 @@ public interface AuthProviderService {
     public void updateAuthProvider(AuthProviderEntity attribute, final String requestorId) throws Exception;
     public void deleteAuthProvider(String providerId);
     public void deleteAuthProviderByType(String providerType);
+    public AuthProvider getProvider(final String id);
+    public AuthProvider getCachedAuthProvider(final String id);
 
 
     /*

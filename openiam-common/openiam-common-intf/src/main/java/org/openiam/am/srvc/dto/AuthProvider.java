@@ -29,7 +29,10 @@ import java.util.Set;
         "resource",
         "resourceAttributeMap",
         "chained",
-        "nextAuthProviderId"
+        "nextAuthProviderId",
+        "supportsCertAuth",
+        "certRegex",
+        "certGroovyScript"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider implements Serializable {
@@ -48,6 +51,11 @@ public class AuthProvider implements Serializable {
     private Set<AuthProviderAttribute> providerAttributeSet;
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
     private Resource resource;
+
+    private boolean supportsCertAuth;
+    private String certRegex;
+    private String certGroovyScript;
+
     @XmlTransient
     private Map<String, AuthProviderAttribute> providerAttributeMap=null;
 
@@ -187,6 +195,30 @@ public class AuthProvider implements Serializable {
 	public void setNextAuthProviderId(String nextAuthProviderId) {
 		this.nextAuthProviderId = nextAuthProviderId;
 	}
+
+    public boolean isSupportsCertAuth() {
+        return supportsCertAuth;
+    }
+
+    public void setSupportsCertAuth(boolean supportsCertAuth) {
+        this.supportsCertAuth = supportsCertAuth;
+    }
+
+    public String getCertRegex() {
+        return certRegex;
+    }
+
+    public void setCertRegex(String certRegex) {
+        this.certRegex = certRegex;
+    }
+
+    public String getCertGroovyScript() {
+        return certGroovyScript;
+    }
+
+    public void setCertGroovyScript(String certGroovyScript) {
+        this.certGroovyScript = certGroovyScript;
+    }
 
 	@Override
     public boolean equals(Object o) {

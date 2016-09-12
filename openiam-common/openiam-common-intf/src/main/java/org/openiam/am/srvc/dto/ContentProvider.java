@@ -37,7 +37,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         "groupingXrefs",
         "showOnApplicationPage",
         "loginURL",
-        "postbackURLParamName"
+        "postbackURLParamName",
+		"authProviderId",
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider implements Serializable {
@@ -60,6 +61,7 @@ public class ContentProvider implements Serializable {
 	private Set<AuthLevelGroupingContentProviderXref> groupingXrefs;
 	private String loginURL;
 	private String postbackURLParamName;
+	private String authProviderId;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -150,6 +152,13 @@ public class ContentProvider implements Serializable {
 			serverIdx++;
 		}
 		return retVal;
+	}
+
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
 	}
 	
 	public String getManagedSysId() {

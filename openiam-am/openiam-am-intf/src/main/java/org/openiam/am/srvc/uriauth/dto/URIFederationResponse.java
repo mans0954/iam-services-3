@@ -45,6 +45,7 @@ public class URIFederationResponse extends Response {
 	private String cpId;
 	private String loginURL;
 	private String postbackURLParamName;
+	private String authProviderId;
 	
 	public ResponseStatus getStatus() {
 		return status;
@@ -122,6 +123,14 @@ public class URIFederationResponse extends Response {
 
 	public void setPostbackURLParamName(String postbackURLParamName) {
 		this.postbackURLParamName = postbackURLParamName;
+	}
+
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
+
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
 	}
 
 	@Override

@@ -1062,6 +1062,10 @@
             <b>resourceName</b>
         </field>
         <field>
+            <a>authProvider.id</a>
+            <b>authProviderId</b>
+        </field>
+        <field>
             <a>resource.coorelatedName</a>
             <b>resourceCoorelatedName</b>
         </field>
