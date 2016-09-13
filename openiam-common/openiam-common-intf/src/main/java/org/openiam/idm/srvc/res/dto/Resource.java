@@ -124,6 +124,15 @@ public class Resource extends AbstractEntitlementsDTO {
     public void setResourceProps(Set<ResourceProp> resourceProps) {
         this.resourceProps = resourceProps;
     }
+    
+    public void addResourceProp(final ResourceProp prop) {
+    	if(prop != null) {
+	    	if(this.resourceProps == null) {
+	    		this.resourceProps = new HashSet<ResourceProp>();
+	    	}
+	    	this.resourceProps.add(prop);
+    	}
+    }
 
     public ResourceProp getResourceProperty(String propName) {
         if (resourceProps == null) {

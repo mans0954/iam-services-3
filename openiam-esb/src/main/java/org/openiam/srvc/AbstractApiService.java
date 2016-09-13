@@ -12,6 +12,7 @@ import org.openiam.mq.utils.RabbitMQSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Created by alexander on 08/08/16.
@@ -21,6 +22,9 @@ public abstract class AbstractApiService {
     private OpenIAMQueue rabbitMqQueue;
     @Autowired
     protected RabbitMQSender rabbitMQSender;
+    
+    @Autowired
+    protected ApplicationContext applicationContext;
 
     public AbstractApiService(OpenIAMQueue rabbitMqQueue){
         this.rabbitMqQueue=rabbitMqQueue;

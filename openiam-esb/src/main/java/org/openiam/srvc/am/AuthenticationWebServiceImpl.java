@@ -6,13 +6,16 @@ import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
+import org.openiam.idm.srvc.auth.service.AuthenticationModule;
 import org.openiam.mq.constants.AuthenticationAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by alexander on 11/08/16.
@@ -100,4 +103,9 @@ public class AuthenticationWebServiceImpl extends AbstractApiService implements 
         AuthStateCrudServiceRequest request = new AuthStateCrudServiceRequest(entity);
         return this.manageApiRequest(AuthenticationAPI.SaveAuthState, request, Response.class);
     }
+
+	@Override
+	public List<String> getAllLoginModuleSpringBeans() {
+		return applicationContext.getBeansOfType(AuthenticationModule.class).keySet().stream().collect(Collectors.toList());
+	}
 }

@@ -89,4 +89,6 @@ public interface AuthenticationService {
     @WebMethod
     Response save(final @WebParam(name = "entity", targetNamespace = "") AuthStateEntity entity);
 
+    @WebMethod
+    List<String> getAllLoginModuleSpringBeans();
 }

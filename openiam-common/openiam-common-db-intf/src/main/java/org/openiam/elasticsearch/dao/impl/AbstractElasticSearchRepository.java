@@ -208,11 +208,14 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	
 	@Override
 	public List<T> findByIds(Collection<String> ids, Pageable pageable) {
-		final CriteriaQuery criteria = new CriteriaQuery(new Criteria("id").in(ids));
-		criteria.addIndices(document.indexName());
-		criteria.addTypes(document.type());
-		criteria.setPageable(pageable);
-		final List<T> retval = elasticSearchTemplate.queryForList(criteria, getEntityClass()).stream().collect(Collectors.toList());
+		List<T> retval = null;
+		if(CollectionUtils.isNotEmpty(ids)) {
+			final CriteriaQuery criteria = new CriteriaQuery(new Criteria("id").in(ids));
+			criteria.addIndices(document.indexName());
+			criteria.addTypes(document.type());
+			criteria.setPageable(pageable);
+			retval = elasticSearchTemplate.queryForList(criteria, getEntityClass()).stream().collect(Collectors.toList());
+		}
 		return retval;
 	}
 	
