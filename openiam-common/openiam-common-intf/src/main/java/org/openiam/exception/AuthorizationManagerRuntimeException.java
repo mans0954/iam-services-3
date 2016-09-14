@@ -1,4 +1,4 @@
-package org.openiam.authmanager.exception;
+package org.openiam.exception;
 
 public class AuthorizationManagerRuntimeException extends RuntimeException {
 

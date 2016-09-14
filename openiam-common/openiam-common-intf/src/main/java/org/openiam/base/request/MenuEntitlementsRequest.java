@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlType;
         "newlyEntitled",
         "disentitled"
 })
-public class MenuEntitlementsRequest implements Serializable {
+public class MenuEntitlementsRequest extends BaseServiceRequest {
 
 	private String principalId;
 	private String principalType;

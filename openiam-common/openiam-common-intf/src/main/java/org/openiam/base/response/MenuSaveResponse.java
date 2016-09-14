@@ -26,5 +26,12 @@ public class MenuSaveResponse extends Response implements Serializable {
 		this.problematicMenuName = problematicMenuName;
 	}
 
-	
+	@Override
+	public String toString() {
+		final StringBuffer sb = new StringBuffer("MenuSaveResponse{");
+		sb.append(super.toString());
+		sb.append(", problematicMenuName='").append(problematicMenuName).append('\'');
+		sb.append('}');
+		return sb.toString();
+	}
 }

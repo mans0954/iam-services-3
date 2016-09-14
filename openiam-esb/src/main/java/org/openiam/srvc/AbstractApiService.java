@@ -38,4 +38,11 @@ public abstract class AbstractApiService {
     protected <ApiResponse extends Response, API extends OpenIAMAPI> ApiResponse manageApiRequest(OpenIAMQueue queue, API apiName, BaseServiceRequest apiRequest, Class<ApiResponse> apiResponseClass) {
         return rabbitMQSender.sendAndReceive(queue, apiName, apiRequest, apiResponseClass);
     }
+
+    protected <API extends OpenIAMAPI> void sendAsync(API apiName, BaseServiceRequest apiRequest){
+        sendAsync(rabbitMqQueue, apiName, apiRequest);
+    }
+    protected <API extends OpenIAMAPI> void sendAsync(OpenIAMQueue queue, API apiName, BaseServiceRequest apiRequest){
+        rabbitMQSender.send(queue, apiName, apiRequest);
+    }
 }
