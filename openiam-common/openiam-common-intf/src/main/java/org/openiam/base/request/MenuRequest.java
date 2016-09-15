@@ -9,7 +9,9 @@ import javax.xml.bind.annotation.XmlType;
         "menuRoot",
         "menuName",
 		"principalId",
-		"principalType"
+		"principalType",
+		"url",
+		"defaultResult"
 })
 public class MenuRequest extends UserRequest {
 

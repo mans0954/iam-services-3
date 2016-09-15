@@ -60,7 +60,7 @@ import com.hazelcast.core.MessageListener;
  */
 @Service("authorizationManagerService")
 @ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerService")
-public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManagerService implements AuthorizationManagerService, InitializingBean, ApplicationContextAware, Sweepable, MessageListener<String> {
+public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManagerService implements AuthorizationManagerService, InitializingBean, ApplicationContextAware, Sweepable/*, MessageListener<String>*/ {
 
 	private ApplicationContext ctx;
 	
@@ -607,11 +607,11 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		onMessage(null);
-		hazelcastConfiguration.getTopic("authManagerTopic").addMessageListener(this);
+		/*onMessage(null);
+		hazelcastConfiguration.getTopic("authManagerTopic").addMessageListener(this);*/
 	}
-	
 
+/*
 	@Override
 	public void onMessage(Message<String> message) {
 		transactionTemplate.execute(new TransactionCallback<Void>() {
@@ -623,7 +623,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 			}
 		});
 	}
-
+*/
 	@Override
 	public boolean isEntitled(String userId, String resourceId) {
 		final AuthorizationResource resource = resourceIdCache.get(resourceId);
