@@ -16,7 +16,7 @@ import javax.jws.WebService;
 			name = "AuthorizationManagerAdminWebService")
 public interface AuthorizationManagerAdminWebService {
     @WebMethod
-    UserEntitlementsMatrix getUserEntitlementsMatrix(@WebParam(name = "entityId", targetNamespace = "") String entityId,
+    public UserEntitlementsMatrix getUserEntitlementsMatrix(@WebParam(name = "entityId", targetNamespace = "") String entityId,
                                                      @WebParam(name = "date", targetNamespace = "") Date date);
 
     @WebMethod

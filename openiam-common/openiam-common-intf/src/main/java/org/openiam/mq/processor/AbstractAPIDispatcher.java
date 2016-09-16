@@ -3,12 +3,14 @@ package org.openiam.mq.processor;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.request.IdmAuditLogRequest;
+import org.openiam.base.response.MenuSaveResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.concurrent.AbstractBaseRunnableBackgroundTask;
 import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.concurrent.IBaseRunnableBackgroundTask;
+import org.openiam.exception.AuthorizationMenuException;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -97,7 +99,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
             long startTime = System.currentTimeMillis();
             log.debug("processing {} API Request {} - starting", apiRequest.getRequestApi().name(), apiRequest);
             try {
-                apiResponse = processingApiRequest(apiRequest.getRequestApi(),apiRequest.getRequestBody());
+                apiResponse = processingApiRequest(apiRequest.getRequestApi(), apiRequest.getRequestBody());
                 apiResponse.succeed();
                 auditEvent.succeed();
             } catch (PageTemplateException e) {

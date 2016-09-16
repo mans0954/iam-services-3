@@ -2,15 +2,14 @@ package org.openiam.config;
 
 import javax.servlet.ServletContext;
 
+import org.openiam.authmanager.config.BaseAuthManagerConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.mock.web.MockServletContext;
-import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 @ComponentScan(value="org.openiam", excludeFilters={

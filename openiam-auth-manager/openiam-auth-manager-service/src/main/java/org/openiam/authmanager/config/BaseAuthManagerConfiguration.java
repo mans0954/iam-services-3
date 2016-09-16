@@ -1,5 +1,6 @@
-package org.openiam.config;
+package org.openiam.authmanager.config;
 
+import org.openiam.config.BaseConfiguration;
 import org.springframework.cache.ehcache.EhCacheFactoryBean;
 import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;

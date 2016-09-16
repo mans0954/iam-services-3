@@ -1,19 +1,14 @@
-package org.openiam.authmanager.exception;
+package org.openiam.exception;
 
 import org.openiam.base.ws.ResponseCode;
 
-public class AuthorizationMenuException extends Exception {
+public class AuthorizationMenuException extends BasicDataServiceException {
 
-	private ResponseCode code;
 	private String menuName;
 	
 	public AuthorizationMenuException(final ResponseCode code, final String menuName) {
-		this.code = code;
+		super(code);
 		this.menuName = menuName;
-	}
-	
-	public ResponseCode getResponseCode() {
-		return code;
 	}
 	
 	public String getMenuName() {

@@ -216,9 +216,9 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 			final Response entResponse = resourceDataService.addUserToResource(pattern.getResourceId(), userId, null, null, null, null);
 			Assert.assertTrue(entResponse.isSuccess());
 		});
-		
-		authorizationManagerServiceClient.refreshCache();
-		authorizationManagerServiceClient.refreshCache();
+
+		refreshAuthorizationManager();
+		refreshAuthorizationManager();
 		
 		url = "http://www.foo.com";
 		method = null;
