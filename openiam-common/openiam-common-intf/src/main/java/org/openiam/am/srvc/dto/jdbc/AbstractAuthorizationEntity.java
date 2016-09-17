@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.domain.KeyEntity;
 
+import java.io.Serializable;
+
 /**
  * @author Lev Bornovalov
  * This class serves two purposes:
@@ -22,7 +24,7 @@ import org.openiam.base.domain.KeyEntity;
         "status",
         "managedSysId"
 })
-public abstract class AbstractAuthorizationEntity {
+public abstract class AbstractAuthorizationEntity implements Serializable {
 	
 	public AbstractAuthorizationEntity() {}
 	

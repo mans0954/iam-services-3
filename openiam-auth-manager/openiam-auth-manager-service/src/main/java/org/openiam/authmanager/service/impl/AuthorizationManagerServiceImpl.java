@@ -74,10 +74,6 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	private Ehcache userCache;
 	
     @Autowired
-    @Qualifier("transactionTemplate")
-    private TransactionTemplate transactionTemplate;
-    
-    @Autowired
     @Qualifier("authManagerCompilationPool")
     private ThreadPoolTaskExecutor authManagerCompilationPool;
     

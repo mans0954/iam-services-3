@@ -21,7 +21,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
         "risk",
         "coorelatedName", "metadataTypeId"
 })
-public class AuthorizationResource extends AbstractAuthorizationEntity implements Serializable {
+public class AuthorizationResource extends AbstractAuthorizationEntity {
 
     private static final long serialVersionUID = 1L;
 
