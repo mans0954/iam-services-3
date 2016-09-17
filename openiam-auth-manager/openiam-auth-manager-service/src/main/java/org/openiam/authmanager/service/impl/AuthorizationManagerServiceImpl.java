@@ -607,15 +607,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		/*onMessage(null);
-		hazelcastConfiguration.getTopic("authManagerTopic").addMessageListener(this);*/
-	}
-
-/*
-	@Override
-	public void onMessage(Message<String> message) {
 		transactionTemplate.execute(new TransactionCallback<Void>() {
-
 			@Override
 			public Void doInTransaction(TransactionStatus status) {
 				sweep();
@@ -623,7 +615,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 			}
 		});
 	}
-*/
+
 	@Override
 	public boolean isEntitled(String userId, String resourceId) {
 		final AuthorizationResource resource = resourceIdCache.get(resourceId);
