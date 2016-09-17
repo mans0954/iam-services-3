@@ -24,8 +24,14 @@ import org.openiam.authmanager.model.AuthorizationManagerDataModel;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 import org.openiam.membership.MembershipDTO;
 import org.openiam.membership.MembershipRightDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public abstract class AbstractAuthorizationManagerService {
+	@Autowired
+	@Qualifier("transactionTemplate")
+	protected TransactionTemplate transactionTemplate;
 
 	protected Set<AuthorizationAccessRight> getAccessRight(final AbstractMembershipXrefEntity<?, ?> xref, 
 														   final Map<String, AuthorizationAccessRight> rights) {

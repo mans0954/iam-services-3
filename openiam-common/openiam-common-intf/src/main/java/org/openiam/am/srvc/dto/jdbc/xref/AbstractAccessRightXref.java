@@ -1,11 +1,12 @@
 package org.openiam.am.srvc.dto.jdbc.xref;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.openiam.am.srvc.dto.jdbc.AuthorizationAccessRight;
 
-public abstract class AbstractAccessRightXref {
+public abstract class AbstractAccessRightXref implements Serializable {
 
 	private Set<AuthorizationAccessRight> rights;
 

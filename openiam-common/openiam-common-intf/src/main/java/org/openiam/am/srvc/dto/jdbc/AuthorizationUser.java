@@ -21,7 +21,7 @@ import org.openiam.am.srvc.dto.jdbc.xref.OrgUserXref;
 import org.openiam.am.srvc.dto.jdbc.xref.ResourceUserXref;
 import org.openiam.am.srvc.dto.jdbc.xref.RoleUserXref;
 
-public class AuthorizationUser extends AbstractAuthorizationEntity implements Serializable  {
+public class AuthorizationUser extends AbstractAuthorizationEntity  {
 
 	private static final Log log = LogFactory.getLog(AuthorizationUser.class);
 	
