@@ -5,7 +5,6 @@ import org.apache.commons.lang.StringUtils;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,19 +14,12 @@ import java.util.Set;
  * Date: 8/4/14.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EntitlementsSearchBean", propOrder = {
-        "parentIdSet",
-        "childIdSet",
-        "groupIdSet",
-        "roleIdSet",
-        "resourceIdSet",
-        "userIdSet",
-        "organizationIdSet"
-})
+@XmlType(name = "EntitlementsSearchBean", propOrder = {"parentIdSet", "childIdSet", "groupIdSet", "roleIdSet", "resourceIdSet", "userIdSet", "organizationIdSet", "includeAccessRights"})
 public abstract class EntitlementsSearchBean<T, KeyType> extends AbstractLanguageSearchBean<T, KeyType> {
     private Set<String> parentIdSet;
     private Set<String> childIdSet;
 
+    protected boolean includeAccessRights;
 
     /**
      * Set of Group IDs that this object belongs to.
@@ -108,136 +100,117 @@ public abstract class EntitlementsSearchBean<T, KeyType> extends AbstractLanguag
         this.organizationIdSet = organizationIdSet;
     }
 
-    public void addParentId(String parentId){
-        if(StringUtils.isNotBlank(parentId)){
-            if(this.parentIdSet==null)
-                this.parentIdSet = new HashSet<>();
+    public void addParentId(String parentId) {
+        if (StringUtils.isNotBlank(parentId)) {
+            if (this.parentIdSet == null) this.parentIdSet = new HashSet<>();
             this.parentIdSet.add(parentId);
         }
     }
-    public void addChildId(String childId){
-        if(StringUtils.isNotBlank(childId)){
-            if(this.childIdSet==null)
-                this.childIdSet = new HashSet<>();
+
+    public void addChildId(String childId) {
+        if (StringUtils.isNotBlank(childId)) {
+            if (this.childIdSet == null) this.childIdSet = new HashSet<>();
             this.childIdSet.add(childId);
         }
     }
 
 
-    public void addGroupId(String groupId){
-        if(StringUtils.isNotBlank(groupId)){
-            if(this.groupIdSet==null)
-                this.groupIdSet = new HashSet<>();
+    public void addGroupId(String groupId) {
+        if (StringUtils.isNotBlank(groupId)) {
+            if (this.groupIdSet == null) this.groupIdSet = new HashSet<>();
             this.groupIdSet.add(groupId);
         }
     }
-    public void addRoleId(String roleId){
-        if(StringUtils.isNotBlank(roleId)){
-            if(this.roleIdSet==null)
-                this.roleIdSet = new HashSet<>();
+
+    public void addRoleId(String roleId) {
+        if (StringUtils.isNotBlank(roleId)) {
+            if (this.roleIdSet == null) this.roleIdSet = new HashSet<>();
             this.roleIdSet.add(roleId);
         }
     }
-    public void addResourceId(String resourceId){
-        if(StringUtils.isNotBlank(resourceId)){
-            if(this.resourceIdSet==null)
-                this.resourceIdSet = new HashSet<>();
+
+    public void addResourceId(String resourceId) {
+        if (StringUtils.isNotBlank(resourceId)) {
+            if (this.resourceIdSet == null) this.resourceIdSet = new HashSet<>();
             this.resourceIdSet.add(resourceId);
         }
     }
-    public void addUserId(String userId){
-        if(StringUtils.isNotBlank(userId)){
-            if(this.userIdSet==null)
-                this.userIdSet = new HashSet<>();
+
+    public void addUserId(String userId) {
+        if (StringUtils.isNotBlank(userId)) {
+            if (this.userIdSet == null) this.userIdSet = new HashSet<>();
             this.userIdSet.add(userId);
         }
     }
-    public void addOrganizationId(String organizationId){
-        if(StringUtils.isNotBlank(organizationId)){
-            if(this.organizationIdSet==null)
-                this.organizationIdSet = new HashSet<>();
+
+    public void addOrganizationId(String organizationId) {
+        if (StringUtils.isNotBlank(organizationId)) {
+            if (this.organizationIdSet == null) this.organizationIdSet = new HashSet<>();
             this.organizationIdSet.add(organizationId);
         }
     }
 
     public void addOrganizationIdList(final Collection<String> organizationIdList) {
-        if(organizationIdList != null) {
-            if(this.organizationIdSet==null) {
+        if (organizationIdList != null) {
+            if (this.organizationIdSet == null) {
                 this.organizationIdSet = new HashSet<String>();
             }
             this.organizationIdSet.addAll(organizationIdList);
         }
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result
-				+ ((childIdSet == null) ? 0 : childIdSet.hashCode());
-		result = prime * result
-				+ ((groupIdSet == null) ? 0 : groupIdSet.hashCode());
-		result = prime
-				* result
-				+ ((organizationIdSet == null) ? 0 : organizationIdSet
-						.hashCode());
-		result = prime * result
-				+ ((parentIdSet == null) ? 0 : parentIdSet.hashCode());
-		result = prime * result
-				+ ((resourceIdSet == null) ? 0 : resourceIdSet.hashCode());
-		result = prime * result
-				+ ((roleIdSet == null) ? 0 : roleIdSet.hashCode());
-		result = prime * result
-				+ ((userIdSet == null) ? 0 : userIdSet.hashCode());
-		return result;
-	}
+    public boolean isIncludeAccessRights() {
+        return includeAccessRights;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		EntitlementsSearchBean other = (EntitlementsSearchBean) obj;
-		if (childIdSet == null) {
-			if (other.childIdSet != null)
-				return false;
-		} else if (!childIdSet.equals(other.childIdSet))
-			return false;
-		if (groupIdSet == null) {
-			if (other.groupIdSet != null)
-				return false;
-		} else if (!groupIdSet.equals(other.groupIdSet))
-			return false;
-		if (organizationIdSet == null) {
-			if (other.organizationIdSet != null)
-				return false;
-		} else if (!organizationIdSet.equals(other.organizationIdSet))
-			return false;
-		if (parentIdSet == null) {
-			if (other.parentIdSet != null)
-				return false;
-		} else if (!parentIdSet.equals(other.parentIdSet))
-			return false;
-		if (resourceIdSet == null) {
-			if (other.resourceIdSet != null)
-				return false;
-		} else if (!resourceIdSet.equals(other.resourceIdSet))
-			return false;
-		if (roleIdSet == null) {
-			if (other.roleIdSet != null)
-				return false;
-		} else if (!roleIdSet.equals(other.roleIdSet))
-			return false;
-		if (userIdSet == null) {
-			if (other.userIdSet != null)
-				return false;
-		} else if (!userIdSet.equals(other.userIdSet))
-			return false;
-		return true;
-	}
-    
-    
+    public void setIncludeAccessRights(boolean includeAccessRights) {
+        this.includeAccessRights = includeAccessRights;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + ((childIdSet == null) ? 0 : childIdSet.hashCode());
+        result = prime * result + ((groupIdSet == null) ? 0 : groupIdSet.hashCode());
+        result = prime * result + ((organizationIdSet == null) ? 0 : organizationIdSet.hashCode());
+        result = prime * result + ((parentIdSet == null) ? 0 : parentIdSet.hashCode());
+        result = prime * result + ((resourceIdSet == null) ? 0 : resourceIdSet.hashCode());
+        result = prime * result + ((roleIdSet == null) ? 0 : roleIdSet.hashCode());
+        result = prime * result + ((userIdSet == null) ? 0 : userIdSet.hashCode());
+        return result;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (getClass() != obj.getClass()) return false;
+        EntitlementsSearchBean other = (EntitlementsSearchBean) obj;
+        if (childIdSet == null) {
+            if (other.childIdSet != null) return false;
+        } else if (!childIdSet.equals(other.childIdSet)) return false;
+        if (groupIdSet == null) {
+            if (other.groupIdSet != null) return false;
+        } else if (!groupIdSet.equals(other.groupIdSet)) return false;
+        if (organizationIdSet == null) {
+            if (other.organizationIdSet != null) return false;
+        } else if (!organizationIdSet.equals(other.organizationIdSet)) return false;
+        if (parentIdSet == null) {
+            if (other.parentIdSet != null) return false;
+        } else if (!parentIdSet.equals(other.parentIdSet)) return false;
+        if (resourceIdSet == null) {
+            if (other.resourceIdSet != null) return false;
+        } else if (!resourceIdSet.equals(other.resourceIdSet)) return false;
+        if (roleIdSet == null) {
+            if (other.roleIdSet != null) return false;
+        } else if (!roleIdSet.equals(other.roleIdSet)) return false;
+        if (userIdSet == null) {
+            if (other.userIdSet != null) return false;
+        } else if (!userIdSet.equals(other.userIdSet)) return false;
+        return true;
+    }
+
+
 }

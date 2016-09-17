@@ -4,31 +4,41 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:annotation-config />
+    <context:annotation-config/>
     <context:component-scan
-            base-package="org.openiam.idm.srvc.batch" />
+            base-package="org.openiam.idm.srvc.batch"/>
 
-    <import resource="jmsContext.xml" />
+    <import resource="jmsContext.xml"/>
 
     <bean id="reportServiceClient" class="org.openiam.idm.srvc.report.ws.ReportWebService"
-          factory-bean="reportServiceFactory" factory-method="create" />
+          factory-bean="reportServiceFactory" factory-method="create"/>
     <bean id="reportServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.report.ws.ReportWebService" />
-        <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}ReportWebService" />
+        <property name="serviceClass" value="org.openiam.idm.srvc.report.ws.ReportWebService"/>
+        <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}ReportWebService"/>
     </bean>
 
     <bean id="mailServiceClient" class="org.openiam.idm.srvc.msg.service.MailService"
-          factory-bean="mailServiceFactory" factory-method="create" />
+          factory-bean="mailServiceFactory" factory-method="create"/>
     <bean id="mailServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.msg.service.MailService" />
-        <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}EmailWebService" />
+        <property name="serviceClass" value="org.openiam.idm.srvc.msg.service.MailService"/>
+        <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}EmailWebService"/>
     </bean>
 
     <bean id="userServiceClient" class="org.openiam.idm.srvc.user.ws.UserDataWebService"
-          factory-bean="userServiceFactory" factory-method="create" lazy-init="false" />
+          factory-bean="userServiceFactory" factory-method="create" lazy-init="false"/>
     <bean id="userServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass" value="org.openiam.idm.srvc.user.ws.UserDataWebService" />
-        <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}UserDataService" />
+        <property name="serviceClass" value="org.openiam.idm.srvc.user.ws.UserDataWebService"/>
+        <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}UserDataService"/>
+    </bean>
+
+
+    <bean id="accessRightServiceClient" class="org.openiam.idm.srvc.access.service.AccessRightDataService"
+          factory-bean="accessRightServiceFactory" factory-method="create" lazy-init="false"/>
+    <bean id="accessRightServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+        <property name="serviceClass"
+                  value="org.openiam.idm.srvc.access.service.AccessRightDataService"/>
+        <property name="address"
+                  value="${openiam.service_host}${openiam.idm.ws.path}AccessRightDataService"/>
     </bean>
 
     <!--<bean id="groupServiceClient" class="org.openiam.idm.srvc.grp.ws.GroupDataWebService"
@@ -39,7 +49,7 @@
     </bean>-->
 
     <bean id="generatorExecutorService" class="java.util.concurrent.Executors" factory-method="newFixedThreadPool">
-        <constructor-arg value="5" />
+        <constructor-arg value="5"/>
     </bean>
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -49,20 +59,20 @@
                 <value>file:${confpath}/conf/datasource.properties</value>
             </list>
         </property>
-        <property name="ignoreResourceNotFound" value="true" />
+        <property name="ignoreResourceNotFound" value="true"/>
     </bean>
 
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
                 <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-                    <property name="startDelay" value="${org.openiam.subscription.threadsweep}" />
-                    <property name="repeatInterval" value="${org.openiam.subscription.threadsweep}" />
+                    <property name="startDelay" value="${org.openiam.subscription.threadsweep}"/>
+                    <property name="repeatInterval" value="${org.openiam.subscription.threadsweep}"/>
                     <property name="jobDetail">
                         <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-                            <property name="targetObject" ref="subscriptionDispatcher" />
-                            <property name="targetMethod" value="sweep" />
-                            <property name="concurrent" value="false" />
+                            <property name="targetObject" ref="subscriptionDispatcher"/>
+                            <property name="targetMethod" value="sweep"/>
+                            <property name="concurrent" value="false"/>
                         </bean>
                     </property>
                 </bean>

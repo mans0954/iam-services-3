@@ -29,6 +29,7 @@
     								      org.openiam.dozer.converter,
     								      org.openiam.validator,
     								      org.openiam.internationalization,
+    								      org.openiam.idm.srvc.access.domain.*,
     								      org.openiam.access.review.*"/>
 
 
@@ -265,7 +266,8 @@
                                                org.openiam.idm.srvc.prov*,
                                                org.openiam.idm.srvc.batch.domain*,
                                                org.openiam.idm.srvc.ui*,
-                                               org.openiam.idm.srvc.user.dto*
+                                               org.openiam.idm.srvc.user.dto*,
+                                               org.openiam.idm.srvc.access.domain*
                                                "/>
 
     </bean>
