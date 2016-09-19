@@ -28,7 +28,8 @@ import java.util.Set;
         "pageTemplates",
         "themeId",
         "groupingXrefs",
-        "resourceCoorelatedName"
+        "resourceCoorelatedName",
+		"authProviderId"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern implements Serializable {
@@ -45,6 +46,7 @@ public class URIPattern implements Serializable {
 	private String themeId;
 	private Set<AuthLevelGroupingURIPatternXref> groupingXrefs;
 	private String resourceCoorelatedName;
+	private String authProviderId;
 	
 	public String getId() {
 		return id;
@@ -133,6 +135,14 @@ public class URIPattern implements Serializable {
 	public void setResourceCoorelatedName(String resourceCoorelatedName) {
 		this.resourceCoorelatedName = resourceCoorelatedName;
 	}
+
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

@@ -72,6 +72,10 @@ public class URIPatternEntity implements Serializable {
 	@OrderBy("order ASC")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs;
+
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+	@JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
+	private AuthProviderEntity authProvider;
 	
 	public String getId() {
 		return id;
@@ -186,6 +190,14 @@ public class URIPatternEntity implements Serializable {
 	public void setGroupingXrefs(
 			Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs) {
 		this.groupingXrefs = groupingXrefs;
+	}
+
+	public AuthProviderEntity getAuthProvider() {
+		return authProvider;
+	}
+
+	public void setAuthProvider(AuthProviderEntity authProvider) {
+		this.authProvider = authProvider;
 	}
 
 	@Override

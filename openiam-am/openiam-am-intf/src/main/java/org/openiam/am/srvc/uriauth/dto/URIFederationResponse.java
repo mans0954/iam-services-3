@@ -29,7 +29,8 @@ import org.openiam.base.ws.ResponseStatus;
 	"patternId",
 	"cpId",
 	"loginURL",
-	"postbackURLParamName"
+	"postbackURLParamName",
+	"authProviderId"
 })
 public class URIFederationResponse extends Response {
 

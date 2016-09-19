@@ -85,6 +85,10 @@ public class ContentProviderEntity implements Serializable {
 	@OrderBy("order ASC")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs;
+
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+	@JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=false)
+	private AuthProviderEntity authProvider;
 	
 
 	public String getId() {
@@ -217,6 +221,14 @@ public class ContentProviderEntity implements Serializable {
 	}
 	public void setPostbackURLParamName(String postbackURLParamName) {
 		this.postbackURLParamName = postbackURLParamName;
+	}
+
+	public AuthProviderEntity getAuthProvider() {
+		return authProvider;
+	}
+
+	public void setAuthProvider(AuthProviderEntity authProvider) {
+		this.authProvider = authProvider;
 	}
 
 	@Override

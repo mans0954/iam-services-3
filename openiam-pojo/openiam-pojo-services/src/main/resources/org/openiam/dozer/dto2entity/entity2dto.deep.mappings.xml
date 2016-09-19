@@ -939,6 +939,10 @@
             <a>uiTheme.id</a>
             <b>themeId</b>
         </field>
+        <field>
+            <a>authProvider.providerId</a>
+            <b>authProviderId</b>
+        </field>
     </mapping>
     <mapping>
         <class-a>org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity
@@ -1062,7 +1066,7 @@
             <b>resourceName</b>
         </field>
         <field>
-            <a>authProvider.id</a>
+            <a>authProvider.providerId</a>
             <b>authProviderId</b>
         </field>
         <field>

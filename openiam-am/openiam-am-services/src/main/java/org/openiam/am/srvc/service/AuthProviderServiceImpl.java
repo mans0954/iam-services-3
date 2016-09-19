@@ -15,6 +15,7 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service("authProviderService")
-public class AuthProviderServiceImpl implements AuthProviderService {
+public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     private final Log log = LogFactory.getLog(this.getClass());
     private static final String resourceTypeId="AUTH_PROVIDER";
 
@@ -454,9 +455,6 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             for (AuthProviderEntity ape : entities) {
                 tempAuthProviderCache.put(ape.getProviderId(), authProviderDozerConverter.convertToDTO(ape, true));
             }
-
-            tempAuthProviderCache =
-                    entities.stream().map(e -> authProviderDozerConverter.convertToDTO(e, true)).collect(Collectors.toMap(AuthProvider::getId, Function.identity()));
         }
         synchronized(authProviderCache) {
             authProviderCache = tempAuthProviderCache;
