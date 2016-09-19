@@ -82,14 +82,15 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
 
     @Override
     @Transactional
-    public void saveAttributeMap(AuthResourceAttributeMapEntity attribute) {    
+    public void saveAttributeMap(AuthResourceAttributeMapEntity attribute) {
+    	attribute.setProvider(authProviderDao.findById(attribute.getProvider().getId()));
+    	if(attribute.getAmAttribute() != null && StringUtils.isNotBlank(attribute.getAmAttribute().getId())) {
+    		attribute.setAmAttribute(authResourceAMAttributeDao.findById(attribute.getAmAttribute().getId()));
+    	} else {
+    		attribute.setAmAttribute(null);
+    	}
+    	
         if(attribute.getId() == null) {
-        	attribute.setProvider(authProviderDao.findById(attribute.getProvider().getId()));
-        	if(attribute.getAmAttribute() != null && StringUtils.isNotBlank(attribute.getAmAttribute().getId())) {
-        		attribute.setAmAttribute(authResourceAMAttributeDao.findById(attribute.getAmAttribute().getId()));
-        	} else {
-        		attribute.setAmAttribute(null);
-        	}
         	authResourceAttributeMapDao.save(attribute);
         } else {
         	authResourceAttributeMapDao.merge(attribute);

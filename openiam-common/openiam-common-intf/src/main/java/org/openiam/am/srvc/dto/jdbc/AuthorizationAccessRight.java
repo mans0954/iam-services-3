@@ -2,7 +2,9 @@ package org.openiam.am.srvc.dto.jdbc;
 
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 
-public class AuthorizationAccessRight {
+import java.io.Serializable;
+
+public class AuthorizationAccessRight implements Serializable {
 
 	private String name;
 	private String id;

@@ -34,12 +34,12 @@ public class AuthResourceAttributeMapEntity extends AbstractKeyNameEntity {
     @Column(name="ATTRIBUTE_TYPE", length=32, nullable = false)
     private SsoAttributeType attributeType;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = false)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)    
 	private AuthProviderEntity provider;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, optional = true)
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, optional = true)
     @JoinColumn(name="AM_RES_ATTRIBUTE_ID", referencedColumnName = "AM_RES_ATTRIBUTE_ID", insertable = true, updatable = true, nullable=true)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)    
 	private AuthResourceAMAttributeEntity amAttribute;

@@ -1,8 +1,9 @@
 package org.openiam.base.response;
 
+import java.io.Serializable;
 import java.util.Set;
 
-public class SetStringResponse {
+public class SetStringResponse implements Serializable {
 	
 	public SetStringResponse() {}
 	

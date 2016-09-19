@@ -17,6 +17,8 @@ import org.openiam.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
 @Service("authorizationManagerAdminService")
 public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationManagerService implements AuthorizationManagerAdminService {
@@ -531,9 +533,16 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
    		  	});
 		
    		  	groupIds.remove(groupId); /* already did the check for direct entitlements */
-   		  	userIds.addAll(userDAO.getUserIdsForGroups(groupIds, 0, Integer.MAX_VALUE));
-   		  	userIds.addAll(userDAO.getUserIdsForRoles(roleIds, 0, Integer.MAX_VALUE));
-   		  	userIds.addAll(userDAO.getUserIdsForOrganizations(orgIds, 0, Integer.MAX_VALUE));
+			transactionTemplate.execute(new TransactionCallback<Void>() {
+				@Override
+				public Void doInTransaction(TransactionStatus status) {
+					userIds.addAll(userDAO.getUserIdsForGroups(groupIds, 0, Integer.MAX_VALUE));
+					userIds.addAll(userDAO.getUserIdsForRoles(roleIds, 0, Integer.MAX_VALUE));
+					userIds.addAll(userDAO.getUserIdsForOrganizations(orgIds, 0, Integer.MAX_VALUE));
+					return null;
+				}
+			});
+
     	}
     	return userIds;
 	}
@@ -660,10 +669,18 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 	   		  });
 			
 	   		  resourceIds.remove(resourceId); /* already did the check for direct entitlements */
-	   		  userIds.addAll(userDAO.getUserIdsForGroups(groupIds, 0, Integer.MAX_VALUE));
-	   		  userIds.addAll(userDAO.getUserIdsForRoles(roleIds, 0, Integer.MAX_VALUE));
-	   		  userIds.addAll(userDAO.getUserIdsForResources(resourceIds, 0, Integer.MAX_VALUE));
-	   		  userIds.addAll(userDAO.getUserIdsForOrganizations(orgIds, 0, Integer.MAX_VALUE));
+
+			  transactionTemplate.execute(new TransactionCallback<Void>() {
+				  @Override
+				  public Void doInTransaction(TransactionStatus status) {
+					  userIds.addAll(userDAO.getUserIdsForGroups(groupIds, 0, Integer.MAX_VALUE));
+					  userIds.addAll(userDAO.getUserIdsForRoles(roleIds, 0, Integer.MAX_VALUE));
+					  userIds.addAll(userDAO.getUserIdsForResources(resourceIds, 0, Integer.MAX_VALUE));
+					  userIds.addAll(userDAO.getUserIdsForOrganizations(orgIds, 0, Integer.MAX_VALUE));
+					  return null;
+				  }
+			  });
+
 		}
 		return userIds;
 	}
