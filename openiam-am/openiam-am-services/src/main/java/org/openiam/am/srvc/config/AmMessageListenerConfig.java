@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.config;
 
 import org.openiam.am.srvc.mq.AccessReviewListener;
+import org.openiam.am.srvc.mq.AuthProviderListener;
 import org.openiam.am.srvc.mq.URIFederationListener;
 import org.openiam.mq.*;
 import org.openiam.mq.constants.OpenIAMQueue;
@@ -33,5 +34,13 @@ public class AmMessageListenerConfig {
         return rabbitMQAdminUtils.createMessageListenerContainer("accessReviewListenerContainer",
                 OpenIAMQueue.AccessReviewQueue,  listener, connectionFactory);
     }
+
+    @Bean
+    @Autowired
+    public SimpleMessageListenerContainer authProviderListenerContainer(AuthProviderListener listener, ConnectionFactory connectionFactory) {
+        return rabbitMQAdminUtils.createMessageListenerContainer("authProviderListenerContainer",
+                OpenIAMQueue.AuthProviderQueue,  listener, connectionFactory);
+    }
+
 
 }
