@@ -28,7 +28,8 @@ public class ResourceTypeEntity extends KeyEntity {
     private String description;
 
     @Column(name = "PROVISION_RESOURCE")
-    private Integer provisionResource;
+    @Type(type = "yes_no")
+    private boolean provisionResource = true;
 
     @Column(name = "PROCESS_NAME", length = 80)
     private String processName;
@@ -46,9 +47,6 @@ public class ResourceTypeEntity extends KeyEntity {
     @Column(name = "SEARCHABLE")
     @Type(type = "yes_no")
     private boolean searchable = true;
-
-    @Transient
-    private boolean selectAll;
     
     @Transient
     @InternationalizedCollection(targetField="displayName")
@@ -80,15 +78,15 @@ public class ResourceTypeEntity extends KeyEntity {
         this.description = description;
     }
 
-    public Integer getProvisionResource() {
-        return provisionResource;
-    }
+    public boolean isProvisionResource() {
+		return provisionResource;
+	}
 
-    public void setProvisionResource(Integer provisionResource) {
-        this.provisionResource = provisionResource;
-    }
+	public void setProvisionResource(boolean provisionResource) {
+		this.provisionResource = provisionResource;
+	}
 
-    public String getProcessName() {
+	public String getProcessName() {
         return processName;
     }
 
@@ -144,78 +142,60 @@ public class ResourceTypeEntity extends KeyEntity {
         this.languageMappings = languageMappings;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((description == null) ? 0 : description.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((processName == null) ? 0 : processName.hashCode());
-        result = prime * result + ((provisionResource == null) ? 0 : provisionResource.hashCode());
-        result = prime * result + (searchable ? 1231 : 1237);
-        result = prime * result + (supportsHierarchy ? 1231 : 1237);
-        result = prime * result + ((url == null) ? 0 : url.hashCode());
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((imageType == null) ? 0 : imageType.hashCode());
+		result = prime * result
+				+ ((processName == null) ? 0 : processName.hashCode());
+		result = prime * result + (provisionResource ? 1231 : 1237);
+		result = prime * result + (searchable ? 1231 : 1237);
+		result = prime * result + (supportsHierarchy ? 1231 : 1237);
+		result = prime * result + ((url == null) ? 0 : url.hashCode());
+		return result;
+	}
 
-    public boolean getSelectAll() {
-        return selectAll;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceTypeEntity other = (ResourceTypeEntity) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (imageType == null) {
+			if (other.imageType != null)
+				return false;
+		} else if (!imageType.equals(other.imageType))
+			return false;
+		if (processName == null) {
+			if (other.processName != null)
+				return false;
+		} else if (!processName.equals(other.processName))
+			return false;
+		if (provisionResource != other.provisionResource)
+			return false;
+		if (searchable != other.searchable)
+			return false;
+		if (supportsHierarchy != other.supportsHierarchy)
+			return false;
+		if (url == null) {
+			if (other.url != null)
+				return false;
+		} else if (!url.equals(other.url))
+			return false;
+		return true;
+	}
 
-    public void setSelectAll(boolean isSelectAll) {
-        this.selectAll = isSelectAll;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ResourceTypeEntity other = (ResourceTypeEntity) obj;
-        if (description == null) {
-            if (other.description != null)
-                return false;
-        } else if (!description.equals(other.description))
-            return false;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (processName == null) {
-            if (other.processName != null)
-                return false;
-        } else if (!processName.equals(other.processName))
-            return false;
-        if (provisionResource == null) {
-            if (other.provisionResource != null)
-                return false;
-        } else if (!provisionResource.equals(other.provisionResource))
-            return false;
-        if (searchable != other.searchable)
-            return false;
-        if (supportsHierarchy != other.supportsHierarchy)
-            return false;
-        if (url == null) {
-            if (other.url != null)
-                return false;
-        } else if (!url.equals(other.url))
-            return false;
-        return true;
-    }
-
-    public ResourceTypeEntity(String id, String description, String metadataTypeId, Integer provisionResource,
-            String processName, boolean supportsHierarchy, boolean searchable) {
-        super();
-        this.id = id;
-        this.description = description;
-        this.provisionResource = provisionResource;
-        this.processName = processName;
-        this.supportsHierarchy = supportsHierarchy;
-        this.searchable = searchable;
-    }
-
+   
 }

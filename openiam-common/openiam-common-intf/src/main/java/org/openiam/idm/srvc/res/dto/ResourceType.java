@@ -36,7 +36,7 @@ import org.openiam.internationalization.InternationalizedCollection;
 public class ResourceType extends KeyDTO {
 
     private String description;
-    private Integer provisionResource;
+    private boolean provisionResource = true;
     private String processName;
     private boolean supportsHierarchy;
     private boolean searchable = true;
@@ -67,15 +67,15 @@ public class ResourceType extends KeyDTO {
         this.description = description;
     }
 
-    public Integer getProvisionResource() {
-        return this.provisionResource;
-    }
+    public boolean isProvisionResource() {
+		return provisionResource;
+	}
 
-    public void setProvisionResource(Integer provisionResource) {
-        this.provisionResource = provisionResource;
-    }
+	public void setProvisionResource(boolean provisionResource) {
+		this.provisionResource = provisionResource;
+	}
 
-    public String getProcessName() {
+	public String getProcessName() {
         return this.processName;
     }
 
@@ -124,65 +124,59 @@ public class ResourceType extends KeyDTO {
 	}
 
 	@Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((description == null) ? 0 : description.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((processName == null) ? 0 : processName.hashCode());
-        result = prime * result + ((provisionResource == null) ? 0 : provisionResource.hashCode());
-        result = prime * result + (searchable ? 1231 : 1237);
-        result = prime * result + (supportsHierarchy ? 1231 : 1237);
-        result = prime * result + ((url == null) ? 0 : url.hashCode());
-        return result;
-    }
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((imageType == null) ? 0 : imageType.hashCode());
+		result = prime * result
+				+ ((processName == null) ? 0 : processName.hashCode());
+		result = prime * result + (provisionResource ? 1231 : 1237);
+		result = prime * result + (searchable ? 1231 : 1237);
+		result = prime * result + (supportsHierarchy ? 1231 : 1237);
+		result = prime * result + ((url == null) ? 0 : url.hashCode());
+		return result;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ResourceType other = (ResourceType) obj;
-        if (description == null) {
-            if (other.description != null)
-                return false;
-        } else if (!description.equals(other.description))
-            return false;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (processName == null) {
-            if (other.processName != null)
-                return false;
-        } else if (!processName.equals(other.processName))
-            return false;
-        if (provisionResource == null) {
-            if (other.provisionResource != null)
-                return false;
-        } else if (!provisionResource.equals(other.provisionResource))
-            return false;
-        if (searchable != other.searchable)
-            return false;
-        if (supportsHierarchy != other.supportsHierarchy)
-            return false;
-        if (url == null) {
-            if (other.url != null)
-                return false;
-        } else if (!url.equals(other.url))
-            return false;
-        return true;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceType other = (ResourceType) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (imageType == null) {
+			if (other.imageType != null)
+				return false;
+		} else if (!imageType.equals(other.imageType))
+			return false;
+		if (processName == null) {
+			if (other.processName != null)
+				return false;
+		} else if (!processName.equals(other.processName))
+			return false;
+		if (provisionResource != other.provisionResource)
+			return false;
+		if (searchable != other.searchable)
+			return false;
+		if (supportsHierarchy != other.supportsHierarchy)
+			return false;
+		if (url == null) {
+			if (other.url != null)
+				return false;
+		} else if (!url.equals(other.url))
+			return false;
+		return true;
+	}
 
-    @Override
-    public String toString() {
-        return String
-                .format("ResourceType [id=%s, description=%s, provisionResource=%s, processName=%s, supportsHierarchy=%s, searchable=%s]",
-                        id, description, provisionResource, processName, supportsHierarchy, searchable);
-    }
-
+	
 }
