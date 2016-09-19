@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -17,6 +18,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.cert.groovy.DefaultCertToIdentityConverter;
 import org.openiam.am.srvc.dao.AuthAttributeDao;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.AuthProviderTypeDao;
@@ -30,22 +32,19 @@ import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.domain.OAuthCodeEntity;
 import org.openiam.am.srvc.domain.OAuthTokenEntity;
 import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
-import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
-import org.openiam.am.srvc.dozer.converter.OAuthCodeDozerConverter;
-import org.openiam.am.srvc.dozer.converter.OAuthTokenDozerConverter;
-import org.openiam.am.srvc.dozer.converter.OAuthUserClientXrefDozerConverter;
-import org.openiam.am.srvc.dto.AuthProvider;
-import org.openiam.am.srvc.dto.AuthProviderAttribute;
-import org.openiam.am.srvc.dto.OAuthCode;
-import org.openiam.am.srvc.dto.OAuthToken;
-import org.openiam.am.srvc.dto.OAuthUserClientXref;
+import org.openiam.am.srvc.dozer.converter.*;
+import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.searchbean.AuthAttributeSearchBean;
 import org.openiam.am.srvc.searchbean.AuthProviderSearchBean;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.EsbErrorToken;
+import org.openiam.idm.srvc.auth.spi.AbstractSMSOTPModule;
+import org.openiam.idm.srvc.auth.spi.AbstractScriptableLoginModule;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -56,8 +55,12 @@ import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
+import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +83,9 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     
     @Autowired
     private ManagedSysDAO managedSystemDAO;
+
+    @Autowired
+    private MetadataService metadataService;
     
     @Autowired
     private PolicyDAO policyDAO;
@@ -110,6 +116,15 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     
     private Map<String, AuthProvider> authProviderCache = new HashMap<String, AuthProvider>();
 
+    @Autowired
+    private AuthAttributeDozerConverter authAttributeDozerConverter;
+    @Autowired
+    private AuthProviderTypeDozerConverter authProviderTypeDozerConverter;
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
+
     /*
     *==================================================
     * AuthProviderType section
@@ -117,20 +132,24 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     */
     @Override
     @Transactional(readOnly=true)
-    public AuthProviderTypeEntity getAuthProviderType(String providerType) {
-        return authProviderTypeDao.findById(providerType);
+    public AuthProviderType getAuthProviderType(String providerType) throws BasicDataServiceException {
+        if(StringUtils.isBlank(providerType)){
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ProviderType argument is missing");
+        }
+        AuthProviderTypeEntity type = authProviderTypeDao.findById(providerType);
+        return authProviderTypeDozerConverter.convertToDTO(type, true);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AuthProviderTypeEntity> getAuthProviderTypeList() {
-        return authProviderTypeDao.findAll();
+    public List<AuthProviderType> getAuthProviderTypeList() {
+        return authProviderTypeDozerConverter.convertToDTOList(authProviderTypeDao.findAll(), true);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AuthProviderTypeEntity> getSocialAuthProviderTypeList(){
-        List<AuthProviderTypeEntity> allTypes = getAuthProviderTypeList();
+    public List<AuthProviderType> getSocialAuthProviderTypeList(){
+        List<AuthProviderTypeEntity> allTypes = authProviderTypeDao.findAll();
         List<AuthProviderTypeEntity> selectedTypes = new ArrayList<>();
         if(CollectionUtils.isNotEmpty(allTypes)){
             for(AuthProviderTypeEntity type: allTypes){
@@ -141,14 +160,16 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
                 }
             }
         }
-        return selectedTypes;
+        return authProviderTypeDozerConverter.convertToDTOList(selectedTypes, true);
     }
 
     @Override
     @Transactional
-    public void addProviderType(AuthProviderTypeEntity entity) {
-        if(entity==null)
-            throw new NullPointerException("provider type is null");
+    public void addProviderType(AuthProviderType providerType) throws BasicDataServiceException{
+        if(providerType == null || StringUtils.isBlank(providerType.getId())) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET, "provider type is null");
+        }
+        AuthProviderTypeEntity entity = authProviderTypeDozerConverter.convertToEntity(providerType, false);
         authProviderTypeDao.save(entity);
     }
 
@@ -159,11 +180,12 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     */
     @Override
     @Transactional(readOnly=true)
-    public List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, Integer size,
-                                                            Integer from) {
-        return authAttributeDao.getByExample(searchBean, from, size);
+    public List<AuthAttribute> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, Integer size, Integer from) {
+        List<AuthAttributeEntity> attributeList = authAttributeDao.getByExample(searchBean, from, size);
+        return authAttributeDozerConverter.convertToDTOList(attributeList, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
-  
+
+
     /*
     *==================================================
     *  AuthProviderEntity section
@@ -171,116 +193,247 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     */
     @Override
     @Transactional(readOnly=true)
-    public List<AuthProviderEntity> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size) {
-        return authProviderDao.getByExample(searchBean,from,size);
+    public List<AuthProvider> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size) {
+        final List<AuthProviderEntity> providerList = authProviderDao.getByExample(searchBean,from,size);
+        return authProviderDozerConverter.convertToDTOList(providerList, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
     
     @Override
     @Transactional
-    public void saveAuthProvider(AuthProviderEntity provider, final String requestorId) throws BasicDataServiceException{
-    	provider.setType(authProviderTypeDao.findById(provider.getType().getId()));
-    	if(provider.getType() == null) {
-    		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
-    	}
-    	
-    	if(!provider.getType().isHasPasswordPolicy()) {
-    		provider.setPasswordPolicy(null);
-    	} else {
-    		if(provider.getPasswordPolicy() == null || StringUtils.isBlank(provider.getPasswordPolicy().getId())) {
-    			if(provider.getType().isPasswordPolicyRequired()) {
-    				throw new IllegalArgumentException("Password Policy not set");
-    			}
-    			provider.setPasswordPolicy(null);
-    		} else {
-    			provider.setPasswordPolicy(policyDAO.findById(provider.getPasswordPolicy().getId()));
-    		}
-    	}
-    	
-    	if(!provider.getType().isHasAuthnPolicy()) {
-    		provider.setAuthenticationPolicy(null);
-    	} else {
-    		if(provider.getAuthenticationPolicy() == null || StringUtils.isBlank(provider.getAuthenticationPolicy().getId())) {
-    			if(provider.getType().isAuthnPolicyRequired()) {
-    				throw new IllegalArgumentException("Authenticaiton Policy not set");
-    			}
-    			provider.setAuthenticationPolicy(null);
-    		} else {
-    			provider.setAuthenticationPolicy(policyDAO.findById(provider.getAuthenticationPolicy().getId()));
-    		}
-    	}
-    	
-    	if(provider.getManagedSystem() != null && StringUtils.isNotBlank(provider.getManagedSystem().getId())) {
-    		provider.setManagedSystem(managedSystemDAO.findById(provider.getManagedSystem().getId()));
-    	} else {
-    		provider.setManagedSystem(null);
-    	}
-    	
+    public String saveAuthProvider(AuthProvider provider, final String requesterId) throws BasicDataServiceException {
+        if (provider == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        if (StringUtils.isBlank(provider.getProviderType())) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
+        }
+        if (StringUtils.isBlank(provider.getManagedSysId())) {
+            throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+        }
+        if (StringUtils.isBlank(provider.getName())) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
+        }
+
+        final AuthProviderTypeEntity type = authProviderTypeDao.findById(provider.getProviderType());
+        if (type == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
+        }
+
+        if (type.isUsesGroovyScript() && StringUtils.isNotBlank(provider.getGroovyScriptURL())) {
+            if (!scriptRunner.scriptExists(provider.getGroovyScriptURL())) {
+                throw new BasicDataServiceException(ResponseCode.FILE_DOES_NOT_EXIST);
+            }
+
+            try {
+                if (!(scriptRunner.instantiateClass(null, provider.getGroovyScriptURL()) instanceof AbstractScriptableLoginModule)) {
+                    final EsbErrorToken errorToken = new EsbErrorToken();
+                    errorToken.setClassName(AbstractScriptableLoginModule.class.getCanonicalName());
+                    throw new BasicDataServiceException(ResponseCode.GROOVY_CLASS_MUST_EXTEND_LOGIN_MODULE, errorToken);
+                }
+            } catch (IOException e) {
+                throw new BasicDataServiceException(ResponseCode.CANNOT_INSTANTIATE_GROOVY_CLASS, provider.getGroovyScriptURL());
+            }
+        } else {
+            provider.setGroovyScriptURL(null);
+        }
+
+        if (type.isUsesSpringBean() && StringUtils.isNotBlank(provider.getSpringBeanName())) {
+            if (!SpringContextProvider.getApplicationContext().containsBean(provider.getSpringBeanName())) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_SPRING_BEAN);
+            }
+        } else {
+            provider.setSpringBeanName(null);
+        }
+
+        if (type.isPasswordPolicyRequired()) {
+            if (StringUtils.isBlank(provider.getPasswordPolicyId())) {
+                throw new BasicDataServiceException(ResponseCode.PASSWORD_POLICY_NOT_SET);
+            }
+        }
+
+        if (type.isAuthnPolicyRequired()) {
+            if (StringUtils.isBlank(provider.getAuthnPolicyId())) {
+                throw new BasicDataServiceException(ResponseCode.AUTHN_POLICY_NOT_SET);
+            }
+        }
+
+        if (type.isSupportsSMSOTP()) {
+            if (provider.isSupportsSMSOTP()) {
+                if (CollectionUtils.isEmpty(metadataService.getPhonesWithSMSOTPEnabled())) {
+                    throw new BasicDataServiceException(ResponseCode.NO_PHONE_TYPES_WITH_OTP_ENABLED);
+                }
+            } else {
+                provider.setSupportsSMSOTP(false);
+            }
+
+            if (provider.isSupportsSMSOTP()) {
+                if (StringUtils.isBlank(provider.getSmsOTPGroovyScript())) {
+                    throw new BasicDataServiceException(ResponseCode.SMS_OTP_GROOVY_SCRIPT_REQUIRED);
+                } else {
+                    if (!scriptRunner.scriptExists(provider.getSmsOTPGroovyScript())) {
+                        throw new BasicDataServiceException(ResponseCode.FILE_DOES_NOT_EXIST);
+                    }
+
+                    try {
+                        Object groovyObj = scriptRunner.instantiateClass(null, provider.getSmsOTPGroovyScript());
+
+                        if (!(groovyObj instanceof AbstractSMSOTPModule)) {
+                            final EsbErrorToken errorToken = new EsbErrorToken();
+                            errorToken.setClassName(AbstractSMSOTPModule.class.getCanonicalName());
+                            throw new BasicDataServiceException(ResponseCode.GROOVY_CLASS_MUST_EXTEND_SMS_OTP_MODULE, errorToken);
+                        }
+                    } catch (IOException e) {
+                        throw new BasicDataServiceException(ResponseCode.CANNOT_INSTANTIATE_GROOVY_CLASS, provider.getSmsOTPGroovyScript());
+                    }
+                }
+            }
+        }
+
+        if (type.isSupportsCertAuth()) {
+            if (provider.isSupportsCertAuth()) {
+                final EsbErrorToken errorToken = new EsbErrorToken();
+                errorToken.setClassName(DefaultCertToIdentityConverter.class.getCanonicalName());
+                if (StringUtils.isNotBlank(provider.getCertGroovyScript())) {
+                    if (!scriptRunner.scriptExists(provider.getCertGroovyScript())) {
+                        throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, errorToken);
+                    }
+                    try {
+                        final Object o = scriptRunner.instantiateClass(null, provider.getCertGroovyScript());
+                        if (!(o instanceof DefaultCertToIdentityConverter)) {
+                            throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, errorToken);
+                        }
+                    } catch (IOException e) {
+                        throw new BasicDataServiceException(ResponseCode.CANNOT_INSTANTIATE_GROOVY_CLASS, provider.getCertGroovyScript());
+                    }
+                    provider.setCertRegex(null);
+                } else if (StringUtils.isNotBlank(provider.getCertRegex())) {
+                    provider.setCertGroovyScript(null);
+                } else {
+                    throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, errorToken);
+                }
+            }
+        } else {
+            provider.setSupportsCertAuth(false);
+            provider.setCertGroovyScript(null);
+            provider.setCertRegex(null);
+        }
+
+        if (provider.isSignRequest()) {
+            if ((provider.getPrivateKey() == null || provider.getPrivateKey().length == 0)) {
+                if (type.isHasPrivateKey()) {
+                    throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
+                }
+            }
+
+            if (provider.getPublicKey() == null || provider.getPublicKey().length == 0) {
+                if (type.isHasPublicKey()) {
+                    throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
+                }
+            }
+        }
+        validateAndSyncProviderAttributes(provider);
+
+        final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
+
+        entity.setType(type);
+        if (entity.getType() == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
+        }
+
+        if (!entity.getType().isHasPasswordPolicy()) {
+            entity.setPasswordPolicy(null);
+        } else {
+            if (entity.getPasswordPolicy() == null || StringUtils.isBlank(entity.getPasswordPolicy().getId())) {
+                if (entity.getType().isPasswordPolicyRequired()) {
+                    throw new BasicDataServiceException(ResponseCode.PASSWORD_POLICY_NOT_SET, "Password Policy not set");
+                }
+                entity.setPasswordPolicy(null);
+            } else {
+                entity.setPasswordPolicy(policyDAO.findById(entity.getPasswordPolicy().getId()));
+            }
+        }
+
+        if (!entity.getType().isHasAuthnPolicy()) {
+            entity.setAuthenticationPolicy(null);
+        } else {
+            if (entity.getAuthenticationPolicy() == null || StringUtils.isBlank(entity.getAuthenticationPolicy().getId())) {
+                if (entity.getType().isAuthnPolicyRequired()) {
+                    throw new BasicDataServiceException(ResponseCode.AUTH_POLICY_NOT_SET, "Authentication Policy not set");
+                }
+                entity.setAuthenticationPolicy(null);
+            } else {
+                entity.setAuthenticationPolicy(policyDAO.findById(entity.getAuthenticationPolicy().getId()));
+            }
+        }
+
+        if (entity.getManagedSystem() != null && StringUtils.isNotBlank(entity.getManagedSystem().getId())) {
+            entity.setManagedSystem(managedSystemDAO.findById(entity.getManagedSystem().getId()));
+        } else {
+            entity.setManagedSystem(null);
+        }
+
         final AuthProviderEntity dbEntity = authProviderDao.findById(provider.getId());
         // make a copy of attribute collection for the future reference
 
         Set<String> oauthScopestoSync = new HashSet<>();
-        if("OAUTH_CLIENT".equals(provider.getType().getId()) && dbEntity!=null){
+        if ("OAUTH_CLIENT".equals(entity.getType().getId()) && dbEntity != null) {
             // AM-766. Need to delete scopes from users' authorized list only if it is deleted from oauth client.
 
             final Set<AuthProviderAttributeEntity> dbAttributeEntitySet = dbEntity.getAttributes();
 
-            if(CollectionUtils.isNotEmpty(dbAttributeEntitySet)){
-                Set<String> dbOauthScopeSet=new HashSet<>();
+            if (CollectionUtils.isNotEmpty(dbAttributeEntitySet)) {
+                Set<String> dbOauthScopeSet = new HashSet<>();
                 // get OAuthClientScopes scopes for oauth client before applying changes
-                for(AuthProviderAttributeEntity dbAttr: dbAttributeEntitySet){
-                    if("OAuthClientScopes".equals(dbAttr.getAttribute().getId())){
-                        if(StringUtils.isNotBlank(dbAttr.getValue())){
-                            dbOauthScopeSet=new HashSet<>(Arrays.asList(dbAttr.getValue().split(",")));
+                for (AuthProviderAttributeEntity dbAttr : dbAttributeEntitySet) {
+                    if ("OAuthClientScopes".equals(dbAttr.getAttribute().getId())) {
+                        if (StringUtils.isNotBlank(dbAttr.getValue())) {
+                            dbOauthScopeSet = new HashSet<>(Arrays.asList(dbAttr.getValue().split(",")));
                         }
                     }
                 }
                 // if there were no scopes before then skip this part
-                if(CollectionUtils.isNotEmpty(dbOauthScopeSet)){
+                if (CollectionUtils.isNotEmpty(dbOauthScopeSet)) {
                     // get OAuthClientScopes scopes for updated oauth client
-                    Set<String> newOauthScopeSet=new HashSet<>();
-                    final Set<AuthProviderAttributeEntity> newAttributeEntitySet = provider.getAttributes();
-                    if(CollectionUtils.isNotEmpty(newAttributeEntitySet)){
-                        for(AuthProviderAttributeEntity attr: newAttributeEntitySet){
-                            if("OAuthClientScopes".equals(attr.getAttribute().getId())){
-                                if(StringUtils.isNotBlank(attr.getValue())){
-                                    newOauthScopeSet=new HashSet<>(Arrays.asList(attr.getValue().split(",")));
+                    Set<String> newOauthScopeSet = new HashSet<>();
+                    final Set<AuthProviderAttributeEntity> newAttributeEntitySet = entity.getAttributes();
+                    if (CollectionUtils.isNotEmpty(newAttributeEntitySet)) {
+                        for (AuthProviderAttributeEntity attr : newAttributeEntitySet) {
+                            if ("OAuthClientScopes".equals(attr.getAttribute().getId())) {
+                                if (StringUtils.isNotBlank(attr.getValue())) {
+                                    newOauthScopeSet = new HashSet<>(Arrays.asList(attr.getValue().split(",")));
                                 }
                             }
                         }
                     }
-
                     // compare scopes. if scope was removed then do delete
-                    for(String dbScope: dbOauthScopeSet){
-                        if(!newOauthScopeSet.contains(dbScope)){
+                    for (String dbScope : dbOauthScopeSet) {
+                        if (!newOauthScopeSet.contains(dbScope)) {
                             // the scope has been removed from oauth client
                             oauthScopestoSync.add(dbScope);
                         }
                     }
                 }
-
-
             }
         }
 
-        if(dbEntity!=null){
-        	if(dbEntity.isReadOnly()) {
-        		throw new BasicDataServiceException(ResponseCode.READONLY);
-        	}
-        	
-        	dbEntity.getResource().setURL(provider.getResource().getURL());
-        	provider.setResource(dbEntity.getResource());
-        	provider.setResourceAttributeMap(dbEntity.getResourceAttributeMap());
-        	provider.setDefaultProvider(dbEntity.isDefaultProvider());
-        	provider.setContentProviders(dbEntity.getContentProviders());
-            provider.setAuthorizedUsers(dbEntity.getAuthorizedUsers());
-            provider.setoAuthCodes(dbEntity.getoAuthCodes());
-            provider.setoAuthTokens(dbEntity.getoAuthTokens());
-        	if(CollectionUtils.isEmpty(provider.getAttributes())) {
-        		if(dbEntity.getAttributes() != null) {
-        			provider.setAttributes(dbEntity.getAttributes());
-        			provider.getAttributes().clear();
-        		}
-        	}
+        if (dbEntity != null) {
+            if (dbEntity.isReadOnly()) {
+                throw new BasicDataServiceException(ResponseCode.READONLY);
+            }
+            dbEntity.getResource().setURL(provider.getResource().getURL());
+            entity.setResource(dbEntity.getResource());
+            entity.setResourceAttributeMap(dbEntity.getResourceAttributeMap());
+            entity.setDefaultProvider(dbEntity.isDefaultProvider());
+            entity.setContentProviders(dbEntity.getContentProviders());
+            entity.setAuthorizedUsers(dbEntity.getAuthorizedUsers());
+            entity.setoAuthCodes(dbEntity.getoAuthCodes());
+            entity.setoAuthTokens(dbEntity.getoAuthTokens());
+            if (CollectionUtils.isEmpty(entity.getAttributes())) {
+                if (dbEntity.getAttributes() != null) {
+                    entity.setAttributes(dbEntity.getAttributes());
+                    entity.getAttributes().clear();
+                }
+            }
         	
         	/*
             if(provider.getPrivateKey()!=null && provider.getPrivateKey().length>0){
@@ -294,42 +447,42 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
 			*/
 
         } else {
-        	provider.setContentProviders(null);
-        	provider.setResourceAttributeMap(null);
-        	provider.setDefaultProvider(false);
+            entity.setContentProviders(null);
+            entity.setResourceAttributeMap(null);
+            entity.setDefaultProvider(false);
         }
-        
-        if(provider.getResource() == null || StringUtils.isBlank(provider.getResource().getId())) {
-        	ResourceTypeEntity resourceType = resourceTypeDAO.findById(resourceTypeId);
-            if(resourceType==null){
+
+        if (entity.getResource() == null || StringUtils.isBlank(entity.getResource().getId())) {
+            ResourceTypeEntity resourceType = resourceTypeDAO.findById(resourceTypeId);
+            if (resourceType == null) {
                 throw new NullPointerException("Cannot create resource for provider. Resource type is not found");
             }
-            
+
             final ResourceEntity resource = new ResourceEntity();
             resource.setName(System.currentTimeMillis() + "_" + provider.getName());
             resource.setResourceType(resourceType);
-            if(provider.getResource() != null) {
-            	resource.setURL(provider.getResource().getURL());
+            if (entity.getResource() != null) {
+                resource.setURL(entity.getResource().getURL());
             }
-            resourceService.save(resource, requestorId);
-            provider.setResource(resource);
+            resourceService.save(resource, requesterId);
+            entity.setResource(resource);
         }
-        provider.getResource().setCoorelatedName(provider.getName());
-        
-        if(CollectionUtils.isNotEmpty(provider.getAttributes())) {
-        	for(final Iterator<AuthProviderAttributeEntity> it = provider.getAttributes().iterator(); it.hasNext();) {
-        		final AuthProviderAttributeEntity attribute = it.next();
-        		if(StringUtils.isNotBlank(attribute.getValue())) {
-	        		if(attribute.getAttribute() != null && StringUtils.isNotBlank(attribute.getAttribute().getId())) {
-	        			attribute.setAttribute(authAttributeDao.findById(attribute.getAttribute().getId()));
-	        		} else {
-	        			attribute.setAttribute(null);
-	        		}
-	        		attribute.setProvider(provider);
-        		} else {
-        			it.remove();
-        		}
-        	}
+        entity.getResource().setCoorelatedName(provider.getName());
+
+        if (CollectionUtils.isNotEmpty(entity.getAttributes())) {
+            for (final Iterator<AuthProviderAttributeEntity> it = entity.getAttributes().iterator(); it.hasNext(); ) {
+                final AuthProviderAttributeEntity attribute = it.next();
+                if (StringUtils.isNotBlank(attribute.getValue())) {
+                    if (attribute.getAttribute() != null && StringUtils.isNotBlank(attribute.getAttribute().getId())) {
+                        attribute.setAttribute(authAttributeDao.findById(attribute.getAttribute().getId()));
+                    } else {
+                        attribute.setAttribute(null);
+                    }
+                    attribute.setProvider(entity);
+                } else {
+                    it.remove();
+                }
+            }
         }
 
         /*
@@ -344,35 +497,46 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
         	}
         }
         */
-        
-        provider.setLastModified(new Date());
-        if(provider.getId() == null) {
-        	authProviderDao.save(provider);
+
+        entity.setLastModified(new Date());
+        if (provider.getId() == null) {
+            authProviderDao.save(entity);
         } else {
-        	authProviderDao.merge(provider);
+            authProviderDao.merge(entity);
         }
         // AM-766. Need to delete scopes from users' authorized list only if it is deleted from oauth client.
-        if(CollectionUtils.isNotEmpty(oauthScopestoSync)){
+        if (CollectionUtils.isNotEmpty(oauthScopestoSync)) {
             for (String dbScope : oauthScopestoSync) {
                 oauthUserClientXrefDao.deleteByScopeId(dbScope);
             }
         }
+
+        return entity.getId();
     }
 
     @Override
     @Transactional
     public void deleteAuthProvider(String providerId) throws BasicDataServiceException {
-        AuthProviderEntity entity = authProviderDao.findById(providerId);
-        if(entity!=null){
-        	if(CollectionUtils.isNotEmpty(entity.getContentProviders())) {
-        		throw new BasicDataServiceException(ResponseCode.LINKED_TO_ONE_OR_MORE_CONTENT_PROVIDERS);
-        	}
-        	if(CollectionUtils.isNotEmpty(entity.getUriPatterns())) {
-        		throw new BasicDataServiceException(ResponseCode.LINKED_TO_ONE_OR_MORE_URI_PATTERNS);
-        	}
-        	authProviderDao.delete(entity);
-            resourceService.deleteResource(entity.getResource().getId());
+
+        if(StringUtils.isBlank(providerId)) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
         }
+        AuthProviderEntity entity = authProviderDao.findById(providerId);
+        if(entity==null){
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+        if(entity.isDefaultProvider()) {
+            throw new BasicDataServiceException(ResponseCode.CANNOT_DELETE_DEFAULT_AUTH_PROVIDER);
+        }
+
+        if(CollectionUtils.isNotEmpty(entity.getContentProviders())) {
+            throw new BasicDataServiceException(ResponseCode.LINKED_TO_ONE_OR_MORE_CONTENT_PROVIDERS);
+        }
+        if(CollectionUtils.isNotEmpty(entity.getUriPatterns())) {
+            throw new BasicDataServiceException(ResponseCode.LINKED_TO_ONE_OR_MORE_URI_PATTERNS);
+        }
+        authProviderDao.delete(entity);
+        resourceService.deleteResource(entity.getResource().getId());
     }
 
 	@Override
@@ -390,7 +554,7 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     @Override
     @Transactional(readOnly=true)
     public AuthProvider getProvider(final String id) {
-    	return authProviderDozerConverter.convertToDTO(authProviderDao.findById(id), true);
+    	return authProviderDozerConverter.convertToDTO(getAuthProvider(id), true);
     }
 
     /*
@@ -598,4 +762,34 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
 			authProviderCache = tempAuthProviderCache;
 		}
 	}
+
+    private void validateAndSyncProviderAttributes(AuthProvider provider) throws BasicDataServiceException{
+        final AuthAttributeSearchBean sb = new AuthAttributeSearchBean();
+        sb.setProviderType(provider.getProviderType());
+        final List<AuthAttributeEntity> attributeEntityList = authAttributeDao.getByExample(sb, 0, Integer.MAX_VALUE);
+//        Set<String> newAttributesIds = new HashSet<String>();
+        final Map<String, AuthProviderAttribute> attributeMap = new HashMap<String, AuthProviderAttribute>();
+
+        if(CollectionUtils.isNotEmpty(provider.getAttributes())){
+            for(final AuthProviderAttribute attr: provider.getAttributes()){
+//                newAttributesIds.add(attr.getAttributeId());
+                attributeMap.put(attr.getAttributeId(), attr);
+            }
+        }
+        for(final AuthAttributeEntity attr: attributeEntityList){
+            AuthProviderAttribute providerAttribute = attributeMap.get(attr.getId());
+            final boolean isAttributeEmpty= (providerAttribute==null || StringUtils.isEmpty(providerAttribute.getValue()));
+            if(attr.isRequired() && isAttributeEmpty)
+                throw new BasicDataServiceException(ResponseCode.AUTH_REQUIRED_PROVIDER_ATTRIBUTE_NOT_SET);
+            if(isAttributeEmpty){
+                // need to delete attribute from provider.
+                providerAttribute = new AuthProviderAttribute();
+                providerAttribute.setProviderId(provider.getId());
+                providerAttribute.setAttributeId(attr.getId());
+                providerAttribute.setValue(null);
+                providerAttribute.setId("");
+                provider.getAttributes().add(providerAttribute);
+            }
+        }
+    }
 }
