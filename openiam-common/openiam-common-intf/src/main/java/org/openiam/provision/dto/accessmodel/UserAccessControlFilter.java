@@ -40,6 +40,10 @@ public class UserAccessControlFilter {
     )
     private List<String> resourceTypes;
 
+    private String resourceFilter;
+    private String groupFIlter;
+    private String roleFilter;
+    private String commonNameFilter;
 
     public List<String> getManagedSystemNames() {
         return managedSystemNames;
@@ -79,5 +83,37 @@ public class UserAccessControlFilter {
 
     public void setResourceMetadataTypes(List<String> resourceMetadataTypes) {
         this.resourceMetadataTypes = resourceMetadataTypes;
+    }
+
+    public String getResourceFilter() {
+        return resourceFilter;
+    }
+
+    public void setResourceFilter(String resourceFilter) {
+        this.resourceFilter = resourceFilter;
+    }
+
+    public String getGroupFIlter() {
+        return groupFIlter;
+    }
+
+    public void setGroupFIlter(String groupFIlter) {
+        this.groupFIlter = groupFIlter;
+    }
+
+    public String getRoleFilter() {
+        return roleFilter;
+    }
+
+    public void setRoleFilter(String roleFilter) {
+        this.roleFilter = roleFilter;
+    }
+
+    public String getCommonNameFilter() {
+        return commonNameFilter;
+    }
+
+    public void setCommonNameFilter(String commonNameFilter) {
+        this.commonNameFilter = commonNameFilter;
     }
 }

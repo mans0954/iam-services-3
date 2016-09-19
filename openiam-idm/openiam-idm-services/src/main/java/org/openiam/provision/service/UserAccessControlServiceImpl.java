@@ -132,6 +132,10 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
             List<String> groupsMdTypeFilter = null;
             List<String> rolesMdTypeFilter = null;
             List<String> resourceMdTypeFilter = null;
+            String roleFilter = null;
+            String groupFilter = null;
+            String resourceFilter = null;
+            String commonNameFilter = null;
             if (request.getFilter() != null && request.getFilter().getManagedSystemNames() != null) {
                 managedSystemFilter = request.getFilter().getManagedSystemNames();
             }
@@ -147,19 +151,33 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
             if (request.getFilter() != null && request.getFilter().getResourceMetadataTypes() != null) {
                 resourceMdTypeFilter = request.getFilter().getResourceMetadataTypes();
             }
-
+            if (request.getFilter() != null && request.getFilter().getCommonNameFilter() != null) {
+                roleFilter = request.getFilter().getCommonNameFilter();
+                groupFilter = request.getFilter().getCommonNameFilter();
+                resourceFilter = request.getFilter().getCommonNameFilter();
+            } else {
+                if (request.getFilter() != null && request.getFilter().getRoleFilter() != null) {
+                    roleFilter = request.getFilter().getRoleFilter();
+                }
+                if (request.getFilter() != null && request.getFilter().getGroupFIlter() != null) {
+                    groupFilter = request.getFilter().getGroupFIlter();
+                }
+                if (request.getFilter() != null && request.getFilter().getResourceFilter() != null) {
+                    resourceFilter = request.getFilter().getResourceFilter();
+                }
+            }
 
             //process groups
             if (groups != null) {
-                directSet.addAll(this.processGroups(groups, matrix.getGroupMap(), managedSystemFilter, groupsMdTypeFilter));
+                directSet.addAll(this.processGroups(groups, matrix.getGroupMap(), managedSystemFilter, groupsMdTypeFilter, groupFilter));
             }
 //            //process roles
             if (roles != null) {
-                directSet.addAll(this.processRoles(roles, matrix.getRoleMap(), managedSystemFilter, rolesMdTypeFilter));
+                directSet.addAll(this.processRoles(roles, matrix.getRoleMap(), managedSystemFilter, rolesMdTypeFilter, roleFilter));
             }
             //process resources
             if (resources != null) {
-                directSet.addAll(this.processResources(resources, matrix.getResourceMap(), resourceTypeFilter, resourceMdTypeFilter));
+                directSet.addAll(this.processResources(resources, matrix.getResourceMap(), resourceTypeFilter, resourceMdTypeFilter, resourceFilter));
             }
             // if named types is true we should change managed system id and metadata type id to it's names
 
@@ -438,10 +456,13 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         }
     }
 
-    private Set<UserAccessControlMemberBean> processGroups(Map<String, Set<String>> groups, Map<String, AuthorizationGroup> groupMap, List<String> managedSystemFilter, List<String> metadataTypeFilter) {
+    private Set<UserAccessControlMemberBean> processGroups(Map<String, Set<String>> groups, Map<String, AuthorizationGroup> groupMap, List<String> managedSystemFilter, List<String> metadataTypeFilter, String nameFilter) {
         Set<UserAccessControlMemberBean> directSet = new HashSet<UserAccessControlMemberBean>();
         for (String groupKey : groups.keySet()) {
             AuthorizationGroup group = groupMap.get(groupKey);
+            if (!processNameFilter(group.getName(), nameFilter)) {
+                continue;
+            }
             if (group != null && filtered(managedSystemFilter, group.getManagedSysId()) && filtered(metadataTypeFilter, group.getMetadataTypeId())) {
                 UserAccessControlMemberBean bean = new UserAccessControlMemberBean();
                 bean.setObjectType("group");
@@ -455,10 +476,13 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         return directSet;
     }
 
-    private Set<UserAccessControlMemberBean> processRoles(Map<String, Set<String>> roles, Map<String, AuthorizationRole> roleMap, List<String> managedSystemFilter, List<String> metadataTypeFilter) {
+    private Set<UserAccessControlMemberBean> processRoles(Map<String, Set<String>> roles, Map<String, AuthorizationRole> roleMap, List<String> managedSystemFilter, List<String> metadataTypeFilter, String nameFilter) {
         Set<UserAccessControlMemberBean> directSet = new HashSet<UserAccessControlMemberBean>();
         for (String roleKey : roles.keySet()) {
             AuthorizationRole role = roleMap.get(roleKey);
+            if (!processNameFilter(role.getName(), nameFilter)) {
+                continue;
+            }
             if (role != null && filtered(managedSystemFilter, role.getManagedSysId()) && filtered(metadataTypeFilter, role.getMetadataTypeId())) {
                 UserAccessControlMemberBean bean = new UserAccessControlMemberBean();
                 bean.setObjectType("role");
@@ -473,11 +497,33 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         return directSet;
     }
 
+    private boolean processNameFilter(String name, String filter) {
+        boolean ok = false;
+        if (StringUtils.isBlank(filter) || "null".equalsIgnoreCase(filter)) {
+            ok = true;
+        } else if (name == null) {
+            ok = false;
+        } else {
+            if (StringUtils.indexOf(filter, "*") == 0) {
+                ok = name.toLowerCase().endsWith(filter.substring(1).toLowerCase());
+            } else if (StringUtils.indexOf(filter, "*") == filter.length() - 1) {
+                ok = name.toLowerCase().startsWith(filter.substring(0, filter.length() - 1).toLowerCase());
+            } else {
+                ok = name.equalsIgnoreCase(filter);
+            }
 
-    private Set<UserAccessControlMemberBean> processResources(Map<String, Set<String>> resources, Map<String, AuthorizationResource> resourceMap, List<String> resourceTypeFilter, List<String> metadataTypeFilter) {
+        }
+        return ok;
+    }
+
+
+    private Set<UserAccessControlMemberBean> processResources(Map<String, Set<String>> resources, Map<String, AuthorizationResource> resourceMap, List<String> resourceTypeFilter, List<String> metadataTypeFilter, String nameFilter) {
         Set<UserAccessControlMemberBean> directSet = new HashSet<UserAccessControlMemberBean>();
         for (String resourceKey : resources.keySet()) {
             AuthorizationResource resource = resourceMap.get(resourceKey);
+            if (!processNameFilter(resource.getName(), nameFilter)) {
+                continue;
+            }
             if (resource != null &&
                     filtered(resourceTypeFilter, resource.getResourceTypeId()) && filtered(metadataTypeFilter, resource.getMetadataTypeId())) {
                 UserAccessControlMemberBean bean = new UserAccessControlMemberBean();
