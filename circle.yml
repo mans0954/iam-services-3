@@ -15,7 +15,7 @@ dependencies:
     - sudo rabbitmqctl set_permissions -p openiam openiam ".*" ".*" ".*"
     - sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server-5.6
     - cd conf; sudo /bin/sh setup.sh
-    - sudo /bin/bash /tmp/openiam/schema/mysql/execute.sh passwd00 new_install
+    - cd /tmp/openiam/schema/mysql; sudo ./execute.sh passwd00 new_install
   override:
     - mvn install -s conf/settings.xml
     - mvn package spring-boot:repackage -f openiam-esb/pom.xml
