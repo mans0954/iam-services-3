@@ -585,4 +585,16 @@
             <b>supervisorId</b>
         </field>
     </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.access.domain.AccessRightEntity</class-a>
+        <class-b>org.openiam.idm.srvc.access.dto.AccessRight</class-b>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>languageMap</a>
+            <b>languageMap</b>
+        </field>
+    </mapping>
+
 </mappings>

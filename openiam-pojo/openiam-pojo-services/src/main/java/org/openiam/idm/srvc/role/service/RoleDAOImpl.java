@@ -8,23 +8,24 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.*;
+import org.openiam.base.TreeObjectId;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.base.TreeObjectId;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
-import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.hibernate.criterion.Projections.rowCount;
@@ -49,14 +50,14 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
     private final ConcurrentHashMap<String, TreeObjectId> rolesHierarchyIds = new ConcurrentHashMap<String, TreeObjectId>();
 
     @Override
-    public List<RoleEntity> getRolesByIdSet(Set<String> ids){
+    public List<RoleEntity> getRolesByIdSet(Set<String> ids) {
         List ret = new ArrayList<RoleEntity>();
         if (CollectionUtils.isNotEmpty(ids)) {
             // Can't use Criteria for @ElementCollection due to Hibernate bug
             // (org.hibernate.MappingException: collection was not an association)
             HibernateTemplate template = getHibernateTemplate();
             template.setCacheQueries(true);
-            String sql = String.format("FROM RoleEntity r where r.id in (\'%s\')",StringUtils.join(ids,"\',\'"));
+            String sql = String.format("FROM RoleEntity r where r.id in (\'%s\')", StringUtils.join(ids, "\',\'"));
             ret = template.find(sql);
         }
         return ret;
@@ -68,8 +69,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         if (searchBean != null && searchBean instanceof RoleSearchBean) {
             final RoleSearchBean roleSearchBean = (RoleSearchBean) searchBean;
 
-            final RoleEntity exampleEnity = roleSearchBeanConverter.convert(roleSearchBean);
-            criteria = this.getExampleCriteria(exampleEnity);
             if (roleSearchBean.hasMultipleKeys()) {
                 criteria.add(Restrictions.in(getPKfieldName(), roleSearchBean.getKeys()));
             } else if (StringUtils.isNotBlank(roleSearchBean.getKey())) {
@@ -80,8 +79,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 for (final Tuple<String, String> attribute : roleSearchBean.getAttributes()) {
                     DetachedCriteria crit = DetachedCriteria.forClass(RoleAttributeEntity.class);
                     if (StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
-                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()),
-                                Restrictions.eq("value", attribute.getValue())));
+                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()), Restrictions.eq("value", attribute.getValue())));
                     } else if (StringUtils.isNotBlank(attribute.getKey())) {
                         crit.add(Restrictions.eq("name", attribute.getKey()));
                     } else if (StringUtils.isNotBlank(attribute.getValue())) {
@@ -89,6 +87,56 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                     }
                     crit.setProjection(Projections.property("role.id"));
                     criteria.add(Subqueries.propertyIn("id", crit));
+                }
+            }
+
+            if (StringUtils.isNotEmpty(roleSearchBean.getName())) {
+                String name = roleSearchBean.getName();
+                MatchMode matchMode = null;
+                if (StringUtils.indexOf(name, "*") == 0) {
+                    matchMode = MatchMode.END;
+                    name = name.substring(1);
+                }
+                if (StringUtils.isNotBlank(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+                    name = name.substring(0, name.length() - 1);
+                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+                }
+
+                if (StringUtils.isNotBlank(name)) {
+                    if (matchMode != null) {
+                        criteria.add(Restrictions.ilike("name", name, matchMode));
+                    } else {
+                        criteria.add(Restrictions.eq("name", name));
+                    }
+                }
+            }
+
+            if (StringUtils.isNotBlank(roleSearchBean.getManagedSysId())) {
+                criteria.add(Restrictions.eq("managedSystem.id", roleSearchBean.getManagedSysId()));
+            }
+
+            if (StringUtils.isNotBlank(roleSearchBean.getAdminResourceId())) {
+                criteria.add(Restrictions.eq("adminResource.id", roleSearchBean.getAdminResourceId()));
+            }
+
+            if (StringUtils.isNotEmpty(roleSearchBean.getDescription())) {
+                String description = roleSearchBean.getDescription();
+                MatchMode descMatchMode = null;
+                if (StringUtils.indexOf(description, "*") == 0) {
+                    descMatchMode = MatchMode.END;
+                    description = description.substring(1);
+                }
+                if (StringUtils.isNotBlank(description) && StringUtils.indexOf(description, "*") == description.length() - 1) {
+                    description = description.substring(0, description.length() - 1);
+                    descMatchMode = (descMatchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+                }
+
+                if (StringUtils.isNotBlank(description)) {
+                    if (descMatchMode != null) {
+                        criteria.add(Restrictions.ilike("description", description, descMatchMode));
+                    } else {
+                        criteria.add(Restrictions.eq("description", description));
+                    }
                 }
             }
 
@@ -102,100 +150,24 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 criteria.add(Restrictions.in("gr.id", roleSearchBean.getGroupIdSet()));
             }
 
-            if (CollectionUtils.isNotEmpty(roleSearchBean.getParentIdSet())) {
-                criteria.createAlias("parentRoles", "pr");
-                criteria.add(Restrictions.in("pr.id", roleSearchBean.getParentIdSet()));
-            }
-            if (CollectionUtils.isNotEmpty(roleSearchBean.getChildIdSet())) {
-                criteria.createAlias("childRoles", "ch");
-                criteria.add(Restrictions.in("ch.id", roleSearchBean.getChildIdSet()));
-            }
             if (CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())) {
-                criteria.createAlias("resources", "res");
-                criteria.add(Restrictions.in("res.id", roleSearchBean.getResourceIdSet()));
+                criteria.createAlias("resources", "resourceXrefs").createAlias("resourceXrefs.memberEntity", "resource").add(Restrictions.in("resource.id", roleSearchBean.getResourceIdSet()));
             }
+
+            if (CollectionUtils.isNotEmpty(roleSearchBean.getChildIdSet())) {
+                criteria.createAlias("childRoles", "childXrefs").createAlias("childXrefs.memberEntity", "child").add(Restrictions.in("child.id", roleSearchBean.getChildIdSet()));
+            }
+
+            if (CollectionUtils.isNotEmpty(roleSearchBean.getParentIdSet())) {
+                criteria.createAlias("parentRoles", "parentXrefs").createAlias("parentXrefs.entity", "parent").add(Restrictions.in("parent.id", roleSearchBean.getParentIdSet()));
+            }
+
             if (CollectionUtils.isNotEmpty(roleSearchBean.getUserIdSet())) {
                 criteria.createAlias("users", "usr");
                 criteria.add(Restrictions.in("usr.id", roleSearchBean.getUserIdSet()));
             }
             if (StringUtils.isNotBlank(roleSearchBean.getAdminResourceId())) {
                 criteria.add(Restrictions.eq("adminResource.id", roleSearchBean.getAdminResourceId()));
-            }
-        }
-        criteria.setCacheable(this.cachable());
-        return criteria;
-    }
-
-    @Override
-    protected Criteria getExampleCriteria(final RoleEntity entity) {
-        final Criteria criteria = super.getCriteria();
-        if (entity != null) {
-            if (StringUtils.isNotBlank(entity.getId())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
-            } else {
-
-                if (StringUtils.isNotEmpty(entity.getName())) {
-                    String name = entity.getName();
-                    MatchMode matchMode = null;
-                    if (StringUtils.indexOf(name, "*") == 0) {
-                        matchMode = MatchMode.END;
-                        name = name.substring(1);
-                    }
-                    if (StringUtils.isNotBlank(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-                        name = name.substring(0, name.length() - 1);
-                        matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                    }
-
-                    if (StringUtils.isNotBlank(name)) {
-                        if (matchMode != null) {
-                            criteria.add(Restrictions.ilike("name", name, matchMode));
-                        } else {
-                            criteria.add(Restrictions.eq("name", name));
-                        }
-                    }
-                }
-
-                if (entity.getManagedSystem() != null && StringUtils.isNotBlank(entity.getManagedSystem().getId())) {
-                    criteria.add(Restrictions.eq("managedSystem.id", entity.getManagedSystem().getId()));
-                }
-
-                if (entity.getAdminResource() != null && StringUtils.isNotBlank(entity.getAdminResource().getId())) {
-                    criteria.add(Restrictions.eq("adminResource.id", entity.getAdminResource().getId()));
-                }
-
-                if (StringUtils.isNotEmpty(entity.getDescription())) {
-                    String description = entity.getDescription();
-                    MatchMode descMatchMode = null;
-                    if (StringUtils.indexOf(description, "*") == 0) {
-                        descMatchMode = MatchMode.END;
-                        description = description.substring(1);
-                    }
-                    if (StringUtils.isNotBlank(description) && StringUtils.indexOf(description, "*") == description.length() - 1) {
-                        description = description.substring(0, description.length() - 1);
-                        descMatchMode = (descMatchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                    }
-
-                    if (StringUtils.isNotBlank(description)) {
-                        if (descMatchMode != null) {
-                            criteria.add(Restrictions.ilike("description", description, descMatchMode));
-                        } else {
-                            criteria.add(Restrictions.eq("description", description));
-                        }
-                    }
-                }
-
-                if (CollectionUtils.isNotEmpty(entity.getResources())) {
-                    final Set<String> resourceIds = new HashSet<String>();
-                    for (final ResourceEntity resourceRole : entity.getResources()) {
-                        if (resourceRole != null && StringUtils.isNotBlank(resourceRole.getId())) {
-                            resourceIds.add(resourceRole.getId());
-                        }
-                    }
-
-                    if (CollectionUtils.isNotEmpty(resourceIds)) {
-                        criteria.createAlias("resources", "rr").add(Restrictions.in("rr.id", resourceIds));
-                    }
-                }
             }
         }
         criteria.setCacheable(this.cachable());
@@ -241,21 +213,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 this.setOderByCriteria(criteria, sb);
             }
         }
-        return (List<RoleEntity>) criteria.setCacheable(this.cachable()).list();
-    }
-
-    @Override
-    @Deprecated
-    public List<RoleEntity> getByExample(RoleEntity t, int startAt, int size) {
-        final Criteria criteria = getExampleCriteria(t);
-        if (startAt > -1) {
-            criteria.setFirstResult(startAt);
-        }
-
-        if (size > -1) {
-            criteria.setMaxResults(size);
-        }
-
         return (List<RoleEntity>) criteria.setCacheable(this.cachable()).list();
     }
 
@@ -309,8 +266,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         final Criteria criteria = super.getCriteria();
 
         if (StringUtils.isNotBlank(userId)) {
-            criteria.createAlias("users", "u")
-                    .add(Restrictions.eq("u.id", userId));
+            criteria.createAlias("users", "u").add(Restrictions.eq("u.id", userId));
         }
 
         if (StringUtils.isNotBlank(groupId)) {
@@ -373,9 +329,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
     }
 
     private Criteria getRolesForUserCriteria(final String userId, final Set<String> filter) {
-        return getCriteria().setCacheable(this.cachable())
-                .createAlias("users", "u")
-                .add(Restrictions.eq("u.id", userId));
+        return getCriteria().setCacheable(this.cachable()).createAlias("users", "u").add(Restrictions.eq("u.id", userId));
     }
 
     private List<RoleEntity> getList(Criteria criteria, int from, int size) {

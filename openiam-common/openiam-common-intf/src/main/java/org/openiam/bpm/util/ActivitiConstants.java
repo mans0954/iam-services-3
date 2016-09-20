@@ -28,7 +28,7 @@ public enum ActivitiConstants {
 	DELETABLE("Deletable"),
 	LOGIN("Login"),
 	AUDIT_LOG_ID("AuditLogId"),
-	
+	ACCESS_RIGHTS("AccessRights"),
 	LOOP_COUNTER("loopCounter"),
 	
 	CARDINALITY_OBJECT("cardinalityObject"),

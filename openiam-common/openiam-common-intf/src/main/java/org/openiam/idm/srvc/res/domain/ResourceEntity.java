@@ -3,14 +3,14 @@ package org.openiam.idm.srvc.res.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
-
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
@@ -21,11 +21,7 @@ import javax.persistence.Entity;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "RES")
@@ -60,21 +56,8 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @Enumerated(EnumType.STRING)
     private ResourceRisk risk;
 
-    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "res_to_res_membership",
-            joinColumns = {@JoinColumn(name = "MEMBER_RESOURCE_ID")},
-            inverseJoinColumns = {@JoinColumn(name = "RESOURCE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceEntity> parentResources = new HashSet<ResourceEntity>(0);
 
-    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "res_to_res_membership",
-            joinColumns = {@JoinColumn(name = "RESOURCE_ID")},
-            inverseJoinColumns = {@JoinColumn(name = "MEMBER_RESOURCE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceEntity> childResources = new HashSet<ResourceEntity>(0);
-
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="resource", orphanRemoval=true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "resource", orphanRemoval = true)
     @OrderBy("name asc")
     //@JoinColumn(name = "RESOURCE_ID")
     @Fetch(FetchMode.SUBSELECT)
@@ -83,7 +66,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     private Set<ResourcePropEntity> resourceProps = new HashSet<ResourcePropEntity>(0); // defined as a Set in Hibernate map
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "RESOURCE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
+    @JoinTable(name = "RESOURCE_USER", joinColumns = {@JoinColumn(name = "RESOURCE_ID")}, inverseJoinColumns = {@JoinColumn(name = "USER_ID")})
     private Set<UserEntity> users;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
@@ -92,9 +75,9 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
             inverseJoinColumns = {@JoinColumn(name = "GRP_ID")})
     private Set<GroupEntity> groups;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "RESOURCE_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
-    private Set<RoleEntity> roles;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "memberEntity", orphanRemoval = true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<RoleToResourceMembershipXrefEntity> roles = new HashSet<RoleToResourceMembershipXrefEntity>(0);
 
     @Column(name = "MIN_AUTH_LEVEL")
     private String minAuthLevel;
@@ -102,29 +85,39 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @Column(name = "IS_PUBLIC")
     @Type(type = "yes_no")
     private boolean isPublic;
-    
-    @Column(name = "COORELATED_NAME", length=250)
+
+    @Column(name = "COORELATED_NAME", length = 250)
     private String coorelatedName;
-    
-	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
-    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
-	private ResourceEntity adminResource;
-	
-	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @JoinColumn(name = "ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable = true)
+    private ResourceEntity adminResource;
+
+    @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy = "associationEntityId", orphanRemoval = true)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-	@Where(clause="ASSOCIATION_TYPE='RESOURCE'")
-	private Set<ApproverAssociationEntity> approverAssociations;
-	
-    
+    @Where(clause = "ASSOCIATION_TYPE='RESOURCE'")
+    private Set<ApproverAssociationEntity> approverAssociations;
+
+
     @Transient
-    @InternationalizedCollection(targetField="displayName")
+    @InternationalizedCollection(targetField = "displayName")
     private Map<String, LanguageMappingEntity> displayNameMap;
-    
+
     @Transient
     private String displayName;
 
     @OneToMany(mappedBy = "referenceId")
     private Set<LanguageMappingEntity> languageMappings;
+
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "memberEntity", orphanRemoval = true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<ResourceToResourceMembershipXrefEntity> parentResources = new HashSet<ResourceToResourceMembershipXrefEntity>(0);
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "entity", orphanRemoval = true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<ResourceToResourceMembershipXrefEntity> childResources = new HashSet<ResourceToResourceMembershipXrefEntity>(0);
+
 
     public ResourceRisk getRisk() {
         return risk;
@@ -136,33 +129,16 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     public ResourceEntity() {
     }
-    
+
     public ResourceEntity(String id) {
-    	this.id = id;
+        this.id = id;
     }
-    
-    public void addRole(final RoleEntity entity) {
-    	if(entity != null) {
-    		if(this.roles == null) {
-    			this.roles = new HashSet<RoleEntity>();
-    		}
-    		this.roles.add(entity);
-    	}
-    }
-    
-    public void remove(final RoleEntity entity) {
-    	if(entity != null) {
-    		if(this.roles != null) {
-    			this.roles.remove(entity);
-    		}
-    	}
-    }
-  
-    public Set<RoleEntity> getRoles() {
+
+    public Set<RoleToResourceMembershipXrefEntity> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<RoleEntity> roles) {
+    public void setRoles(Set<RoleToResourceMembershipXrefEntity> roles) {
         this.roles = roles;
     }
 
@@ -206,22 +182,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         this.URL = URL;
     }
 
-    public Set<ResourceEntity> getParentResources() {
-        return parentResources;
-    }
-
-    public void setParentResources(Set<ResourceEntity> parentResources) {
-        this.parentResources = parentResources;
-    }
-
-    public Set<ResourceEntity> getChildResources() {
-        return childResources;
-    }
-
-    public void setChildResources(Set<ResourceEntity> childResources) {
-        this.childResources = childResources;
-    }
-
     public Set<ResourcePropEntity> getResourceProps() {
         return resourceProps;
     }
@@ -229,22 +189,37 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     public void setResourceProps(Set<ResourcePropEntity> resourceProps) {
         this.resourceProps = resourceProps;
     }
-    
+
     public void addGroup(final GroupEntity entity) {
-    	if(entity != null) {
-    		if(this.groups == null) {
-    			this.groups = new HashSet<GroupEntity>();
-    		}
-    		this.groups.add(entity);
-    	}
+        if (entity != null) {
+            if (this.groups == null) {
+                this.groups = new HashSet<GroupEntity>();
+            }
+            this.groups.add(entity);
+        }
     }
-    
+
     public void remove(final GroupEntity entity) {
-    	if(entity != null) {
-    		if(this.groups != null) {
-    			this.groups.remove(entity);
-    		}
-    	}
+        if (entity != null) {
+            if (this.groups != null) {
+                this.groups.remove(entity);
+            }
+        }
+    }
+
+    public RoleToResourceMembershipXrefEntity getRole(final String roleId) {
+
+
+        RoleToResourceMembershipXrefEntity retVal = null;
+        if (this.getRoles() != null) {
+            for (RoleToResourceMembershipXrefEntity xrefEntity : this.getRoles()) {
+                if (xrefEntity.getEntity() != null && xrefEntity.getEntity().getId().equals(roleId)) {
+                    retVal = xrefEntity;
+                    break;
+                }
+            }
+        }
+        return retVal;
     }
 
     public Set<GroupEntity> getGroups() {
@@ -253,7 +228,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     public void setGroups(Set<GroupEntity> groups) {
         this.groups = groups;
-   }
+    }
 
     public String getMinAuthLevel() {
         return minAuthLevel;
@@ -270,78 +245,33 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     public void setIsPublic(boolean aPublic) {
         isPublic = aPublic;
     }
-    
+
     public ResourceEntity getAdminResource() {
-		return adminResource;
-	}
+        return adminResource;
+    }
 
-	public void setAdminResource(ResourceEntity adminResource) {
-		this.adminResource = adminResource;
-	}
+    public void setAdminResource(ResourceEntity adminResource) {
+        this.adminResource = adminResource;
+    }
 
-	public Set<UserEntity> getUsers() {
+    public Set<UserEntity> getUsers() {
         return users;
     }
 
     public void setUsers(Set<UserEntity> users) {
         this.users = users;
     }
-    
+
     public void addUser(final UserEntity user) {
-    	if(user != null) {
-    		if(this.users == null) {
-    			this.users = new HashSet<UserEntity>();
-    		}
-    		this.users.add(user);
-    	}
+        if (user != null) {
+            if (this.users == null) {
+                this.users = new HashSet<UserEntity>();
+            }
+            this.users.add(user);
+        }
     }
 
-    public void addParentResource(final ResourceEntity resource) {
-    	if(resource != null) {
-    		if(this.parentResources == null) {
-    			this.parentResources = new LinkedHashSet<ResourceEntity>();
-    		}
-    		this.parentResources.add(resource);
-    	}
-    }
-    
-	public void addChildResource(final ResourceEntity resource) {
-		if(resource != null) {
-			if(this.childResources == null) {
-				this.childResources = new LinkedHashSet<ResourceEntity>();
-			}
-			this.childResources.add(resource);
-		}
-	}
-	
-	public boolean hasChildResoruce(final ResourceEntity entity) {
-		boolean contains = false;
-		if(childResources != null) {
-			contains = childResources.contains(entity);
-		}
-		return contains;
-	}
-	
-	public void removeChildResource(final String resourceId) {
-		if(resourceId != null && childResources != null) {
-			for(final Iterator<ResourceEntity> it = childResources.iterator(); it.hasNext();) {
-				final ResourceEntity resource = it.next();
-				if(resource.getId().equals(resourceId)) {
-					it.remove();
-					break;
-				}
-			}
-		}
-	}
-	
-	public void removeChildResource(final ResourceEntity resource) {
-		if(resource != null) {
-			if(this.childResources != null) {
-				this.childResources.remove(resource);
-			}
-		}
-	}
-	
+
     public ResourcePropEntity getResourceProperty(String propName) {
         if (resourceProps == null) {
             return null;
@@ -353,55 +283,54 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         }
         return null;
     }
-    
+
     public void addResourceProperty(final ResourcePropEntity property) {
-    	if(this.resourceProps == null) {
-    		this.resourceProps = new LinkedHashSet<ResourcePropEntity>();
-    	}
-    	this.resourceProps.add(property);
+        if (this.resourceProps == null) {
+            this.resourceProps = new LinkedHashSet<ResourcePropEntity>();
+        }
+        this.resourceProps.add(property);
     }
 
-	public Set<ApproverAssociationEntity> getApproverAssociations() {
-		return approverAssociations;
-	}
+    public Set<ApproverAssociationEntity> getApproverAssociations() {
+        return approverAssociations;
+    }
 
-	public void setApproverAssociations(
-			Set<ApproverAssociationEntity> approverAssociations) {
-		this.approverAssociations = approverAssociations;
-	}
-	
-	public void addApproverAssociation(final ApproverAssociationEntity entity) {
-		if(entity != null) {
-			if(this.approverAssociations == null) {
-				this.approverAssociations = new HashSet<ApproverAssociationEntity>();
-			}
-			this.approverAssociations.add(entity);
-		}
-	}
+    public void setApproverAssociations(Set<ApproverAssociationEntity> approverAssociations) {
+        this.approverAssociations = approverAssociations;
+    }
 
-	public Map<String, LanguageMappingEntity> getDisplayNameMap() {
-		return displayNameMap;
-	}
+    public void addApproverAssociation(final ApproverAssociationEntity entity) {
+        if (entity != null) {
+            if (this.approverAssociations == null) {
+                this.approverAssociations = new HashSet<ApproverAssociationEntity>();
+            }
+            this.approverAssociations.add(entity);
+        }
+    }
 
-	public void setDisplayNameMap(Map<String, LanguageMappingEntity> displayNameMap) {
-		this.displayNameMap = displayNameMap;
-	}
+    public Map<String, LanguageMappingEntity> getDisplayNameMap() {
+        return displayNameMap;
+    }
 
-	public String getDisplayName() {
-		return displayName;
-	}
+    public void setDisplayNameMap(Map<String, LanguageMappingEntity> displayNameMap) {
+        this.displayNameMap = displayNameMap;
+    }
 
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
-	}
+    public String getDisplayName() {
+        return displayName;
+    }
 
-	public String getCoorelatedName() {
-		return coorelatedName;
-	}
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
 
-	public void setCoorelatedName(String coorelatedName) {
-		this.coorelatedName = coorelatedName;
-	}
+    public String getCoorelatedName() {
+        return coorelatedName;
+    }
+
+    public void setCoorelatedName(String coorelatedName) {
+        this.coorelatedName = coorelatedName;
+    }
 
     public Set<LanguageMappingEntity> getLanguageMappings() {
         return languageMappings;
@@ -410,6 +339,22 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
         this.languageMappings = languageMappings;
     }
+
+    public void removeChildResource(final ResourceEntity entity) {
+        if (entity != null) {
+            if (this.childResources != null) {
+                Iterator<ResourceToResourceMembershipXrefEntity> entityIterator = childResources.iterator();
+                while (entityIterator.hasNext()) {
+                    ResourceToResourceMembershipXrefEntity xrefEntity = entityIterator.next();
+                    if (xrefEntity.getMemberEntity().getId().equals(entity.getId())) {
+                        entityIterator.remove();
+                    }
+                }
+//                this.childResources.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+            }
+        }
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -452,4 +397,87 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         return result;
     }
+
+    public Set<ResourceToResourceMembershipXrefEntity> getParentResources() {
+        return parentResources;
+    }
+
+    public void setParentResources(Set<ResourceToResourceMembershipXrefEntity> parentResources) {
+        this.parentResources = parentResources;
+    }
+
+    public Set<ResourceToResourceMembershipXrefEntity> getChildResources() {
+        return childResources;
+    }
+
+    public void setChildResources(Set<ResourceToResourceMembershipXrefEntity> childResources) {
+        this.childResources = childResources;
+    }
+
+    public ResourceToResourceMembershipXrefEntity getChild(final String childId) {
+        ResourceToResourceMembershipXrefEntity retVal = null;
+        if (this.getChildResources() != null) {
+            for (ResourceToResourceMembershipXrefEntity e : this.getChildResources()) {
+                if (childId.equals(e.getMemberEntity().getId())) {
+                    retVal = e;
+                    break;
+                }
+            }
+        }
+        return retVal;
+    }
+
+
+    public ResourceToResourceMembershipXrefEntity getParent(final String parentId) {
+        ResourceToResourceMembershipXrefEntity retVal = null;
+        if (this.getParentResources() != null) {
+            for (ResourceToResourceMembershipXrefEntity e : this.getParentResources()) {
+                if (parentId.equals(e.getEntity().getId())) {
+                    retVal = e;
+                    break;
+                }
+            }
+        }
+        return retVal;
+    }
+
+
+    public void addChildResource(final ResourceEntity resource, final Collection<AccessRightEntity> rights) {
+        if (resource != null) {
+            if (this.childResources == null) {
+                this.childResources = new LinkedHashSet<ResourceToResourceMembershipXrefEntity>();
+            }
+            ResourceToResourceMembershipXrefEntity theXref = null;
+            for (final ResourceToResourceMembershipXrefEntity xref : this.childResources) {
+                if (xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(resource.getId())) {
+                    theXref = xref;
+                    break;
+                }
+            }
+
+            if (theXref == null) {
+                theXref = new ResourceToResourceMembershipXrefEntity();
+                theXref.setEntity(this);
+                theXref.setMemberEntity(resource);
+            }
+            if (rights != null) {
+                theXref.setRights(new HashSet<AccessRightEntity>(rights));
+            }
+            this.childResources.add(theXref);
+        }
+    }
+
+    public boolean hasChildResource(final ResourceEntity entity) {
+        boolean contains = false;
+        if (childResources != null) {
+            for (ResourceToResourceMembershipXrefEntity e : childResources) {
+                if (e.getMemberEntity().getId().equals(entity.getId())) {
+                    contains = true;
+                    break;
+                }
+            }
+        }
+        return contains;
+    }
+
 }

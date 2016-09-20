@@ -15,7 +15,7 @@ public class JDBCRoleDAOImpl extends AbstractJDBCDao implements RoleDAO {
 
 	private static final RowMapper<AuthorizationRole> rowMapper = new RoleMapper();
 	
-	private String GET_ALL_ROLES = "SELECT ROLE_ID AS ROLE_ID, ROLE_NAME AS NAME, DESCRIPTION AS DESCRIPTION, STATUS AS STATUS, MANAGED_SYS_ID AS MANAGED_SYS_ID, ADMIN_RESOURCE_ID AS ADMIN_RESOURCE_ID FROM %s.ROLE";
+	private String GET_ALL_ROLES = "SELECT TYPE_ID AS TYPE_ID, ROLE_ID AS ROLE_ID, ROLE_NAME AS NAME, DESCRIPTION AS DESCRIPTION, STATUS AS STATUS, MANAGED_SYS_ID AS MANAGED_SYS_ID, ADMIN_RESOURCE_ID AS ADMIN_RESOURCE_ID FROM %s.ROLE";
 	
 	@Override
 	public void initSqlStatements() {
@@ -41,6 +41,7 @@ public class JDBCRoleDAOImpl extends AbstractJDBCDao implements RoleDAO {
             role.setStatus(rs.getString("STATUS"));
             role.setManagedSysId(rs.getString("MANAGED_SYS_ID"));
 			role.setAdminResourceId(rs.getString("ADMIN_RESOURCE_ID"));
+			role.setMetadataTypeId(rs.getString("TYPE_ID"));
 			return role;
 		}
 	}

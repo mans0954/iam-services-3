@@ -10,6 +10,7 @@ import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -198,7 +199,7 @@ public interface RoleDataService {
 
     public int getNumOfChildRoles(final String roleId, final String requesterId);
 
-    public void addChildRole(final String roleId, final String childRoleId);
+    public void addChildRole(final String id, final String childRoleId, final Set<String> rights) throws BasicDataServiceException;
 
     public void removeChildRole(final String roleId, final String childRoleId);
 

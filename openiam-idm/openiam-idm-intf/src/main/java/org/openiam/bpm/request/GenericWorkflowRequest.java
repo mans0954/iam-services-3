@@ -20,23 +20,7 @@ import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "GenericWorkflowRequest", propOrder = {
-        "name",
-        "activitiRequestType",
-        "associationId",
-        "associationType",
-        "memberAssociationId",
-        "memberAssociationType",
-        "description",
-        "parameters",
-        "customApproverAssociationIds",
-        "customApproverIds",
-        "isCustomApproversSequential",
-        "userCentricUserId",
-        "jsonSerializedParams",
-        "additionalApproverIds",
-        "deletable"
-})
+@XmlType(name = "GenericWorkflowRequest", propOrder = {"name", "activitiRequestType", "associationId", "associationType", "memberAssociationId", "memberAssociationType", "description", "parameters", "customApproverAssociationIds", "customApproverIds", "isCustomApproversSequential", "userCentricUserId", "jsonSerializedParams", "additionalApproverIds", "deletable", "accessRights"})
 public class GenericWorkflowRequest extends BaseObject {
 
     private String associationId;
@@ -56,6 +40,15 @@ public class GenericWorkflowRequest extends BaseObject {
     private boolean deletable = true;
     private boolean isCustomApproversSequential;
     private Set<String> additionalApproverIds;
+    private Set<String> accessRights;
+
+    public Set<String> getAccessRights() {
+        return accessRights;
+    }
+
+    public void setAccessRights(Set<String> accessRights) {
+        this.accessRights = accessRights;
+    }
 
     public String getActivitiRequestType() {
         return activitiRequestType;
@@ -120,8 +113,7 @@ public class GenericWorkflowRequest extends BaseObject {
         return customApproverAssociationIds;
     }
 
-    public void setCustomApproverAssociationIds(
-            List<String> customApproverAssociationIds) {
+    public void setCustomApproverAssociationIds(List<String> customApproverAssociationIds) {
         this.customApproverAssociationIds = customApproverAssociationIds;
     }
 
