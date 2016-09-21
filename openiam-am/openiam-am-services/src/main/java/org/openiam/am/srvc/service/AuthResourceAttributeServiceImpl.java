@@ -10,8 +10,14 @@ import org.openiam.am.srvc.dao.AuthResourceAttributeMapDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity;
 import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
+import org.openiam.am.srvc.dozer.converter.AuthResourceAMAttributeDozerConverter;
+import org.openiam.am.srvc.dozer.converter.AuthResourceAttributeMapDozerConverter;
+import org.openiam.am.srvc.dto.AuthResourceAMAttribute;
+import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
 import org.openiam.am.srvc.dto.SSOAttribute;
 import org.openiam.am.srvc.searchbean.AuthResourceAttributeMapSearchBean;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthAttributeProcessor;
@@ -45,7 +51,12 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     private LoginDataService loginManager;
     @Autowired
     private UserDataService userManager;
-    
+
+    @Autowired
+    private AuthResourceAMAttributeDozerConverter authResourceAMAttributeDozerConverter;
+    @Autowired
+    private AuthResourceAttributeMapDozerConverter authResourceAttributeMapDozerConverter;
+
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
@@ -63,8 +74,10 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     }
 
     @Override
-    public List<AuthResourceAMAttributeEntity> getAmAttributeList() {
-        return authResourceAMAttributeDao.findAll();
+    @Transactional(readOnly = true)
+    public List<AuthResourceAMAttribute> getAmAttributeList() {
+        List<AuthResourceAMAttributeEntity> list = authResourceAMAttributeDao.findAll();
+        return authResourceAMAttributeDozerConverter.convertToDTOList(list, true);
     }
 
     /*
@@ -82,25 +95,47 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
 
     @Override
     @Transactional
-    public void saveAttributeMap(AuthResourceAttributeMapEntity attribute) {
-    	attribute.setProvider(authProviderDao.findById(attribute.getProvider().getId()));
-    	if(attribute.getAmAttribute() != null && StringUtils.isNotBlank(attribute.getAmAttribute().getId())) {
-    		attribute.setAmAttribute(authResourceAMAttributeDao.findById(attribute.getAmAttribute().getId()));
+    public String saveAttributeMap(AuthResourceAttributeMap attributeMap) throws BasicDataServiceException {
+        if (attributeMap == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_MAP_NOT_SET);
+        }
+        if (StringUtils.isBlank(attributeMap.getProviderId())) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+        }
+        if (StringUtils.isBlank(attributeMap.getName())) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_TARGET_ATTRIBUTE_NOT_SET);
+        }
+        if (attributeMap.getAttributeType() == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_TYPE_NOT_SET);
+        }
+        if ((StringUtils.isBlank(attributeMap.getAmResAttributeId()))
+             &&(StringUtils.isBlank(attributeMap.getAttributeValue()))
+             &&(StringUtils.isBlank(attributeMap.getAmPolicyUrl()))) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_NOT_SET);
+        }
+        AuthResourceAttributeMapEntity entity = authResourceAttributeMapDozerConverter.convertToEntity(attributeMap, false);
+
+        entity.setProvider(authProviderDao.findById(entity.getProvider().getId()));
+    	if(entity.getAmAttribute() != null && StringUtils.isNotBlank(entity.getAmAttribute().getId())) {
+            entity.setAmAttribute(authResourceAMAttributeDao.findById(entity.getAmAttribute().getId()));
     	} else {
-    		attribute.setAmAttribute(null);
+            entity.setAmAttribute(null);
     	}
     	
-        if(attribute.getId() == null) {
-        	authResourceAttributeMapDao.save(attribute);
+        if(entity.getId() == null) {
+        	authResourceAttributeMapDao.save(entity);
         } else {
-        	authResourceAttributeMapDao.merge(attribute);
+        	authResourceAttributeMapDao.merge(entity);
         }
+        return entity.getId();
     }
 
     @Override
     @Transactional
-    public void removeAttributeMap(String attributeMapId) {
-    	final AuthResourceAttributeMapEntity entity = authResourceAttributeMapDao.findById(attributeMapId);
+    public void removeAttributeMap(String attributeMapId) throws BasicDataServiceException {
+        if (attributeMapId == null || attributeMapId.trim().isEmpty())
+            throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_MAP_ID_NOT_SET);
+        final AuthResourceAttributeMapEntity entity = authResourceAttributeMapDao.findById(attributeMapId);
     	if(entity != null) {
     		authResourceAttributeMapDao.delete(entity);
     	}
@@ -218,7 +253,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
 
 	@Override
 	@Transactional(readOnly=true)
-	public AuthResourceAttributeMapEntity getAttribute(String id) {
-		return authResourceAttributeMapDao.findById(id);
+	public AuthResourceAttributeMap getAttribute(String id) {
+        return authResourceAttributeMapDozerConverter.convertToDTO(authResourceAttributeMapDao.findById(id), true);
 	}
 }

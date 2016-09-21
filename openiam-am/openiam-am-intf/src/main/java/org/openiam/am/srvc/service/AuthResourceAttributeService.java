@@ -2,7 +2,10 @@ package org.openiam.am.srvc.service;
 
 import org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity;
 import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
+import org.openiam.am.srvc.dto.AuthResourceAMAttribute;
+import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
 import org.openiam.am.srvc.dto.SSOAttribute;
+import org.openiam.exception.BasicDataServiceException;
 
 import java.util.List;
 
@@ -14,7 +17,7 @@ public interface AuthResourceAttributeService {
     */
     AuthResourceAMAttributeEntity getAmAttribute(String attributeId);
 
-    List<AuthResourceAMAttributeEntity> getAmAttributeList();
+    List<AuthResourceAMAttribute> getAmAttributeList();
 
     /*
     *==================================================
@@ -24,11 +27,11 @@ public interface AuthResourceAttributeService {
 
     List<AuthResourceAttributeMapEntity> getAttributeMapList(String providerId) ;
     
-    AuthResourceAttributeMapEntity getAttribute(String id);
+    AuthResourceAttributeMap getAttribute(String id);
 
-    void saveAttributeMap(AuthResourceAttributeMapEntity attribute);
+    String saveAttributeMap(AuthResourceAttributeMap attribute) throws BasicDataServiceException;
 
-    void removeAttributeMap(String attributeMapId);
+    void removeAttributeMap(String attributeMapId) throws BasicDataServiceException;
 
     List<SSOAttribute> getSSOAttributes(String providerId, String userId);
 
