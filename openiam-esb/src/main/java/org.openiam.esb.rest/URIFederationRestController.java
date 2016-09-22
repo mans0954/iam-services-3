@@ -1,4 +1,4 @@
-package org.openiam.am.srvc.rest;
+package org.openiam.esb.rest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -8,20 +8,21 @@ import org.openiam.am.cert.groovy.DefaultCertToIdentityConverter;
 import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.URIFederationService;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.Login;
-
+import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.script.ScriptIntegration;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
@@ -31,10 +32,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-
 @Controller
-@RequestMapping("/auth/proxy/")
-public class URIFederationRestController  {
+@RequestMapping("/proxy")
+public class URIFederationRestController {
 	protected final Logger log = Logger.getLogger(this.getClass());
 
 	@Value("${org.openiam.auth.level.cert.id}")
