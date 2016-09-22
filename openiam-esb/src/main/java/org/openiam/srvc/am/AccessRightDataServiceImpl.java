@@ -46,24 +46,24 @@ public class AccessRightDataServiceImpl extends AbstractApiService implements Ac
 	}
 
 	@Override
-	public Response save(final AccessRight dto) {
-		BaseGrudServiceRequest<AccessRight> request = new BaseGrudServiceRequest<>(dto);
-		StringResponse response= this.manageApiRequest(AccessRightAPI.Save, request, StringResponse.class);
-		return response.convertToBase();
+	public StringResponse save(final AccessRight dto) {
+		final BaseGrudServiceRequest<AccessRight> request = new BaseGrudServiceRequest<>(dto);
+		final StringResponse response= this.manageApiRequest(AccessRightAPI.Save, request, StringResponse.class);
+		return response;
 	}
 
 	@Override
 	public Response delete(String id) {
-		IdServiceRequest request= new IdServiceRequest();
+		final IdServiceRequest request= new IdServiceRequest();
 		request.setId(id);
 		return this.manageApiRequest(AccessRightAPI.Delete, request, Response.class);
 	}
 
 	@Override
 	public AccessRight get(String id) {
-		IdServiceRequest request= new IdServiceRequest();
+		final IdServiceRequest request= new IdServiceRequest();
 		request.setId(id);
-		AccessRightResponse response = this.manageApiRequest(AccessRightAPI.GetAccessRight, request, AccessRightResponse.class);
+		final AccessRightResponse response = this.manageApiRequest(AccessRightAPI.GetAccessRight, request, AccessRightResponse.class);
 		if(response.isFailure()){
 			return null;
 		}
@@ -73,14 +73,14 @@ public class AccessRightDataServiceImpl extends AbstractApiService implements Ac
 	@Override
 	@LocalizedServiceGet
 	public List<AccessRight> findBeans(final AccessRightSearchBean searchBean, final int from, final int size, final Language language) {
-		BaseSearchServiceRequest<AccessRightSearchBean> request = new BaseSearchServiceRequest();
+		final BaseSearchServiceRequest<AccessRightSearchBean> request = new BaseSearchServiceRequest();
 		request.setSearchBean(searchBean);
 		request.setFrom(from);
 		request.setSize(size);
 		request.setLanguage(language);
 
 
-		AccessRightListResponse response = this.manageApiRequest(AccessRightAPI.FindBeans, request, AccessRightListResponse.class);
+		final AccessRightListResponse response = this.manageApiRequest(AccessRightAPI.FindBeans, request, AccessRightListResponse.class);
 		if(response.isFailure()){
 			return null;
 		}
@@ -89,10 +89,10 @@ public class AccessRightDataServiceImpl extends AbstractApiService implements Ac
 
 	@Override
 	public int count(AccessRightSearchBean searchBean) {
-		BaseSearchServiceRequest<AccessRightSearchBean> request = new BaseSearchServiceRequest();
+		final BaseSearchServiceRequest<AccessRightSearchBean> request = new BaseSearchServiceRequest();
 		request.setSearchBean(searchBean);
 
-		IntResponse response = this.manageApiRequest(AccessRightAPI.Count, request, IntResponse.class);
+		final IntResponse response = this.manageApiRequest(AccessRightAPI.Count, request, IntResponse.class);
 		if(response.isFailure()){
 			return 0;
 		}
@@ -102,9 +102,9 @@ public class AccessRightDataServiceImpl extends AbstractApiService implements Ac
 	@Override
 	public List<AccessRight> getByIds(final Collection<String> ids) {
 
-		IdsServiceRequest request= new IdsServiceRequest();
+		final IdsServiceRequest request= new IdsServiceRequest();
 		request.setIds(new ArrayList<>(ids));
-		AccessRightListResponse response = this.manageApiRequest(AccessRightAPI.GetByIds, request, AccessRightListResponse.class);
+		final AccessRightListResponse response = this.manageApiRequest(AccessRightAPI.GetByIds, request, AccessRightListResponse.class);
 		if(response.isFailure()){
 			return null;
 		}
