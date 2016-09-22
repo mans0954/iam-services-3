@@ -10,10 +10,21 @@ import org.openiam.am.srvc.dto.AuthResourceAMAttribute;
 import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
 import org.openiam.am.srvc.dto.SSOAttribute;
 import org.openiam.am.srvc.service.AuthResourceAttributeService;
+import org.openiam.base.request.BaseGrudServiceRequest;
+import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.request.SSOAttributesRequest;
+import org.openiam.base.response.AuthResourceAMAttributeListResponse;
+import org.openiam.base.response.AuthResourceAttributeMapResponse;
+import org.openiam.base.response.SSOAttributeListResponse;
+import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.mq.constants.AuthResourceAttributeAPI;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,21 +37,20 @@ import java.util.List;
 @WebService(endpointInterface = "org.openiam.srvc.am.AuthResourceAttributeWebService",
             targetNamespace = "urn:idm.openiam.org/srvc/am/service", portName = "AuthResourceAttributeWebServicePort",
             serviceName = "AuthResourceAttributeWebService")
-public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttributeWebService{
-    protected final Log log = LogFactory.getLog(this.getClass());
-    @Autowired
-    private AuthResourceAMAttributeDozerConverter authResourceAMAttributeDozerConverter;
-    @Autowired
-    private AuthResourceAttributeMapDozerConverter authResourceAttributeMapDozerConverter;
-    @Autowired
-    private AuthResourceAttributeService authResourceAttributeService;
+public class AuthResourceAttributeWebServiceImpl extends AbstractApiService implements AuthResourceAttributeWebService{
 
+    public AuthResourceAttributeWebServiceImpl() {
+        super(OpenIAMQueue.AuthResourceAttributeQueue);
+    }
 
 
     @Override
-    @Transactional(readOnly = true)
     public List<AuthResourceAMAttribute> getAmAttributeList() {
-        return authResourceAMAttributeDozerConverter.convertToDTOList(authResourceAttributeService.getAmAttributeList(), true);
+        AuthResourceAMAttributeListResponse response = this.manageApiRequest(AuthResourceAttributeAPI.GetAmAttributeList, new BaseServiceRequest(), AuthResourceAMAttributeListResponse.class);
+        if(response.isFailure()){
+            return null;
+        }
+        return response.getAmAttributeList();
     }
 
     /*
@@ -51,71 +61,38 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
 
     @Override
     public Response saveAttributeMap(AuthResourceAttributeMap attributeMap) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (attributeMap == null) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_MAP_NOT_SET);
-            }
-            if (StringUtils.isBlank(attributeMap.getProviderId())) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
-            }
-            if (StringUtils.isBlank(attributeMap.getName())) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_TARGET_ATTRIBUTE_NOT_SET);
-            }
-            if (attributeMap.getAttributeType() == null) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_TYPE_NOT_SET);
-            }
-            if ((StringUtils.isBlank(attributeMap.getAmResAttributeId()))
-                 &&(StringUtils.isBlank(attributeMap.getAttributeValue()))
-                 &&(StringUtils.isBlank(attributeMap.getAmPolicyUrl()))) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_NOT_SET);
-            }
-
-            final AuthResourceAttributeMapEntity entity = authResourceAttributeMapDozerConverter.convertToEntity(attributeMap, false);
-            authResourceAttributeService.saveAttributeMap(entity);
-            response.setResponseValue(entity.getId());
-
-        } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
+        StringResponse response= this.manageApiRequest(AuthResourceAttributeAPI.SaveAttributeMap, new BaseGrudServiceRequest<AuthResourceAttributeMap>(attributeMap), StringResponse.class);
+        return response.convertToBase();
     }
 
     @Override
     public Response removeAttributeMap(String attributeMapId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (attributeMapId == null || attributeMapId.trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_MAP_ID_NOT_SET);
-
-            authResourceAttributeService.removeAttributeMap(attributeMapId);
-        } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
+        IdServiceRequest request = new IdServiceRequest();
+        request.setId(attributeMapId);
+        return this.manageApiRequest(AuthResourceAttributeAPI.DeleteAttributeMap, request, Response.class);
     }
 
     @Override
     public List<SSOAttribute> getSSOAttributes(@WebParam(name = "providerId", targetNamespace = "") String providerId,
                                                @WebParam(name = "userId", targetNamespace = "") String userId) {
-        return authResourceAttributeService.getSSOAttributes(providerId, userId);
+        SSOAttributesRequest request = new SSOAttributesRequest();
+        request.setUserId(userId);
+        request.setProviderId(providerId);
+        SSOAttributeListResponse response = this.manageApiRequest(AuthResourceAttributeAPI.GetSSOAttributes, request, SSOAttributeListResponse.class);
+        if(response.isFailure()){
+            return null;
+        }
+        return response.getSsoAttributeList();
     }
 
 	@Override
 	public AuthResourceAttributeMap getAttribute(String attributeMapId) {
-		final AuthResourceAttributeMapEntity entity = authResourceAttributeService.getAttribute(attributeMapId);
-		return authResourceAttributeMapDozerConverter.convertToDTO(entity, true);
+        IdServiceRequest request = new IdServiceRequest();
+        request.setId(attributeMapId);
+        AuthResourceAttributeMapResponse response = this.manageApiRequest(AuthResourceAttributeAPI.GetAttribute, request, AuthResourceAttributeMapResponse.class);
+        if(response.isFailure()){
+            return null;
+        }
+        return response.getAttributeMap();
 	}
 }
