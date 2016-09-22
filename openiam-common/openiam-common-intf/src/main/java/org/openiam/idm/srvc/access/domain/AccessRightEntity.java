@@ -8,6 +8,7 @@ import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
@@ -52,6 +53,16 @@ public class AccessRightEntity extends AbstractKeyNameEntity {
 //    @Fetch(FetchMode.SUBSELECT)
 //	private Set<OrgToOrgMembershipXrefEntity> org2OrgMappings;
 
+    @Internationalized
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "METADATE_TYPE_ID_1", insertable = true, updatable = true, nullable = true)
+    private MetadataTypeEntity metadataTypeEntity1;
+
+    @Internationalized
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "METADATE_TYPE_ID_2", insertable = true, updatable = true, nullable = true)
+    private MetadataTypeEntity metadataTypeEntity2;
+
 
     @Transient
     private String displayName;
@@ -82,5 +93,21 @@ public class AccessRightEntity extends AbstractKeyNameEntity {
 
     public void setResource2ResourceMappings(Set<ResourceToResourceMembershipXrefEntity> resource2ResourceMappings) {
         this.resource2ResourceMappings = resource2ResourceMappings;
+    }
+
+    public MetadataTypeEntity getMetadataTypeEntity1() {
+        return metadataTypeEntity1;
+    }
+
+    public void setMetadataTypeEntity1(MetadataTypeEntity metadataTypeEntity1) {
+        this.metadataTypeEntity1 = metadataTypeEntity1;
+    }
+
+    public MetadataTypeEntity getMetadataTypeEntity2() {
+        return metadataTypeEntity2;
+    }
+
+    public void setMetadataTypeEntity2(MetadataTypeEntity metadataTypeEntity2) {
+        this.metadataTypeEntity2 = metadataTypeEntity2;
     }
 }

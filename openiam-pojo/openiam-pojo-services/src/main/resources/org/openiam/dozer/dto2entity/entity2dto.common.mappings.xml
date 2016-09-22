@@ -595,6 +595,22 @@
             <a>languageMap</a>
             <b>languageMap</b>
         </field>
+        <field>
+            <a>metadataTypeEntity1.id</a>
+            <b>metadataType1</b>
+        </field>
+        <field>
+            <a>metadataTypeEntity2.id</a>
+            <b>metadataType2</b>
+        </field>
+        <field>
+            <a>metadataTypeEntity1.displayName</a>
+            <b>metadataTypeDisplayName1</b>
+        </field>
+        <field>
+            <a>metadataTypeEntity2.displayName</a>
+            <b>metadataTypeDisplayName2</b>
+        </field>
     </mapping>
 
 </mappings>

@@ -84,6 +84,8 @@ public class MetadataTypeEntity extends KeyEntity {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<UserEntity> userEntitySet;
 
+
+
 	@OneToMany(mappedBy = "referenceId")
 	private Set<LanguageMappingEntity> languageMappings;
 

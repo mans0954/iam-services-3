@@ -13,6 +13,24 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 })
 public class AccessRightSearchBean extends AbstractKeyNameSearchBean<AccessRight, String> {
 
+    String metadataTypeId1;
+    String metadataTypeId2;
+
+    public String getMetadataTypeId1() {
+        return metadataTypeId1;
+    }
+
+    public void setMetadataTypeId1(String metadataTypeId1) {
+        this.metadataTypeId1 = metadataTypeId1;
+    }
+
+    public String getMetadataTypeId2() {
+        return metadataTypeId2;
+    }
+
+    public void setMetadataTypeId2(String metadataTypeId2) {
+        this.metadataTypeId2 = metadataTypeId2;
+    }
 
     @Override
     public String getCacheUniqueBeanKey() {

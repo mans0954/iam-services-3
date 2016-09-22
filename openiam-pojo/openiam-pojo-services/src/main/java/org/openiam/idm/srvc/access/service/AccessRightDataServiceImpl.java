@@ -41,6 +41,10 @@ public class AccessRightDataServiceImpl extends AbstractBaseService implements A
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
 
+            if ((dto.getMetadataType1() == null && dto.getMetadataType2() != null) || (dto.getMetadataType1() != null && dto.getMetadataType2() == null)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
             final AccessRightEntity entity = converter.convertToEntity(dto, true);
             service.save(entity);
             response.setResponseValue(entity.getId());
@@ -87,7 +91,7 @@ public class AccessRightDataServiceImpl extends AbstractBaseService implements A
     @Override
     @LocalizedServiceGet
     public List<AccessRight> findBeans(final AccessRightSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<AccessRightEntity> entities = service.findBeans(searchBean, from, size);
+        final List<AccessRightEntity> entities = service.findBeans(searchBean, from, size, language);
         final List<AccessRight> dtos = converter.convertToDTOList(entities, true);
         return dtos;
     }
