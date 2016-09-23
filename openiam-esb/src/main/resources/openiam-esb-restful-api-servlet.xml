@@ -14,7 +14,7 @@
     <mvc:annotation-driven />
 
     <context:annotation-config />
-	<context:component-scan base-package="org.openiam.rest" />
+	<context:component-scan base-package="org.openiam.esb.rest" />
 
     <bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean>
 

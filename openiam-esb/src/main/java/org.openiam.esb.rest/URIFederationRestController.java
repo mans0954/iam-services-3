@@ -10,6 +10,7 @@ import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
@@ -27,13 +28,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import javax.security.cert.X509Certificate;
+import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 
 @Controller
-@RequestMapping("/proxy")
+@RequestMapping(value="/proxy")
 public class URIFederationRestController {
 	protected final Logger log = Logger.getLogger(this.getClass());
 
@@ -71,6 +73,10 @@ public class URIFederationRestController {
 		return StringUtils.isNotBlank(method) ? httpMethodMap.get(method.toLowerCase()) : null;
 	}
 
+	@RequestMapping(value="/cert/test", method=RequestMethod.POST)
+	public @ResponseBody String testPost(final @RequestParam(required=true, value="method") String method) {
+		return method;
+	}
 
 	@RequestMapping(value="/cert/identity", method=RequestMethod.POST)
 	public @ResponseBody LoginResponse getIdentityFromCert(final @RequestParam(value="proxyURI", required=true) String proxyURI,
