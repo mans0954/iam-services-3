@@ -12,57 +12,10 @@
 	   	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd
 	   	http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
     <mvc:annotation-driven />
-	<!-- 
-		 Placeholders are applicationContext-scored.  webconsole-servlet is in a diff. appcontext
-	 	 than the main appContext, so this must be defined here as well for @Value injection to work
-	 	 propertly
-	-->
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	    <property name="locations">
-	    	<list>
-	        	<value>classpath:datasource.properties</value>
-	        	<value>classpath:webconsole.ui.properties</value>
-	        	<value>classpath:openiam.ui.properties</value>
-	        	<value>classpath:openiam.esb.restful.api.properties</value>
-	        	<value>file:${confpath}/conf/datasource.properties</value>
-	        	<value>file:${confpath}/conf/webconsole.ui.properties</value>
-	        	<value>file:${confpath}/conf/openiam.ui.properties</value>
-	        	<value>file:${confpath}/conf/openiam.ui.restful.api.properties</value>
-	        </list>
-	    </property>
-	    <property name="ignoreResourceNotFound" value="true" />
-	</bean>
 
     <context:annotation-config />
 	<context:component-scan base-package="org.openiam.esb.rest" />
-	<!--
-        <import resource="abstract-web-context.xml" />
 
-        <bean id="dozerBeanMapper" class="org.openiam.ui.dozer.DozerBeanMapper" />
+    <bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean>
 
-        <bean id="beanMapper" class="org.dozer.DozerBeanMapper">
-            <property name="mappingFiles">
-                <list>
-                    <value>dozer/dozer.common.mapping.xml</value>
-                    <value>dozer/dozer.restful.bean.mapping.xml</value>
-                </list>
-            </property>
-        </bean>
-
-        <bean id="multipartResolver"
-              class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-            <property name="maxUploadSize" value="90000000" />
-        </bean>
-    -->
-        <bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean>
-
-	<!--
-		<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
-            <property name="messageConverters">
-                <list>
-                    <ref bean="jacksonMessageConverter"/>
-                </list>
-            </property>
-        </bean>
-	-->
     </beans>
