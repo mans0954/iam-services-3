@@ -16,7 +16,7 @@ public class JDBCGroupDAOImpl extends AbstractJDBCDao implements GroupDAO {
 	
 	private static final RowMapper<AuthorizationGroup> rowMapper = new GroupMapper();
 	
-	private String GET_ALL_GROUPS = "SELECT GRP_ID AS GROUP_ID, GRP_NAME AS NAME, GROUP_DESC AS DESCRIPTION, STATUS AS STATUS, MANAGED_SYS_ID AS MANAGED_SYS_ID, ADMIN_RESOURCE_ID AS ADMIN_RESOURCE_ID FROM %s.GRP";
+	private String GET_ALL_GROUPS = "SELECT TYPE_ID AS TYPE_ID, GRP_ID AS GROUP_ID, GRP_NAME AS NAME, GROUP_DESC AS DESCRIPTION, STATUS AS STATUS, MANAGED_SYS_ID AS MANAGED_SYS_ID, ADMIN_RESOURCE_ID AS ADMIN_RESOURCE_ID FROM %s.GRP";
 	
 	@Override
 	protected void initSqlStatements() {
@@ -42,6 +42,7 @@ public class JDBCGroupDAOImpl extends AbstractJDBCDao implements GroupDAO {
             group.setStatus(rs.getString("STATUS"));
             group.setManagedSysId(rs.getString("MANAGED_SYS_ID"));
 			group.setAdminResourceId(rs.getString("ADMIN_RESOURCE_ID"));
+			group.setMetadataTypeId(rs.getString("TYPE_ID"));
 			return group;
 		}
 	}

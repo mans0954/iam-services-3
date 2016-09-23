@@ -1687,18 +1687,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     }
                 }
             }
-            if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
-                for (final RoleEntity ure : userEntity.getRoles()) {
-                    final Role ar = roleDozerConverter.convertToDTO(ure, false);
-                    for (final Role r : pUser.getRoles()) {
-                        if (StringUtils.equals(r.getId(), ar.getId())) {
-                            ar.setOperation(r.getOperation()); // get operation value from pUser
-                            break;
-                        }
+        }
+        if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
+            for (final RoleEntity ure : userEntity.getRoles()) {
+                final Role ar = roleDozerConverter.convertToDTO(ure, false);
+                for (final Role r : pUser.getRoles()) {
+                    if (StringUtils.equals(r.getId(), ar.getId())) {
+                        ar.setOperation(r.getOperation()); // get operation value from pUser
+                        break;
                     }
-                    roleSet.add(ar);
                 }
+                roleSet.add(ar);
             }
+
         }
     }
 

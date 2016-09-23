@@ -34,6 +34,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
+import java.util.Set;
 
 @Service("resourceDataService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.res.service.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
@@ -55,7 +56,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     private GroupDataService groupDataService;
     @Autowired
     private ResourceTypeDozerConverter resourceTypeConverter;
-    
+
     @Autowired
     private LanguageDozerConverter languageConverter;
 
@@ -102,8 +103,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     public int count(final ResourceSearchBean searchBean) {
         int count = 0;
         if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
-            final List<ResourceEntity> resultsEntities = resourceService
-                    .findBeans(searchBean, 0, Integer.MAX_VALUE);
+            final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, 0, Integer.MAX_VALUE);
             count = (resultsEntities != null) ? resultsEntities.size() : 0;
         } else {
             count = resourceService.count(searchBean);
@@ -171,8 +171,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     /*@Caching(evict = {
             @CacheEvict(value = "resources", allEntries = true),
             @CacheEvict(value = "resourcePropCache", allEntries = true)
-    })*/
-    public Response saveResource(Resource resource, final String requesterId) {
+    })*/ public Response saveResource(Resource resource, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
           /*resourceService.validate(resource);
@@ -230,7 +229,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         }
         return resourceTypeList;
     }
-
 
 
     //@CacheEvict(value = "resourcePropCache", allEntries=true)
@@ -335,8 +333,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    /*@CacheEvict(value = "resources", allEntries=true)*/
-    public Response removeUserFromResource(final String resourceId, final String userId, String requesterId) {
+    /*@CacheEvict(value = "resources", allEntries=true)*/ public Response removeUserFromResource(final String resourceId, final String userId, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         /*idmAuditLog.setRequestorUserId(requesterId);
@@ -375,10 +372,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     /*@Transactional
-    @CacheEvict(value = "resources", allEntries=true)*/
-    public Response addUserToResource(final String resourceId, final String userId, final String requesterId) {
+    @CacheEvict(value = "resources", allEntries=true)*/ public Response addUserToResource(final String resourceId, final String userId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
         /*idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
@@ -432,8 +428,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    /*@CacheEvict(value = "resources", allEntries=true)*/
-    public Response deleteResource(final String resourceId, final String requesterId) {
+    /*@CacheEvict(value = "resources", allEntries=true)*/ public Response deleteResource(final String resourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             /*if (resourceId == null) {
@@ -459,7 +454,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     public Response deleteResourceType(final String resourceTypeId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.DELETE_RESOURCE_TYPE.value());
         try {
@@ -487,33 +482,33 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return response;
     }
 
-    @Override
-    //@LocalizedServiceGet
-    public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size, final Language language) {
-        return resourceService.getChildResourcesDto(resourceId, from, size, language);
-    }
-
-    @Override
-    public int getNumOfChildResources(final String resourceId) {
-        return resourceService.getNumOfChildResources(resourceId);
-    }
-
-    @Override
-    //@LocalizedServiceGet
-    public List<Resource> getParentResources(final String resourceId, final int from, final int size, final Language language) {
-        return resourceService.getParentResourcesDto(resourceId, from, size, language);
-    }
-
-    @Override
-    public int getNumOfParentResources(final String resourceId) {
-        return resourceService.getNumOfParentResources(resourceId);
-    }
+//    @Override
+//    //@LocalizedServiceGet
+//    public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size, final Language language) {
+//        return resourceService.getChildResourcesDto(resourceId, from, size, language);
+//    }
+//
+//    @Override
+//    public int getNumOfChildResources(final String resourceId) {
+//        return resourceService.getNumOfChildResources(resourceId);
+//    }
+//
+//    @Override
+//    //@LocalizedServiceGet
+//    public List<Resource> getParentResources(final String resourceId, final int from, final int size, final Language language) {
+//        return resourceService.getParentResourcesDto(resourceId, from, size, language);
+//    }
+//
+//    @Override
+//    public int getNumOfParentResources(final String resourceId) {
+//        return resourceService.getNumOfParentResources(resourceId);
+//    }
 
     @Override
     //@CacheEvict(value = "resources", allEntries=true)
-    public Response addChildResource(final String resourceId, final String childResourceId, final String requesterId) {
+    public Response addChildResource(final String resourceId, final String childResourceId, final String requesterId, Set<String> rights) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
         /*idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_CHILD_RESOURCE.value());
         ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
@@ -526,7 +521,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         try {
             /*resourceService.validateResource2ResourceAddition(resourceId, childResourceId);
             resourceService.addChildResource(resourceId, childResourceId);*/
-            resourceService.addChildResourceWeb(resourceId, childResourceId, requesterId, idmAuditLog);
+            resourceService.addChildResourceWeb(resourceId, childResourceId, requesterId, rights, idmAuditLog);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setResponseValue(e.getResponseValue());
@@ -551,7 +546,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     //@CacheEvict(value = "resources", allEntries=true)
     public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
         /*idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_CHILD_RESOURCE.value());
         ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
@@ -593,7 +588,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     //@CacheEvict(value = "resources", allEntries=true)
     public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
        /* idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
         Group group = groupDataService.getGroupDTO(groupId);
@@ -632,7 +627,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     //@CacheEvict(value = "resources", allEntries=true)
     public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
    /*     idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
         GroupEntity groupEntity = groupDataService.getGroup(groupId);
@@ -669,9 +664,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     //@CacheEvict(value = "resources", allEntries=true)
-    public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId) {
+    public Response addRoleToResource(final String resourceId, final String roleId, Set<String> rights, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
         /*idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);
@@ -686,7 +681,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             }*/
 
             //resourceService.addResourceToRole(resourceId, roleId);
-            resourceService.addRoleToResourceWeb(resourceId, roleId, requesterId, idmAuditLog);
+            resourceService.addRoleToResourceWeb(resourceId, roleId, requesterId, rights, idmAuditLog);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -710,7 +705,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     //@CacheEvict(value = "resources", allEntries=true)
     public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
         /*idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);
@@ -745,27 +740,29 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     public int getNumOfResourcesForRole(final String roleId, final ResourceSearchBean searchBean) {
-       return resourceService.getNumOfResourcesForRole(roleId, searchBean);
+        searchBean.addRoleId(roleId);
+        return resourceService.count(searchBean);
     }
 
     @Override
     //@LocalizedServiceGet
     public List<Resource> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
-        return resourceService.getResourcesDtoForRole(roleId, from, size, searchBean, language);
+        searchBean.addRoleId(roleId);
+        return resourceService.findBeansLocalizedDto(searchBean, from, size, languageConverter.convertToEntity(language, false));
     }
 
     @Override
     /**
      * For internal system use only, Without: @LocalizedServiceGet
-     */
-    public List<Resource> getResourcesForRoleNoLocalized(@WebParam(name = "roleId", targetNamespace = "") String roleId, @WebParam(name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size, @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean) {
+     */ public List<Resource> getResourcesForRoleNoLocalized(@WebParam(name = "roleId", targetNamespace = "") String roleId, @WebParam(name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size, @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean) {
         searchBean.setDeepCopy(false);
-        return resourceService.getResourcesForRoleNoLocalized(roleId, from, size, searchBean);
+        searchBean.addRoleId(roleId);
+        return resourceService.findBeansLocalizedDto(searchBean,from, size,null);
     }
 
     @Override
     public int getNumOfResourceForGroup(final String groupId, final ResourceSearchBean searchBean) {
-       return resourceService.getNumOfResourceForGroup(groupId, searchBean);
+        return resourceService.getNumOfResourceForGroup(groupId, searchBean);
     }
 
     @Override
@@ -795,20 +792,19 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     //@LocalizedServiceGet
     //@Transactional(readOnly=true)
     public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId, final ResourceSearchBean searchBean, final Language language) {
-      return resourceService.getResourcesDtoForUserByType(userId, resourceTypeId, searchBean, language);
+        return resourceService.getResourcesDtoForUserByType(userId, resourceTypeId, searchBean, language);
     }
 
     @Override
     public Response canAddUserToResource(String userId, String resourceId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-         try {
+        try {
             if (resourceId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId  is null");
             }
 
             if (userDataService.isHasResource(userId, resourceId)) {
-                throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format(
-                        "User %s has already been added to resource: %s", userId, resourceId));
+                throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format("User %s has already been added to resource: %s", userId, resourceId));
             }
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
