@@ -75,10 +75,10 @@ public class AuthLevelGroupingContentProviderXrefEntity {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((contentProvider == null) ? 0 : contentProvider.hashCode());
-		result = prime * result
-				+ ((grouping == null) ? 0 : grouping.hashCode());
+//		result = prime * result
+//				+ ((contentProvider == null) ? 0 : contentProvider.hashCode());
+//		result = prime * result
+//				+ ((grouping == null) ? 0 : grouping.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + order;
 		return result;
@@ -93,16 +93,16 @@ public class AuthLevelGroupingContentProviderXrefEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		AuthLevelGroupingContentProviderXrefEntity other = (AuthLevelGroupingContentProviderXrefEntity) obj;
-		if (contentProvider == null) {
-			if (other.contentProvider != null)
-				return false;
-		} else if (!contentProvider.equals(other.contentProvider))
-			return false;
-		if (grouping == null) {
-			if (other.grouping != null)
-				return false;
-		} else if (!grouping.equals(other.grouping))
-			return false;
+//		if (contentProvider == null) {
+//			if (other.contentProvider != null)
+//				return false;
+//		} else if (!contentProvider.equals(other.contentProvider))
+//			return false;
+//		if (grouping == null) {
+//			if (other.grouping != null)
+//				return false;
+//		} else if (!grouping.equals(other.grouping))
+//			return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;

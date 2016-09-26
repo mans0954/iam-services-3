@@ -11,29 +11,10 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IntResponse", propOrder = {
-        "value"
 })
-public class IntResponse extends Response {
-    private Integer value;
-
-    public Integer getValue() {
-        return value;
-    }
-
-    public void setValue(Integer value) {
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuffer sb = new StringBuffer("IntResponse{");
-        sb.append(super.toString());
-        sb.append(", value='").append(value).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
+public class IntResponse extends BaseDataResponse<Integer> {
 
     protected Object getValueInternal(){
-        return this.value;
+        return super.getValue();
     }
 }

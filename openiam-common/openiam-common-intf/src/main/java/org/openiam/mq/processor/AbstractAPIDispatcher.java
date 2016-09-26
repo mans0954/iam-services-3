@@ -12,6 +12,7 @@ import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.concurrent.IBaseRunnableBackgroundTask;
 import org.openiam.exception.AuthorizationMenuException;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.FieldMappingDataServiceException;
 import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.mq.constants.OpenIAMAPI;
@@ -109,6 +110,9 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
                 apiResponse.setErrorCode(ex.getCode());
                 apiResponse.setErrorText(ex.getResponseValue());
                 apiResponse.setErrorTokenList(ex.getErrorTokenList());
+                if(ex instanceof FieldMappingDataServiceException){
+                    apiResponse.setFieldMappings(((FieldMappingDataServiceException)ex).getFieldMappings());
+                }
                 apiResponse.fail();
 
                 auditEvent.fail();
