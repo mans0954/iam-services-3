@@ -75,7 +75,6 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 	}
 	
     @Override
-    @Transactional(readOnly = true)
     public List<AuthLevelGrouping> getAuthLevelGroupingList() {
         return getValueList(ContentProviderAPI.GetAuthLevelGroupingList, new BaseServiceRequest(), AuthLevelGroupingListResponse.class);
     }
