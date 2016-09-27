@@ -89,16 +89,25 @@ public class PolicyServiceImpl implements PolicyService {
         return policyDozerConverter.convertToDTO(policyEntity, true);
     }
 
-    @Transactional
+    //@Transactional
     private void save(final Policy policy) {
         final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
         if (CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
             for (final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
                 attribute.setPolicy(pe);
-                if (attribute.getDefParam() != null && StringUtils.isNotBlank(attribute.getDefParam().getId())) {
-                    attribute.setDefParam(policyDefParamDao.findById(attribute.getDefParam().getId()));
+                if (attribute.getDefParam() != null) {
+                	if(StringUtils.isNotBlank(attribute.getDefParam().getId())) {
+                		attribute.setDefParam(policyDefParamDao.findById(attribute.getDefParam().getId()));
+                	} else if(StringUtils.isNotBlank(attribute.getDefParam().getName())) {
+                		attribute.setDefParam(policyDefParamDao.findByName(attribute.getDefParam().getName()));
+                	}
                 } else {
                     attribute.setDefParam(null);
+                }
+                
+                /* if it's a new policy, null out the attribute ID.  The UI might set this by accident, and we need to handle that case here */
+                if(StringUtils.isBlank(pe.getId())) {
+                	attribute.setId(null);
                 }
             }
         }
@@ -120,8 +129,8 @@ public class PolicyServiceImpl implements PolicyService {
         try {
             this.policyPostProcessor(pe);
         } catch (Exception e) {
-            log.error("can't run policy post processor");
-            log.error(e);
+            log.error("can't run policy post processor", e);
+            //log.error(e);
         }
         policy.setId(pe.getId());
     }

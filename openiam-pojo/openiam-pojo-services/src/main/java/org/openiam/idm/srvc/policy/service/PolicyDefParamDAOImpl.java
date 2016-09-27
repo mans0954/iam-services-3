@@ -8,6 +8,7 @@ import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 import org.springframework.stereotype.Repository;
 
@@ -24,12 +25,8 @@ public class PolicyDefParamDAOImpl extends
 		return true;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.policy.service.PolicyDefParamDAO#
-	 * findPolicyDefParamByGroup(java.lang.String, java.lang.String)
-	 */
+	
+	@Override
 	@SuppressWarnings("unchecked")
 	public List<PolicyDefParamEntity> findPolicyDefParamByGroup(String defId,
 			String group) {
@@ -43,6 +40,11 @@ public class PolicyDefParamDAOImpl extends
 		if (result == null || result.size() == 0)
 			return null;
 		return result;
+	}
+	
+	@Override
+	public PolicyDefParamEntity findByName(final String name) {
+		return (PolicyDefParamEntity)this.getCriteria().add(Restrictions.eq("name", name)).uniqueResult();
 	}
 
 	@Override

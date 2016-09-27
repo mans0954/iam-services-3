@@ -65,7 +65,7 @@ public class PolicyEntity extends AbstractKeyNameEntity {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "policy", orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
     //@JoinColumn(name = "POLICY_ID", insertable = true, updatable = true)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "passwordPolicy")

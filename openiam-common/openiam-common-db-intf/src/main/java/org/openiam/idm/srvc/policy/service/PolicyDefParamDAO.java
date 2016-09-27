@@ -42,4 +42,6 @@ public interface PolicyDefParamDAO extends
      */
     List<PolicyDefParamEntity> findPolicyDefParamByGroup(String defId,
             String group);
+    
+    PolicyDefParamEntity findByName(final String name);
 }
