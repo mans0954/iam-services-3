@@ -22,6 +22,7 @@
 package org.openiam.base.response;
 
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.openiam.base.ws.Response;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -36,40 +37,11 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "BooleanResponse", propOrder = {
-        "value"
 })
-public class BooleanResponse  extends Response {
+public class BooleanResponse  extends BaseDataResponse<Boolean> {
 
-    @XmlAttribute(required = true)
-    protected Boolean value;
-
-    public BooleanResponse() {
-
-    }
-
-    public BooleanResponse(Boolean value) {
-        super();
-        this.value = value;
-    }
-
-    public Boolean getValue() {
-        return value;
-    }
-
-    public void setValue(Boolean value) {
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuffer sb = new StringBuffer("BooleanResponse{");
-        sb.append(super.toString());
-        sb.append(", value=").append(value);
-        sb.append('}');
-        return sb.toString();
-    }
 
     protected Object getValueInternal(){
-        return this.value;
+        return super.getValue();
     }
 }

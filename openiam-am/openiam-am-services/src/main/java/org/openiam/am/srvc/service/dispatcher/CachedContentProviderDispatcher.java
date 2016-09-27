@@ -25,7 +25,7 @@ public class CachedContentProviderDispatcher extends AbstractAPIDispatcher<IdSer
     @Override
     protected ContentProviderResponse processingApiRequest(OpenIAMAPICommon openIAMAPI, IdServiceRequest idServiceRequest) throws BasicDataServiceException {
         ContentProviderResponse contentProviderResponse = new ContentProviderResponse();
-        contentProviderResponse.setProvider(uriFederationService.getCachedContentProvider(idServiceRequest.getId()));
+        contentProviderResponse.setValue(uriFederationService.getCachedContentProvider(idServiceRequest.getId()));
         return contentProviderResponse;
     }
 }

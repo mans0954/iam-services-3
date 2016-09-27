@@ -56,21 +56,13 @@ public class URIFederationWebServiceImpl extends AbstractApiService implements U
     public ContentProvider getCachedContentProvider(String providerId) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(providerId);
-        ContentProviderResponse response = this.manageApiRequest(OpenIAMAPICommon.CachedContentProviderGet, request, ContentProviderResponse.class);
-        if(response.isFailure()){
-            return null;
-        }
-        return response.getProvider();
+        return getValue(OpenIAMAPICommon.CachedContentProviderGet, request, ContentProviderResponse.class);
     }
 
     @Override
     public URIPattern getCachedURIPattern(String patternId) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(patternId);
-        URIPatternResponse response = this.manageApiRequest(OpenIAMAPICommon.CachedURIPatternGet, request, URIPatternResponse.class);
-        if(response.isFailure()){
-            return null;
-        }
-        return response.getUriPattern();
+        return getValue(OpenIAMAPICommon.CachedURIPatternGet, request, URIPatternResponse.class);
     }
 }

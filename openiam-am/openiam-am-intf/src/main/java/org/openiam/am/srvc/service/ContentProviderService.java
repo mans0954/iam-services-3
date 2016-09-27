@@ -1,7 +1,7 @@
 package org.openiam.am.srvc.service;
 
 import org.openiam.am.srvc.domain.*;
-import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.searchbean.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbean.URIPatternSearchBean;
 import org.openiam.exception.BasicDataServiceException;
@@ -11,54 +11,54 @@ import java.util.Set;
 
 public interface ContentProviderService {
 	
-	List<AuthLevelEntity> getAuthLevelList();
+	List<AuthLevel> getAuthLevelList();
 	
-	void deleteAuthLevelAttribute(final String id);
+	void deleteAuthLevelAttribute(final String id) throws BasicDataServiceException;
 	
-	AuthLevelAttributeEntity getAuthLevelAttribute(final String id);
+	AuthLevelAttribute getAuthLevelAttribute(final String id);
 	
-	void saveAuthLevelAttibute(final AuthLevelAttributeEntity entity);
+	String saveAuthLevelAttibute(final AuthLevelAttribute entity) throws BasicDataServiceException;
 	
-	void deleteAuthLevelGrouping(final String id);
+	void deleteAuthLevelGrouping(final String id) throws BasicDataServiceException;
 	
-	void saveAuthLevelGrouping(final AuthLevelGroupingEntity entity);
+	String saveAuthLevelGrouping(final AuthLevelGrouping entity) throws BasicDataServiceException;
 	
 	void validateDeleteAuthLevelGrouping(final String id) throws BasicDataServiceException;
 	
 	void validateSaveAuthLevelGrouping(final AuthLevelGroupingEntity entity) throws BasicDataServiceException;
 	
-	AuthLevelGroupingEntity getAuthLevelGrouping(final String id);
+	AuthLevelGrouping getAuthLevelGrouping(final String id);
 
-    List<AuthLevelGroupingEntity> getAuthLevelGroupingList();
+    List<AuthLevelGrouping> getAuthLevelGroupingList();
 
-    ContentProviderEntity getContentProvider(String providerId);
+    ContentProvider getContentProvider(String providerId);
 
     int getNumOfContentProviders(ContentProviderSearchBean cpsb);
 
     List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, Integer from, Integer size);
 
-    void saveContentProvider(ContentProviderEntity providerEntity);
+    String saveContentProvider(ContentProvider provider) throws BasicDataServiceException;
 
-    void deleteContentProvider(String providerId);
+    void deleteContentProvider(String providerId) throws BasicDataServiceException;
 
     int getNumOfUriPatterns(URIPatternSearchBean searchBean);
 
-    List<URIPatternEntity> getUriPatternsList(URIPatternSearchBean searchBean, int from, int size);
+    List<URIPattern> getUriPatternsList(URIPatternSearchBean searchBean, int from, int size);
 
-    URIPatternEntity getURIPattern(String patternId);
+    URIPattern getURIPattern(String patternId);
 
-    void saveURIPattern(URIPatternEntity uriPatternEntity);
+    String saveURIPattern(URIPattern uriPattern) throws BasicDataServiceException;
 
-    void deleteProviderPattern(String providerId);
+    void deleteProviderPattern(String providerId) throws BasicDataServiceException;
 
-    List<URIPatternMetaTypeEntity> getAllMetaType();
+    List<URIPatternMetaType> getAllMetaType();
 
 
     List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, Boolean isSSL);
     
     List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(final String contentProviderId, final String pattern);
     
-    Set<URIPatternEntity> createDefaultURIPatterns(String providerId);
+    Set<URIPatternEntity> createDefaultURIPatterns(String providerId) throws BasicDataServiceException;
     
-    void setupApplication(final ContentProviderEntity provider);
+    String setupApplication(final ContentProvider provider) throws BasicDataServiceException;
 }

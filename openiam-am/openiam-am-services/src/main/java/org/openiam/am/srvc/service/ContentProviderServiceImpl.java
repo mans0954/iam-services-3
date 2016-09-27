@@ -1,13 +1,11 @@
 package org.openiam.am.srvc.service;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,39 +17,23 @@ import org.openiam.am.srvc.dao.AuthResourceAMAttributeDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.dao.URIPatternMetaTypeDao;
-import org.openiam.am.srvc.domain.AbstractMetaValueEntity;
-import org.openiam.am.srvc.domain.AuthLevelAttributeEntity;
-import org.openiam.am.srvc.domain.AuthLevelEntity;
-import org.openiam.am.srvc.domain.AuthLevelGroupingContentProviderXrefEntity;
-import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
-import org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity;
-import org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity;
-import org.openiam.am.srvc.domain.ContentProviderEntity;
-import org.openiam.am.srvc.domain.ContentProviderServerEntity;
-import org.openiam.am.srvc.domain.URIParamXSSRuleEntity;
-import org.openiam.am.srvc.domain.URIPatternEntity;
-import org.openiam.am.srvc.domain.URIPatternErrorMappingEntity;
-import org.openiam.am.srvc.domain.URIPatternMetaEntity;
-import org.openiam.am.srvc.domain.URIPatternMetaTypeEntity;
-import org.openiam.am.srvc.domain.URIPatternMetaValueEntity;
-import org.openiam.am.srvc.domain.URIPatternMethodEntity;
-import org.openiam.am.srvc.domain.URIPatternMethodMetaEntity;
-import org.openiam.am.srvc.domain.URIPatternMethodMetaValueEntity;
-import org.openiam.am.srvc.domain.URIPatternMethodParameterEntity;
-import org.openiam.am.srvc.domain.URIPatternParameterEntity;
-import org.openiam.am.srvc.domain.URIPatternServerEntity;
-import org.openiam.am.srvc.domain.URIPatternSubstitutionEntity;
+import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity;
-import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
-import org.openiam.am.srvc.dto.ContentProvider;
-import org.openiam.am.srvc.dto.PatternMatchMode;
+import org.openiam.am.srvc.dozer.converter.*;
+import org.openiam.am.srvc.dto.*;
+import org.openiam.am.srvc.groovy.AbstractRedirectURLGroovyProcessor;
 import org.openiam.am.srvc.model.MetadataTemplateFieldJSONWrapper;
 import org.openiam.am.srvc.model.URIPatternJSONWrapper;
 import org.openiam.am.srvc.searchbean.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbean.URIPatternSearchBean;
+import org.openiam.am.srvc.uriauth.exception.InvalidPatternException;
+import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.FieldMappingDataServiceException;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
@@ -72,6 +54,7 @@ import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.ui.theme.UIThemeDAO;
 import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 import org.openiam.idm.util.CustomJacksonMapper;
+import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -93,7 +76,23 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     @Autowired
     private ContentProviderDozerConverter contentProviderDozerConverter;
     @Autowired
+    private URIPatternMetaTypeDozerConverter uriPatternMetaTypeDozerConverter;
+    @Autowired
+    private AuthLevelAttributeDozerConverter authLevelAttributeDozerConverter;
+    @Autowired
+    private AuthLevelGroupingDozerConverter authLevelGroupingDozerConverter;
+    @Autowired
+    private AuthLevelDozerConverter authLevelDozerConverter;
+    @Autowired
+    private URIPatternDozerConverter uriPatternDozerConverter;
+
+    @Autowired
+    private AuthProviderService authProviderService;
+
+    @Autowired
     private ContentProviderDao contentProviderDao;
+    @Autowired
+    private MetadataTypeDAO metadataTypeDAO;
     
     @Autowired
     private AuthProviderDao authProviderDAO;
@@ -152,6 +151,22 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     
     @Value("${org.openiam.default.group.page.template}")
     private String defaultGroupPageTemplate;
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+
+    @Value("${org.openiam.pattern.meta.type.cookie}")
+    private String cookieMetadataType;
+
+    @Value("${org.openiam.auth.provider.type.sms.id}")
+    private String smsAuthLevelId;
+
+    @Value("${org.openiam.auth.provider.type.totp.id}")
+    private String totpAuthLevelId;
+    @Value("${org.openiam.uri.pattern.meta.type.form.post.pattern.rule.id}")
+    private String formPostURIPatternRule;
+
     
     private MetadataTemplateFieldJSONWrapper fieldWrapper;
     private URIPatternJSONWrapper patternWrapper;
@@ -160,18 +175,21 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     private MetadataTemplateTypeFieldEntityDAO templateTypeEntityDAO;
 
     @Override
-    public List<AuthLevelEntity> getAuthLevelList() {
-    	return authLevelDAO.findAll();
+    public List<AuthLevel> getAuthLevelList() {
+    	return authLevelDozerConverter.convertToDTOList(authLevelDAO.findAll(), false);
     }
     
     @Override
-    public List<AuthLevelGroupingEntity> getAuthLevelGroupingList(){
-      return authLevelGroupingDAO.findAll();
+    @Transactional(readOnly = true)
+    public List<AuthLevelGrouping> getAuthLevelGroupingList(){
+      return authLevelGroupingDozerConverter.convertToDTOList(authLevelGroupingDAO.findAll(), true);
     }
 
     @Override
-    public ContentProviderEntity getContentProvider(String providerId) {
-        return contentProviderDao.findById(providerId);
+    @Transactional(readOnly = true)
+    public ContentProvider getContentProvider(String providerId) {
+        final ContentProviderEntity entity = contentProviderDao.findById(providerId);
+        return (entity != null) ? contentProviderDozerConverter.convertToDTO(entity, true) : null;
     }
 
     @Override
@@ -194,35 +212,39 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
     @Override
     @Transactional
-    public void saveContentProvider(final ContentProviderEntity provider){
-       
+    public String saveContentProvider(final ContentProvider provider) throws BasicDataServiceException{
+        validate(provider);
+        final ContentProviderEntity contentProvider = contentProviderDozerConverter.convertToEntity(provider,true);
+
+        Map<String, AuthLevelGroupingEntity> levelGroupingMap = authLevelGroupingDAO.findAll().stream().collect(Collectors.toMap(AuthLevelGroupingEntity::getId, c -> c));
+
     	UIThemeEntity theme = null;
         //final ManagedSysEntity managedSys = managedSysDAO.findById(provider.getManagedSystem().getId());        
-        if(provider.getUiTheme() != null) {
-        	theme = uiThemeDAO.findById(provider.getUiTheme().getId());
+        if(contentProvider.getUiTheme() != null) {
+        	theme = uiThemeDAO.findById(contentProvider.getUiTheme().getId());
         }
-        provider.setUiTheme(theme);
+        contentProvider.setUiTheme(theme);
           
-        if(provider.getAuthProvider() != null && StringUtils.isNotBlank(provider.getAuthProvider().getId())) {
-        	provider.setAuthProvider(authProviderDAO.findById(provider.getAuthProvider().getId()));
+        if(contentProvider.getAuthProvider() != null && StringUtils.isNotBlank(contentProvider.getAuthProvider().getId())) {
+            contentProvider.setAuthProvider(authProviderDAO.findById(contentProvider.getAuthProvider().getId()));
         } else {
-        	provider.setAuthProvider(null);
+            contentProvider.setAuthProvider(null);
         }
         
         if(StringUtils.isBlank(provider.getLoginURL())) {
-        	provider.setLoginURL("/idp/login.html");
+            contentProvider.setLoginURL("/idp/login.html");
         }
         
         if(CollectionUtils.isNotEmpty(provider.getServerSet())) {
-        	for(final ContentProviderServerEntity server : provider.getServerSet()) {
-        		server.setContentProvider(provider);
+        	for(final ContentProviderServerEntity server : contentProvider.getServerSet()) {
+        		server.setContentProvider(contentProvider);
         	}
         }
         
-        final String cpURL = provider.getResource().getURL();
+        final String cpURL = contentProvider.getResource().getURL();
         
         if(StringUtils.isBlank(provider.getPostbackURLParamName())) {
-        	provider.setPostbackURLParamName("postbackURL");
+            contentProvider.setPostbackURLParamName("postbackURL");
         }
         
         if(StringUtils.isBlank(provider.getId())) {
@@ -239,53 +261,54 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             resource.setCoorelatedName(provider.getName());
             resource.setURL(cpURL);
             resourceDao.save(resource);
+
+            contentProvider.setUnavailableResource(generateUnavailableResource(contentProvider, cpURL));
+            contentProvider.setResource(resource);
             
-            provider.setUnavailableResource(generateUnavailableResource(provider, cpURL));
-            provider.setResource(resource);
-            
-            final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = provider.getGroupingXrefs();
-            provider.setGroupingXrefs(null);
-            contentProviderDao.save(provider);
+            final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = contentProvider.getGroupingXrefs();
+            contentProvider.setGroupingXrefs(null);
+            contentProviderDao.save(contentProvider);
             if(CollectionUtils.isNotEmpty(incomingXrefs)) {
             	incomingXrefs.forEach(xref -> {
-            		final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
-            		xref.setContentProvider(provider);
+            		final AuthLevelGroupingEntity grouping = levelGroupingMap.get(xref.getId().getGroupingId());// authLevelGroupingDAO.findById(xref.getId().getGroupingId());
+            		xref.setContentProvider(contentProvider);
             		xref.setGrouping(grouping);
-            		xref.setId(new AuthLevelGroupingContentProviderXrefIdEntity(grouping.getId(), provider.getId()));
+            		xref.setId(new AuthLevelGroupingContentProviderXrefIdEntity(grouping.getId(), contentProvider.getId()));
             	});
             }
-            provider.setGroupingXrefs(incomingXrefs);
-            contentProviderDao.merge(provider);
+            contentProvider.setGroupingXrefs(incomingXrefs);
+            contentProviderDao.merge(contentProvider);
         } else{
             // update provider
             final ContentProviderEntity dbEntity = contentProviderDao.findById(provider.getId());
         	if(dbEntity != null) {
-        		provider.setResource(dbEntity.getResource());
-        		provider.getResource().setURL(cpURL);
-        		provider.getResource().setCoorelatedName(provider.getName());
-        		provider.setPatternSet(dbEntity.getPatternSet());
-        		
-        		provider.setUnavailableResource(dbEntity.getUnavailableResource());
-        		if(provider.getUnavailableResource() == null) {
-        			provider.setUnavailableResource(generateUnavailableResource(provider, cpURL));
+                contentProvider.setResource(dbEntity.getResource());
+                contentProvider.getResource().setURL(cpURL);
+                contentProvider.getResource().setCoorelatedName(provider.getName());
+                contentProvider.setPatternSet(dbEntity.getPatternSet());
+
+                contentProvider.setUnavailableResource(dbEntity.getUnavailableResource());
+        		if(contentProvider.getUnavailableResource() == null) {
+                    contentProvider.setUnavailableResource(generateUnavailableResource(contentProvider, cpURL));
         		} else {
-        			provider.getUnavailableResource().setURL(cpURL);
-        			provider.getUnavailableResource().setCoorelatedName(String.format("%s - Unavailable Resource", provider.getName()));
+                    contentProvider.getUnavailableResource().setURL(cpURL);
+                    contentProvider.getUnavailableResource().setCoorelatedName(String.format("%s - Unavailable Resource", provider.getName()));
         		}
         		
-        		if(CollectionUtils.isNotEmpty(provider.getGroupingXrefs())) {
-        			
-        			provider.getGroupingXrefs().forEach(xref -> {
-        				xref.setContentProvider(provider);
+        		if(CollectionUtils.isNotEmpty(contentProvider.getGroupingXrefs())) {
+
+                    contentProvider.getGroupingXrefs().forEach(xref -> {
+        				xref.setContentProvider(contentProvider);
         				final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
         				xref.setGrouping(grouping);
         				xref.setId(new AuthLevelGroupingContentProviderXrefIdEntity(grouping.getId(), provider.getId()));
         			});
         		}
 
-        		contentProviderDao.merge(provider);
+        		contentProviderDao.merge(contentProvider);
         	}
         }
+        return contentProvider.getId();
     }
     
     private ResourceEntity generateUnavailableResource(final ContentProviderEntity provider, final String cpURL) {
@@ -303,12 +326,13 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     
     @Override
     @Transactional
-    public void deleteContentProvider(String providerId) {
-    	if(StringUtils.isNotBlank(providerId)) {
-    		final ContentProviderEntity entity  = contentProviderDao.findById(providerId);
-    		if(entity!=null){
-    			contentProviderDao.delete(entity);
-    		}
+    public void deleteContentProvider(String providerId) throws BasicDataServiceException {
+        if (StringUtils.isBlank(providerId))
+            throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+        final ContentProviderEntity entity  = contentProviderDao.findById(providerId);
+        if(entity!=null){
+            contentProviderDao.delete(entity);
         }
     }
 
@@ -318,13 +342,15 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     }
 
     @Override
-    public List<URIPatternEntity> getUriPatternsList(URIPatternSearchBean searchBean, int from, int size) {
-        return uriPatternDao.getByExample(searchBean, from, size);
+    @Transactional(readOnly = true)
+    public List<URIPattern> getUriPatternsList(URIPatternSearchBean searchBean, int from, int size) {
+        return uriPatternDozerConverter.convertToDTOList(uriPatternDao.getByExample(searchBean, from, size), (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
 
     @Override
-    public URIPatternEntity getURIPattern(String patternId) {
-        return uriPatternDao.findById(patternId);
+    @Transactional(readOnly = true)
+    public URIPattern getURIPattern(String patternId) {
+        return uriPatternDozerConverter.convertToDTO(uriPatternDao.findById(patternId), true);
     }
     
     private void populateMetaValue(final AbstractMetaValueEntity value) {
@@ -368,254 +394,569 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
     @Override
     @Transactional
-    public void saveURIPattern(final URIPatternEntity pattern) {
-        final UIThemeEntity theme = (pattern.getUiTheme() != null) ? uiThemeDAO.findById(pattern.getUiTheme().getId()) : null;
-        final ContentProviderEntity contentProvider = contentProviderDao.findById(pattern.getContentProvider().getId());
-        pattern.setContentProvider(contentProvider);
-        pattern.setUiTheme(theme);
-        
-        final String applicationURL = (pattern.getResource() != null) ? pattern.getResource().getURL() : null;
-        
-		final ResourceTypeEntity patternMethodResourceType = resourceTypeDAO.findById(patternMethodResourceTypeId);
+    public String saveURIPattern(URIPattern uriPattern) throws BasicDataServiceException{
+        if (uriPattern==null ) {
+            throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        if (StringUtils.isBlank(uriPattern.getPattern())) {
+            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_URI_PATTERN_NOT_SET);
+        }
+        if (StringUtils.isBlank(uriPattern.getContentProviderId())) {
+            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
+        }
+
+        final List<URIPatternEntity> entityList =this.getURIPatternsForContentProviderMatchingPattern(uriPattern.getContentProviderId(), uriPattern.getPattern());
+        if(CollectionUtils.isNotEmpty(entityList)) {
+            if(StringUtils.isBlank(uriPattern.getId())) {
+                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_EXISTS);
+            } else {
+                for(final URIPatternEntity test : entityList) {
+                    if(!StringUtils.equals(test.getId(), uriPattern.getId())) {
+                        throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_EXISTS);
+                    }
+                }
+            }
+        }
+
+        if(uriPattern.getMatchMode() == null) {
+            throw new BasicDataServiceException(ResponseCode.PATTERN_MATCH_MODE_REQUIRED);
+        }
+
+        if(PatternMatchMode.ANY_PARAMS.equals(uriPattern.getMatchMode()) ||
+           PatternMatchMode.NO_PARAMS.equals(uriPattern.getMatchMode()) ||
+           PatternMatchMode.IGNORE.equals(uriPattern.getMatchMode())) {
+            uriPattern.setParams(null);
+        } else {
+            if(CollectionUtils.isEmpty(uriPattern.getParams())) {
+                throw new BasicDataServiceException(ResponseCode.PATTERN_PARAMS_REQUIRED);
+            }
+        }
+
+        if(uriPattern.isShowOnApplicationPage()) {
+            if(StringUtils.isBlank(uriPattern.getUrl())) {
+                throw new BasicDataServiceException(ResponseCode.APPLICATION_URL_REQUIRED);
+            }
+
+            if(StringUtils.isBlank(uriPattern.getApplicationName())) {
+                throw new BasicDataServiceException(ResponseCode.APPLICATION_NAME_REQUIRED);
+            }
+        } else {
+            uriPattern.setUrl(null);
+            uriPattern.setApplicationName(null);
+        }
+
+        if(uriPattern.isCacheable()) {
+            if(uriPattern.getCacheTTL() == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_CACHE_TTL);
+            } else if(uriPattern.getCacheTTL().intValue() <= 0) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_CACHE_TTL);
+            }
+        } else {
+            uriPattern.setCacheTTL(null);
+        }
+
+        // validate pattern
+        try{
+            ContentProviderNode.validate(uriPattern.getPattern());
+        } catch(InvalidPatternException e){
+            throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_INVALID);
+        }
+
+        if(CollectionUtils.isNotEmpty(uriPattern.getErrorMappings())) {
+            for(final URIPatternErrorMapping mapping : uriPattern.getErrorMappings()) {
+                if(!isValidRedirectURL(mapping.getRedirectURL())) {
+                    FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.INVALID_ERROR_REDIRECT_URL);
+                    ex.addFieldMapping("errorCode", Integer.valueOf(mapping.getErrorCode()).toString());
+                    ex.addFieldMapping("redirectURL", mapping.getRedirectURL());
+                    throw ex;
+                }
+            }
+        }
+
+        if(CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
+            if(uriPattern.getGroupingXrefs().stream().map(e -> e.getId()).filter(e -> e.getGroupingId().equals(smsAuthLevelId)
+                    || e.getGroupingId().equals(totpAuthLevelId)).count() == 2) {
+                throw new BasicDataServiceException(ResponseCode.SMS_AND_TOTP_NOT_ALLOWED_SIMULTANEOUSLY);
+            }
+        }
+
+        if(CollectionUtils.isNotEmpty(uriPattern.getSubstitutions())) {
+            for(final URIPatternSubstitution substitution : uriPattern.getSubstitutions()) {
+                if(substitution.getOrder() == null) {
+                    throw new BasicDataServiceException(ResponseCode.ORDER_REQUIRED);
+                }
+
+                if(StringUtils.isBlank(substitution.getQuery())) {
+                    throw new BasicDataServiceException(ResponseCode.URI_PATTTERN_SUBSTITUTION_QUERY_REQUIRED);
+                }
+
+                /*
+                if(StringUtils.isBlank(substitution.getReplaceWith())) {
+                    response.addFieldMapping("query", substitution.getQuery());
+                    throw new BasicDataServiceException(ResponseCode.URI_PATTTERN_SUBSTITUTION_REPLACE_WITH_REQUIRED);
+                }
+                */
+            }
+        }
+
+        if(CollectionUtils.isNotEmpty(uriPattern.getServers())) {
+            for(final URIPatternServer server : uriPattern.getServers()) {
+                if(StringUtils.isBlank(server.getServerURL())) {
+                    throw new BasicDataServiceException(ResponseCode.SERVER_URL_NOT_SET);
+                }
+            }
+        }
+
+        if(CollectionUtils.isNotEmpty(uriPattern.getMetaEntitySet())) {
+            for(final URIPatternMeta meta : uriPattern.getMetaEntitySet()) {
+                if(StringUtils.isBlank(meta.getName())) {
+                    throw new BasicDataServiceException(ResponseCode.URI_PATTERN_META_NAME_NOT_SET);
+                }
+
+                if(meta.getMetaType()==null || StringUtils.isBlank(meta.getMetaType().getId())) {
+                    FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.URI_PATTERN_META_TYPE_NOT_SET);
+                    ex.addFieldMapping("metaName", meta.getName());
+                    throw ex;
+                }
+
+                if(StringUtils.equals(meta.getMetaType().getId(), formPostURIPatternRule)) {
+                    if(StringUtils.isEmpty(meta.getContentType())) {
+                        FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.PATTERN_META_CONTENT_TYPE_MISSING);
+                        ex.addFieldMapping("metaName", meta.getName());
+                        throw ex;
+                    }
+                }
+
+                /* cookies require a path */
+                if(StringUtils.equals(meta.getMetaType().getId(), cookieMetadataType)) {
+                    if(StringUtils.isBlank(meta.getCookiePath())) {
+                        FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.COOKIE_PATH_REQUIRED);
+                        ex.addFieldMapping("metaName", meta.getName());
+                        throw ex;
+                    }
+                }
+
+                if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
+                    for(final URIPatternMetaValue value : meta.getMetaValueSet()) {
+                        if (StringUtils.isBlank(value.getName())) {
+                            throw new  BasicDataServiceException(ResponseCode.PATTERN_META_NAME_MISSING);
+                        }
+
+                        if(value.isEmptyValue()) {
+                            value.setGroovyScript(null);
+                            value.setAmAttribute(null);
+                            value.setStaticValue(null);
+                            value.setFetchedValue(null);
+                        } else {
+                            if(StringUtils.isBlank(value.getGroovyScript()) &&
+                               StringUtils.isBlank(value.getStaticValue()) &&
+                               StringUtils.isBlank(value.getFetchedValue()) &&
+                               (value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId()))) {
+                                FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.PATTERN_META_VALUE_MISSING);
+                                ex.addFieldMapping("uriPatternMetaName", meta.getName());
+                                ex.addFieldMapping("uriPatternMetaValueName", value.getName());
+                                throw ex;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if(CollectionUtils.isNotEmpty(uriPattern.getParams())) {
+            for(final URIPatternParameter param : uriPattern.getParams()) {
+                if(StringUtils.isBlank(param.getName())) {
+                    throw new BasicDataServiceException(ResponseCode.PATTERN_URI_PARAM_NAME_REQUIRED);
+                }
+            }
+        }
+
+        if(CollectionUtils.isNotEmpty(uriPattern.getMethods())) {
+            final Set<String> methodSet = new HashSet<String>();
+            for(final URIPatternMethod method : uriPattern.getMethods()) {
+                if(method.getMatchMode() == null) {
+                    FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.METHOD_MATCH_MODE_REQUIRED);
+                    ex.addFieldMapping("method", method.getMethod().toString());
+                    throw ex;
+                }
+
+                if(PatternMatchMode.ANY_PARAMS.equals(method.getMatchMode()) ||
+                   PatternMatchMode.NO_PARAMS.equals(method.getMatchMode()) ||
+                   PatternMatchMode.IGNORE.equals(method.getMatchMode())) {
+                    method.setParams(null);
+                } else {
+                    if(CollectionUtils.isEmpty(method.getParams())) {
+                        FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.METHOD_PARAMS_REQUIRED);
+                        ex.addFieldMapping("method", method.getMethod().toString());
+                        throw ex;
+                    }
+                }
+
+                if(method.getMethod() == null) {
+                    throw new BasicDataServiceException(ResponseCode.URI_PATTERN_METHOD_REQUIRED);
+                }
+
+                if(CollectionUtils.isNotEmpty(method.getParams())) {
+                    for(final URIPatternMethodParameter param : method.getParams()) {
+                        if(StringUtils.isBlank(param.getName())) {
+                            FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.URI_PATTERN_PARAMETER_NAME_REQUIRED);
+                            ex.addFieldMapping("method", method.getMethod().toString());
+                            throw ex;
+                        }
+                    }
+                }
+
+                if(CollectionUtils.isNotEmpty(method.getMetaEntitySet())) {
+                    for(final URIPatternMethodMeta meta : method.getMetaEntitySet()) {
+                        if(StringUtils.isBlank(meta.getName())) {
+                            FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.URI_PATTERN_PARAMTER_META_NAME_REQUIRED);
+                            ex.addFieldMapping("method", method.getMethod().toString());
+                            throw ex;
+                        }
+
+                        if(meta.getMetaType()==null || StringUtils.isBlank(meta.getMetaType().getId())) {
+                            FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.URI_PATTERN_PARAMTER_META_TYPE_REQUIRED);
+                            ex.addFieldMapping("method", method.getMethod().toString());
+                            ex.addFieldMapping("metaName", meta.getName());
+                            throw ex;
+                        }
+
+                        if(StringUtils.equals(meta.getMetaType().getId(), formPostURIPatternRule)) {
+                            if(StringUtils.isEmpty(meta.getContentType())) {
+                                FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.COOKIE_PATH_REQUIRED_ON_METHOD);
+                                ex.addFieldMapping("method", method.getMethod().toString());
+                                ex.addFieldMapping("metaName", meta.getName());
+                                throw ex;
+                            }
+                        }
+
+                        /* cookies require a path */
+                        if(StringUtils.equals(meta.getMetaType().getId(), cookieMetadataType)) {
+                            if(StringUtils.isBlank(meta.getCookiePath())) {
+                                FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.COOKIE_PATH_REQUIRED);
+                                ex.addFieldMapping("method", method.getMethod().toString());
+                                ex.addFieldMapping("metaName", meta.getName());
+                                throw ex;
+                            }
+                        }
+
+                        if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
+                            for(final URIPatternMethodMetaValue value : meta.getMetaValueSet()) {
+                                if (StringUtils.isBlank(value.getName())) {
+                                    FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.PATTERN_METHOD_META_VALUE_NAME_MISSING);
+                                    ex.addFieldMapping("method", method.getMethod().toString());
+                                    throw ex;
+                                }
+
+                                if(value.isEmptyValue()) {
+                                    value.setGroovyScript(null);
+                                    value.setAmAttribute(null);
+                                    value.setStaticValue(null);
+                                    value.setFetchedValue(null);
+                                } else {
+                                    if(StringUtils.isBlank(value.getGroovyScript()) &&
+                                       StringUtils.isBlank(value.getStaticValue()) &&
+                                       StringUtils.isBlank(value.getFetchedValue()) &&
+                                       (value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId()))) {
+                                        FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.PATTERN_METHOD_META_VALUE_MISSING);
+                                        ex.addFieldMapping("method", method.getMethod().toString());
+                                        ex.addFieldMapping("metaName", meta.getName());
+                                        ex.addFieldMapping("metaValueName", value.getName());
+                                        throw ex;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if(methodSet.contains(getKey(method))) {
+                    FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.METHOD_WITH_PARAMS_ALREADY_DEFINED);
+                    ex.addFieldMapping("method", method.getMethod().toString());
+                    throw ex;
+                }
+                methodSet.add(getKey(method));
+            }
+        }
+
+        if(StringUtils.isNotBlank(uriPattern.getRedirectTo())) {
+            if(!isValidRedirectURL(uriPattern.getRedirectTo())) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_PATTERN_REDIRECT_URL);
+            }
+            uriPattern.setRedirectToGroovyScript(null);
+        } else if(StringUtils.isNotBlank(uriPattern.getRedirectToGroovyScript())) {
+            final String script  = uriPattern.getRedirectToGroovyScript();
+            boolean validScript = false;
+            if(scriptRunner.scriptExists(script)) {
+                try {
+                    if((scriptRunner.instantiateClass(null, script) instanceof AbstractRedirectURLGroovyProcessor)) {
+                        validScript = true;
+                    }
+                } catch(Throwable e) {
+                    log.warn(String.format("Can't instaniate script %s", script), e);
+                }
+            }
+
+            if(!validScript) {
+                FieldMappingDataServiceException ex = new FieldMappingDataServiceException(ResponseCode.INVALID_ERROR_REDIRECT_URL_GROOVY_SCRIPT);
+                ex.addFieldMapping("className", AbstractRedirectURLGroovyProcessor.class.getCanonicalName());
+                throw ex;
+            }
+        }
+
+        final URIPatternEntity entity = uriPatternDozerConverter.convertToEntity(uriPattern,true);
+        return saveURIPatternInternal(entity);
+    }
+
+    @Transactional
+    private String saveURIPatternInternal(URIPatternEntity entity) {
+        final UIThemeEntity theme = (entity.getUiTheme() != null) ? uiThemeDAO.findById(entity.getUiTheme().getId()) : null;
+        final ContentProviderEntity contentProvider = contentProviderDao.findById(entity.getContentProvider().getId());
+        entity.setContentProvider(contentProvider);
+        entity.setUiTheme(theme);
+
+        final String applicationURL = (entity.getResource() != null) ? entity.getResource().getURL() : null;
+
+        final ResourceTypeEntity patternMethodResourceType = resourceTypeDAO.findById(patternMethodResourceTypeId);
         if(patternMethodResourceType==null){
             throw new NullPointerException("Cannot create resource for URI pattern. Resource type is not found");
         }
-        
-        if(pattern.getAuthProvider() != null && StringUtils.isNotBlank(pattern.getAuthProvider().getId())) {
-        	pattern.setAuthProvider(authProviderDAO.findById(pattern.getAuthProvider().getId()));
+
+        if(entity.getAuthProvider() != null && StringUtils.isNotBlank(entity.getAuthProvider().getId())) {
+            entity.setAuthProvider(authProviderDAO.findById(entity.getAuthProvider().getId()));
         } else {
-        	pattern.setAuthProvider(null);
+            entity.setAuthProvider(null);
         }
-        
-        if(CollectionUtils.isNotEmpty(pattern.getSubstitutions())) {
-        	for(final URIPatternSubstitutionEntity substitution : pattern.getSubstitutions()) {
-        		substitution.setPattern(pattern);
-        	}
+
+        if(CollectionUtils.isNotEmpty(entity.getSubstitutions())) {
+            for(final URIPatternSubstitutionEntity substitution : entity.getSubstitutions()) {
+                substitution.setPattern(entity);
+            }
         }
-        
-        if(CollectionUtils.isNotEmpty(pattern.getXssRules())) {
-        	pattern.getXssRules().forEach(rule -> {
-        		rule.setPattern(pattern);
-        	});
+
+        if(CollectionUtils.isNotEmpty(entity.getXssRules())) {
+            entity.getXssRules().forEach(rule -> {
+                rule.setPattern(entity);
+            });
         }
-        
-        if(CollectionUtils.isNotEmpty(pattern.getServers())) {
-        	for(final URIPatternServerEntity server : pattern.getServers()) {
-        		server.setPattern(pattern);
-        	}
+
+        if(CollectionUtils.isNotEmpty(entity.getServers())) {
+            for(final URIPatternServerEntity server : entity.getServers()) {
+                server.setPattern(entity);
+            }
         }
-        
-        if(CollectionUtils.isNotEmpty(pattern.getMethods())) {
-        	for(final URIPatternMethodEntity patternMethod : pattern.getMethods()) {
-        		patternMethod.setPattern(pattern);
-        		if(CollectionUtils.isNotEmpty(patternMethod.getParams())) {
-        			for(final URIPatternMethodParameterEntity parameter : patternMethod.getParams()) {
-        				parameter.setPatternMethod(patternMethod);
-        			}
-        		}
-        		if(CollectionUtils.isNotEmpty(patternMethod.getMetaEntitySet())) {
-        			for(final URIPatternMethodMetaEntity meta : patternMethod.getMetaEntitySet()) {
-        				meta.setPatternMethod(patternMethod);
-        				if(meta.getMetaType() != null && StringUtils.isNotBlank(meta.getMetaType().getId())) {
-        					meta.setMetaType(patternMetaTypeDAO.findById(meta.getMetaType().getId()));
-        				} else {
-        					meta.setMetaType(null);
-        				}
-        				if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
-        					for(final URIPatternMethodMetaValueEntity value : meta.getMetaValueSet()) {
-        						value.setMetaEntity(meta);
-        						
+
+        if(CollectionUtils.isNotEmpty(entity.getMethods())) {
+            for(final URIPatternMethodEntity patternMethod : entity.getMethods()) {
+                patternMethod.setPattern(entity);
+                if(CollectionUtils.isNotEmpty(patternMethod.getParams())) {
+                    for(final URIPatternMethodParameterEntity parameter : patternMethod.getParams()) {
+                        parameter.setPatternMethod(patternMethod);
+                    }
+                }
+                if(CollectionUtils.isNotEmpty(patternMethod.getMetaEntitySet())) {
+                    for(final URIPatternMethodMetaEntity meta : patternMethod.getMetaEntitySet()) {
+                        meta.setPatternMethod(patternMethod);
+                        if(meta.getMetaType() != null && StringUtils.isNotBlank(meta.getMetaType().getId())) {
+                            meta.setMetaType(patternMetaTypeDAO.findById(meta.getMetaType().getId()));
+                        } else {
+                            meta.setMetaType(null);
+                        }
+                        if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
+                            for(final URIPatternMethodMetaValueEntity value : meta.getMetaValueSet()) {
+                                value.setMetaEntity(meta);
+
         						/* satisfy data integrity */
-        						populateMetaValue(value);
-        					}
-        				}
-        			}
-        		}
-        		
-        		if(patternMethod.getId() == null) {
+                                populateMetaValue(value);
+                            }
+                        }
+                    }
+                }
+
+                if(patternMethod.getId() == null) {
                     final ResourceEntity resource = new ResourceEntity();
-                    resource.setName(System.currentTimeMillis() + "_" + pattern.getPattern() + "_" + patternMethod.getMethod());
+                    resource.setName(System.currentTimeMillis() + "_" + entity.getPattern() + "_" + patternMethod.getMethod());
                     resource.setResourceType(patternMethodResourceType);
                     resource.setId(null);
                     resource.setIsPublic(false);
                     resource.setCoorelatedName(getCoorelatedName(patternMethod));
                     resourceDao.add(resource);
                     patternMethod.setResource(resource);
-        		}
-        	}
+                }
+            }
         }
-        
-        if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
-        	for(final URIPatternMetaEntity meta : pattern.getMetaEntitySet()) {
-        		meta.setPattern(pattern);
-    			if(meta.getMetaType() != null && StringUtils.isNotBlank(meta.getMetaType().getId())) {
-					meta.setMetaType(patternMetaTypeDAO.findById(meta.getMetaType().getId()));
-				} else {
-					meta.setMetaType(null);
-				}
-				if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
-					for(final URIPatternMetaValueEntity value : meta.getMetaValueSet()) {
-						value.setMetaEntity(meta);
-						
+
+        if(CollectionUtils.isNotEmpty(entity.getMetaEntitySet())) {
+            for(final URIPatternMetaEntity meta : entity.getMetaEntitySet()) {
+                meta.setPattern(entity);
+                if(meta.getMetaType() != null && StringUtils.isNotBlank(meta.getMetaType().getId())) {
+                    meta.setMetaType(patternMetaTypeDAO.findById(meta.getMetaType().getId()));
+                } else {
+                    meta.setMetaType(null);
+                }
+                if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
+                    for(final URIPatternMetaValueEntity value : meta.getMetaValueSet()) {
+                        value.setMetaEntity(meta);
+
 						/* satisfy data integrity */
-						populateMetaValue(value);
-					}
-				}
-    		}
+                        populateMetaValue(value);
+                    }
+                }
+            }
         }
-        
-        if(CollectionUtils.isNotEmpty(pattern.getParams())) {
-        	for(final URIPatternParameterEntity param : pattern.getParams()) {
-        		param.setPattern(pattern);
-        	}
+
+        if(CollectionUtils.isNotEmpty(entity.getParams())) {
+            for(final URIPatternParameterEntity param : entity.getParams()) {
+                param.setPattern(entity);
+            }
         }
-        
-        if(CollectionUtils.isNotEmpty(pattern.getErrorMappings())) {
-        	for(final URIPatternErrorMappingEntity errorMapping : pattern.getErrorMappings()) {
-        		errorMapping.setPattern(pattern);
-        	}
+
+        if(CollectionUtils.isNotEmpty(entity.getErrorMappings())) {
+            for(final URIPatternErrorMappingEntity errorMapping : entity.getErrorMappings()) {
+                errorMapping.setPattern(entity);
+            }
         }
-        
-        if(StringUtils.isBlank(pattern.getId())) {
-        	
+
+        if(StringUtils.isBlank(entity.getId())) {
+
             ResourceTypeEntity resourceType = resourceTypeDAO.findById(patternResourceTypeId);
             if(resourceType==null){
                 throw new NullPointerException("Cannot create resource for URI pattern. Resource type is not found");
             }
             // we need to make corresponded resource as public if it is protected by oauth
             boolean isOAuthProtected = false;
-            final Set<AuthLevelGroupingURIPatternXrefEntity> incomingXrefs = pattern.getGroupingXrefs();
+            final Set<AuthLevelGroupingURIPatternXrefEntity> incomingXrefs = entity.getGroupingXrefs();
             if(CollectionUtils.isNotEmpty(incomingXrefs)) {
                 for(final AuthLevelGroupingURIPatternXrefEntity xref : incomingXrefs) {
-                     if("OAUTH".equals(xref.getId().getGroupingId())){
-                         isOAuthProtected = true;
-                         break;
-                     }
+                    if("OAUTH".equals(xref.getId().getGroupingId())){
+                        isOAuthProtected = true;
+                        break;
+                    }
                 }
             }
 
             final ResourceEntity resource = new ResourceEntity();
-            resource.setName(System.currentTimeMillis() + "_" + pattern.getPattern());
+            resource.setName(System.currentTimeMillis() + "_" + entity.getPattern());
             resource.setResourceType(resourceType);
             resource.setURL(applicationURL);
             resource.setId(null);
             resource.setIsPublic(isOAuthProtected);
-            resource.setCoorelatedName(String.format("%s - %s", contentProvider.getName(), pattern.getPattern()));
+            resource.setCoorelatedName(String.format("%s - %s", contentProvider.getName(), entity.getPattern()));
             resourceDao.add(resource);
-            pattern.setResource(resource);
-            
+            entity.setResource(resource);
 
-            pattern.setGroupingXrefs(null);
-            uriPatternDao.save(pattern);
+
+            entity.setGroupingXrefs(null);
+            uriPatternDao.save(entity);
             if(CollectionUtils.isNotEmpty(incomingXrefs)) {
-            	for(final AuthLevelGroupingURIPatternXrefEntity xref : incomingXrefs) {
-            		final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
-            		xref.setPattern(pattern);
-            		xref.setGrouping(grouping);
-            		xref.setId(new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), pattern.getId()));
-            	}
-            }
-            pattern.setGroupingXrefs(incomingXrefs);
-            uriPatternDao.merge(pattern);
-        } else{
-        	final URIPatternEntity dbEntity = uriPatternDao.findById(pattern.getId());
-        	
-        	if(dbEntity != null) {
-        		pattern.setResource(dbEntity.getResource());
-        		if(pattern.getResource() != null) {
-        			pattern.getResource().setURL(applicationURL);
-        			pattern.getResource().setCoorelatedName(String.format("%s - %s", pattern.getContentProvider().getName(), pattern.getPattern()));
-        		}
-        		if(CollectionUtils.isEmpty(pattern.getGroupingXrefs())) {
-        			dbEntity.getGroupingXrefs().clear();
-        			pattern.setGroupingXrefs(dbEntity.getGroupingXrefs());
-        		} else {
-        			for(final AuthLevelGroupingURIPatternXrefEntity xref : pattern.getGroupingXrefs()) {
-        				final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
-        				xref.setGrouping(grouping);
-        				xref.setPattern(pattern);
-        				xref.setId(new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), pattern.getId()));
-        			}
-        		}
-        		
-        		if(CollectionUtils.isEmpty(pattern.getXssRules())) {
-        			dbEntity.getXssRules().clear();
-        			pattern.setXssRules(dbEntity.getXssRules());
-        		}
-        		
-        		if(CollectionUtils.isEmpty(pattern.getSubstitutions())) {
-        			dbEntity.getSubstitutions().clear();
-        			pattern.setSubstitutions(dbEntity.getSubstitutions());
-        		}
-        		
-        		if(CollectionUtils.isEmpty(pattern.getServers())) {
-        			dbEntity.getServers().clear();
-        			pattern.setServers(dbEntity.getServers());
-        		}
-        		
-        		if(CollectionUtils.isEmpty(pattern.getErrorMappings())) {
-                	dbEntity.getErrorMappings().clear();
-                	pattern.setErrorMappings(dbEntity.getErrorMappings());
+                for(final AuthLevelGroupingURIPatternXrefEntity xref : incomingXrefs) {
+                    final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
+                    xref.setPattern(entity);
+                    xref.setGrouping(grouping);
+                    xref.setId(new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), entity.getId()));
                 }
-        		
-        		if(CollectionUtils.isEmpty(pattern.getMetaEntitySet())) {
-        			dbEntity.getMetaEntitySet().clear();
-        			pattern.setMetaEntitySet(dbEntity.getMetaEntitySet());
-        		} else {
-        			for(final URIPatternMetaEntity meta : pattern.getMetaEntitySet()) {
-        				if(CollectionUtils.isEmpty(meta.getMetaValueSet())) {
-        					if(meta.getId() != null) {
-        						final URIPatternMetaEntity dbMeta = dbEntity.getMetaEntity(meta.getId());
-        						if(dbMeta != null) {
-        							dbMeta.getMetaValueSet().clear();
-        							meta.setMetaValueSet(dbMeta.getMetaValueSet());
-        						}
-        					}
-        				}
-        			}
-        		}
-        		
-        		if(CollectionUtils.isEmpty(pattern.getParams())) {
-        			dbEntity.getParams().clear();
-        			pattern.setParams(dbEntity.getParams());
-        		}
-        		
-        		if(CollectionUtils.isEmpty(pattern.getMethods())) {
-        			 dbEntity.getMethods().clear();
-        			 pattern.setMethods(dbEntity.getMethods());
-        		} else {
-                	for(final URIPatternMethodEntity patternMethod : pattern.getMethods()) {
-                		final URIPatternMethodEntity dbMethod = dbEntity.getMethod(patternMethod.getId());
-            			if(dbMethod != null) {
-            				patternMethod.setResource(dbMethod.getResource());
-            				patternMethod.getResource().setCoorelatedName(getCoorelatedName(patternMethod));
-            				//set the PK, since the UI could have added/remved the same method, in which case the PK would have been lost
-            				//patternMethod.setId(dbMethod.getId());
-            				
-	                		if(CollectionUtils.isEmpty(patternMethod.getParams())) {
-	                			dbMethod.getParams().clear();
-	                			patternMethod.setParams(dbMethod.getParams());
-	                		}
-	                		if(CollectionUtils.isEmpty(patternMethod.getMetaEntitySet())) {
-	                			dbMethod.getMetaEntitySet().clear();
-	                			patternMethod.setMetaEntitySet(dbMethod.getMetaEntitySet());
-	                		} else {
-	                			for(final URIPatternMethodMetaEntity meta : patternMethod.getMetaEntitySet()) {
-	                				if(meta.getId() != null) {
-	                					final URIPatternMethodMetaEntity dbMeta = dbMethod.getMetaEntity(meta.getId());
-	                					if(dbMeta != null) {
-	                						if(CollectionUtils.isEmpty(meta.getMetaValueSet())) {
-	                							dbMeta.getMetaValueSet().clear();
-	                							meta.setMetaValueSet(dbMeta.getMetaValueSet());
-	                						}
-	                					}
-	                				}
-	                			}
-	                		}
-            			}
-            		}
-                	
-                	//find patterns that no longer exist, and remove the resource, as it no longer serves a purpose
+            }
+            entity.setGroupingXrefs(incomingXrefs);
+            uriPatternDao.merge(entity);
+        } else{
+            final URIPatternEntity dbEntity = uriPatternDao.findById(entity.getId());
+
+            if(dbEntity != null) {
+                entity.setResource(dbEntity.getResource());
+                if(entity.getResource() != null) {
+                    entity.getResource().setURL(applicationURL);
+                    entity.getResource().setCoorelatedName(String.format("%s - %s", entity.getContentProvider().getName(), entity.getPattern()));
+                }
+                if(CollectionUtils.isEmpty(entity.getGroupingXrefs())) {
+                    dbEntity.getGroupingXrefs().clear();
+                    entity.setGroupingXrefs(dbEntity.getGroupingXrefs());
+                } else {
+                    for(final AuthLevelGroupingURIPatternXrefEntity xref : entity.getGroupingXrefs()) {
+                        final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
+                        xref.setGrouping(grouping);
+                        xref.setPattern(entity);
+                        xref.setId(new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), entity.getId()));
+                    }
+                }
+
+                if(CollectionUtils.isEmpty(entity.getXssRules())) {
+                    dbEntity.getXssRules().clear();
+                    entity.setXssRules(dbEntity.getXssRules());
+                }
+
+                if(CollectionUtils.isEmpty(entity.getSubstitutions())) {
+                    dbEntity.getSubstitutions().clear();
+                    entity.setSubstitutions(dbEntity.getSubstitutions());
+                }
+
+                if(CollectionUtils.isEmpty(entity.getServers())) {
+                    dbEntity.getServers().clear();
+                    entity.setServers(dbEntity.getServers());
+                }
+
+                if(CollectionUtils.isEmpty(entity.getErrorMappings())) {
+                    dbEntity.getErrorMappings().clear();
+                    entity.setErrorMappings(dbEntity.getErrorMappings());
+                }
+
+                if(CollectionUtils.isEmpty(entity.getMetaEntitySet())) {
+                    dbEntity.getMetaEntitySet().clear();
+                    entity.setMetaEntitySet(dbEntity.getMetaEntitySet());
+                } else {
+                    for(final URIPatternMetaEntity meta : entity.getMetaEntitySet()) {
+                        if(CollectionUtils.isEmpty(meta.getMetaValueSet())) {
+                            if(meta.getId() != null) {
+                                final URIPatternMetaEntity dbMeta = dbEntity.getMetaEntity(meta.getId());
+                                if(dbMeta != null) {
+                                    dbMeta.getMetaValueSet().clear();
+                                    meta.setMetaValueSet(dbMeta.getMetaValueSet());
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if(CollectionUtils.isEmpty(entity.getParams())) {
+                    dbEntity.getParams().clear();
+                    entity.setParams(dbEntity.getParams());
+                }
+
+                if(CollectionUtils.isEmpty(entity.getMethods())) {
+                    dbEntity.getMethods().clear();
+                    entity.setMethods(dbEntity.getMethods());
+                } else {
+                    for(final URIPatternMethodEntity patternMethod : entity.getMethods()) {
+                        final URIPatternMethodEntity dbMethod = dbEntity.getMethod(patternMethod.getId());
+                        if(dbMethod != null) {
+                            patternMethod.setResource(dbMethod.getResource());
+                            patternMethod.getResource().setCoorelatedName(getCoorelatedName(patternMethod));
+                            //set the PK, since the UI could have added/remved the same method, in which case the PK would have been lost
+                            //patternMethod.setId(dbMethod.getId());
+
+                            if(CollectionUtils.isEmpty(patternMethod.getParams())) {
+                                dbMethod.getParams().clear();
+                                patternMethod.setParams(dbMethod.getParams());
+                            }
+                            if(CollectionUtils.isEmpty(patternMethod.getMetaEntitySet())) {
+                                dbMethod.getMetaEntitySet().clear();
+                                patternMethod.setMetaEntitySet(dbMethod.getMetaEntitySet());
+                            } else {
+                                for(final URIPatternMethodMetaEntity meta : patternMethod.getMetaEntitySet()) {
+                                    if(meta.getId() != null) {
+                                        final URIPatternMethodMetaEntity dbMeta = dbMethod.getMetaEntity(meta.getId());
+                                        if(dbMeta != null) {
+                                            if(CollectionUtils.isEmpty(meta.getMetaValueSet())) {
+                                                dbMeta.getMetaValueSet().clear();
+                                                meta.setMetaValueSet(dbMeta.getMetaValueSet());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //find patterns that no longer exist, and remove the resource, as it no longer serves a purpose
                 	/*
                 	if(CollectionUtils.isNotEmpty(dbEntity.getMethods())) {
                 		for(final URIPatternMethodEntity dbMethod : dbEntity.getMethods()) {
@@ -623,10 +964,10 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
                 			for(final URIPatternMethodEntity patternMethod : pattern.getMethods()) {
                 				contains = StringUtils.equals(dbMethod.getId(), patternMethod.getId());
                 				if(contains) {
-                					break; 
+                					break;
                 				}
                 			}
-                			
+
                 			if(!contains) {
                 				resourceService.deleteResource(dbMethod.getResource().getId());
                 			}
@@ -634,29 +975,32 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
                 	}
                 	*/
                 }
-        		
-        		pattern.setPageTemplates(dbEntity.getPageTemplates());
-        		//pattern.setMetaEntitySet(dbEntity.getMetaEntitySet());
-        		uriPatternDao.merge(pattern);
-        	}
+
+                entity.setPageTemplates(dbEntity.getPageTemplates());
+                //pattern.setMetaEntitySet(dbEntity.getMetaEntitySet());
+                uriPatternDao.merge(entity);
+            }
         }
+        return entity.getId();
     }
 
     @Override
     @Transactional
-    public void deleteProviderPattern(String patternId) {
-       if(StringUtils.isNotBlank(patternId)) {
-    	   URIPatternEntity entity  = uriPatternDao.findById(patternId);
-    	   if(entity != null) {
-    		   uriPatternDao.delete(entity);
-    	   }
-       }
+    public void deleteProviderPattern(String patternId) throws BasicDataServiceException {
+        if (StringUtils.isBlank(patternId))
+            throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+        URIPatternEntity entity  = uriPatternDao.findById(patternId);
+        if(entity != null) {
+            uriPatternDao.delete(entity);
+        }
     }
 
 
     @Override
-    public List<URIPatternMetaTypeEntity> getAllMetaType() {
-        return patternMetaTypeDAO.findAll();
+    @Transactional(readOnly = true)
+    public List<URIPatternMetaType> getAllMetaType() {
+        return uriPatternMetaTypeDozerConverter.convertToDTOList(patternMetaTypeDAO.findAll(), false);
     }
 
     /*
@@ -684,14 +1028,17 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
 	@Override
 	@Transactional
-	public AuthLevelGroupingEntity getAuthLevelGrouping(String id) {
-		return authLevelGroupingDAO.findById(id);
+	public AuthLevelGrouping getAuthLevelGrouping(String id) {
+		return authLevelGroupingDozerConverter.convertToDTO(authLevelGroupingDAO.findById(id), true);
 	}
 	
 
 	@Override
 	@Transactional
-	public void deleteAuthLevelGrouping(String id) {
+	public void deleteAuthLevelGrouping(String id) throws BasicDataServiceException {
+        if (StringUtils.isBlank(id))
+            throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
 		final AuthLevelGroupingEntity entity = authLevelGroupingDAO.findById(id);
 		if(entity != null) {
 			authLevelGroupingDAO.delete(entity);
@@ -700,7 +1047,10 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
 	@Override
 	@Transactional
-	public void saveAuthLevelGrouping(AuthLevelGroupingEntity entity) {
+	public String saveAuthLevelGrouping(AuthLevelGrouping grouping) throws BasicDataServiceException{
+        final AuthLevelGroupingEntity entity = authLevelGroupingDozerConverter.convertToEntity(grouping, true);
+        this.validateSaveAuthLevelGrouping(entity);
+
 		if(StringUtils.isBlank(entity.getId())) {
 			entity.setAuthLevel(authLevelDAO.findById(entity.getAuthLevel().getId()));
 			entity.setAttributes(null);
@@ -714,6 +1064,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 				authLevelGroupingDAO.update(dbEntity);
 			}
 		}
+        return entity.getId();
 	}
 
 	@Override
@@ -734,8 +1085,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
 	@Override
 	@Transactional
-	public void validateSaveAuthLevelGrouping(AuthLevelGroupingEntity entity)
-			throws BasicDataServiceException {
+	public void validateSaveAuthLevelGrouping(AuthLevelGroupingEntity entity) throws BasicDataServiceException {
 		final AuthLevelGroupingEntity dbEntity = authLevelGroupingDAO.findByName(entity.getName());
 		if(dbEntity != null) {
 			if(StringUtils.isBlank(entity.getId()) || !(dbEntity.getId().equals(entity.getId()))) {
@@ -746,36 +1096,66 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
 	@Override
 	@Transactional
-	public void saveAuthLevelAttibute(AuthLevelAttributeEntity entity) {
-		if(entity != null) {
-			MetadataTypeEntity type = null;
-			if(entity.getType() != null) {
-				type = typeDAO.findById(entity.getType().getId());
-			}
-			if(StringUtils.isBlank(entity.getId())) {
-				entity.setId(null);
-				if(entity.getGrouping() != null) {
-					final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(entity.getGrouping().getId());
-					entity.setGrouping(grouping);
-				}
-				
-				entity.setType(type);
-				authLevelAttributeDAO.save(entity);
-			} else {
-				final AuthLevelAttributeEntity dbEntity = authLevelAttributeDAO.findById(entity.getId());
-				if(dbEntity != null) {
-					dbEntity.setType(type);
-					dbEntity.setValueAsByteArray(entity.getValueAsByteArray());
-					dbEntity.setValueAsString(entity.getValueAsString());
-					authLevelAttributeDAO.update(dbEntity);
-				}
-			}
-		}
+	public String saveAuthLevelAttibute(AuthLevelAttribute attribute) throws BasicDataServiceException {
+        if(attribute == null) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+
+        if(StringUtils.isBlank(attribute.getName())) {
+            throw new BasicDataServiceException(ResponseCode.NO_NAME);
+        }
+
+        if(attribute.getType() == null || StringUtils.isBlank(attribute.getType().getId())) {
+            throw new BasicDataServiceException(ResponseCode.TYPE_REQUIRED);
+        }
+
+        final MetadataTypeEntity type = metadataTypeDAO.findById(attribute.getType().getId());
+        if(type == null) {
+            throw new BasicDataServiceException(ResponseCode.TYPE_REQUIRED);
+        }
+
+        if(attribute.getGrouping() == null || StringUtils.isBlank(attribute.getGrouping().getId())) {
+            throw new BasicDataServiceException(ResponseCode.GROUPING_REQUIRED);
+        }
+
+        if(type.isBinary()) {
+            attribute.setValueAsString(null);
+        } else {
+            attribute.setValueAsByteArray(null);
+        }
+
+        if(StringUtils.isBlank(attribute.getValueAsString()) && ArrayUtils.isEmpty(attribute.getValueAsByteArray())) {
+            throw new BasicDataServiceException(ResponseCode.VALUE_REQUIRED);
+        }
+
+        final AuthLevelAttributeEntity entity = authLevelAttributeDozerConverter.convertToEntity(attribute, true);
+        if(StringUtils.isBlank(entity.getId())) {
+            entity.setId(null);
+            if(entity.getGrouping() != null) {
+                final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(entity.getGrouping().getId());
+                entity.setGrouping(grouping);
+            }
+
+            entity.setType(type);
+            authLevelAttributeDAO.save(entity);
+        } else {
+            final AuthLevelAttributeEntity dbEntity = authLevelAttributeDAO.findById(entity.getId());
+            if(dbEntity != null) {
+                dbEntity.setType(type);
+                dbEntity.setValueAsByteArray(entity.getValueAsByteArray());
+                dbEntity.setValueAsString(entity.getValueAsString());
+                authLevelAttributeDAO.update(dbEntity);
+            }
+        }
+        return entity.getId();
 	}
 
 	@Override
 	@Transactional
-	public void deleteAuthLevelAttribute(String id) {
+	public void deleteAuthLevelAttribute(String id) throws BasicDataServiceException {
+        if (StringUtils.isBlank(id))
+            throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
 		final AuthLevelAttributeEntity entity = authLevelAttributeDAO.findById(id);
 		if(entity != null) {
 			authLevelAttributeDAO.delete(entity);
@@ -783,15 +1163,19 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 	}
 
 	@Override
-	@Transactional
-	public AuthLevelAttributeEntity getAuthLevelAttribute(String id) {
-		return authLevelAttributeDAO.findById(id);
+	@Transactional(readOnly = true)
+	public AuthLevelAttribute getAuthLevelAttribute(String id) {
+		return authLevelAttributeDozerConverter.convertToDTO(authLevelAttributeDAO.findById(id), true);
 	}
 
 	@Override
 	@Transactional
-	public Set<URIPatternEntity> createDefaultURIPatterns(String providerId) {
+	public Set<URIPatternEntity> createDefaultURIPatterns(String providerId) throws BasicDataServiceException {
 		final Set<URIPatternEntity> retVal = new HashSet<URIPatternEntity>();
+        if (StringUtils.isBlank(providerId)) {
+             throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+
 		if(patternWrapper == null) {
 			throw new RuntimeException(String.format("Can't get json metadata.  Check that '%s' is in the classpath", defaultPatternResource));
 		}
@@ -881,7 +1265,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 							}
 							pattern.setGroupingXrefs(groupingXrefs);
 						}
-						saveURIPattern(pattern);
+                        saveURIPatternInternal(pattern);
 						retVal.add(pattern);
 					}
 				}
@@ -899,7 +1283,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 		fieldWrapper = mapper.readValue(stream, MetadataTemplateFieldJSONWrapper.class);
 	}
 	
-	private MetadataElementPageTemplateEntity getTemplate(final ContentProviderEntity provider) {
+	private MetadataElementPageTemplateEntity getTemplate(final ContentProvider provider) {
 		MetadataElementPageTemplateEntity template = new MetadataElementPageTemplateEntity();
 		template.setPublic(true);
 		template.setTemplateType(new MetadataTemplateTypeEntity());
@@ -910,9 +1294,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
 	@Override
 	@Transactional
-	public void setupApplication(final ContentProviderEntity provider) {
-		saveContentProvider(provider);
-		Set<URIPatternEntity> patternSet = createDefaultURIPatterns(provider.getId());
+	public String setupApplication(final ContentProvider provider) throws BasicDataServiceException{
+		String providerId = saveContentProvider(provider);
+		Set<URIPatternEntity> patternSet = createDefaultURIPatterns(providerId);
 		
 		final Set<URIPatternEntity> userProfilePatterns = patternSet.stream().filter(e -> 
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/selfRegistration") ||
@@ -971,5 +1355,142 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 			groupTemplate.setUriPatterns(groupTemplatePatterns);
 			templateService.save(template);
 		}
+        return providerId;
 	}
+
+
+    private void validate(final ContentProvider provider) throws BasicDataServiceException {
+        if (provider == null) {
+            throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        if (StringUtils.isBlank(provider.getName())) {
+            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NAME_NOT_SET);
+        }
+        if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern())) {
+            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET);
+        }
+
+        if(CollectionUtils.isEmpty(provider.getServerSet())) {
+            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_REQUIRED);
+        }
+
+
+        if(provider.isUnavailable()) {
+            if(StringUtils.isBlank(provider.getUnavailableURL())) {
+                throw new BasicDataServiceException(ResponseCode.UNAVAILABLE_URL_REQUIRED);
+            }
+        }
+
+        for(final ContentProviderServer server : provider.getServerSet()) {
+            if(StringUtils.isEmpty(server.getServerURL())) {
+                throw new  BasicDataServiceException(ResponseCode.SERVER_URL_NOT_SET);
+            }
+        }
+
+        if(StringUtils.isBlank(provider.getAuthCookieDomain())) {
+            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_REQUIRED);
+        }
+
+        if(StringUtils.isBlank(provider.getAuthCookieName())) {
+            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_NAME_REQUIRED);
+        }
+
+        if(CollectionUtils.isEmpty(provider.getGroupingXrefs())) {
+            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
+        }
+
+        final ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
+        searchBean.setNameToken(new SearchParam(provider.getName(), MatchType.EXACT));
+        searchBean.setDeepCopy(false);
+        final List<ContentProvider> cpEntityWithNameList = findBeans(searchBean, 0, Integer.MAX_VALUE);
+        if(CollectionUtils.isNotEmpty(cpEntityWithNameList)) {
+            if(StringUtils.isBlank(provider.getId())) {
+                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);
+            } else {
+                for(final ContentProvider test : cpEntityWithNameList) {
+                    if(!StringUtils.equals(provider.getId(), test.getId())) {
+                        throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);
+                    }
+                }
+            }
+        }
+
+        if(CollectionUtils.isNotEmpty(provider.getGroupingXrefs())) {
+            if(provider.getGroupingXrefs().stream().map(e -> e.getId()).filter(e -> e.getGroupingId().equals(smsAuthLevelId)
+                    || e.getGroupingId().equals(totpAuthLevelId)).count() == 2) {
+                throw new BasicDataServiceException(ResponseCode.SMS_AND_TOTP_NOT_ALLOWED_SIMULTANEOUSLY);
+            }
+        }
+
+        if(provider.getId()==null){
+            // if provider is new, test for unique domain+ssl
+            final List<ContentProviderEntity> result = this.getProviderByDomainPattern(provider.getDomainPattern(), provider.getIsSSL());
+            if(CollectionUtils.isNotEmpty(result)) {
+                if(StringUtils.isBlank(provider.getId())) {
+                    throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+                } else {
+                    for(final ContentProviderEntity test : result) {
+                        if(!StringUtils.equals(provider.getId(), test.getId())) {
+                            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+                        }
+                    }
+                }
+            }
+        }
+
+        String domainPattern = provider.getDomainPattern();
+        if(domainPattern != null) {
+        	/* ignore port */
+            if(domainPattern.indexOf(":") > -1) {
+                domainPattern = domainPattern.substring(0, domainPattern.indexOf(":"));
+            }
+
+            if(!domainPattern.endsWith(provider.getAuthCookieDomain())) {
+                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_NOT_SUBSTR_OF_DOMAIN_PATTERN);
+            }
+        }
+
+        if(StringUtils.isBlank(provider.getAuthProviderId())) {
+            throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+        }
+
+        final AuthProviderEntity authProviderType = authProviderService.getAuthProvider(provider.getAuthProviderId());
+        if(authProviderType == null) {
+            throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+        }
+
+        final AuthProviderTypeEntity type = authProviderService.getAuthProviderTypeForProvider(provider.getAuthProviderId());
+        if(type == null) {
+            log.error(String.format("Type was null for auth provider '%s'", provider.getAuthProviderId()));
+            throw new  BasicDataServiceException(ResponseCode.INTERNAL_ERROR);
+        }
+
+        if(!type.isLinkableToContentProvider()) {
+            throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_LINKABLE);
+        }
+    }
+
+    private boolean isValidRedirectURL(final String redirectURL) {
+        return (redirectURL != null && (redirectURL.startsWith("/") || redirectURL.startsWith("http") || redirectURL.startsWith("https")));
+    }
+
+    private String getKey(final URIPatternMethod key) {
+        final StringBuilder sb = new StringBuilder(key.getMethod().toString()).append("-").append(key.getMatchMode().toString());
+        if(CollectionUtils.isNotEmpty(key.getParams())) {
+            key.getParams().forEach(param -> {
+                sb.append("-").append(param.getName().toLowerCase());
+                if(CollectionUtils.isNotEmpty(param.getValues())) {
+                    final List<String> values = new ArrayList<String>();
+                    param.getValues().forEach(val -> {
+                        if(val != null) {
+                            values.add(val.toLowerCase().trim());
+                        }
+                    });
+                    Collections.sort(values);
+                    sb.append("-").append(values);
+                }
+            });
+        }
+        return sb.toString();
+    }
 }
