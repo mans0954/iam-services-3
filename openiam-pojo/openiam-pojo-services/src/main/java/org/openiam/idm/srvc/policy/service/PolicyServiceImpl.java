@@ -313,22 +313,27 @@ public class PolicyServiceImpl implements PolicyService {
                         ResponseCode.INVALID_ARGUMENTS);
             }
 
-            final ITPolicy found = findITPolicy();
+            final ITPolicyEntity found = itPolicyDao.findITPolicy();
             if (found != null && !found.getId().equals(itPolicy.getId())) {
                 throw new BasicDataServiceException(ResponseCode.IT_POLICY_EXISTS);
             }
             if (found != null) {
-                itPolicy.setCreateDate(found.getCreateDate());
-                itPolicy.setCreatedBy(found.getCreatedBy());
+            	found.setActive(itPolicy.isActive());
+            	found.setApproveType(itPolicy.getApproveType());
+            	found.setConfirmation(itPolicy.getConfirmation());
+            	found.setPolicyContent(itPolicy.getPolicyContent());
+            	itPolicyDao.update(found);
+            	itPolicy.setId(found.getId());
+            } else {
+            	ITPolicyEntity pe = itPolicyDozerConverter.convertToEntity(itPolicy, true);
+            	itPolicyDao.save(pe);
+            	itPolicy.setId(pe.getId());
             }
-
-            ITPolicyEntity pe = itPolicyDozerConverter.convertToEntity(itPolicy, true);
-            itPolicyDao.save(pe);
-            itPolicy.setId(pe.getId());
 
         } catch (BasicDataServiceException e) {
             throw e;
         } catch (Throwable e) {
+        	log.error("Can't save policy", e);
             throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR, e.getMessage());
         }
     }
