@@ -26,8 +26,7 @@ public class AMManagerQueueListener extends AbstractRabbitMQListener<AMManagerAP
     private GetResourcesForUserDispatcher getResourcesForUserDispatcher;
     @Autowired
     private GetOrganizationsForUserDispatcher getOrganizationsForUserDispatcher;
-    @Autowired
-    private SweepManagerDispatcher sweepManagerDispatcher;
+
 
     public AMManagerQueueListener() {
         super(OpenIAMQueue.AMManagerQueue);
@@ -58,9 +57,6 @@ public class AMManagerQueueListener extends AbstractRabbitMQListener<AMManagerAP
                 break;
             case GetOrganizationsForUser:
                 addTask(getOrganizationsForUserDispatcher, correlationId, message, message.getRequestApi(), isAsync);
-                break;
-            case RefreshCache:
-                addTask(sweepManagerDispatcher, correlationId, message, message.getRequestApi(), isAsync);
                 break;
         }
     }

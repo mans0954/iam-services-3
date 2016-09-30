@@ -15,6 +15,5 @@ public enum AMManagerAPI  implements OpenIAMAPI  {
     GetGroupsForUser,
     GetRolesForUser,
     GetOrganizationsForUser,
-    RefreshCache,
     IsUserEntitledToResource
 }

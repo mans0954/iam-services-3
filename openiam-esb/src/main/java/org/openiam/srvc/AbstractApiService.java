@@ -54,6 +54,12 @@ public abstract class AbstractApiService {
     protected <API extends OpenIAMAPI> void sendAsync(OpenIAMQueue queue, API apiName, BaseServiceRequest apiRequest){
         rabbitMQSender.send(queue, apiName, apiRequest);
     }
+    protected <API extends OpenIAMAPI> void publish(API apiName, BaseServiceRequest apiRequest){
+        rabbitMQSender.publish(rabbitMqQueue, apiName, apiRequest);
+    }
+    protected <API extends OpenIAMAPI> void publish(OpenIAMQueue queue, API apiName, BaseServiceRequest apiRequest){
+        rabbitMQSender.publish(queue, apiName, apiRequest);
+    }
 
     protected <API extends OpenIAMAPI> boolean getBooleanValue(API apiName, BaseServiceRequest request){
         Boolean val = this.getValue(apiName, request, BooleanResponse.class);
@@ -64,31 +70,41 @@ public abstract class AbstractApiService {
         return (val==null)?0:val.intValue();
     }
 
+    protected <ApiResponse extends Response, API extends OpenIAMAPI> ApiResponse getResponse(API apiName, BaseServiceRequest request, Class<ApiResponse> clazz){
+        return this.manageApiRequest(apiName, request, clazz);
+    }
 
     protected <V, ApiResponse extends BaseDataResponse<V>, API extends OpenIAMAPI> V getValue(API apiName, BaseServiceRequest request, Class<ApiResponse> clazz){
-        ApiResponse response = this.manageApiRequest(apiName, request, clazz);
+        ApiResponse response = getResponse(apiName, request, clazz);
+//                ApiResponse response = this.manageApiRequest(apiName, request, clazz);
         if(response.isFailure()){
             return null;
         }
         return response.getValue();
     }
     protected <V, ApiResponse extends BaseListResponse<V>, API extends OpenIAMAPI> List<V> getValueList(API apiName, BaseServiceRequest request, Class<ApiResponse> clazz){
-        ApiResponse response = this.manageApiRequest(apiName, request, clazz);
+        ApiResponse response = getResponse(apiName, request, clazz);
+// ApiResponse response = this.manageApiRequest(apiName, request, clazz);
         if(response.isFailure()){
             return null;
         }
         return response.getList();
     }
 
+    protected <V extends KeyDTO, API extends OpenIAMAPI, ApiResponse extends BaseDataResponse<V>> Response manageGrudApiRequest(API apiName, V data, Class<ApiResponse> clazz){
+        BaseGrudServiceRequest<V> request = new BaseGrudServiceRequest<>(data);
+        ApiResponse response = getResponse(apiName, request, clazz);
+        return response.convertToBase();
+    }
     protected <V extends KeyDTO, API extends OpenIAMAPI> Response manageGrudApiRequest(API apiName, V data){
         BaseGrudServiceRequest<V> request = new BaseGrudServiceRequest<>(data);
-        StringResponse response = this.manageApiRequest(apiName, request,StringResponse.class);
+        StringResponse response = getResponse(apiName, request, StringResponse.class);
         return response.convertToBase();
     }
     protected <API extends OpenIAMAPI> Response manageGrudApiRequest(API apiName, String id){
         IdServiceRequest request = new IdServiceRequest();
         request.setId(id);
-        return this.manageApiRequest(apiName, request, Response.class);
+        return getResponse(apiName, request, Response.class);
     }
 
 

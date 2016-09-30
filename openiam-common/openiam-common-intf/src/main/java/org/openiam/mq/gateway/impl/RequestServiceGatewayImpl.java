@@ -1,6 +1,7 @@
 package org.openiam.mq.gateway.impl;
 
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.mq.constants.MqQueue;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.dto.MQResponse;
@@ -45,11 +46,11 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
         this.rabbitMQAdminUtils = rabbitMQAdminUtils;
     }
 
-    public void send(OpenIAMQueue queue, final MQRequest request){
+    public void send(MqQueue queue, final MQRequest request){
         try {
             this.convertAndSend(queue,request);
         } catch (Exception e) {
-            log.error(String.format("Cannot send a message {%s} to queue {%s}", request.toString(), queue.name()), e);
+            log.error(String.format("Cannot send a message {%s} to queue {%s}", request.toString(), queue.getName()), e);
         }
     }
     public void send(String exchange, String routingKey, final MQRequest request) {
@@ -59,13 +60,20 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
             log.error(String.format("Cannot send a message {%s} to exchange {%s} with routingKey {%s}", request.toString(), exchange, routingKey), e);
         }
     }
+    public void publish(MqQueue queue, final MQRequest request) {
+        try {
+            this.convertAndSendWithName(queue, request, "");
+        } catch (Exception e) {
+            log.error(String.format("Cannot publish a message {%s} to queue {%s}", request.toString(), queue.getName()), e);
+        }
+    }
     /**
      * @param queue
      * @param request
      * @return
      */
-    public MQResponse sendAndReceive(OpenIAMQueue queue, final MQRequest request) {
-        request.setReplyTo(rabbitMQAdminUtils.getReplyQuequeName(queue.name()));
+    public MQResponse sendAndReceive(MqQueue queue, final MQRequest request) {
+        request.setReplyTo(rabbitMQAdminUtils.getReplyQuequeName(queue.getName()));
         long startTime = System.currentTimeMillis();
         log.debug("Send to QUEUE : {}; Request: {};", queue.toString(), request.toString());
         Object response = ((CustomRabbitTemplate) getRabbitTemplate())
@@ -110,15 +118,11 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
         return (MQResponse) response;
     }
 
-    private void convertAndSend(OpenIAMQueue queue, final MQRequest request) throws Exception {
+    private void convertAndSend(MqQueue queue, final MQRequest request) throws Exception {
         this.convertAndSendWithName(queue, request, queue.getRoutingKey());
     }
 
-    public void convertAndSendToAll(OpenIAMQueue queue, final MQRequest request) throws Exception {
-        this.convertAndSendWithName(queue, request, "");
-    }
-
-    private void convertAndSendWithName(OpenIAMQueue queue, final MQRequest request, String routingKey) throws Exception {
+    private void convertAndSendWithName(MqQueue queue, final MQRequest request, String routingKey) throws Exception {
         log.debug("Send to QUEUE : QUEUE = " + queue.toString() + "; " + request.toString());
         convertAndSendWithName(queue.getExchange().name(), request, routingKey);
     }

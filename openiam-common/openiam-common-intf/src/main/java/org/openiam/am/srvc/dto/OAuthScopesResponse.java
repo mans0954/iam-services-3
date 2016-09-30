@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.dto;
 
+import org.openiam.base.response.BaseListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -14,12 +15,10 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OAuthScopesResponse", propOrder = {
-      "clientId",
-      "oauthScopeList"
+      "clientId"
 })
-public class OAuthScopesResponse extends Response {
+public class OAuthScopesResponse extends BaseListResponse<Resource> {
     private String clientId;
-    private List<Resource> oauthScopeList;
 
 
     public String getClientId() {
@@ -30,12 +29,12 @@ public class OAuthScopesResponse extends Response {
         this.clientId = clientId;
     }
 
-    public List<Resource> getOauthScopeList() {
-        return oauthScopeList;
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("OAuthScopesResponse{");
+        sb.append(super.toString());
+        sb.append(", clientId='").append(clientId).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
-
-    public void setOauthScopeList(List<Resource> oauthScopeList) {
-        this.oauthScopeList = oauthScopeList;
-    }
-
 }

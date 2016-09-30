@@ -1,5 +1,6 @@
 package org.openiam.mq.utils;
 
+import org.openiam.mq.constants.MqQueue;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.listener.AbstractRabbitMQListener;
 import org.slf4j.Logger;
@@ -46,14 +47,21 @@ public class RabbitMQAdminUtils {
         this.concurrentConsumer = concurrentConsumer;
     }
 
-    public void bindQueues(OpenIAMQueue... queues) {
+    public void bindQueues(MqQueue... queues) {
         Queue rabbitQueue;
         AbstractExchange exchange;
 
-        for (OpenIAMQueue queue : queues) {
-            rabbitQueue = new Queue(queue.name(), false, false, false, null);
+        for (MqQueue queue : queues) {
+            if (queue.getTempQueue()) {
+                rabbitQueue = amqpAdmin.declareQueue();
+                queue.setName(rabbitQueue.getName());
+            } else {
+                rabbitQueue = new Queue(queue.getName(), false, false, false, null);
+            }
+
+            rabbitQueue = new Queue(queue.getName(), false, false, false, null);
             amqpAdmin.declareQueue(rabbitQueue);
-            amqpAdmin.purgeQueue(queue.name(), false);
+            amqpAdmin.purgeQueue(queue.getName(), false);
             switch (queue.getExchange().getType()) {
                 case DIRECT:
 
@@ -86,14 +94,14 @@ public class RabbitMQAdminUtils {
     }
     @SuppressWarnings("rawtypes")
     public <Listener extends AbstractRabbitMQListener> SimpleMessageListenerContainer createMessageListenerContainer(
-            final String beanName, OpenIAMQueue rabbitMqQueue, Listener listener, ConnectionFactory connectionFactory) {
+            final String beanName, MqQueue rabbitMqQueue, Listener listener, ConnectionFactory connectionFactory) {
         bindQueues(rabbitMqQueue);
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.setQueueNames(rabbitMqQueue.name());
+        container.setQueueNames(rabbitMqQueue.getName());
         container.setMessageListener(new MessageListenerAdapter(listener));
         container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
-        container.setTaskExecutor(new SimpleAsyncTaskExecutor(String.format("AMQP-%s-", rabbitMqQueue.name())));
+        container.setTaskExecutor(new SimpleAsyncTaskExecutor(String.format("AMQP-%s-", rabbitMqQueue.getName())));
         container.setConcurrentConsumers(concurrentConsumer);
         container.setPrefetchCount(1);
         container.setErrorHandler(new ErrorHandler() {

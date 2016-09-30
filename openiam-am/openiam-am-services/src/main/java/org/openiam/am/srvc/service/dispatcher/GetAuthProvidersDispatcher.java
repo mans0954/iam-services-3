@@ -1,10 +1,7 @@
 package org.openiam.am.srvc.service.dispatcher;
 
-import org.openiam.am.srvc.searchbean.AuthProviderSearchBean;
 import org.openiam.am.srvc.service.AuthProviderService;
-import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
-import org.openiam.base.response.AuthProviderListResponse;
 import org.openiam.base.response.AuthProviderResponse;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.AuthProviderAPI;
@@ -27,7 +24,7 @@ public class GetAuthProvidersDispatcher extends AbstractAPIDispatcher<IdServiceR
     @Override
     protected AuthProviderResponse processingApiRequest(AuthProviderAPI openIAMAPI, IdServiceRequest request) throws BasicDataServiceException {
         AuthProviderResponse response = new AuthProviderResponse();
-        response.setAuthProvider(authProviderService.getProvider(request.getId()));
+        response.setValue(authProviderService.getProvider(request.getId()));
         return response;
     }
 }

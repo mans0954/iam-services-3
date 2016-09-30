@@ -13,6 +13,7 @@ import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.request.GetEntitlementRequest;
 import org.openiam.base.response.*;
+import org.openiam.mq.constants.AMCacheAPI;
 import org.openiam.mq.constants.AMManagerAPI;
 import org.openiam.mq.constants.AMMenuAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
@@ -50,8 +51,6 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 		request.setTargetObjectId(resourceId);
 
 		return getBooleanResponse(AMManagerAPI.IsUserEntitledToResource, request);
-
-//		return authManagerService.isEntitled(userId, resourceId);
 	}
 
 	@Override
@@ -61,8 +60,6 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 		request.setTargetObjectId(groupId);
 
 		return getBooleanResponse(AMManagerAPI.IsMemberOfGroup, request);
-
-//		return authManagerService.isMemberOfGroup(userId, groupId);
 	}
 
 	@Override
@@ -72,8 +69,6 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 		request.setTargetObjectId(roleId);
 
 		return getBooleanResponse(AMManagerAPI.IsMemberOfRole, request);
-
-//		return authManagerService.isMemberOfRole(userId, roleId);
 	}
 
 	@Override
@@ -85,8 +80,6 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 			return Collections.emptySet();
 		}
 		return response.getResourceSet();
-
-//		return authManagerService.getResourcesForUser(userId);
 	}
 
 	@Override
@@ -98,8 +91,6 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 			return Collections.emptySet();
 		}
 		return response.getGroupSet();
-
-//		return authManagerService.getGroupsForUser(userId);
 	}
 
 	@Override
@@ -111,15 +102,12 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 			return Collections.emptySet();
 		}
 		return response.getRoleSet();
-
-//		return authManagerService.getRolesForUser(userId);
 	}
 	
 
 	@Override
 	public void refreshCache() {
-		this.sendAsync(AMManagerAPI.RefreshCache, new BaseServiceRequest());
-//		((Sweepable)authManagerService).sweep();
+		this.publish(OpenIAMQueue.AMCacheQueue, AMCacheAPI.RefreshAMManager, new BaseServiceRequest());
 	}
 
 	@Override
@@ -129,8 +117,6 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 		request.setTargetObjectId(organizationId);
 
 		return getBooleanResponse(AMManagerAPI.IsMemberOfOrganization, request);
-
-//		return authManagerService.isMemberOfOrganization(userId, organizationId);
 	}
 
 	@Override
@@ -140,8 +126,6 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 		request.setTargetObjectId(resourceId);
 		request.setRightId(rightId);
 		return getBooleanResponse(AMManagerAPI.IsUserEntitledToResourceWithRight, request);
-
-//		return authManagerService.isEntitled(userId, resourceId, rightId);
 	}
 
 	@Override
@@ -151,8 +135,6 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 		request.setTargetObjectId(groupId);
 		request.setRightId(rightId);
 		return getBooleanResponse(AMManagerAPI.IsMemberOfGroupWithRight, request);
-
-//		return authManagerService.isMemberOfGroup(userId, groupId, rightId);
 	}
 
 	@Override
@@ -162,8 +144,6 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 		request.setTargetObjectId(roleId);
 		request.setRightId(rightId);
 		return getBooleanResponse(AMManagerAPI.IsMemberOfRoleWithRight, request);
-
-//		return authManagerService.isMemberOfRole(userId, roleId, rightId);
 	}
 
 	@Override
@@ -173,8 +153,6 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 		request.setTargetObjectId(organizationId);
 		request.setRightId(rightId);
 		return getBooleanResponse(AMManagerAPI.IsMemberOfOrganizationWithRight, request);
-
-//		return authManagerService.isMemberOfOrganization(userId, organizationId, rightId);
 	}
 
 	@Override
@@ -186,7 +164,5 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 			return Collections.emptySet();
 		}
 		return response.getOrganizationSet();
-
-//		return authManagerService.getOrganizationsForUser(userId);
 	}
 }

@@ -37,6 +37,8 @@ import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.searchbean.AuthAttributeSearchBean;
 import org.openiam.am.srvc.searchbean.AuthProviderSearchBean;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.response.AuthProviderResponse;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -55,6 +57,7 @@ import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.mq.constants.OAuthAPI;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
 import org.openiam.util.SpringContextProvider;
@@ -115,6 +118,9 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     private OAuthCodeDao oAuthCodeDao;
     
     private Map<String, AuthProvider> authProviderCache = new HashMap<String, AuthProvider>();
+
+    private Map<String, AuthProvider> oAuthIdCache = new HashMap<String, AuthProvider>();
+    private Map<String, AuthProvider> oAuthNameCache = new HashMap<String, AuthProvider>();
 
     @Autowired
     private AuthAttributeDozerConverter authAttributeDozerConverter;
@@ -577,6 +583,7 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly=true)
     public List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language) throws BasicDataServiceException {
         AuthProvider provider = getOAuthClient(clientId);
         Set<String> clientScopesIds = null;
@@ -762,6 +769,37 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
 			authProviderCache = tempAuthProviderCache;
 		}
 	}
+    @Override
+    @Scheduled(fixedRateString="${org.openiam.am.oauth.client.threadsweep}", initialDelay=0)
+    @Transactional(readOnly = true)
+    public void sweepOAuthProvider() {
+        final Map<String, AuthProvider> tempIdCache = new HashMap<String, AuthProvider>();
+        final Map<String, AuthProvider> tempNameCache = new HashMap<String, AuthProvider>();
+
+        final List<AuthProvider> providers = this.getOAuthClients();
+        if(CollectionUtils.isNotEmpty(providers)) {
+            providers.forEach(provider -> {
+                tempIdCache.put(provider.getId(), provider);
+                tempNameCache.put(provider.getName(), provider);
+                provider.generateId2ValueAttributeMap();
+            });
+        }
+
+        synchronized(this) {
+            oAuthIdCache = tempIdCache;
+            oAuthNameCache = tempNameCache;
+        }
+    }
+
+    @Override
+    public AuthProvider getCachedOAuthProviderById(String id) {
+		return oAuthIdCache.get(id);
+    }
+
+    @Override
+    public AuthProvider getCachedOAuthProviderByName(String name) {
+		return oAuthNameCache.get(name);
+    }
 
     private void validateAndSyncProviderAttributes(AuthProvider provider) throws BasicDataServiceException{
         final AuthAttributeSearchBean sb = new AuthAttributeSearchBean();

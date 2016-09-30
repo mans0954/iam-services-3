@@ -134,8 +134,8 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		OAuthScopesResponse scopesResponse = oauthServiceClient.getScopesForAuthrorization(clientID, testUser.getId(), null);
 		Assert.assertNotNull(scopesResponse);
 		Assert.assertTrue(clientID.equals(scopesResponse.getClientId()));
-		Assert.assertTrue(CollectionUtils.isNotEmpty(scopesResponse.getOauthScopeList()));
-		Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE).equals(scopesResponse.getOauthScopeList().size()));
+		Assert.assertTrue(CollectionUtils.isNotEmpty(scopesResponse.getList()));
+		Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE).equals(scopesResponse.getList().size()));
 		// do authorization
 		doAuthorization(scopesResponse);
 
@@ -163,7 +163,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		scopesResponse = oauthServiceClient.getScopesForAuthrorization(clientID, testUser.getId(), null);
 		Assert.assertNotNull(scopesResponse);
 		Assert.assertTrue(clientID.equals(scopesResponse.getClientId()));
-		Assert.assertTrue(CollectionUtils.isEmpty(scopesResponse.getOauthScopeList()));
+		Assert.assertTrue(CollectionUtils.isEmpty(scopesResponse.getList()));
 
 		// add 2 more scopes (restore previous scopes)
 		updateScopeAttribute(provider, buildScopeAttributeValue(new ArrayList<>(resourceList)));
@@ -175,8 +175,8 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		scopesResponse = oauthServiceClient.getScopesForAuthrorization(clientID, testUser.getId(), null);
 		Assert.assertNotNull(scopesResponse);
 		Assert.assertTrue(clientID.equals(scopesResponse.getClientId()));
-		Assert.assertTrue(CollectionUtils.isNotEmpty(scopesResponse.getOauthScopeList()));
-		Assert.assertTrue(new Integer(SCOPES_TO_DELETE).equals(scopesResponse.getOauthScopeList().size()));
+		Assert.assertTrue(CollectionUtils.isNotEmpty(scopesResponse.getList()));
+		Assert.assertTrue(new Integer(SCOPES_TO_DELETE).equals(scopesResponse.getList().size()));
 		// do authorization
 		doAuthorization(scopesResponse);
 		// get authorized scopes should be 10
@@ -232,7 +232,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 
 	private void doAuthorization(OAuthScopesResponse scopesResponse){
 		List<OAuthUserClientXref> authScopes = new ArrayList<OAuthUserClientXref>();
-		for(Resource scope : scopesResponse.getOauthScopeList()){
+		for(Resource scope : scopesResponse.getList()){
 			OAuthUserClientXref xref = new OAuthUserClientXref();
 			xref.setClientId(clientID);
 			xref.setUserId(testUser.getId());

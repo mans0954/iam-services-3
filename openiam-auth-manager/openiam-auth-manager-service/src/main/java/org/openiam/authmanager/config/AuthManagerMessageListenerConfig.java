@@ -1,6 +1,7 @@
 package org.openiam.authmanager.config;
 
 import org.openiam.mq.AMAdminQueueListener;
+import org.openiam.mq.AMCacheQueueListener;
 import org.openiam.mq.AMManagerQueueListener;
 import org.openiam.mq.AMMenuQueueListener;
 import org.openiam.mq.constants.OpenIAMQueue;
@@ -37,5 +38,11 @@ public class AuthManagerMessageListenerConfig {
     public SimpleMessageListenerContainer amManagerQueueListenerContainer(AMManagerQueueListener listener, ConnectionFactory connectionFactory) {
         return rabbitMQAdminUtils.createMessageListenerContainer("amManagerQueueListenerContainer",
                 OpenIAMQueue.AMManagerQueue,  listener, connectionFactory);
+    }
+    @Bean
+    @Autowired
+    public SimpleMessageListenerContainer amCacheQueueListenerContainer(AMCacheQueueListener listener, ConnectionFactory connectionFactory) {
+        return rabbitMQAdminUtils.createMessageListenerContainer("amCacheQueueListenerContainer",
+                OpenIAMQueue.AMCacheQueue,  listener, connectionFactory);
     }
 }

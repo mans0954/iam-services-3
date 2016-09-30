@@ -46,9 +46,8 @@ public class RabbitMQSender {
     public <API extends OpenIAMAPI>  void send(String exchange, String routingKey, API apiName, final BaseServiceRequest apiRequest){
         requestServiceGateway.send(exchange, routingKey, new MQRequest<BaseServiceRequest, API>(apiName, apiRequest));
     }
-
-    public void send(String routingKey, final MQResponse<?> response, final byte[] correlationId){
-
+    public <API extends OpenIAMAPI>  void publish(OpenIAMQueue queue, API apiName, final BaseServiceRequest apiRequest){
+        requestServiceGateway.publish(queue, new MQRequest<BaseServiceRequest, API>(apiName, apiRequest));
     }
 
     private <ApiResponse extends Response> ApiResponse getFailedResponse(Class<ApiResponse> apiResponseClass){
