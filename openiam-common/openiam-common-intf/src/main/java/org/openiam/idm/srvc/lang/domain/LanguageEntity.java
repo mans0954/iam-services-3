@@ -39,7 +39,7 @@ public class LanguageEntity extends KeyEntity {
     @Column(name="LANGUAGE_CODE", length = 2)
     private String languageCode;
 
-    @OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy="language")
+    @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="language")
     @MapKey(name = "locale")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, LanguageLocaleEntity> locales;

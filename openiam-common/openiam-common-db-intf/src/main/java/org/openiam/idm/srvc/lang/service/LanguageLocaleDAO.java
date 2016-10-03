@@ -7,5 +7,5 @@ import org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity;
 
 public interface LanguageLocaleDAO extends BaseDao<LanguageLocaleEntity, String> {
 
-    List<LanguageLocaleEntity> getLocalesByLanguageId(String languageId);
+	LanguageLocaleEntity getByLocale(String languageId);
 }
