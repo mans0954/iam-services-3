@@ -11,6 +11,7 @@ import org.openiam.base.response.URIPatternResponse;
 import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.URIFederationAPI;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -26,43 +27,24 @@ import java.util.Map;
 @WebService(endpointInterface = "org.openiam.srvc.am.URIFederationWebService",
             targetNamespace = "urn:idm.openiam.org/srvc/am/service", portName = "URIFederationWebServicePort", serviceName = "URIFederationWebService")
 @Service("uriFederationWebServiceComponent")
-public class URIFederationWebServiceImpl extends AbstractApiService implements URIFederationWebService {
-    private Map<String, HttpMethod> httpMethodMap = new HashMap<String, HttpMethod>();
-
-    @PostConstruct
-    public void init() {
-        for(final HttpMethod method : HttpMethod.values()) {
-            httpMethodMap.put(method.name().toLowerCase(), method);
-        }
-    }
-    private HttpMethod getMethod(final String method) {
-        return StringUtils.isNotBlank(method) ? httpMethodMap.get(method.toLowerCase()) : null;
-    }
-
-    public URIFederationWebServiceImpl() {
-        super(OpenIAMQueue.URIFederationQueue);
-    }
+public class URIFederationWebServiceImpl extends AbstractURIFederationAPIService implements URIFederationWebService {
 
     @Override
     public URIFederationResponse getMetadata(String proxyURI, String method) {
-        URIFederationServiceRequest request = new URIFederationServiceRequest();
-        request.setProxyURI(proxyURI);
-        request.setMethod(getMethod(method));
-        URIFederationResponse response = this.manageApiRequest(OpenIAMAPICommon.URIFederationMetadata, request, URIFederationResponse.class);
-        return response;
+        return getURIFederationMetadata(proxyURI, method);
     }
 
     @Override
     public ContentProvider getCachedContentProvider(String providerId) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(providerId);
-        return getValue(OpenIAMAPICommon.CachedContentProviderGet, request, ContentProviderResponse.class);
+        return getValue(URIFederationAPI.CachedContentProviderGet, request, ContentProviderResponse.class);
     }
 
     @Override
     public URIPattern getCachedURIPattern(String patternId) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(patternId);
-        return getValue(OpenIAMAPICommon.CachedURIPatternGet, request, URIPatternResponse.class);
+        return getValue(URIFederationAPI.CachedURIPatternGet, request, URIPatternResponse.class);
     }
 }

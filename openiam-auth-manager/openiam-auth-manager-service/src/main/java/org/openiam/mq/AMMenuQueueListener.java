@@ -26,8 +26,6 @@ public class AMMenuQueueListener extends AbstractRabbitMQListener<AMMenuAPI> {
     private DeleteMenuDispatcher deleteMenuDispatcher;
     @Autowired
     private SaveMenuTreeDispatcher saveMenuTreeDispatcher;
-    @Autowired
-    private SweepMenuDispatcher sweepMenuDispatcher;
 
     public AMMenuQueueListener() {
         super(OpenIAMQueue.AMMenuQueue);
@@ -53,9 +51,6 @@ public class AMMenuQueueListener extends AbstractRabbitMQListener<AMMenuAPI> {
                 break;
             case SaveMenuTree:
                 addTask(saveMenuTreeDispatcher, correlationId, message, message.getRequestApi(), isAsync);
-                break;
-            case Sweep:
-                addTask(sweepMenuDispatcher, correlationId, message, message.getRequestApi(), isAsync);
                 break;
         }
     }

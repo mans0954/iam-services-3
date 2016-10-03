@@ -4,6 +4,11 @@ package org.openiam.base.request;
  * Created by alexander on 08/08/16.
  */
 public class IdServiceRequest extends BaseServiceRequest {
+
+    public IdServiceRequest(){}
+    public IdServiceRequest(String id){
+        this.id=id;
+    }
     private String id;
 
     public String getId() {

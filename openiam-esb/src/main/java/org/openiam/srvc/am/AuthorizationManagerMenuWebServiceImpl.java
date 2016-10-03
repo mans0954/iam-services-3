@@ -1,35 +1,21 @@
 package org.openiam.srvc.am;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 import javax.jws.WebService;
 
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dto.jdbc.AuthorizationMenu;
-import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.base.request.*;
 import org.openiam.base.response.AuthorizationMenuResponse;
 import org.openiam.base.response.BooleanResponse;
+import org.openiam.mq.constants.AMCacheAPI;
 import org.openiam.mq.constants.AMMenuAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
-import org.openiam.util.AuthorizationConstants;
 import org.openiam.base.response.MenuSaveResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.lang.dto.LanguageMapping;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
-import org.openiam.idm.srvc.res.dto.ResourceRisk;
-import org.openiam.idm.srvc.res.service.ResourceService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @WebService(endpointInterface = "org.openiam.srvc.am.AuthorizationManagerMenuWebService",
@@ -108,7 +94,7 @@ public class AuthorizationManagerMenuWebServiceImpl  extends AbstractApiService 
 
 	@Override
 	public void sweep() {
-		this.sendAsync(AMMenuAPI.Sweep, new BaseServiceRequest());
+		this.publish(OpenIAMQueue.AMCacheQueue, AMCacheAPI.RefreshAMMenu, new BaseServiceRequest());
 	}
 
 	@Override

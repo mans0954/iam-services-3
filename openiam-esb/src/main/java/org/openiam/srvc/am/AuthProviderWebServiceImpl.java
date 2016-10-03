@@ -143,12 +143,7 @@ public class AuthProviderWebServiceImpl extends AbstractApiService implements Au
     public AuthProvider getAuthProvider(String providerId) {
         IdServiceRequest request=new IdServiceRequest();
         request.setId(providerId);
-
-        AuthProviderResponse response = this.manageApiRequest(AuthProviderAPI.GetAuthProvider, request, AuthProviderResponse.class);
-        if(response.isFailure()){
-            return null;
-        }
-        return response.getAuthProvider();
+        return this.getValue(AuthProviderAPI.GetAuthProvider, request, AuthProviderResponse.class);
     }
 
     @Override

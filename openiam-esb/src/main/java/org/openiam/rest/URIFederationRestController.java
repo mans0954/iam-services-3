@@ -15,6 +15,8 @@ import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
+import org.openiam.base.request.URIFederationServiceRequest;
+import org.openiam.base.request.model.CertificateLoginServiceRequest;
 import org.openiam.base.response.URIFederationResponse;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -25,7 +27,12 @@ import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.base.response.AuthenticationResponse;
 import org.openiam.base.response.LoginResponse;
+import org.openiam.mq.constants.OpenIAMAPICommon;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.URIFederationAPI;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.srvc.AbstractApiService;
+import org.openiam.srvc.am.AbstractURIFederationAPIService;
 import org.openiam.srvc.am.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -48,7 +55,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequestMapping("/auth/proxy/")
-public class URIFederationRestController {
+public class URIFederationRestController extends AbstractURIFederationAPIService {
 	
 	@Value("${org.openiam.auth.level.cert.id}")
 	private String certAuthLevelId;
@@ -74,24 +81,16 @@ public class URIFederationRestController {
 	@Autowired
 	private AuthProviderService authProviderService;
 	
-	private Map<String, HttpMethod> httpMethodMap = new HashMap<String, HttpMethod>();
-	
-	@PostConstruct
-	public void init() {
-		for(final HttpMethod method : HttpMethod.values()) {
-			httpMethodMap.put(method.name().toLowerCase(), method);
-		}
-	}
-	
-	private HttpMethod getMethod(final String method) {
-		return StringUtils.isNotBlank(method) ? httpMethodMap.get(method.toLowerCase()) : null;
-	}
-
 	@RequestMapping(value="/federateUser", method=RequestMethod.GET)
 	public @ResponseBody URIFederationResponse federateProxyURI(final @RequestParam(required=true, value="userId") String userId, 
 																final @RequestParam(required=true, value="proxyURI") String proxyURI, 
 																final @RequestParam(required=false, value="method") String method) {
-		return uriFederationService.federateProxyURI(userId, proxyURI, getMethod(method));
+		URIFederationServiceRequest request = new URIFederationServiceRequest();
+		request.setProxyURI(proxyURI);
+		request.setUserId(userId);
+		request.setMethod(getMethod(method));
+		URIFederationResponse response = this.manageApiRequest(URIFederationAPI.FederateProxyURI, request, URIFederationResponse.class);
+		return response;
 	}
 	
 	/**
@@ -106,109 +105,121 @@ public class URIFederationRestController {
 	public @ResponseBody SSOLoginResponse getCookieFromProxyURIAndPrincipal(final @RequestParam(required=true, value="proxyURI") String proxyURI, 
 															  				final @RequestParam(required=true, value="principal") String principal, 
 															  				final @RequestParam(required=true, value="method") String method) {
-		final SSOLoginResponse wsResponse = new SSOLoginResponse(ResponseStatus.SUCCESS);
-		try {
-			final AuthenticationRequest loginRequest = uriFederationService.createAuthenticationRequest(principal, proxyURI, getMethod(method));
-			loginRequest.setLanguageId("1"); //set default
-			loginRequest.setSkipPasswordCheck(true);
-			final AuthenticationResponse loginResponse = authenticationService.login(loginRequest);
-			if(ResponseStatus.SUCCESS.equals(loginResponse.getStatus())) {
-				final Subject subject = loginResponse.getSubject();
-				if(subject == null) {
-					throw new BasicDataServiceException(ResponseCode.NO_SUBJECT);
-				}
-				final SSOToken ssoToken = subject.getSsoToken();
-				if(ssoToken == null) {
-					throw new BasicDataServiceException(ResponseCode.NO_SSO_TOKEN);
-				}
-				wsResponse.setSsoToken(ssoToken);
-			} else {
-				wsResponse.fail();
-				wsResponse.setLoginError(loginResponse.getErrorCode());
-				LOG.warn(String.format("Login attempt unsuccessful for principal '%s', proxyURI '%s', loginRequest: '%s', loginResponse: '%s'", 
-										principal, proxyURI, loginRequest, loginResponse));
-			}
-			wsResponse.setOpeniamPrincipal(loginRequest.getPrincipal());
-		} catch(BasicDataServiceException e) {
-			wsResponse.fail();
-			wsResponse.setErrorText(e.getMessage());
-			wsResponse.setErrorCode(e.getCode());
-			LOG.warn("Cannot getCookieFromProxyURIAndPrincipal()", e);
-		} catch(Throwable e) {
-			wsResponse.fail();
-			wsResponse.setErrorText(e.getMessage());
-			LOG.error("Cannot getCookieFromProxyURIAndPrincipal()", e);
-		}
-		return wsResponse;
+		URIFederationServiceRequest request = new URIFederationServiceRequest();
+		request.setProxyURI(proxyURI);
+		request.setPrincipal(principal);
+		request.setMethod(getMethod(method));
+		return getResponse(URIFederationAPI.GetCookieFromProxyURIAndPrincipal, request, SSOLoginResponse.class);
+
+//		final SSOLoginResponse wsResponse = new SSOLoginResponse(ResponseStatus.SUCCESS);
+//		try {
+//			final AuthenticationRequest loginRequest = uriFederationService.createAuthenticationRequest(principal, proxyURI, getMethod(method));
+//			loginRequest.setLanguageId("1"); //set default
+//			loginRequest.setSkipPasswordCheck(true);
+//			final AuthenticationResponse loginResponse = authenticationService.login(loginRequest);
+//			if(ResponseStatus.SUCCESS.equals(loginResponse.getStatus())) {
+//				final Subject subject = loginResponse.getSubject();
+//				if(subject == null) {
+//					throw new BasicDataServiceException(ResponseCode.NO_SUBJECT);
+//				}
+//				final SSOToken ssoToken = subject.getSsoToken();
+//				if(ssoToken == null) {
+//					throw new BasicDataServiceException(ResponseCode.NO_SSO_TOKEN);
+//				}
+//				wsResponse.setSsoToken(ssoToken);
+//			} else {
+//				wsResponse.fail();
+//				wsResponse.setLoginError(loginResponse.getErrorCode());
+//				LOG.warn(String.format("Login attempt unsuccessful for principal '%s', proxyURI '%s', loginRequest: '%s', loginResponse: '%s'",
+//										principal, proxyURI, loginRequest, loginResponse));
+//			}
+//			wsResponse.setOpeniamPrincipal(loginRequest.getPrincipal());
+//		} catch(BasicDataServiceException e) {
+//			wsResponse.fail();
+//			wsResponse.setErrorText(e.getMessage());
+//			wsResponse.setErrorCode(e.getCode());
+//			LOG.warn("Cannot getCookieFromProxyURIAndPrincipal()", e);
+//		} catch(Throwable e) {
+//			wsResponse.fail();
+//			wsResponse.setErrorText(e.getMessage());
+//			LOG.error("Cannot getCookieFromProxyURIAndPrincipal()", e);
+//		}
+//		return wsResponse;
 	}
 
 	@RequestMapping(value="/metadata", method=RequestMethod.GET)
 	public @ResponseBody URIFederationResponse getMetadata(final @RequestParam(required=true, value="proxyURI") String proxyURI, 
 											 			   final @RequestParam(required=true, value="method") String method) {
-		return uriFederationService.getMetadata(proxyURI, getMethod(method));
+		return getURIFederationMetadata(proxyURI, method);
     }
 	
 	@RequestMapping(value="/cert/identity", method=RequestMethod.POST)
 	public @ResponseBody LoginResponse getIdentityFromCert(final @RequestParam(value="proxyURI", required=true) String proxyURI,
 															  final @RequestParam(required=true, value="method") String method,
 															  final @RequestParam(value="cert", required=true) MultipartFile certContents) {
-		final LoginResponse wsResponse = new LoginResponse();
-		try {
-			final URIFederationResponse metadata = uriFederationService.getMetadata(proxyURI, getMethod(method));
-			if(metadata.isFailure()) {
-				throw new BasicDataServiceException(ResponseCode.METADATA_INVALID);
-			}
-			
-			final AuthProvider provider = authProviderService.getCachedAuthProvider(metadata.getAuthProviderId());
-			
-			if(provider == null) {
-				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
-			}
-			
-			if(!provider.isSupportsCertAuth()) {
-				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
-			}
-			
-			final String regex = StringUtils.trimToNull(provider.getCertRegex());
-			final String regexScript = StringUtils.trimToNull(provider.getCertGroovyScript());
-			if(StringUtils.isBlank(regex) && StringUtils.isBlank(regexScript)) {
-				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
-			}
-			
-			final X509Certificate clientCert = X509Certificate.getInstance(new ByteArrayInputStream(certContents.getBytes()));
-			DefaultCertToIdentityConverter certToIdentityConverter;
-			if(regex != null) {
-				certToIdentityConverter = new DefaultCertToIdentityConverter();
-				certToIdentityConverter.setClientDNRegex(regex);
-			} else {
-				if(!scriptIntegration.scriptExists(regexScript)) {
-					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
-				}
-				certToIdentityConverter = (DefaultCertToIdentityConverter)scriptIntegration.instantiateClass(null, regexScript);
-				if(certToIdentityConverter == null) {
-					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
-				}
-			}
-			
-			certToIdentityConverter.setCertficiate(clientCert);
-			certToIdentityConverter.init();
-			final Login login = certToIdentityConverter.resolve();
-			if(login == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN);
-			}
-			wsResponse.setPrincipal(login);
-			wsResponse.succeed();
-		} catch(BasicDataServiceException e) {
-			wsResponse.fail();
-			wsResponse.setErrorText(e.getMessage());
-			wsResponse.setErrorCode(e.getCode());
-			LOG.info("Cannot cert identity", e);
-		} catch(Throwable e) {
-			wsResponse.fail();
-			wsResponse.setErrorText(e.getMessage());
-			LOG.warn("Cannot cert identity", e);
-		}
-		
-		return wsResponse;
+		CertificateLoginServiceRequest request = new CertificateLoginServiceRequest();
+		request.setProxyURI(proxyURI);
+		request.setMethod(getMethod(method));
+		request.setCertContents(certContents);
+		return getResponse(URIFederationAPI.GetIdentityFromCert, request, LoginResponse.class);
+
+//		final LoginResponse wsResponse = new LoginResponse();
+//		try {
+//			final URIFederationResponse metadata = uriFederationService.getMetadata(proxyURI, getMethod(method));
+//			if(metadata.isFailure()) {
+//				throw new BasicDataServiceException(ResponseCode.METADATA_INVALID);
+//			}
+//
+//			final AuthProvider provider = authProviderService.getCachedAuthProvider(metadata.getAuthProviderId());
+//
+//			if(provider == null) {
+//				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+//			}
+//
+//			if(!provider.isSupportsCertAuth()) {
+//				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+//			}
+//
+//			final String regex = StringUtils.trimToNull(provider.getCertRegex());
+//			final String regexScript = StringUtils.trimToNull(provider.getCertGroovyScript());
+//			if(StringUtils.isBlank(regex) && StringUtils.isBlank(regexScript)) {
+//				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+//			}
+//
+//			final X509Certificate clientCert = X509Certificate.getInstance(new ByteArrayInputStream(certContents.getBytes()));
+//			DefaultCertToIdentityConverter certToIdentityConverter;
+//			if(regex != null) {
+//				certToIdentityConverter = new DefaultCertToIdentityConverter();
+//				certToIdentityConverter.setClientDNRegex(regex);
+//			} else {
+//				if(!scriptIntegration.scriptExists(regexScript)) {
+//					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+//				}
+//				certToIdentityConverter = (DefaultCertToIdentityConverter)scriptIntegration.instantiateClass(null, regexScript);
+//				if(certToIdentityConverter == null) {
+//					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+//				}
+//			}
+//
+//			certToIdentityConverter.setCertficiate(clientCert);
+//			certToIdentityConverter.init();
+//			final Login login = certToIdentityConverter.resolve();
+//			if(login == null) {
+//				throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN);
+//			}
+//			wsResponse.setPrincipal(login);
+//			wsResponse.succeed();
+//		} catch(BasicDataServiceException e) {
+//			wsResponse.fail();
+//			wsResponse.setErrorText(e.getMessage());
+//			wsResponse.setErrorCode(e.getCode());
+//			LOG.info("Cannot cert identity", e);
+//		} catch(Throwable e) {
+//			wsResponse.fail();
+//			wsResponse.setErrorText(e.getMessage());
+//			LOG.warn("Cannot cert identity", e);
+//		}
+//
+//		return wsResponse;
 	}
 }

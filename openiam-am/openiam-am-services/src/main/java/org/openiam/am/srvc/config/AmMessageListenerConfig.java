@@ -25,7 +25,12 @@ public class AmMessageListenerConfig {
         return rabbitMQAdminUtils.createMessageListenerContainer("uriFederationListenerContainer",
                 OpenIAMQueue.URIFederationQueue,  listener, connectionFactory);
     }
-
+    @Bean
+    @Autowired
+    public SimpleMessageListenerContainer uriFederationCacheListenerContainer(URIFederationCacheListener listener, ConnectionFactory connectionFactory) {
+        return rabbitMQAdminUtils.createMessageListenerContainer("uriFederationCacheListenerContainer",
+                OpenIAMQueue.RefreshUriFederationCache,  listener, connectionFactory);
+    }
     @Bean
     @Autowired
     public SimpleMessageListenerContainer accessReviewListenerContainer(AccessReviewListener listener, ConnectionFactory connectionFactory) {
@@ -51,6 +56,16 @@ public class AmMessageListenerConfig {
         return rabbitMQAdminUtils.createMessageListenerContainer("contentProviderListenerContainer",
                 OpenIAMQueue.ContentProviderQueue,  listener, connectionFactory);
     }
-
-
+    @Bean
+    @Autowired
+    public SimpleMessageListenerContainer oAuthListenerContainer(OAuthListener listener, ConnectionFactory connectionFactory) {
+        return rabbitMQAdminUtils.createMessageListenerContainer("oAuthListenerContainer",
+                OpenIAMQueue.OAuthQueue,  listener, connectionFactory);
+    }
+    @Bean
+    @Autowired
+    public SimpleMessageListenerContainer oAuthCacheListenerContainer(OAuthCacheListener listener, ConnectionFactory connectionFactory) {
+        return rabbitMQAdminUtils.createMessageListenerContainer("oAuthCacheListenerContainer",
+                OpenIAMQueue.RefreshOAuthCache,  listener, connectionFactory);
+    }
 }

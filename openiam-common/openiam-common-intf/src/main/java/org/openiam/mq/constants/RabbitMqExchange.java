@@ -7,7 +7,10 @@ package org.openiam.mq.constants;
 public enum RabbitMqExchange {
     COMMON_EXCHANGE,
     METADATA_ELEMENT_EXCHANGE,
-    CHECK_LISTENER_EXCHANGE(RabbitMqExchangeType.FANOUT);
+    REFRESH_OAUTH_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT),
+    URI_FEDERATION_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT),
+    CHECK_LISTENER_EXCHANGE(RabbitMqExchangeType.FANOUT),
+    AM_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT);
 
     private final RabbitMqExchangeType type;
 

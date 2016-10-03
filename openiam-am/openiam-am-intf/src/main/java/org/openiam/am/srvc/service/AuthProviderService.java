@@ -65,4 +65,8 @@ public interface AuthProviderService {
     OAuthToken saveOAuthToken(OAuthToken oAuthToken);
     
     public List<AuthProvider> getOAuthClients();
+
+    public AuthProvider getCachedOAuthProviderById(final String id);
+    public AuthProvider getCachedOAuthProviderByName(final String name);
+    public void sweepOAuthProvider();
 }

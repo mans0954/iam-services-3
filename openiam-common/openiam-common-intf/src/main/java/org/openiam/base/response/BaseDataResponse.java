@@ -35,4 +35,7 @@ public class BaseDataResponse<T> extends Response {
         sb.append('}');
         return sb.toString();
     }
+    protected Object getValueInternal(){
+        return this.value;
+    }
 }

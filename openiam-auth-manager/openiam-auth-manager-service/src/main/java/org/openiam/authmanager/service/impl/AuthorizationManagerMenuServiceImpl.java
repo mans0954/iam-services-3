@@ -176,6 +176,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public AuthorizationMenu getMenuTree(final String menuId) {
 		return getAllMenuTress().get(menuId);
 	}
@@ -199,7 +200,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 			}
 		}
 	}
-	
+	@Transactional(readOnly = true)
 	private final Map<String, AuthorizationMenu> getAllMenuTress() {
 		final List<AuthorizationMenu> tempMenuList = resourceDAO.getAuthorizationMenus();		
 		final List<ResourceProp> tempResourcePropertyList = resourcePropDAO.getList();
@@ -644,7 +645,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 
         return retVal;
     }
-
+	@Transactional(readOnly = true)
 	public AuthorizationMenu getMenuTreeForUserId(final String menuId, final String menuName, final String userId, final Language language){
 		final StopWatch sw = new StopWatch();
 		sw.start();
@@ -663,12 +664,13 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		localize(retVal, language);
 		return retVal;
 	}
-
+	@Transactional(readOnly = true)
 	public AuthorizationMenu getMenuTree(final String menuId, final Language language){
 		final AuthorizationMenu menu = this.getMenuTree(menuId);
 		localize(menu, language);
 		return menu;
 	}
+	@Transactional(readOnly = true)
 	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType, final Language language){
 		final AuthorizationMenu menu = getMenuTree(menuId);
 		ResourceEntitlementToken token = null;
@@ -690,7 +692,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		localize(menu, language);
 		return menu;
 	}
-
+	@Transactional
 	public void deleteMenuTree(final String menuId)  throws AuthorizationMenuException{
 		final ResourceEntity resource = resourceService.findResourceById(menuId);
 
@@ -709,7 +711,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		*/
 		resourceService.deleteResource(menuId);
 	}
-
+	@Transactional
 	public void saveMenuTree(final AuthorizationMenu root) throws AuthorizationMenuException{
 		setParents(null, root);
 		final AuthorizationMenu currentRoot = this.getMenuTree(root.getId());
