@@ -1,7 +1,11 @@
 package org.openiam.am.srvc.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import javax.security.cert.CertificateException;
+import javax.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.cert.groovy.DefaultCertToIdentityConverter;
 import org.openiam.am.srvc.dao.AuthLevelGroupingDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
@@ -27,33 +32,12 @@ import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
 import org.openiam.am.srvc.dozer.converter.URIPatternDozerConverter;
 import org.openiam.am.srvc.dozer.converter.URIPatternMetaDozerConverter;
 import org.openiam.am.srvc.dozer.converter.URIPatternMetaValueDozerConverter;
-import org.openiam.am.srvc.dto.AbstractMeta;
-import org.openiam.am.srvc.dto.AbstractParameter;
-import org.openiam.am.srvc.dto.AbstractPatternMetaValue;
-import org.openiam.am.srvc.dto.AuthLevel;
-import org.openiam.am.srvc.dto.AuthLevelAttribute;
-import org.openiam.am.srvc.dto.AuthLevelGrouping;
-import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
-import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref;
-import org.openiam.am.srvc.dto.ContentProvider;
-import org.openiam.am.srvc.dto.URIPattern;
-import org.openiam.am.srvc.dto.URIPatternErrorMapping;
-import org.openiam.am.srvc.dto.URIPatternMeta;
-import org.openiam.am.srvc.dto.URIPatternMetaType;
-import org.openiam.am.srvc.dto.URIPatternMethod;
-import org.openiam.am.srvc.dto.URIPatternMethodMeta;
-import org.openiam.am.srvc.dto.URIPatternMethodParameter;
-import org.openiam.am.srvc.dto.URIPatternParameter;
-import org.openiam.am.srvc.dto.URIPatternSubstitution;
+import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.groovy.AbstractRedirectURLGroovyProcessor;
 import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
 import org.openiam.am.srvc.model.URIPatternSearchResult;
-import org.openiam.base.response.URIAuthLevelAttribute;
-import org.openiam.base.response.URIAuthLevelToken;
-import org.openiam.base.response.URIFederationResponse;
-import org.openiam.base.response.URIPatternRuleToken;
-import org.openiam.base.response.URIPatternRuleValue;
-import org.openiam.base.response.URISubstitutionToken;
+import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
+import org.openiam.base.response.*;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
 import org.openiam.am.srvc.uriauth.model.ContentProviderTree;
 import org.openiam.am.srvc.uriauth.rule.URIPatternRule;
@@ -64,7 +48,11 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.base.request.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.SSOToken;
+import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
@@ -88,6 +76,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service("uriFederationService")
 @DependsOn("springContextProvider") /* otherwise sweep() fails */
@@ -143,7 +132,13 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
     
     @Value("${org.openiam.auth.level.kerberos.id}")
     private String kerberosAuthId;
-	
+
+	@Autowired
+	private AuthProviderService authProviderService;
+
+	@Autowired
+	private AuthenticationServiceService authenticationService;
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		onMessage(null);
@@ -783,5 +778,88 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	@Override
 	public URIPattern getCachedURIPattern(String patternId) {
 		return uriPatternCache.get(patternId);
+	}
+
+	@Override
+	public LoginResponse getIdentityFromCert(String proxyURI, HttpMethod method, MultipartFile certContents) throws BasicDataServiceException{
+		LoginResponse response = new LoginResponse();
+
+		final URIFederationResponse metadata = this.getMetadata(proxyURI, method);
+		if(metadata.isFailure()) {
+			throw new BasicDataServiceException(ResponseCode.METADATA_INVALID);
+		}
+
+		final AuthProvider provider = authProviderService.getCachedAuthProvider(metadata.getAuthProviderId());
+
+		if(provider == null) {
+			throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+		}
+
+		if(!provider.isSupportsCertAuth()) {
+			throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+		}
+
+		final String regex = StringUtils.trimToNull(provider.getCertRegex());
+		final String regexScript = StringUtils.trimToNull(provider.getCertGroovyScript());
+		if(StringUtils.isBlank(regex) && StringUtils.isBlank(regexScript)) {
+			throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+		}
+
+		final X509Certificate clientCert;
+		try {
+			clientCert = X509Certificate.getInstance(new ByteArrayInputStream(certContents.getBytes()));
+		} catch (CertificateException e) {
+			throw new BasicDataServiceException(ResponseCode.CANNOT_GET_CERTIFICATE_CONTENT);
+		} catch (IOException e) {
+			throw new BasicDataServiceException(ResponseCode.CANNOT_INSTANTIATE_GROOVY_CLASS);
+		}
+
+		DefaultCertToIdentityConverter certToIdentityConverter;
+		if(regex != null) {
+			certToIdentityConverter = new DefaultCertToIdentityConverter();
+			certToIdentityConverter.setClientDNRegex(regex);
+		} else {
+			if(!scriptRunner.scriptExists(regexScript)) {
+				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+			}
+			try {
+				certToIdentityConverter = (DefaultCertToIdentityConverter)scriptRunner.instantiateClass(null, regexScript);
+			} catch (IOException e) {
+				throw new BasicDataServiceException(ResponseCode.CANNOT_INSTANTIATE_GROOVY_CLASS);
+			}
+			if(certToIdentityConverter == null) {
+				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+			}
+		}
+
+		certToIdentityConverter.setCertficiate(clientCert);
+		certToIdentityConverter.init();
+		final Login login = certToIdentityConverter.resolve();
+		if(login == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN);
+		}
+		response.setPrincipal(login);
+		return response;
+	}
+
+
+	@Override
+	public SSOLoginResponse getCookieFromProxyURIAndPrincipal(String proxyURI, HttpMethod method, String principal) throws BasicDataServiceException{
+		SSOLoginResponse response = new SSOLoginResponse();
+
+		final AuthenticationRequest loginRequest = this.createAuthenticationRequest(principal, proxyURI, method);
+		loginRequest.setLanguageId("1"); //set default
+		loginRequest.setSkipPasswordCheck(true);
+		final Subject subject = authenticationService.login(loginRequest);
+		if(subject == null) {
+			throw new BasicDataServiceException(ResponseCode.NO_SUBJECT);
+		}
+		final SSOToken ssoToken = subject.getSsoToken();
+		if(ssoToken == null) {
+			throw new BasicDataServiceException(ResponseCode.NO_SSO_TOKEN);
+		}
+		response.setSsoToken(ssoToken);
+		response.setOpeniamPrincipal(loginRequest.getPrincipal());
+		return response;
 	}
 }

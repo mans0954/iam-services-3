@@ -1,36 +1,38 @@
 package org.openiam.base.request;
 
-import org.springframework.http.HttpMethod;
 
 /**
  * Created by alexander on 10/08/16.
  */
-public class URIFederationServiceRequest extends BaseServiceRequest {
-    private String proxyURI;
-    private HttpMethod method;
+public class URIFederationServiceRequest extends AbstractFederationServiceRequest {
+    private String userId;
+    private String principal;
 
-    public String getProxyURI() {
-        return proxyURI;
+
+    public String getUserId() {
+        return userId;
     }
 
-    public void setProxyURI(String proxyURI) {
-        this.proxyURI = proxyURI;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    public HttpMethod getMethod() {
-        return method;
+    public String getPrincipal() {
+        return principal;
     }
 
-    public void setMethod(HttpMethod method) {
-        this.method = method;
+    public void setPrincipal(String principal) {
+        this.principal = principal;
     }
+
+
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("URIFederationServiceRequest{");
         sb.append(super.toString());
-        sb.append(", proxyURI='").append(proxyURI).append('\'');
-        sb.append(", method=").append(method);
+        sb.append(", userId='").append(userId).append('\'');
+        sb.append(", principal='").append(principal).append('\'');
         sb.append('}');
         return sb.toString();
     }

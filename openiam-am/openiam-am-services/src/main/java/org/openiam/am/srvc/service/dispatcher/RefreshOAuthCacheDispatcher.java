@@ -22,7 +22,7 @@ public class RefreshOAuthCacheDispatcher  extends AbstractAPIDispatcher<BaseServ
 
     @Override
     protected Response processingApiRequest(OAuthAPI openIAMAPI, BaseServiceRequest request) throws BasicDataServiceException {
-         authProviderService.sweepOAuthProvider();
+        authProviderService.sweepOAuthProvider();
         return new Response();
     }
 }

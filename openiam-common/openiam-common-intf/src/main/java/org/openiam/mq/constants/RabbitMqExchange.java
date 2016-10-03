@@ -8,6 +8,7 @@ public enum RabbitMqExchange {
     COMMON_EXCHANGE,
     METADATA_ELEMENT_EXCHANGE,
     REFRESH_OAUTH_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT),
+    URI_FEDERATION_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT),
     CHECK_LISTENER_EXCHANGE(RabbitMqExchangeType.FANOUT),
     AM_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT);
 

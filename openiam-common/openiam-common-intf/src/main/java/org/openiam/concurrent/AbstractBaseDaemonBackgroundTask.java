@@ -1,7 +1,7 @@
 package org.openiam.concurrent;
 
 /**
- * @author Sergei Barinov
+ * @author Alexadner Dukkardt
  *
  */
 public abstract class AbstractBaseDaemonBackgroundTask extends
