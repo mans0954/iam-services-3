@@ -67,12 +67,12 @@ public class AuthProviderEntity implements Serializable {
     @Column(name="CERT_AUTH_REGEX_SCRIPT",length=19)
     private String certGroovyScript;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="PROVIDER_TYPE", referencedColumnName = "PROVIDER_TYPE", insertable = false, updatable = false)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private AuthProviderTypeEntity type;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = false, updatable = false)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ManagedSysEntity managedSys;
@@ -88,12 +88,10 @@ public class AuthProviderEntity implements Serializable {
     private ResourceEntity resource;
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
-    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<AuthProviderAttributeEntity> providerAttributeSet;
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
     @MapKey(name = "targetAttributeName")
-    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMapEntity>(0);
 
     public String getProviderId() {
@@ -119,16 +117,6 @@ public class AuthProviderEntity implements Serializable {
     public void setManagedSysId(String managedSysId) {
         this.managedSysId = managedSysId;
     }
-
-    /*
-    public String getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
-    }
-    */
 
     public String getName() {
         return name;
@@ -255,6 +243,11 @@ public class AuthProviderEntity implements Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (chained ? 1231 : 1237);
+        result = prime
+                * result
+                + ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+        result = prime * result
+                + ((certRegex == null) ? 0 : certRegex.hashCode());
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result + (isSignRequest ? 1231 : 1237);
@@ -272,6 +265,7 @@ public class AuthProviderEntity implements Serializable {
 		result = prime * result
 				+ ((providerType == null) ? 0 : providerType.hashCode());
 		result = prime * result + Arrays.hashCode(publicKey);
+        result = prime * result + (supportsCertAuth ? 1231 : 1237);
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -340,6 +334,18 @@ public class AuthProviderEntity implements Serializable {
 				return false;
 		} else if (!type.equals(other.type))
 			return false;
+        if (certGroovyScript == null) {
+            if (other.certGroovyScript != null)
+                return false;
+        } else if (!certGroovyScript.equals(other.certGroovyScript))
+            return false;
+        if (certRegex == null) {
+            if (other.certRegex != null)
+                return false;
+        } else if (!certRegex.equals(other.certRegex))
+            return false;
+        if (supportsCertAuth != other.supportsCertAuth)
+            return false;
 		return true;
 	}
     

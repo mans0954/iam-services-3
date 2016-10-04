@@ -163,6 +163,11 @@
             <artifactId>mule-module-client</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+        </dependency>
+
         <!-- Mule Transports -->
         <dependency>
             <groupId>org.mule.transports</groupId>

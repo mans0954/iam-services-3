@@ -235,10 +235,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET);
             }
-            if(StringUtils.isBlank(provider.getManagedSysId())) {
-            	throw new  BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
-            }
-            
+
             if(CollectionUtils.isEmpty(provider.getGroupingXrefs())) {
             	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
             }

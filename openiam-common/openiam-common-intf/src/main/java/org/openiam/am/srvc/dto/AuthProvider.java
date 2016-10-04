@@ -243,6 +243,16 @@ public class AuthProvider implements Serializable {
         if (resourceAttributeMap != null ? !resourceAttributeMap.equals(that.resourceAttributeMap) : that.resourceAttributeMap != null)
             return false;
         if (resource != null ? !resource.equals(that.resource) : that.resource != null) return false;
+        if (certGroovyScript == null) {
+            if (that.certGroovyScript != null)
+                return false;
+        } else if (!certGroovyScript.equals(that.certGroovyScript))
+            return false;
+        if (certRegex == null) {
+            if (that.certRegex != null)
+                return false;
+        } else if (!certRegex.equals(that.certRegex))
+            return false;
         return !(providerAttributeMap != null ? !providerAttributeMap.equals(that.providerAttributeMap) : that.providerAttributeMap != null);
 
     }
@@ -264,6 +274,8 @@ public class AuthProvider implements Serializable {
         result = 31 * result + (resourceAttributeMap != null ? resourceAttributeMap.hashCode() : 0);
         result = 31 * result + (resource != null ? resource.hashCode() : 0);
         result = 31 * result + (providerAttributeMap != null ? providerAttributeMap.hashCode() : 0);
+        result = 31 * result + ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+        result = 31 * result + ((certRegex == null) ? 0 : certRegex.hashCode());
         return result;
     }
 }

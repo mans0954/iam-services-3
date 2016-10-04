@@ -167,6 +167,7 @@
 		<bouncycastle.version>1.47</bouncycastle.version>
 		<mockito.version>1.9.0</mockito.version>
 		<hsqldb.version>1.8.0.10</hsqldb.version>
+		<commons.fileupload.version>1.2.2</commons.fileupload.version>
 		<twitter4j.version>3.0.3</twitter4j.version>
 		<git.commit.id.plugin.version>2.0.3</git.commit.id.plugin.version>
 		<maven.build.timestamp.format>yyyy/MM/dd HH:mm Z</maven.build.timestamp.format>
@@ -704,6 +705,11 @@
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcpkix-jdk15on</artifactId>
 				<version>${bouncycastle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>${commons.fileupload.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven.shared</groupId>

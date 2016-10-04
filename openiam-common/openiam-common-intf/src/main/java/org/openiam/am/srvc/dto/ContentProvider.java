@@ -32,13 +32,15 @@ import java.util.concurrent.atomic.AtomicInteger;
         "patternSet",
         "serverSet",
         "managedSysId",
+		"managedSysName",
         "url",
         "themeId",
         "groupingXrefs",
         "showOnApplicationPage",
         "loginURL",
         "postbackURLParamName",
-		"authProviderId",
+		"authProviderId"
+
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider implements Serializable {
@@ -49,6 +51,7 @@ public class ContentProvider implements Serializable {
 	private String domainPattern;
 	private Boolean isSSL;
 	private String managedSysId;
+	private String managedSysName;
     //private String contextPath;
 	private String resourceId;
     private String resourceName;
@@ -62,7 +65,7 @@ public class ContentProvider implements Serializable {
 	private String loginURL;
 	private String postbackURLParamName;
 	private String authProviderId;
-	
+
 	/*
 	 * federation variables.  Internal use only
 	 */
@@ -154,13 +157,6 @@ public class ContentProvider implements Serializable {
 		return retVal;
 	}
 
-	public String getAuthProviderId() {
-		return authProviderId;
-	}
-	public void setAuthProviderId(String authProviderId) {
-		this.authProviderId = authProviderId;
-	}
-	
 	public String getManagedSysId() {
 		return managedSysId;
 	}
@@ -225,6 +221,21 @@ public class ContentProvider implements Serializable {
 	public void setPostbackURLParamName(String postbackURLParamName) {
 		this.postbackURLParamName = postbackURLParamName;
 	}
+
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
+	}
+
+	public String getManagedSysName() {
+		return managedSysName;
+	}
+	public void setManagedSysName(String managedSysName) {
+		this.managedSysName = managedSysName;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

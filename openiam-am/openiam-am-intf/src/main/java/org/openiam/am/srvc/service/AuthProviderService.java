@@ -5,6 +5,7 @@ import org.openiam.am.srvc.domain.AuthProviderAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.dto.AuthProvider;
+import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 
 import java.util.List;
 
@@ -49,6 +50,7 @@ public interface AuthProviderService {
     *===================================================
     */
     public List<AuthProviderEntity> findAuthProviderBeans(AuthProviderEntity searchBean, Integer size, Integer from);
+    public List<AuthProvider> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size);
     public Integer getNumOfAuthProviderBeans(AuthProviderEntity searchBean);
     public void addAuthProvider(AuthProviderEntity attribute, final String requestorId) throws Exception;
     public void updateAuthProvider(AuthProviderEntity attribute, final String requestorId) throws Exception;

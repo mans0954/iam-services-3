@@ -18,4 +18,9 @@
 
     <bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean>
 
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 5 MB -->
+		<property name="maxUploadSize" value="5120000"/>
+	</bean>
+
     </beans>

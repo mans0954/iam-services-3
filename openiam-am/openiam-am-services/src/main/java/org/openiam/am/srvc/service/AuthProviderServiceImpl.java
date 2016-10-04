@@ -7,6 +7,7 @@ import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
 import org.openiam.am.srvc.dto.AuthProvider;
+import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -160,6 +161,12 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     *===================================================
     */
     @Override
+    @Transactional(readOnly=true)
+    public List<AuthProvider> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size) {
+        final List<AuthProviderEntity> providerList = authProviderDao.getByExample(searchBean,from,size);
+        return authProviderDozerConverter.convertToDTOList(providerList, (searchBean != null) ? searchBean.isDeepCopy() : false);
+    }
+    @Override
     public List<AuthProviderEntity> findAuthProviderBeans(AuthProviderEntity searchBean, Integer size,
                                                           Integer from) {
         return authProviderDao.getByExample(searchBean,from,size);
@@ -237,6 +244,10 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
             entity.setName(provider.getName());
             entity.setDescription(provider.getDescription());
             entity.setChained(provider.isChained());
+            entity.setSupportsCertAuth(provider.isSupportsCertAuth());
+            entity.setCertGroovyScript(provider.getCertGroovyScript());
+            entity.setCertRegex(provider.getCertRegex());
+
             if(provider.getPrivateKey()!=null && provider.getPrivateKey().length>0){
                 entity.setPrivateKey(provider.getPrivateKey());
             }

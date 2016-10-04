@@ -490,6 +490,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				response.setPatternId(uriPattern.getId());
 			}
 			if(cp != null) {
+				response.setAuthProviderId(cp.getAuthProviderId());
 				response.setCpId(cp.getId());
 				response.setServer(cp.getNextServer());
 				response.setPostbackURLParamName(cp.getPostbackURLParamName());
