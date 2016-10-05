@@ -150,7 +150,10 @@ public enum ErrorCode {
     COMMAND_TYPE_NOT_DEFINED("command type not defined"),
 
     @XmlEnumValue("skip provisioning true")
-    SKIP_PROVISIONING("skip provisioning true");
+    SKIP_PROVISIONING("skip provisioning true"),
+
+    @XmlEnumValue("account disabled in AD")
+    ACCOUNT_DISABLED("account disabled in AD");
 
     private final String value;
 
