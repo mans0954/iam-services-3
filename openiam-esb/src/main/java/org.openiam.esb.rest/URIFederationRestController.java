@@ -119,6 +119,7 @@ public class URIFederationRestController {
 			if(login == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN);
 			}
+			login.setPassword("**********");
 			wsResponse.setPrincipal(login);
 			wsResponse.succeed();
 		} catch(BasicDataServiceException e) {
