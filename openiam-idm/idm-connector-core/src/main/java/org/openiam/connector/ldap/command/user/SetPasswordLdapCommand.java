@@ -66,11 +66,13 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
             }
 
             NamingEnumeration results = null;
+            String[] attr = new String[1];
+            attr[0] = "userAccountControl";
             try {
             	if(log.isDebugEnabled()) {
             		log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
             	}
-                results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
+                results = lookupSearch(managedSys, matchObj, ldapctx, identity, attr, objectBaseDN);
 
             } catch (NameNotFoundException nnfe) {
             	if(log.isDebugEnabled()) {
@@ -83,9 +85,13 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
 
             String identityDN = null;
             int count = 0;
+            String accStatusControl = null;
             while (results != null && results.hasMoreElements()) {
                 SearchResult sr = (SearchResult) results.next();
                 identityDN = sr.getNameInNamespace();
+                if (sr.getAttributes() != null && sr.getAttributes().get("userAccountControl") != null && sr.getAttributes().get("userAccountControl").get() != null) {
+                    accStatusControl = sr.getAttributes().get("userAccountControl").get().toString();
+                }
                 count++;
             }
 
@@ -98,6 +104,15 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
                 String err = String.format("More then one user %s was found in %s", identity, objectBaseDN);
                 log.error(err);
                 respType.setStatus(StatusCodeType.FAILURE);
+                return respType;
+            }
+
+            if ("514".equals(accStatusControl)) {
+                String err = String.format("Account %s disabled in AD", identity);
+                log.error(err);
+                respType.setStatus(StatusCodeType.FAILURE);
+                respType.setError(ErrorCode.ACCOUNT_DISABLED);
+                respType.addErrorMessage("Account disabled in AD");
                 return respType;
             }
 

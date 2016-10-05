@@ -497,7 +497,11 @@ public class ConnectorAdapter {
                     factory.setServiceClass(ConnectorService.class);
                     factory.setAddress(connector.getServiceUrl());
                     ConnectorService connectorService = (ConnectorService) factory.create();
-                    resp = connectorService.resetPassword(request);
+                    if ("SET_PASSWORD".equals(request.getOperation())){
+                        resp = connectorService.setPassword(request);
+                    } else {
+                        resp = connectorService.resetPassword(request);
+                    }
                 }
                 return resp;
             }

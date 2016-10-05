@@ -124,6 +124,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         List<ExtensibleAttribute> attrs = new ArrayList<ExtensibleAttribute>();
         attrs.add(new ExtensibleAttribute("distinguishedName", null));
         attrs.add(new ExtensibleAttribute("msDS-UserPasswordExpiryTimeComputed", null));
+        attrs.add(new ExtensibleAttribute("userAccountControl", null));
         LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, attrs);
         if(log.isDebugEnabled()) {
         	log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
@@ -154,6 +155,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
 	            Map<String, Object> params = new HashMap<String, Object>();
 	            params.put("distinguishedName", distinguishedName);
 	            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, params);
+                checkAccountStatus(resp);
         	}
 
         } catch (AuthenticationException ae) {
@@ -282,6 +284,29 @@ public class LDAPLoginModule extends AbstractLoginModule {
         setResultCode(lg, subj, curDate, passwordPolicy, false);
 
         return subj;
+    }
+
+    private void checkAccountStatus(LookupUserResponse resp) throws AuthenticationException {
+        boolean accountDisable = false;
+        if (resp.isSuccess()) {
+            for (ExtensibleAttribute a : resp.getAttrList()) {
+                switch (a.getName()) {
+                    case "userAccountControl":
+                        if ("514".equals(a.getValue())) {
+                            accountDisable = true;
+                        }
+                        break;
+                }
+            }
+        } else {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
+        }
+
+        if (accountDisable) {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_LOGIN_DISABLED);
+        }
     }
 
 }

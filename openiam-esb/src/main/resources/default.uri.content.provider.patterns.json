@@ -367,6 +367,17 @@
 					}
 				}
 			]
+		},
+		{
+			"pattern" : "/webconsole/rest/api/prov/syncPasswordFromSrc",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
 		}
 	]
 }
