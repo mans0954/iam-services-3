@@ -86,6 +86,9 @@ public class ContentProviderServiceImpl implements ContentProviderService, Initi
     private MetadataTypeDAO typeDAO;
 
     @Autowired
+    private AuthProviderDao authProviderDao;
+
+    @Autowired
     @Qualifier("defaultPatternResoruce")
     private Resource defaultPatternResoruce;
 
@@ -171,6 +174,7 @@ public class ContentProviderServiceImpl implements ContentProviderService, Initi
 
             final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = new HashSet<>(provider.getGroupingXrefs());
             provider.setGroupingXrefs(null);
+            provider.setAuthProvider(authProviderDao.findById(provider.getAuthProvider().getProviderId()));
             contentProviderDao.save(provider);
             if (CollectionUtils.isNotEmpty(incomingXrefs)) {
                 for (final AuthLevelGroupingContentProviderXrefEntity xref : incomingXrefs) {

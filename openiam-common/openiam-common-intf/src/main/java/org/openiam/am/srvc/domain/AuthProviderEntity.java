@@ -94,6 +94,10 @@ public class AuthProviderEntity implements Serializable {
     @MapKey(name = "targetAttributeName")
     private Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMapEntity>(0);
 
+    @OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "authProvider")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<ContentProviderEntity> contentProviders;
+
     public String getProviderId() {
         return providerId;
     }
@@ -236,6 +240,14 @@ public class AuthProviderEntity implements Serializable {
 
     public void setCertGroovyScript(String certGroovyScript) {
         this.certGroovyScript = certGroovyScript;
+    }
+
+    public Set<ContentProviderEntity> getContentProviders() {
+        return contentProviders;
+    }
+
+    public void setContentProviders(Set<ContentProviderEntity> contentProviders) {
+        this.contentProviders = contentProviders;
     }
     
 	@Override
