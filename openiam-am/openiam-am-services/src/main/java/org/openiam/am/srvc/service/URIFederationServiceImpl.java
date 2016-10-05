@@ -64,6 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.HttpMethod;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -342,6 +343,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				response.setPatternId(uriPattern.getId());
 			}
 			if(cp != null) {
+				response.setAuthProviderId(cp.getAuthProviderId());
 				response.setCpId(cp.getId());
 				response.setServer(cp.getNextServer());
 				response.setPostbackURLParamName(cp.getPostbackURLParamName());
@@ -488,6 +490,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				response.setPatternId(uriPattern.getId());
 			}
 			if(cp != null) {
+				response.setAuthProviderId(cp.getAuthProviderId());
 				response.setCpId(cp.getId());
 				response.setServer(cp.getNextServer());
 				response.setPostbackURLParamName(cp.getPostbackURLParamName());

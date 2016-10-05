@@ -233,6 +233,13 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
         final List<AuthProviderEntity> providerList = authProviderService.findAuthProviderBeans(entity, size, from);
         return authProviderDozerConverter.convertToDTOList(providerList, (searchBean.isDeepCopy()));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AuthProvider> findAuthProviderBeansSB(AuthProviderSearchBean searchBean,Integer size,Integer from) {
+        return authProviderService.findAuthProviderBeans(searchBean, from, size);
+    }
+
     @Override
     public Integer getNumOfAuthProviderBeans(AuthProviderSearchBean searchBean){
          return authProviderService.getNumOfAuthProviderBeans(authProviderSearchBeanConverter.convert(searchBean));

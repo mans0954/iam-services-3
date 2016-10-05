@@ -5,6 +5,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
+import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
+import org.openiam.am.srvc.dto.AuthProvider;
+import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -13,15 +16,17 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service("authProviderService")
-public class AuthProviderServiceImpl implements AuthProviderService {
+public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     private final Log log = LogFactory.getLog(this.getClass());
     private static final String resourceTypeId="AUTH_PROVIDER";
 
@@ -38,9 +43,13 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     @Autowired
     private AuthResourceAttributeService authResourceAttributeService;
     @Autowired
+    private AuthProviderDozerConverter authProviderDozerConverter;
+    @Autowired
     private ResourceTypeDAO resourceTypeDAO;
     @Autowired
     private ResourceService resourceService;
+
+    private Map<String, AuthProvider> authProviderCache = new HashMap<String, AuthProvider>();
 
     /*
     *==================================================
@@ -152,6 +161,12 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     *===================================================
     */
     @Override
+    @Transactional(readOnly=true)
+    public List<AuthProvider> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size) {
+        final List<AuthProviderEntity> providerList = authProviderDao.getByExample(searchBean,from,size);
+        return authProviderDozerConverter.convertToDTOList(providerList, (searchBean != null) ? searchBean.isDeepCopy() : false);
+    }
+    @Override
     public List<AuthProviderEntity> findAuthProviderBeans(AuthProviderEntity searchBean, Integer size,
                                                           Integer from) {
         return authProviderDao.getByExample(searchBean,from,size);
@@ -229,6 +244,10 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             entity.setName(provider.getName());
             entity.setDescription(provider.getDescription());
             entity.setChained(provider.isChained());
+            entity.setSupportsCertAuth(provider.isSupportsCertAuth());
+            entity.setCertGroovyScript(provider.getCertGroovyScript());
+            entity.setCertRegex(provider.getCertRegex());
+
             if(provider.getPrivateKey()!=null && provider.getPrivateKey().length>0){
                 entity.setPrivateKey(provider.getPrivateKey());
             }
@@ -423,6 +442,33 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         for (AuthResourceAttributeMapEntity attribute : newAttributes.values()) {
             attribute.setProviderId(provider.getProviderId());
             authResourceAttributeService.saveAttributeMap(attribute);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly=true)
+    public AuthProvider getProvider(final String id) {
+        return authProviderDozerConverter.convertToDTO(authProviderDao.findById(id), true);
+    }
+
+    @Override
+    public AuthProvider getCachedAuthProvider(String id) {
+        return authProviderCache.get(id);
+    }
+
+    @Override
+    @Transactional
+    @Scheduled(fixedDelay=300000)
+    public void sweep() {
+        Map<String, AuthProvider> tempAuthProviderCache = new HashMap<String, AuthProvider>();
+        final List<AuthProviderEntity> entities = authProviderDao.findAll();
+        if(CollectionUtils.isNotEmpty(entities)) {
+            for (AuthProviderEntity ape : entities) {
+                tempAuthProviderCache.put(ape.getProviderId(), authProviderDozerConverter.convertToDTO(ape, true));
+            }
+        }
+        synchronized(authProviderCache) {
+            authProviderCache = tempAuthProviderCache;
         }
     }
 }

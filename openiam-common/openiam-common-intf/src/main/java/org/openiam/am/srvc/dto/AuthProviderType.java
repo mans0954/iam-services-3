@@ -19,7 +19,8 @@ import java.util.Set;
         "isActive",
         "hasPublicKey",
         "hasPrivateKey",
-        "chainable"
+        "chainable",
+		"supportsCertAuth"
 })
 @DozerDTOCorrespondence(AuthProviderTypeEntity.class)
 public class AuthProviderType extends KeyDTO {
@@ -28,6 +29,7 @@ public class AuthProviderType extends KeyDTO {
     private boolean hasPublicKey;
     private boolean hasPrivateKey;
     private boolean chainable;
+	private boolean supportsCertAuth;
     
     @XmlTransient
     private Set<AuthAttributeEntity> attributeSet;
@@ -90,6 +92,14 @@ public class AuthProviderType extends KeyDTO {
 		this.chainable = chainable;
 	}
 
+	public boolean isSupportsCertAuth() {
+		return supportsCertAuth;
+	}
+
+	public void setSupportsCertAuth(boolean supportsCertAuth) {
+		this.supportsCertAuth = supportsCertAuth;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -100,6 +110,7 @@ public class AuthProviderType extends KeyDTO {
 		result = prime * result + (hasPublicKey ? 1231 : 1237);
 		result = prime * result + (isActive ? 1231 : 1237);
 		result = prime * result + (chainable ? 1231 : 1237);
+		result = prime * result + (supportsCertAuth ? 1231 : 1237);
 		return result;
 	}
 
@@ -124,6 +135,8 @@ public class AuthProviderType extends KeyDTO {
 		if (isActive != other.isActive)
 			return false;
 		if (chainable != other.chainable)
+			return false;
+		if (supportsCertAuth != other.supportsCertAuth)
 			return false;
 		return true;
 	}

@@ -108,6 +108,18 @@ public class LoginDataServiceImpl implements LoginDataService {
         return loginDao.getRecord(login, sysId);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Login getLoginDtoByManagedSys(String principal, String sysId){
+        LoginEntity entity = this.getLoginByManagedSys(principal, sysId);
+
+        if (entity != null ) {
+            return loginDozerConverter.convertToDTO(entity, false);
+        }else {
+            return null;
+        }
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getLoginDetailsByManagedSys(String principalName,

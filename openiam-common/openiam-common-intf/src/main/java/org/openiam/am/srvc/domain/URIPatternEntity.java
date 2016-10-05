@@ -72,7 +72,7 @@ public class URIPatternEntity implements Serializable {
 	@OrderBy("order ASC")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs;
-	
+
 	public String getId() {
 		return id;
 	}

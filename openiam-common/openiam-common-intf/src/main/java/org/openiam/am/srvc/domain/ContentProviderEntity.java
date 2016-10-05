@@ -62,12 +62,12 @@ public class ContentProviderEntity implements Serializable {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UIThemeEntity uiTheme;
 
-
+	/*
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=false)
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private ManagedSysEntity managedSystem;
-	
+	*/
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -80,12 +80,16 @@ public class ContentProviderEntity implements Serializable {
 	@OneToMany(fetch = FetchType.LAZY,cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy = "contentProvider")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<URIPatternEntity> patternSet;
-	
+
 	@OneToMany(orphanRemoval = true, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy = "contentProvider", fetch = FetchType.LAZY)
 	@OrderBy("order ASC")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs;
-	
+
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+	@JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=false)
+	private AuthProviderEntity authProvider;
+
 
 	public String getId() {
 		return id;
@@ -150,8 +154,15 @@ public class ContentProviderEntity implements Serializable {
 	public void setPatternSet(Set<URIPatternEntity> patternSet) {
 		this.patternSet = patternSet;
 	}
-	
-	
+
+	public AuthProviderEntity getAuthProvider() {
+		return authProvider;
+	}
+
+	public void setAuthProvider(AuthProviderEntity authProvider) {
+		this.authProvider = authProvider;
+	}
+
 
 	/*
     public String getResourceId() {
@@ -179,14 +190,6 @@ public class ContentProviderEntity implements Serializable {
 
 	public void setUiTheme(UIThemeEntity uiTheme) {
 		this.uiTheme = uiTheme;
-	}
-
-	public ManagedSysEntity getManagedSystem() {
-		return managedSystem;
-	}
-
-	public void setManagedSystem(ManagedSysEntity managedSystem) {
-		this.managedSystem = managedSystem;
 	}
 
 	public Set<AuthLevelGroupingContentProviderXrefEntity> getGroupingXrefs() {

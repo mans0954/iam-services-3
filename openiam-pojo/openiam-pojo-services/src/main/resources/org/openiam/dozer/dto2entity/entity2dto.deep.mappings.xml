@@ -1050,6 +1050,10 @@
             <b>resourceName</b>
         </field>
         <field>
+            <a>authProvider.providerId</a>
+            <b>authProviderId</b>
+        </field>
+        <field>
             <a>resource.coorelatedName</a>
             <b>resourceCoorelatedName</b>
         </field>
@@ -1072,8 +1076,12 @@
             <b>patternSet</b>
         </field>
         <field>
-            <a>managedSystem.id</a>
+            <a>authProvider.managedSys.id</a>
             <b>managedSysId</b>
+        </field>
+        <field>
+            <a>authProvider.managedSys.name</a>
+            <b>managedSysName</b>
         </field>
         <field>
             <a>resource.url</a>
