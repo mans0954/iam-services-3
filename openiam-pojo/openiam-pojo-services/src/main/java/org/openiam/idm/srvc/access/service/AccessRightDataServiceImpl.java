@@ -11,8 +11,14 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.dto.AccessRight;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataElement;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,9 +39,14 @@ public class AccessRightDataServiceImpl extends AbstractBaseService implements A
     @Autowired
     private AccessRightDozerConverter converter;
 
+    @Autowired
+    private MetadataService metadataService;
+
     @Override
-    public Response save(final AccessRight dto) {
+    public Response save(final AccessRight dto, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requesterId);
         try {
             if (dto == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
@@ -46,37 +57,82 @@ public class AccessRightDataServiceImpl extends AbstractBaseService implements A
             }
 
             final AccessRightEntity entity = converter.convertToEntity(dto, true);
+
+            MetadataTypeEntity mdE1 = null;
+            MetadataTypeEntity mdE2 = null;
+            if (entity.getMetadataTypeEntity1() != null) {
+                mdE1 = metadataService.getById(entity.getMetadataTypeEntity1().getId());
+            }
+            if (entity.getMetadataTypeEntity2() != null) {
+                mdE2 = metadataService.getById(entity.getMetadataTypeEntity2().getId());
+            }
+            if (entity.getId() != null) {
+                idmAuditLog.setAction(AuditAction.UPDATE_ACCESS_RIGHT.value());
+                idmAuditLog.setAuditDescription(String.format("Update Access Right : %s (%s -> %s)", entity.getName(),
+                        (mdE1 == null ? "" : mdE1.getDescription() + " (" + mdE1.getGrouping() + ")"),
+                        (mdE2 == null ? "" : mdE2.getDescription() + " (" + mdE2.getGrouping() + ")")));
+            } else {
+                idmAuditLog.setAction(AuditAction.ADD_ACCESS_RIGHT.value());
+                idmAuditLog.setAuditDescription(String.format("Add Access Right : %s (%s -> %s)", entity.getName(),
+                        (mdE1 == null ? "" : mdE1.getDescription() + " (" + mdE1.getGrouping() + ")"),
+                        (mdE2 == null ? "" : mdE2.getDescription() + " (" + mdE2.getGrouping() + ")")));
+            }
+
             service.save(entity);
+            idmAuditLog.succeed();
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.fail();
             response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
         } catch (Throwable e) {
             log.error("Can't save or update object", e);
             response.setErrorText(e.getMessage());
             response.fail();
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
         }
         return response;
     }
 
     @Override
-    public Response delete(String id) {
+    public Response delete(String id, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requesterId);
         try {
             if (StringUtils.isBlank(id)) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
-
+            idmAuditLog.setAction(AuditAction.DELETE_ACCESS_RIGHT.value());
+            AccessRightEntity ar = service.get(id);
+            if (ar != null) {
+                idmAuditLog.setAuditDescription(String.format("Delete Access Right : %s (id = %s )", ar.getName(), id));
+            } else {
+                idmAuditLog.setAuditDescription(String.format("Delete Access Right with id: %s", id));
+            }
             service.delete(id);
+            idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.fail();
             response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
         } catch (Throwable e) {
             log.error("Can't save or delete object", e);
             response.setErrorText(e.getMessage());
             response.fail();
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
         }
         return response;
     }
