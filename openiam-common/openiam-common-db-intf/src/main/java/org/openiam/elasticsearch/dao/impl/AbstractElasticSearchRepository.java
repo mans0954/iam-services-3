@@ -1,11 +1,14 @@
 package org.openiam.elasticsearch.dao.impl;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -14,14 +17,10 @@ import org.apache.commons.logging.LogFactory;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.OrderConstants;
-import org.openiam.base.domain.KeyEntity;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SortParam;
 import org.openiam.elasticsearch.dao.AbstractCustomElasticSearchRepository;
-import org.openiam.elasticsearch.dao.OpeniamElasticSearchRepository;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
-import org.openiam.idm.searchbeans.SearchBean;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,11 +35,31 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 public abstract class AbstractElasticSearchRepository<T extends BaseIdentity, ID extends Serializable, S extends AbstractSearchBean> 
 implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	
+	protected Set<String> validSortFields = null; 
+	
 	protected AbstractElasticSearchRepository() {
 		document = getEntityClass().getAnnotation(Document.class);
 		if(document == null) {
 			throw new RuntimeException(String.format("No %s Annotation for %s", Document.class, getEntityClass()));
 		}
+		validSortFields = Collections.unmodifiableSet(getFieldsWithFieldAnnotation(getEntityClass()).stream().map(e -> e.getName()).collect(Collectors.toSet()));
+	}
+	
+	private Set<Field> getFieldsWithFieldAnnotation(final Class<?> clazz) {
+		final Set<Field> retval = new HashSet<Field>();
+		if(clazz.getDeclaredFields() != null) {
+			for(final Field field : getEntityClass().getDeclaredFields()) {
+				if(field != null) {
+					if(field.isAnnotationPresent(org.springframework.data.elasticsearch.annotations.Field.class)) {
+						retval.add(field);
+					}
+				}
+			}
+			if(clazz.getSuperclass() != null) {
+				retval.addAll(getFieldsWithFieldAnnotation(clazz.getSuperclass()));
+			}
+		}
+		return retval;
 	}
 
 	@Autowired
@@ -170,17 +189,23 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
         return criteria;
     }
 	
+	protected boolean isSortByValid(final String sortBy) {
+		return (sortBy != null && validSortFields.contains(sortBy));
+	}
+	
 	protected Sort getSort(final S searchBean) {
 		Sort sortBy = null;
 		final List<SortParam> sortParamList = searchBean.getSortBy();
 		if(CollectionUtils.isNotEmpty(sortParamList)) {
 			for (final SortParam sort : sortParamList) {
 				final Direction direction = OrderConstants.ASC.equals(sort.getOrderBy()) ? Direction.ASC : Direction.DESC;
-				final Sort currentSort = new Sort(direction, sort.getSortBy());
-				if(sortBy == null) {
-					sortBy = currentSort;
-				} else {
-					sortBy.and(currentSort);
+				if(isSortByValid(sort.getSortBy())) {
+					final Sort currentSort = new Sort(direction, sort.getSortBy());
+					if(sortBy == null) {
+						sortBy = currentSort;
+					} else {
+						sortBy.and(currentSort);
+					}
 				}
 			}
 		}
