@@ -161,7 +161,11 @@ public class URIFederationRestController extends AbstractURIFederationAPIService
 		request.setProxyURI(proxyURI);
 		request.setMethod(getMethod(method));
 		request.setCertContents(certContents);
-		return getResponse(URIFederationAPI.GetIdentityFromCert, request, LoginResponse.class);
+		final LoginResponse response = getResponse(URIFederationAPI.GetIdentityFromCert, request, LoginResponse.class);
+		if(response != null && response.getPrincipal() != null) {
+			response.getPrincipal().setPassword("*******");
+		}
+		return response;
 
 //		final LoginResponse wsResponse = new LoginResponse();
 //		try {
