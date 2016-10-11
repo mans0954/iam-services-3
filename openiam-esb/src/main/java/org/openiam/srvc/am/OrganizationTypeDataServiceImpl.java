@@ -4,6 +4,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.response.OrganizationTypeResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -16,6 +18,9 @@ import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
 import org.openiam.idm.srvc.org.service.OrganizationTypeService;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.OrganizationTypeAPI;
+import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +31,7 @@ import java.util.List;
 
 @Service("organizationTypeDataService")
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationTypeDataService")
-public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataService {
+public class OrganizationTypeDataServiceImpl extends AbstractApiService implements OrganizationTypeDataService {
 	
 	private static final Log LOG = LogFactory.getLog(OrganizationTypeDataServiceImpl.class);
 
@@ -38,18 +43,26 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 	
 	@Autowired
 	private OrganizationDozerConverter organizationDozerConverter;
-	
+
+	public OrganizationTypeDataServiceImpl() {
+		super(OpenIAMQueue.OrganizationTypeQueue);
+	}
+
 	@Override
-	@LocalizedServiceGet
-    @Transactional(readOnly = true)
-	public OrganizationType findByIdLocalized(final String id, final Language language) {
-		final OrganizationTypeEntity entity = organizationTypeService.findById(id);
-		return (entity != null) ? dozerConverter.convertToDTO(entity, true) : null;
+//	@LocalizedServiceGet
+//    @Transactional(readOnly = true)
+	public OrganizationType findById(final String id, final Language language) {
+		IdServiceRequest request = new IdServiceRequest(id);
+		request.setLanguage(language);
+		return this.getValue(OrganizationTypeAPI.GetById, request, OrganizationTypeResponse.class);
+
+//		final OrganizationTypeEntity entity = organizationTypeService.findById(id);
+//		return (entity != null) ? dozerConverter.convertToDTO(entity, true) : null;
 	}
 	
 	@Override
 	@LocalizedServiceGet
-	public List<OrganizationType> findAllowedChildrenByDelegationFilterLocalized(final String requesterId, final Language language) {
+	public List<OrganizationType> findAllowedChildrenByDelegationFilter(final String requesterId, final Language language) {
 		final List<OrganizationTypeEntity> entityList =  organizationTypeService.findAllowedChildrenByDelegationFilter(requesterId);
 		return dozerConverter.convertToDTOList(entityList, false);
 	}
