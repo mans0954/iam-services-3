@@ -196,10 +196,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     public Response saveResourceType(ResourceType resourceType, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setAction(AuditAction.SAVE_RESOURCE.value());
+        idmAuditLog.setAction(AuditAction.SAVE_RESOURCE_TYPE.value());
         idmAuditLog.setRequestorUserId(requesterId);
         if (StringUtils.isBlank(resourceType.getId())) {
-            idmAuditLog.setAction(AuditAction.ADD_RESOURCE.value());
+            idmAuditLog.setAction(AuditAction.ADD_RESOURCE_TYPE.value());
         }
         try {
             final ResourceTypeEntity entity = resourceTypeConverter.convertToEntity(resourceType, false);
@@ -757,7 +757,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
      */ public List<Resource> getResourcesForRoleNoLocalized(@WebParam(name = "roleId", targetNamespace = "") String roleId, @WebParam(name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size, @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean) {
         searchBean.setDeepCopy(false);
         searchBean.addRoleId(roleId);
-        return resourceService.findBeansLocalizedDto(searchBean,from, size,null);
+        return resourceService.findBeansLocalizedDto(searchBean, from, size, null);
     }
 
     @Override

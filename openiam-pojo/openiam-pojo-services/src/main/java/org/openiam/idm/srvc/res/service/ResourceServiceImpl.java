@@ -18,9 +18,7 @@ import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.MetadataElementSearchBean;
-import org.openiam.idm.searchbeans.ResourceSearchBean;
-import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -796,23 +794,23 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
                 throw new BasicDataServiceException(ResponseCode.LINKED_TO_PAGE_TEMPLATE, pageTemplates.get(0).getName());
             }
 
-            final ResourceEntity searchBean = new ResourceEntity();
-            searchBean.setAdminResource(new ResourceEntity(resourceId));
-            final List<ResourceEntity> adminOfResources = resourceDao.getByExample(searchBean);
+            final ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
+            resourceSearchBean.setAdminResourceId(resourceId);
+            final List<ResourceEntity> adminOfResources = resourceDao.getByExample(resourceSearchBean, 0, 1);
             if (CollectionUtils.isNotEmpty(adminOfResources)) {
                 throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_RESOURCE, adminOfResources.get(0).getName());
             }
 
-            final RoleEntity roleSearchBean = new RoleEntity();
-            roleSearchBean.setAdminResource(new ResourceEntity(resourceId));
-            final List<RoleEntity> adminOfRoles = roleDao.getByExample(roleSearchBean);
+            final RoleSearchBean roleSearchBean = new RoleSearchBean();
+            roleSearchBean.setAdminResourceId(resourceId);
+            final List<RoleEntity> adminOfRoles = roleDao.getByExample(roleSearchBean, 0, 1);
             if (CollectionUtils.isNotEmpty(adminOfRoles)) {
                 throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ROLE, adminOfRoles.get(0).getName());
             }
 
-            final GroupEntity groupSearchBean = new GroupEntity();
-            groupSearchBean.setAdminResource(new ResourceEntity(resourceId));
-            final List<GroupEntity> adminOfGroups = groupDao.getByExample(groupSearchBean);
+            final GroupSearchBean groupSearchBean = new GroupSearchBean();
+            groupSearchBean.setAdminResourceId(resourceId);
+            final List<GroupEntity> adminOfGroups = groupDao.getByExample(groupSearchBean, 0, 1);
             if (CollectionUtils.isNotEmpty(adminOfGroups)) {
                 throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_GROUP, adminOfGroups.get(0).getName());
             }
