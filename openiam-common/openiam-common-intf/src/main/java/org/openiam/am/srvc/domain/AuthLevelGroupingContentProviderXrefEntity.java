@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
@@ -19,7 +21,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 @Table(name = "CP_AUTH_LEVEL_GRP_XREF")
 @DozerDTOCorrespondence(AuthLevelGroupingContentProviderXref.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class AuthLevelGroupingContentProviderXrefEntity {
+public class AuthLevelGroupingContentProviderXrefEntity implements Serializable {
 
 	@EmbeddedId
 	AuthLevelGroupingContentProviderXrefIdEntity id;

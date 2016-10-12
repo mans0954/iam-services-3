@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.user.domain;
 
+import java.io.Serializable;
 import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,7 +22,7 @@ import org.openiam.idm.srvc.user.dto.UserNote;
 @Table(name = "USER_NOTE")
 @DozerDTOCorrespondence(UserNote.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class UserNoteEntity {
+public class UserNoteEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")

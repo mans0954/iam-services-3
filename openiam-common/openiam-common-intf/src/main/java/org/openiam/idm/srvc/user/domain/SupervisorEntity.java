@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.user.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.*;
 
 import org.hibernate.annotations.Cache;
@@ -12,7 +14,7 @@ import org.openiam.idm.srvc.user.dto.Supervisor;
 @Table(name = "ORG_STRUCTURE")
 @DozerDTOCorrespondence(Supervisor.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class SupervisorEntity {
+public class SupervisorEntity implements Serializable {
     @EmbeddedId
     private SupervisorIDEntity id;
 

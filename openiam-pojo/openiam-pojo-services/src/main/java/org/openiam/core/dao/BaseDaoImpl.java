@@ -41,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 
-public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
+public abstract class BaseDaoImpl<T extends Serializable, PrimaryKey extends Serializable>
 implements BaseDao<T, PrimaryKey> {
 	protected final Log log = LogFactory.getLog(this.getClass());
     protected final Class<T> domainClass;
@@ -508,5 +508,11 @@ implements BaseDao<T, PrimaryKey> {
     public void evictCollectionRegions() {
         this.getSession().getSessionFactory().getCache().evictCollectionRegions();
     }
+
+	@Override
+	public void evictFromSecondLevelCache(T t) {
+		getSession().getSessionFactory().getCache().evictEntity(getDomainClass(), t);
+	}
+    
     
 }

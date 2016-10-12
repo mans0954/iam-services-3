@@ -36,11 +36,11 @@ public class MetadataTemplateTypeEntity extends AbstractKeyNameEntity {
 	private String description;
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "templateType", fetch = FetchType.LAZY)
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)	
+    //@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)	
 	private Set<MetadataElementPageTemplateEntity> templates;
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "templateType", fetch = FetchType.LAZY)
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<MetadataTemplateTypeFieldEntity> fields;
 
 	public String getDescription() {

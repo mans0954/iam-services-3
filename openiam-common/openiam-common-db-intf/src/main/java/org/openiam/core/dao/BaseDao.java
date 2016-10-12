@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.openiam.idm.searchbeans.SearchBean;
 
-public interface BaseDao<T, PrimaryKey extends Serializable> {
+public interface BaseDao<T extends Serializable, PrimaryKey extends Serializable> {
 
   T findById(PrimaryKey id);
 
@@ -64,4 +64,5 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
     void evictCollectionRegions();
     public void evictCache();
 
+    public void evictFromSecondLevelCache(T t);
 }

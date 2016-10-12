@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.report.domain;
 
+import java.io.Serializable;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
@@ -12,7 +14,7 @@ import javax.persistence.*;
 @Table(name = "REPORT_SUB_CRITERIA_PARAM")
 @DozerDTOCorrespondence(ReportSubCriteriaParamDto.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ReportSubCriteriaParamEntity {
+public class ReportSubCriteriaParamEntity implements Serializable {
 	@Id
 	@GeneratedValue(generator = "system-uuid")
 	@GenericGenerator(name = "system-uuid", strategy = "uuid")

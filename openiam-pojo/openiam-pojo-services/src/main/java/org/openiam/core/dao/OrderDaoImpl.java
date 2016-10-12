@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public abstract class OrderDaoImpl<T, PrimaryKey extends Serializable> extends BaseDaoImpl<T, PrimaryKey> {
+public abstract class OrderDaoImpl<T extends Serializable, PrimaryKey extends Serializable> extends BaseDaoImpl<T, PrimaryKey> {
 
     protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
         List<SortParam> sortParamList = sb.getSortBy();
