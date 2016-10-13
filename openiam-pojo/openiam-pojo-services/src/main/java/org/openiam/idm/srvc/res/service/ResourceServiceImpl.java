@@ -1032,7 +1032,11 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         ResourceEntity resourceEntityChild = this.findResourceById(childResourceId);
         idmAuditLog.setTargetResource(childResourceId, resourceEntityChild.getName());
 
-        idmAuditLog.setAuditDescription(String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
+        if (rights != null && rights.size() > 0) {
+            idmAuditLog.setAuditDescription(String.format("Add child resource: %s to resource: %s with rights: %s", childResourceId, resourceId, rights.toString()));
+        } else {
+            idmAuditLog.setAuditDescription(String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
+        }
 
         this.validateResource2ResourceAddition(resourceId, childResourceId);
         this.addChildResource(resourceId, childResourceId, rights);
@@ -1114,7 +1118,11 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         ResourceEntity resourceEntity = this.findResourceById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
 
-        idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
+        if (rights != null && rights.size() > 0) {
+            idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s with rights: %s", roleId, resourceId, rights.toString()));
+        } else {
+            idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
+        }
 
         if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
