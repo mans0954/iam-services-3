@@ -40,6 +40,7 @@ public class OAuthListener extends AbstractRabbitMQListener<OAuthAPI> {
         OAuthAPI apiName = message.getRequestApi();
         switch (apiName){
             case GetAuthorizedScopes:
+            case GetAuthorizedScopesByUser:
             case GetScopesForAuthrorization:
                 addTask(getClientScopesDispatcher, correlationId, message, apiName, isAsync);
                 break;

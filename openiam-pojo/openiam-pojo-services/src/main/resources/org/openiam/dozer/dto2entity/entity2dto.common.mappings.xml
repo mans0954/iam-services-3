@@ -864,6 +864,10 @@
 			<a>redirectUrl</a>
 			<b>redirectUrl</b>
 		</field>
+		<field>
+			<a>grandFlow</a>
+			<b>grandFlow</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.am.srvc.domain.OAuthCodeEntity</class-a>

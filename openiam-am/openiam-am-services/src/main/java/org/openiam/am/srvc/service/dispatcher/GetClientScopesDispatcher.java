@@ -27,7 +27,10 @@ public class GetClientScopesDispatcher  extends AbstractAPIDispatcher<OAuthScope
         response.setClientId(request.getClientId());
         switch (openIAMAPI){
             case GetAuthorizedScopes:
-                response.setList(authProviderService.getAuthorizedScopes(request.getClientId(), request.getUserId(), request.getLanguage()));
+                response.setList(authProviderService.getAuthorizedScopes(request.getClientId(), request.getToken(), request.getLanguage()));
+                break;
+            case GetAuthorizedScopesByUser:
+                response.setList(authProviderService.getAuthorizedScopesByUser(request.getClientId(), request.getUserId(), request.getLanguage()));
                 break;
             case GetScopesForAuthrorization:
                 response.setList(authProviderService.getScopesForAuthrorization(request.getClientId(), request.getUserId(), request.getLanguage()));

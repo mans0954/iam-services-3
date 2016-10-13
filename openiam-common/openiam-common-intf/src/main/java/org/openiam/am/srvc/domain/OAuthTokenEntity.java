@@ -35,6 +35,9 @@ public class OAuthTokenEntity extends KeyEntity {
     @Column(name = "REDIRECT_URL", length = 255, nullable = true)
     private String redirectUrl;
 
+    @Column(name = "GRAND_FLOW", nullable = false)
+    private String grandFlow;
+
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
     private AuthProviderEntity client;
@@ -91,6 +94,14 @@ public class OAuthTokenEntity extends KeyEntity {
         this.redirectUrl = redirectUrl;
     }
 
+    public String getGrandFlow() {
+        return grandFlow;
+    }
+
+    public void setGrandFlow(String grandFlow) {
+        this.grandFlow = grandFlow;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -105,6 +116,7 @@ public class OAuthTokenEntity extends KeyEntity {
         if (client != null ? !client.equals(that.client) : that.client != null) return false;
         if (user != null ? !user.equals(that.user) : that.user != null) return false;
         if (redirectUrl != null ? !redirectUrl.equals(that.redirectUrl) : that.redirectUrl != null) return false;
+        if (grandFlow != null ? !grandFlow.equals(that.grandFlow) : that.grandFlow != null) return false;
         return true;
 
     }
@@ -118,6 +130,7 @@ public class OAuthTokenEntity extends KeyEntity {
         result = 31 * result + (client != null ? client.hashCode() : 0);
         result = 31 * result + (user != null ? user.hashCode() : 0);
         result = 31 * result + (redirectUrl != null ? redirectUrl.hashCode() : 0);
+        result = 31 * result + (grandFlow != null ? grandFlow.hashCode() : 0);
         return result;
     }
 
@@ -130,6 +143,7 @@ public class OAuthTokenEntity extends KeyEntity {
                 ", client=" + client +
                 ", user=" + user +
                 ", redirectUrl=" + redirectUrl +
+                ", grandFlow=" + grandFlow +
                 '}';
     }
 }

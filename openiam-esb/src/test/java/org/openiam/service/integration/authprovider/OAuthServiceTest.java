@@ -140,7 +140,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		doAuthorization(scopesResponse);
 
 		// get authorized scopes should be MAX_SCOPE_LIST_SIZE
-		List<Resource> authorizedScopes = oauthServiceClient.getAuthorizedScopes(clientID, testUser.getId(), null);
+		List<Resource> authorizedScopes = oauthServiceClient.getAuthorizedScopesByUser(clientID, testUser.getId(), null);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(authorizedScopes));
 		Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE).equals(authorizedScopes.size()));
 		// remove SCOPES_TO_DELETE scope from client
@@ -155,7 +155,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		Assert.assertTrue(wsResponse.isSuccess());
 
 		// get authorized scopes should be MAX_SCOPE_LIST_SIZE-SCOPES_TO_DELETE
-		authorizedScopes = oauthServiceClient.getAuthorizedScopes(clientID, testUser.getId(), null);
+		authorizedScopes = oauthServiceClient.getAuthorizedScopesByUser(clientID, testUser.getId(), null);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(authorizedScopes));
 		Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE-SCOPES_TO_DELETE).equals(authorizedScopes.size()));
 
@@ -180,7 +180,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		// do authorization
 		doAuthorization(scopesResponse);
 		// get authorized scopes should be 10
-		authorizedScopes = oauthServiceClient.getAuthorizedScopes(clientID, testUser.getId(), null);
+		authorizedScopes = oauthServiceClient.getAuthorizedScopesByUser(clientID, testUser.getId(), null);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(authorizedScopes));
 		Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE).equals(authorizedScopes.size()));
 
