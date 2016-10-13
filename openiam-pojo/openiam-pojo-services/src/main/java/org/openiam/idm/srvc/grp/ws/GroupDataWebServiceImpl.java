@@ -40,6 +40,7 @@ import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -263,6 +264,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Transactional
     public Response addUserToGroup(final String groupId, final String userId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
@@ -303,6 +305,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Transactional
     public Response removeUserFromGroup(final String groupId, final String userId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();

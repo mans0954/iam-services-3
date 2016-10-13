@@ -52,6 +52,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.jws.WebMethod;
@@ -210,6 +211,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     }
 
     @Override
+    @Transactional
     public Response addUserToRole(String roleId, String userId, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
@@ -344,6 +346,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     }
 
     @Override
+    @Transactional
     public Response removeUserFromRole(String roleId, String userId, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
