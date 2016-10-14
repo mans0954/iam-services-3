@@ -19,6 +19,8 @@ import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
+import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -1032,12 +1034,39 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         ResourceEntity resourceEntityChild = this.findResourceById(childResourceId);
         idmAuditLog.setTargetResource(childResourceId, resourceEntityChild.getName());
 
-        if (rights != null && rights.size() > 0) {
-            idmAuditLog.setAuditDescription(String.format("Add child resource: %s to resource: %s with rights: %s", childResourceId, resourceId, rights.toString()));
-        } else {
-            idmAuditLog.setAuditDescription(String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
+        StringBuilder sb = new StringBuilder();
+        sb.append("Add child resource: ");
+        if(childResourceId != null) {
+            ResourceEntity reChild = resourceDao.findById(childResourceId);
+            if (reChild != null) {
+                sb.append(reChild.getName());
+            }
         }
+        sb.append(" (id=");
+        sb.append(childResourceId);
+        sb.append(") to resource: ");
+        if(resourceId != null) {
+            ResourceEntity re = resourceDao.findById(resourceId);
+            if (re != null) {
+                sb.append(re.getName());
+            }
+        }
+        sb.append(" (id=");
+        sb.append(resourceId);
+        sb.append(")");
 
+        if (rights != null && rights.size() > 0) {
+            sb.append(" with rights: [ ");
+            List<AccessRightEntity> arl = accessRightDAO.findByIds(rights);
+            for (AccessRightEntity are : arl) {
+                sb.append(are.getName());
+                sb.append(" (id=");
+                sb.append(are.getId());
+                sb.append("), ");
+            }
+            sb.append("]");
+        }
+        idmAuditLog.setAuditDescription(sb.toString());
         this.validateResource2ResourceAddition(resourceId, childResourceId);
         this.addChildResource(resourceId, childResourceId, rights);
     }
@@ -1118,11 +1147,39 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         ResourceEntity resourceEntity = this.findResourceById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
 
-        if (rights != null && rights.size() > 0) {
-            idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s with rights: %s", roleId, resourceId, rights.toString()));
-        } else {
-            idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
+        StringBuilder sb = new StringBuilder();
+        sb.append("Add role: ");
+        if(roleId != null) {
+            RoleEntity roleEnt = roleDao.findById(roleId);
+            if (roleEnt != null) {
+                sb.append(roleEnt.getName());
+            }
         }
+        sb.append(" (id=");
+        sb.append(roleId);
+        sb.append(") to resource: ");
+        if(resourceId != null) {
+            ResourceEntity re = resourceDao.findById(resourceId);
+            if (re != null) {
+                sb.append(re.getName());
+            }
+        }
+        sb.append(" (id=");
+        sb.append(resourceId);
+        sb.append(")");
+
+        if (rights != null && rights.size() > 0) {
+            sb.append(" with rights: [ ");
+            List<AccessRightEntity> arl = accessRightDAO.findByIds(rights);
+            for (AccessRightEntity are : arl) {
+                sb.append(are.getName());
+                sb.append(" (id=");
+                sb.append(are.getId());
+                sb.append("), ");
+            }
+            sb.append("]");
+        }
+        idmAuditLog.setAuditDescription(sb.toString());
 
         if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
