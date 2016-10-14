@@ -68,7 +68,7 @@ public class URIPatternEntity implements Serializable {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<MetadataElementPageTemplateEntity> pageTemplates;
 	
-	@OneToMany(orphanRemoval = true, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy = "pattern", fetch = FetchType.LAZY)
+	@OneToMany(orphanRemoval = true, cascade = {CascadeType.ALL}, mappedBy = "pattern", fetch = FetchType.LAZY)
 	@OrderBy("order ASC")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs;
