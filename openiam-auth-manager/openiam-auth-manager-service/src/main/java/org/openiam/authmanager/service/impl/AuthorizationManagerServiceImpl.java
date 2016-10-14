@@ -641,7 +641,9 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			} else if(resource.getName() != null) {
 				toCheck = resourceNameCache.get(resource.getName());
 			}
-			retVal = toCheck.isPublic() || user.isEntitledTo(toCheck);
+			if (toCheck != null) {
+				retVal = toCheck.isPublic() || user.isEntitledTo(toCheck);
+			}
 		}
 		return retVal;
 	}
