@@ -639,11 +639,37 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
 
     @LocalizedServiceGet
     @Transactional(readOnly=true)
-    public List<Resource> getAuthorizedScopes(String clientId, String userId, Language language){
+    public List<Resource> getAuthorizedScopes(String clientId, OAuthToken token, Language language){
+        //TODO: need to review scopeauthorization and add scopes to token as a link.
+        //TODO: this will allow to handle scope arg in roken endpoint
+        if("RESOURCE_OWNER".equals(token.getGrandFlow().trim())){
+            AuthProvider client = this.getOAuthClient(clientId);
+            final Optional<AuthProviderAttribute> scopeOptional = client.getAttributes().stream().filter(attr -> "OAuthClientScopes".equals(attr.getAttributeId())).findFirst();
+            AuthProviderAttribute scopes = (scopeOptional.isPresent()) ? scopeOptional.get() : null;
+            if(scopes !=null && StringUtils.isNotBlank(scopes.getValue())){
+                Set<String> authorizedResourcesIds = new HashSet<>(Arrays.asList(scopes.getValue().split(","))).stream().filter(str -> StringUtils.isNotBlank(str)).collect(Collectors.toSet());
+                // leave only those scopes that user have access to
+                Iterator<String> scopeIter = authorizedResourcesIds.iterator();
+                while (scopeIter.hasNext()) {
+                    String clientScopesId = scopeIter.next();
+                    if (!authorizationManagerService.isEntitled(token.getUserId(), clientScopesId)) {
+                        scopeIter.remove();
+                    }
+                }
+                return resourceDozerConverter.convertToDTOList(resourceService.findResourcesByIds(authorizedResourcesIds), false);
+            }
+        } else {
+            return getAuthorizedScopesByUser(clientId, token.getUserId(), language);
+        }
+        return  null;
+    }
+    @LocalizedServiceGet
+    @Transactional(readOnly=true)
+    public List<Resource> getAuthorizedScopesByUser(String clientId, String userId, Language language){
         List<OAuthUserClientXrefEntity> authorizedResources = oauthUserClientXrefDao.getByClientAndUser(clientId, userId, true);
         if(CollectionUtils.isNotEmpty(authorizedResources)){
             Set<String> authorizedResourcesIds = authorizedResources.stream().map(xref -> xref.getScope().getId()).collect(Collectors.toSet());
-            return  resourceDozerConverter.convertToDTOList(resourceService.findResourcesByIds(authorizedResourcesIds), false);
+            return resourceDozerConverter.convertToDTOList(resourceService.findResourcesByIds(authorizedResourcesIds), false);
         }
         return null;
     }

@@ -15,5 +15,5 @@ public enum OAuthAPI implements OpenIAMAPI {
     GetCachedOAuthProviderById,
     GetCachedOAuthProviderByName,
     GetClient,
-    RefreshOAuthCache;
+    RefreshOAuthCache, GetAuthorizedScopesByUser;
 }
