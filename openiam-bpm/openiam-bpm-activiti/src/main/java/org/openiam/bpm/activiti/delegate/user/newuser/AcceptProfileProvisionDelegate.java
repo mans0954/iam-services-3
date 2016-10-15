@@ -23,9 +23,6 @@ public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDe
     @Autowired
     private LoginDataService loginDS;
 
-    @Value("${org.openiam.send.user.activation.link}")
-    private Boolean sendActivationLink;
-
     public AcceptProfileProvisionDelegate() {
         super();
     }
@@ -59,7 +56,7 @@ public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDe
                 identity = login.getLogin();
                 password = loginDS.decryptPassword(login.getUserId(), login.getPassword());
             }
-            if(sendActivationLink) {
+            if(propertyValueSweeper.getBoolean("org.openiam.send.user.activation.link")) {
                 sendEmail("NEW_USER_ACTIVATION_REMIND", execution, requestor, newUser, newUser.getId(), null, identity, password, request);
             } else {
                 sendEmail(execution, requestor, newUser, newUser.getId(), null, identity, password, request);

@@ -65,9 +65,6 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     @Autowired
     protected RabbitMQSender rabbitMQSender;
 
-/*    @Value("${org.openiam.attestation.exclude.menus}")
-    private Boolean excludeMenus;*/
-
     private Boolean isExcludeMenus() {
         return propertyValueSweeper.getBoolean("org.openiam.attestation.exclude.menus");
     }

@@ -127,9 +127,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     @Value("${openiam.audit.rehire}")
     protected String saveRehireChange;
 
-    @Value("${org.openiam.send.user.activation.link}")
-    private Boolean sendActivationLink;
-
     //---
 
     //----
@@ -1008,7 +1005,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         bindingMap.put("org", organizationService.getOrganizationDTO(sysConfiguration.getAffiliationPrimaryTypeId(), null));
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
         bindingMap.put(USER, pUser);
-        bindingMap.put("sendActivationLink", sendActivationLink);
+        bindingMap.put("sendActivationLink", propertyValueSweeper.getBoolean("org.openiam.send.user.activation.link"));
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         
@@ -1462,7 +1459,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
         if (isAdd) { // send email notifications
             if (pUser.isEmailCredentialsToNewUsers()) {
-                if (this.sendActivationLink) {
+                if (propertyValueSweeper.getBoolean("org.openiam.send.user.activation.link")) {
                     sendActivationLink(finalProvUser.getUser(), primaryIdentity);
                 } else {
                     sendCredentialsToUser(finalProvUser.getUser(), primaryIdentity.getLogin(), decPassword);
