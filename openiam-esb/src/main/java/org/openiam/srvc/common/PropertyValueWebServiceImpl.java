@@ -119,41 +119,33 @@ public class PropertyValueWebServiceImpl extends AbstractBaseService implements 
         		} else {
         			response.addFieldMapping("dto", dto.getId());
         			
-        			final PropertyValueEntity entity = propertyValueService.get(dto.getId());
-        			dto.setEmptyValueAllowed(entity.isEmptyValueAllowed());
-        			dto.setMultilangual(entity.isMultilangual());
-        			dto.setReadOnly(entity.isReadOnly());
-        			dto.setType(entity.getType());
-        			if(dto.isReadOnly()) {
-        				dto.setValue(entity.getValue());
-        				dto.setInternationalizedValues(converter.convertToDTO(entity, true).getInternationalizedValues());
-        			} else {
-        				if(dto.isMultilangual()) {
-        					dto.setValue(null);
-        					if(MapUtils.isEmpty(dto.getInternationalizedValues())) {
-        						throw new BasicDataServiceException(ResponseCode.PROPERTY_I18_VALUE_MISSING);
-        					} else {
-        						for(final LanguageMapping mapping : dto.getInternationalizedValues().values()) {
-        							final BasicDataServiceException e = getException(dto, mapping.getValue());
-        							if(e != null) {
-                						throw e;
-                					}
-        						}
-        						
-        						for(final LanguageEntity language : languageDAO.getUsedLanguages()) {
-        							if(!dto.getInternationalizedValues().containsKey(language.getId())) {
-        								throw new BasicDataServiceException(ResponseCode.PROPERTY_I18_VALUE_MISSING);
-        							}
-        						}
-        					}
-        				} else {
-        					dto.setInternationalizedValues(null);
-        					final BasicDataServiceException e = getException(dto, dto.getValue());
-        					if(e != null) {
-        						throw e;
-        					}
-        				}
-        			}
+	    			if(!dto.isReadOnly()) {
+	    				if(dto.isMultilangual()) {
+	    					dto.setValue(null);
+	    					if(MapUtils.isEmpty(dto.getInternationalizedValues())) {
+	    						throw new BasicDataServiceException(ResponseCode.PROPERTY_I18_VALUE_MISSING);
+	    					} else {
+	    						for(final LanguageMapping mapping : dto.getInternationalizedValues().values()) {
+	    							final BasicDataServiceException e = getException(dto, mapping.getValue());
+	    							if(e != null) {
+	            						throw e;
+	            					}
+	    						}
+	    						
+	    						for(final LanguageEntity language : languageDAO.getUsedLanguages()) {
+	    							if(!dto.getInternationalizedValues().containsKey(language.getId())) {
+	    								throw new BasicDataServiceException(ResponseCode.PROPERTY_I18_VALUE_MISSING);
+	    							}
+	    						}
+	    					}
+	    				} else {
+	    					dto.setInternationalizedValues(null);
+	    					final BasicDataServiceException e = getException(dto, dto.getValue());
+	    					if(e != null) {
+	    						throw e;
+	    					}
+	    				}
+	    			}
         		}
         	}
         	

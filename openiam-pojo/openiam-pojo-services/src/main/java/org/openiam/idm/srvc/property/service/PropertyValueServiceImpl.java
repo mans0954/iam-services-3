@@ -21,10 +21,19 @@ public class PropertyValueServiceImpl implements PropertyValueService {
 	@Transactional
 	public void save(List<PropertyValueEntity> entityList) {
 		if(entityList != null) {
-			entityList.forEach(entity -> {
-				propertyDAO.merge(entity);
+			entityList.forEach(e -> {
+				if(e.getId() != null) {
+					final PropertyValueEntity entity = propertyDAO.findById(e.getId());
+					if(entity != null && !entity.isReadOnly()) {
+						entity.setValue(e.getValue());
+						entity.setInternationalizedValues(e.getInternationalizedValues());
+						propertyDAO.update(entity);
+					}
+				}
 			});
 		}
+		propertyDAO.flush();
+		propertyDAO.evictCache();
 	}
 
 	@Override

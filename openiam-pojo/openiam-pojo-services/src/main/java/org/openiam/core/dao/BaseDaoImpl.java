@@ -501,8 +501,9 @@ implements BaseDao<T, PrimaryKey> {
 
         return (List<T>) criteria.list();
 	}
-        public void evictCache() {
-        this.getSession().getSessionFactory().getCache().evictDefaultQueryRegion();
+       
+	public void evictCache() {
+        this.getSession().getSessionFactory().getCache().evictEntityRegion(domainClass);
     }
 
     public void evictCollectionRegions() {
