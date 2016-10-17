@@ -49,7 +49,11 @@ public interface OAuthWebService {
 
     @WebMethod
     List<Resource> getAuthorizedScopes(@WebParam(name = "clientId", targetNamespace = "") String clientId,
-                                       @WebParam(name = "userId", targetNamespace = "") String userId,
+                                       @WebParam(name = "oAuthToken", targetNamespace = "")  OAuthToken oAuthToken,
+                                       @WebParam(name = "lang", targetNamespace = "")  Language language);
+    @WebMethod
+    List<Resource> getAuthorizedScopesByUser(@WebParam(name = "clientId", targetNamespace = "") String clientId,
+                                       @WebParam(name = "userId", targetNamespace = "")  String userId,
                                        @WebParam(name = "lang", targetNamespace = "")  Language language);
     
     public AuthProvider getCachedOAuthProviderById(final String id);

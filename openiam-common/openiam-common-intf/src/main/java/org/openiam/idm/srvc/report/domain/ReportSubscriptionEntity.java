@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.report.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,7 +19,7 @@ import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 @Table(name = "REPORT_SUBSCRIPTIONS")
 @DozerDTOCorrespondence(ReportSubscriptionDto.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ReportSubscriptionEntity {
+public class ReportSubscriptionEntity implements Serializable {
 
     @Id
     @GeneratedValue(generator = "system-uuid")

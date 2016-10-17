@@ -26,9 +26,6 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 	
 	@Autowired
 	private NewUserModelToProvisionConverter converter;
-
-	@Value("${org.openiam.send.user.activation.link}")
-	private Boolean sendActivationLink;
 	
 	public CreateNewUser() {
 		super();
@@ -47,7 +44,7 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
         idmAuditLog.addAttributeAsJson(AuditAttributeName.PROFILE, request, customJacksonMapper);
 		try {
 			final ProvisionUser user = converter.convertNewProfileModel(request);
-	        user.setEmailCredentialsToNewUsers((sendActivationLink!=null && sendActivationLink));
+	        user.setEmailCredentialsToNewUsers((propertyValueSweeper.getBoolean("org.openiam.send.user.activation.link")));
 			user.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
 			user.setSecondaryStatus(null);
             user.setRequestorUserId(idmAuditLog.getUserId());

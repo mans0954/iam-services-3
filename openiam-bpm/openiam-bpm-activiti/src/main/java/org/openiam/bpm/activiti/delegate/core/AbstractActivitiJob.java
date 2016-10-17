@@ -31,6 +31,7 @@ import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.srvc.common.MailService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationService;
+import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -97,6 +98,9 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	
 	@Autowired
 	protected ApproverAssociationDAO approverAssociationDAO;
+	
+	@Autowired
+	protected PropertyValueSweeper propertyValueSweeper;
 	
 	@Autowired
 	protected LoginDataService loginService;

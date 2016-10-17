@@ -22,7 +22,8 @@ import java.util.Set;
         "expiredOn",
         "clientId",
         "userId",
-        "redirectUrl"
+        "redirectUrl",
+        "grandFlow"
 })
 @DozerDTOCorrespondence(OAuthTokenEntity.class)
 public class OAuthToken extends KeyDTO {
@@ -32,6 +33,7 @@ public class OAuthToken extends KeyDTO {
     private String clientId;
     private String userId;
     private String redirectUrl;
+    private String grandFlow;
 
 
     public String getToken() {
@@ -82,6 +84,14 @@ public class OAuthToken extends KeyDTO {
         this.redirectUrl = redirectUrl;
     }
 
+    public String getGrandFlow() {
+        return grandFlow;
+    }
+
+    public void setGrandFlow(String grandFlow) {
+        this.grandFlow = grandFlow;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -96,6 +106,7 @@ public class OAuthToken extends KeyDTO {
         if (clientId != null ? !clientId.equals(that.clientId) : that.clientId != null) return false;
         if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
         if (redirectUrl != null ? !redirectUrl.equals(that.redirectUrl) : that.redirectUrl != null) return false;
+        if (grandFlow != null ? !grandFlow.equals(that.grandFlow) : that.grandFlow != null) return false;
         return true;
 
     }
@@ -109,6 +120,7 @@ public class OAuthToken extends KeyDTO {
         result = 31 * result + (clientId != null ? clientId.hashCode() : 0);
         result = 31 * result + (userId != null ? userId.hashCode() : 0);
         result = 31 * result + (redirectUrl != null ? redirectUrl.hashCode() : 0);
+        result = 31 * result + (grandFlow != null ? grandFlow.hashCode() : 0);
         return result;
     }
 
@@ -121,6 +133,7 @@ public class OAuthToken extends KeyDTO {
                 ", clientId=" + clientId +
                 ", userId=" + userId +
                 ", redirectUrl=" + redirectUrl +
+                ", grandFlow=" + grandFlow +
                 '}';
     }
 }

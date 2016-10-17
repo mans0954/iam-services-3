@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.report.domain;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,7 +32,7 @@ import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 @Table(name = "REPORT_INFO")
 @DozerDTOCorrespondence(ReportInfoDto.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ReportInfoEntity {
+public class ReportInfoEntity implements Serializable {
 
     @Id
     @GeneratedValue(generator = "system-uuid")

@@ -18,8 +18,6 @@ package org.openiam.idm.srvc.lang.service;
  *  along with OpenIAM.  If not, see <http://www.gnu.org/licenses/>. *
  */
 
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.criterion.Restrictions;
@@ -37,8 +35,8 @@ public class LanguageLocaleDAOImpl extends BaseDaoImpl<LanguageLocaleEntity, Str
     private static final Log log = LogFactory.getLog(LanguageLocaleDAOImpl.class);
 
     @Override
-    public List<LanguageLocaleEntity> getLocalesByLanguageId(String languageId) {
-        return this.getCriteria().add(Restrictions.eq("language.id", languageId)).list();
+    public LanguageLocaleEntity getByLocale(String locale) {
+        return (LanguageLocaleEntity)this.getCriteria().add(Restrictions.eq("locale", locale)).uniqueResult();
     }
 
     @Override

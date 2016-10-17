@@ -22,7 +22,7 @@ import org.openiam.property.dto.PropertyValue;
 
 @Entity
 @Table(name = "PROPERTY_FILE_VALUES")
-//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(PropertyValue.class)
 @AttributeOverride(name = "id", column = @Column(name = "PROPERTY_ID"))
 @Internationalized

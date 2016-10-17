@@ -106,23 +106,6 @@ public class LanguageDataServiceImpl implements LanguageDataService {
         languageDao.delete(lg);
     }
 
-    @Transactional
-    @CacheKeyEviction(
-        	evictions={
-            	@CacheKeyEvict("resources"),
-            	@CacheKeyEvict("resourceEntities")
-            }
-        )
-    public void updateLanguage(final LanguageEntity lg) {
-        if (lg == null) {
-            throw new NullPointerException("lg is null");
-        }
-        final LanguageEntity l = languageDao.findById(lg.getId());
-        if (l != null) {
-            languageDao.merge(lg);
-        }
-    }
-
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value="languages",key="{ #searchBean, #from, #size}", condition="{#searchBean != null and #searchBean.findInCache}")
@@ -204,97 +187,38 @@ public class LanguageDataServiceImpl implements LanguageDataService {
         if (StringUtils.isEmpty(language.getLanguageCode())) {
             throw new BasicDataServiceException(ResponseCode.LANGUAGE_CODE_MISSING);
         }
-        Map<String, LanguageLocale> localesUI = null;
-        List<LanguageLocaleEntity> db = null;
-        // get locales
-        if (MapUtils.isNotEmpty(language.getLocales())) {
-            localesUI = new java.util.HashMap<String, LanguageLocale>(language.getLocales());
-            language.setLocales(null);
-        }
-        // get current default lang
-        LanguageEntity defaultLanguage = languageDao.getDefaultLanguage();
+        final LanguageEntity defaultLanguage = languageDao.getDefaultLanguage();
 
         if ((defaultLanguage == null && !language.getIsDefault())
                 || (defaultLanguage != null && defaultLanguage.getId().equals(language.getId()) && !language.getIsDefault()))
             throw new BasicDataServiceException(ResponseCode.NO_DEFAULT_LANGUAGE);
 
-        LanguageEntity entity = languageDozerConverter.convertToEntity(language, true);
-        String id = entity.getId();
-        // add lang
-        if (isAdd) {
-            // if lang to add is default make current default as Not
-            // default
-            if (defaultLanguage != null && language.getIsDefault()) {
-                defaultLanguage.setIsDefault(false);
-                updateLanguage(defaultLanguage);
-            }
-            // add languages without fetches
-            languageDao.add(entity);
+        final LanguageEntity entity = languageDozerConverter.convertToEntity(language, true);
+        
+        if (defaultLanguage != null && language.getIsDefault()) {
+            defaultLanguage.setIsDefault(false);
+            languageDao.update(defaultLanguage);
+        }
+        
+        if(MapUtils.isNotEmpty(entity.getLocales())) {
+        	for(final Map.Entry<String, LanguageLocaleEntity> entry : entity.getLocales().entrySet()) {
+        		final LanguageLocaleEntity locale = languageLocaleDao.getByLocale(entry.getValue().getLocale());
+        		if(StringUtils.isBlank(entity.getId()) && locale != null) {
+        			throw new BasicDataServiceException(ResponseCode.LOCALE_ALREADY_EXISTS);
+        		}
+        		
+        		if(locale != null) {
+        			entry.setValue(locale);
+        		}
+        		entry.getValue().setLanguage(entity);
+        	}
+        }
+        
+        if (StringUtils.isBlank(entity.getId())) {
+        	languageDao.save(entity);
         } else {
-            // update lang
-            id = entity.getId();
-            // if lang to update is set as default, make current
-            // default as not default
-            if (defaultLanguage != null && !id.equals(defaultLanguage.getId()) && language.getIsDefault()) {
-                defaultLanguage.setIsDefault(false);
-                updateLanguage(defaultLanguage);
-            }
-            db = languageLocaleDao.getLocalesByLanguageId(id);
-            updateLanguage(entity);
+        	languageDao.update(entity);
         }
-
-        // save locales
-        // 1. All locales are deleted
-        if (MapUtils.isEmpty(localesUI) && !CollectionUtils.isEmpty(db)) {
-            for (LanguageLocaleEntity lle : db) {
-                languageLocaleDao.delete(lle);
-            }
-            // If all locales is new;
-        } else if (!MapUtils.isEmpty(localesUI) && CollectionUtils.isEmpty(db)) {
-            for (LanguageLocale ll : localesUI.values()) {
-                LanguageLocaleEntity lle = new LanguageLocaleEntity();
-                lle.setId(null);
-                lle.setLanguage(entity);
-                lle.setLocale(ll.getLocale());
-                languageLocaleDao.add(lle);
-            }
-        } else if (MapUtils.isNotEmpty(localesUI) && CollectionUtils.isNotEmpty(db)) {
-            for (LanguageLocale ll : localesUI.values()) {
-                if (StringUtils.isEmpty(ll.getId())) {
-                    LanguageLocaleEntity lle = languageLocaleDao.findById(ll.getId());
-                    lle.setLanguage(entity);
-                    languageLocaleDao.add(lle);
-                } else {
-                    Iterator<LanguageLocaleEntity> iter = db.iterator();
-                    while (iter.hasNext()) {
-                        LanguageLocaleEntity lledb = iter.next();
-                        if (lledb.getId().equals(ll.getId())) {
-                            lledb.setLanguage(entity);
-                            updateLanguageLocale(lledb);
-                            iter.remove();
-                        }
-                    }
-                }
-            }
-            if (!CollectionUtils.isEmpty(db)) {
-                for (LanguageLocaleEntity lledb : db) {
-                    languageLocaleDao.delete(lledb);
-                }
-            }
-        }
-        if (isAdd) {
-            for (String str : language.getDisplayNameMap().keySet()) {
-                LanguageMappingEntity newE = new LanguageMappingEntity();
-                LanguageMapping oldE = language.getDisplayNameMap().get(str);
-                if (oldE != null) {
-                    newE.setLanguageId(str);
-                    newE.setReferenceId(entity.getId());
-                    newE.setReferenceType("LanguageEntity.displayNameMap");
-                    newE.setValue(oldE.getValue());
-                    languageMappingDAO.add(newE);
-                }
-            }
-        }
-        return id;
+        return entity.getId();
     }
 }
