@@ -35,13 +35,13 @@ public enum OpenIAMQueue implements MqQueue {
     ContentProviderQueue,
     OAuthQueue,
     RefreshOAuthCache(RabbitMqExchange.REFRESH_OAUTH_CACHE_EXCHANGE, true),
-    RefreshUriFederationCache(RabbitMqExchange.URI_FEDERATION_CACHE_EXCHANGE, true);
+    RefreshUriFederationCache(RabbitMqExchange.URI_FEDERATION_CACHE_EXCHANGE, true),
+    OrganizationTypeQueue;
 
     private String routingKey=this.name();
     private String queueName=this.name();
     private RabbitMqExchange exchange;
     private boolean tempQueue = false;
-
 
     private OpenIAMQueue(boolean tempQueue) {
         this.tempQueue = tempQueue;

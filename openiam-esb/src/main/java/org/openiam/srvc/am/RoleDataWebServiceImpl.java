@@ -21,8 +21,6 @@
  */
 package org.openiam.srvc.am;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openiam.base.TreeObjectId;
 import org.openiam.base.request.*;
 import org.openiam.base.response.*;
@@ -51,7 +49,7 @@ import java.util.Set;
 @Service("roleWS")
 public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDataWebService {
 
-    protected RoleDataWebServiceImpl() {
+    public RoleDataWebServiceImpl() {
         super(OpenIAMQueue.RoleQueue);
     }
 
@@ -108,9 +106,9 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public Response addGroupToRole(String roleId, String groupId, String requesterId, Set<String> rightIds, Date startDate, Date endDate) {
-        EntitleToRoleRequest request = new EntitleToRoleRequest();
+        MembershipRequest request = new MembershipRequest();
         request.setRequesterId(requesterId);
-        request.setRoleId(roleId);
+        request.setObjectId(roleId);
         request.setLinkedObjectId(groupId);
         request.setRightIds(rightIds);
         request.setStartDate(startDate);
@@ -120,16 +118,16 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public Response validateGroup2RoleAddition(String roleId, String groupId) {
-        EntitleToRoleRequest request = new EntitleToRoleRequest();
-        request.setRoleId(roleId);
+        MembershipRequest request = new MembershipRequest();
+        request.setObjectId(roleId);
         request.setLinkedObjectId(groupId);
         return this.manageApiRequest(RoleAPI.ValidateGroup2RoleAddition, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public Response removeGroupFromRole(String roleId, String groupId, String requesterId) {
-        EntitleToRoleRequest request = new EntitleToRoleRequest();
-        request.setRoleId(roleId);
+        MembershipRequest request = new MembershipRequest();
+        request.setObjectId(roleId);
         request.setLinkedObjectId(groupId);
         request.setRequesterId(requesterId);
         return this.manageApiRequest(RoleAPI.RemoveGroupFromRole, request, BooleanResponse.class).convertToBase();
@@ -138,8 +136,8 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public Response addUserToRole(String roleId, String userId, String requesterId, Set<String> rightIds, Date startDate, Date endDate) {
-        EntitleToRoleRequest request = new EntitleToRoleRequest();
-        request.setRoleId(roleId);
+        MembershipRequest request = new MembershipRequest();
+        request.setObjectId(roleId);
         request.setLinkedObjectId(userId);
         request.setRightIds(rightIds);
         request.setStartDate(startDate);
@@ -150,8 +148,8 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public Response removeUserFromRole(String roleId, String userId, String requesterId) {
-        EntitleToRoleRequest request = new EntitleToRoleRequest();
-        request.setRoleId(roleId);
+        MembershipRequest request = new MembershipRequest();
+        request.setObjectId(roleId);
         request.setLinkedObjectId(userId);
         request.setRequesterId(requesterId);
         return this.manageApiRequest(RoleAPI.RemoveUserFromRole, request, BooleanResponse.class).convertToBase();
@@ -182,8 +180,8 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public Response addChildRole(String roleId, String childRoleId, String requesterId, Set<String> rights, Date startDate, Date endDate) {
-        EntitleToRoleRequest request = new EntitleToRoleRequest();
-        request.setRoleId(roleId);
+        MembershipRequest request = new MembershipRequest();
+        request.setObjectId(roleId);
         request.setLinkedObjectId(childRoleId);
         request.setRightIds(rights);
         request.setStartDate(startDate);
@@ -194,8 +192,8 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public Response canAddChildRole(String roleId, String childRoleId, Set<String> rights, Date startDate, Date endDate) {
-        EntitleToRoleRequest request = new EntitleToRoleRequest();
-        request.setRoleId(roleId);
+        MembershipRequest request = new MembershipRequest();
+        request.setObjectId(roleId);
         request.setLinkedObjectId(childRoleId);
         request.setRightIds(rights);
         request.setStartDate(startDate);
@@ -205,24 +203,24 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public Response removeChildRole(String roleId, String childRoleId, String requesterId) {
-        EntitleToRoleRequest request = new EntitleToRoleRequest();
-        request.setRoleId(roleId);
+        MembershipRequest request = new MembershipRequest();
+        request.setObjectId(roleId);
         request.setLinkedObjectId(childRoleId);
         return this.manageApiRequest(RoleAPI.RemoveChildRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public Response canAddUserToRole(String userId, String roleId) {
-        EntitleToRoleRequest request = new EntitleToRoleRequest();
-        request.setRoleId(roleId);
+        MembershipRequest request = new MembershipRequest();
+        request.setObjectId(roleId);
         request.setLinkedObjectId(userId);
         return this.manageApiRequest(RoleAPI.CanAddUserToRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
     public Response canRemoveUserFromRole(String userId, String roleId) {
-        EntitleToRoleRequest request = new EntitleToRoleRequest();
-        request.setRoleId(roleId);
+        MembershipRequest request = new MembershipRequest();
+        request.setObjectId(roleId);
         request.setLinkedObjectId(userId);
         return this.manageApiRequest(RoleAPI.CanRemoveUserFromRole, request, BooleanResponse.class).convertToBase();
     }

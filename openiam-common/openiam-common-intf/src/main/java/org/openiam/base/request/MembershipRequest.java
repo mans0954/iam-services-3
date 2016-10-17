@@ -6,20 +6,19 @@ import java.util.Set;
 /**
  * Created by zaporozhec on 8/30/16.
  */
-public class EntitleToRoleRequest extends BaseServiceRequest {
-    private String roleId;
+public class MembershipRequest extends BaseServiceRequest {
+    private String objectId;
     private String linkedObjectId;
-    private String requesterId;
     private Set<String> rightIds;
     private Date startDate;
     private Date endDate;
 
-    public String getRoleId() {
-        return roleId;
+    public String getObjectId() {
+        return objectId;
     }
 
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
+    public void setObjectId(String objectId) {
+        this.objectId = objectId;
     }
 
     public String getLinkedObjectId() {
@@ -28,16 +27,6 @@ public class EntitleToRoleRequest extends BaseServiceRequest {
 
     public void setLinkedObjectId(String linkedObjectId) {
         this.linkedObjectId = linkedObjectId;
-    }
-
-    @Override
-    public String getRequesterId() {
-        return requesterId;
-    }
-
-    @Override
-    public void setRequesterId(String requesterId) {
-        this.requesterId = requesterId;
     }
 
     public Set<String> getRightIds() {

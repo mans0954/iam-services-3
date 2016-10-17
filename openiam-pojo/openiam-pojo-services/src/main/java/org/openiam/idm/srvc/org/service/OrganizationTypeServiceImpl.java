@@ -8,14 +8,18 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.SearchParam;
+import org.openiam.dozer.converter.OrganizationTypeDozerBeanConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.domain.OrgType2OrgTypeXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
+import org.openiam.idm.srvc.org.dto.OrganizationType;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +44,9 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 
     @Autowired
     private UserDataService userDataService;
+
+    @Autowired
+    private OrganizationTypeDozerBeanConverter dozerConverter;
     
     private Map<String, Set<String>> parent2childOrgTypeCached;
     private Map<String, Set<String>> child2parentOrgTypeCached;
@@ -49,8 +56,10 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
     private TransactionTemplate transactionTemplate;
 
 	@Override
-	public OrganizationTypeEntity findById(String id) {
-		return organizationTypeDAO.findById(id);
+    @Transactional(readOnly = true)
+	public OrganizationType findById(String id, final Language language) {
+        OrganizationTypeEntity entity = organizationTypeDAO.findById(id);
+        return (entity != null) ? dozerConverter.convertToDTO(entity, true) : null;
 	}
 	
 	@Override
@@ -62,8 +71,10 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 	}
 
 	@Override
-	public List<OrganizationTypeEntity> findBeans(final OrganizationTypeSearchBean searchBean, int from, int size) {
-        return organizationTypeDAO.getByExample(searchBean, from, size);
+    @LocalizedServiceGet
+	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, int from, int size, final Language language) {
+//        return organizationTypeDAO.getByExample(searchBean, from, size);
+        return dozerConverter.convertToDTOList(organizationTypeDAO.getByExample(searchBean, from, size), (searchBean != null) ? searchBean.isDeepCopy() : false);
 	}
 
     @Override
@@ -72,58 +83,94 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 	}
 
 	@Override
-	public void save(OrganizationTypeEntity type) {
-		if(type != null) {
-			if(StringUtils.isNotBlank(type.getId())) {
-				final OrganizationTypeEntity entity = organizationTypeDAO.findById(type.getId());
-				if(entity != null) {
-					type.setChildTypes(entity.getChildTypes());
-					type.setParentTypes(entity.getParentTypes());
-					type.setOrganizations(entity.getOrganizations());
-					organizationTypeDAO.merge(type);
+	public String save(OrganizationType typeDto) throws BasicDataServiceException{
+        if(typeDto == null) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+
+        if(StringUtils.isBlank(typeDto.getName())) {
+            throw new BasicDataServiceException(ResponseCode.NO_NAME);
+        }
+
+        final OrganizationTypeEntity duplicate = this.findByName(typeDto.getName());
+        if(duplicate != null) {
+            if(!StringUtils.equals(duplicate.getId(), typeDto.getId())) {
+                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+            }
+        }
+
+        final OrganizationTypeEntity entity = dozerConverter.convertToEntity(typeDto, true);
+		if(entity != null) {
+			if(StringUtils.isNotBlank(entity.getId())) {
+				final OrganizationTypeEntity dbEntity = organizationTypeDAO.findById(entity.getId());
+				if(dbEntity != null) {
+                    entity.setChildTypes(dbEntity.getChildTypes());
+                    entity.setParentTypes(dbEntity.getParentTypes());
+                    entity.setOrganizations(dbEntity.getOrganizations());
+					organizationTypeDAO.merge(entity);
 				}
 			} else {
-				type.setChildTypes(null);
-				type.setParentTypes(null);
-				type.setOrganizations(null);
-				organizationTypeDAO.save(type);
+                entity.setChildTypes(null);
+                entity.setParentTypes(null);
+                entity.setOrganizations(null);
+				organizationTypeDAO.save(entity);
 			}
 		}
+        return entity.getId();
 	}
 
 	@Override
-	public void delete(String id) {
-		if(StringUtils.isNotBlank(id)) {
-			final OrganizationTypeEntity entity = organizationTypeDAO.findById(id);
-			if(entity != null) {
-				organizationTypeDAO.delete(entity);
-			}
-		}
+	public void delete(String id) throws BasicDataServiceException {
+        if(StringUtils.isBlank(id)) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+
+        final OrganizationTypeEntity entity = organizationTypeDAO.findById(id);
+        if(entity == null) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+        if(CollectionUtils.isNotEmpty(entity.getChildTypes())) {
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_CHILDREN_EXIST);
+        }
+
+        if(CollectionUtils.isNotEmpty(entity.getParentTypes())) {
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_PARENTS_EXIST);
+        }
+
+        if(CollectionUtils.isNotEmpty(entity.getOrganizations())) {
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_TIED_TO_ORGANIZATION);
+        }
+
+        organizationTypeDAO.delete(entity);
 	}
 
 	@Override
-	public void addChild(String id, String childId) {
-		if(StringUtils.isNotBlank(id) && StringUtils.isNotBlank(childId)) {
-			final OrganizationTypeEntity entity = organizationTypeDAO.findById(id);
-			if(entity != null) {
-				final OrganizationTypeEntity child = organizationTypeDAO.findById(childId);
-				if(child != null) {
-					entity.addChildType(child);
-					organizationTypeDAO.update(entity);
-				}
-			}
-		}
+	public void addChild(String id, String childId) throws BasicDataServiceException{
+        if(StringUtils.isBlank(id) || StringUtils.isBlank(childId)) {
+            throw new BasicDataServiceException(ResponseCode.MISSING_REQUIRED_ATTRIBUTE);
+        }
+
+        final OrganizationTypeEntity entity = organizationTypeDAO.findById(id);
+        if(entity != null) {
+            final OrganizationTypeEntity child = organizationTypeDAO.findById(childId);
+            if(child != null) {
+                entity.addChildType(child);
+                organizationTypeDAO.update(entity);
+            }
+        }
 	}
 
 	@Override
-	public void removeChild(String id, String childId) {
-		if(StringUtils.isNotBlank(id) && StringUtils.isNotBlank(childId)) {
-			final OrganizationTypeEntity entity = organizationTypeDAO.findById(id);
-			if(entity != null) {
-				entity.removeChildType(childId);
-				organizationTypeDAO.update(entity);
-			}
-		}
+	public void removeChild(String id, String childId) throws BasicDataServiceException{
+        if(StringUtils.isBlank(id) || StringUtils.isBlank(childId)) {
+            throw new BasicDataServiceException(ResponseCode.MISSING_REQUIRED_ATTRIBUTE);
+        }
+
+        final OrganizationTypeEntity entity = organizationTypeDAO.findById(id);
+        if(entity != null) {
+            entity.removeChildType(childId);
+            organizationTypeDAO.update(entity);
+        }
 	}
 
 	@Override
@@ -170,10 +217,11 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 		return retval;
 	}
     @Override
-    public List<OrganizationTypeEntity> getAllowedParents(String organizationTypeId, String requesterId){
+    @LocalizedServiceGet
+    public List<OrganizationType> getAllowedParents(String organizationTypeId, String requesterId, final Language language){
         OrganizationTypeSearchBean searchBean = new OrganizationTypeSearchBean();
         searchBean.setKeySet(getAllowedParentsIds(organizationTypeId, requesterId));
-        return findBeans(searchBean, 0, Integer.MAX_VALUE);
+        return findBeans(searchBean, 0, Integer.MAX_VALUE,language);
     }
 
     @Override
@@ -236,7 +284,8 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
         return result;
     }
     @Override
-    public List<OrganizationTypeEntity> findAllowedChildrenByDelegationFilter(String requesterId){
+    @LocalizedServiceGet
+    public List<OrganizationType> findAllowedChildrenByDelegationFilter(String requesterId, final Language language){
         Set<String> allowedTypeIds = new HashSet<String>();
         if(StringUtils.isNotBlank(requesterId)){
             Map<String, UserAttribute> userAttributeMap = userDataService.getUserAttributesDto(requesterId);
@@ -244,7 +293,7 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
         }
         OrganizationTypeSearchBean searchBean = new OrganizationTypeSearchBean();
         searchBean.setKeySet(allowedTypeIds);
-        return findBeans(searchBean, 0, Integer.MAX_VALUE);
+        return findBeans(searchBean, 0, Integer.MAX_VALUE,language);
     }
 
     @Override

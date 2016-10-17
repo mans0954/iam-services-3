@@ -21,7 +21,7 @@ public class AuthManagerRestController extends AbstractApiService {
 
 	@RequestMapping("/refresh")
 	public @ResponseBody String refresh() {
-		this.sendAsync(AMCacheAPI.RefreshAMManager, new BaseServiceRequest());
+		this.publish(AMCacheAPI.RefreshAMManager, new BaseServiceRequest());
 		return "OK";
 	}
 }
