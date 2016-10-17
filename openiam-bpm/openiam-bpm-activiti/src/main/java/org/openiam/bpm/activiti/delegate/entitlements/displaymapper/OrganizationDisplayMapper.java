@@ -10,6 +10,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+import org.openiam.idm.srvc.org.dto.OrganizationType;
 import org.openiam.idm.srvc.org.service.OrganizationTypeService;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,7 @@ public class OrganizationDisplayMapper extends AbstractActivitiJob {
 		metadataMap.put("Is Selectable", Boolean.valueOf(organization.isSelectable()).toString());
 		
 		if(StringUtils.isNotBlank(organization.getOrganizationTypeId())) {
-			final OrganizationTypeEntity organizationType = organizationTypeService.findById(organization.getOrganizationTypeId());
+			final OrganizationType organizationType = organizationTypeService.findById(organization.getOrganizationTypeId(), null);
 			if(organizationType != null) {
 				metadataMap.put("Organization Type", organizationType.getName());
 			}

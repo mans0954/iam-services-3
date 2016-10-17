@@ -2,7 +2,9 @@ package org.openiam.idm.srvc.org.service;
 
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
+import org.openiam.idm.srvc.org.dto.OrganizationType;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 
 import java.util.List;
@@ -14,27 +16,27 @@ public interface OrganizationTypeService {
 
 	OrganizationTypeEntity findByName(final String name);
 	
-	OrganizationTypeEntity findById(final String id);
+	OrganizationType findById(final String id, final Language language);
 	
-	List<OrganizationTypeEntity> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size);
+	List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size, final Language language);
 	
 	int count(final OrganizationTypeSearchBean searchBean);
 	
-	void save(final OrganizationTypeEntity entity);
+	String save(final OrganizationType entity) throws BasicDataServiceException;
 	
-	void delete(final String id);
+	void delete(final String id) throws BasicDataServiceException;
 
-	void addChild(final String id, final String childId);
+	void addChild(final String id, final String childId) throws BasicDataServiceException;
 	
-	void removeChild(final String id, final String childId);
+	void removeChild(final String id, final String childId) throws BasicDataServiceException;
 
-    List<OrganizationTypeEntity> getAllowedParents(String organizationTypeId, String requesterId);
+    List<OrganizationType> getAllowedParents(String organizationTypeId, String requesterId, final Language language);
 
     Set<String> getAllowedParentsIds(String organizationTypeId, String requesterId);
 
     Set<String> getAllowedParentsIds(String organizationTypeId, Map<String, UserAttribute> requesterAttributes);
 
-    List<OrganizationTypeEntity> findAllowedChildrenByDelegationFilter(String requesterId);
+    List<OrganizationType> findAllowedChildrenByDelegationFilter(String requesterId, final Language language);
 
     Set<String> findAllowedChildrenByDelegationFilter(Map<String, UserAttribute> userAttributeMap);
 	
