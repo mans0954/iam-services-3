@@ -41,7 +41,7 @@ public class OrganizationTypeServiceTest extends AbstractKeyNameServiceTest<Orga
 
 	@Override
 	protected OrganizationType get(String key) {
-		return organizationTypeClient.findByIdLocalized(key, getDefaultLanguage());
+		return organizationTypeClient.findById(key, getDefaultLanguage());
 	}
 
 	@Override
