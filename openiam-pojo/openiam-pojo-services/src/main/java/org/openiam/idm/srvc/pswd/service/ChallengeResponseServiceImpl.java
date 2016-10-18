@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.pswd.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.dozer.converter.IdentityQuestGroupDozerConverter;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -9,14 +10,17 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.domain.IdentityQuestGroupEntity;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
+import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -45,6 +49,9 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 
     @Autowired
     private KeyManagementService keyManagementService;
+    
+    @Autowired
+    private IdentityQuestGroupDozerConverter groupDozerConverter;
 
     @Override
     public Integer getNumOfRequiredQuestions(String userId, boolean isEnterprise) {
@@ -184,4 +191,11 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     public void resetQuestionsForUser(String userId) {
         getResponseValidator().resetQuestionsForUser(userId);
     }
+
+	@Override
+	@Transactional(readOnly=true)
+	public List<IdentityQuestGroup> getAllIdentityQuestionGroupsDTO() {
+		final List<IdentityQuestGroupEntity> entities = getResponseValidator().getAllIdentityQuestionGroups();
+		return groupDozerConverter.convertToDTOList(entities, false);
+	}
 }

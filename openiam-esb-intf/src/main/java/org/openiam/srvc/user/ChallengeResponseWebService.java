@@ -27,12 +27,14 @@ import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.util.List;
 
 
@@ -43,6 +45,9 @@ import java.util.List;
  */
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", name = "ChallengeResponseWebService")
 public interface ChallengeResponseWebService {
+	
+	@WebMethod
+	public List<IdentityQuestGroup> getAllIdentityQuestionGroups();
     
 	@WebMethod
 	public Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") String userId, @WebParam(name = "isEnterprise", targetNamespace = "")boolean isEnterprise);

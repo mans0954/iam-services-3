@@ -37,6 +37,7 @@ import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
+import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import org.openiam.idm.srvc.pswd.service.ChallengeResponseService;
@@ -46,6 +47,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -329,5 +331,10 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
+	}
+
+	@Override
+	public List<IdentityQuestGroup> getAllIdentityQuestionGroups() {
+		return challengeResponseService.getAllIdentityQuestionGroupsDTO();
 	}
 }

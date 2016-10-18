@@ -14,5 +14,6 @@ public enum PropertyType {
 	Resource,
 	ManagedSystem,
 	RegularExpression,
-	Organization
+	Organization,
+	ChallengeResponseGroup;
 }

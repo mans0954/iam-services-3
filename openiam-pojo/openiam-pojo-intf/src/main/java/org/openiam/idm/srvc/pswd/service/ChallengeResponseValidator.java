@@ -23,6 +23,7 @@ package org.openiam.idm.srvc.pswd.service;
 
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.srvc.pswd.domain.IdentityQuestGroupEntity;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 
@@ -51,4 +52,5 @@ public interface ChallengeResponseValidator {
     public Integer getNumOfRequiredQuestions(final String userId, boolean isEnterprise);
     public Integer getNumOfCorrectAnswers(final String userId, boolean isEnterprise);
     void resetQuestionsForUser(final String userId);
+    List<IdentityQuestGroupEntity> getAllIdentityQuestionGroups();
 }

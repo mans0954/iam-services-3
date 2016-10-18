@@ -4,6 +4,7 @@ import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
+import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 
 import java.util.List;
 
@@ -23,4 +24,5 @@ public interface ChallengeResponseService {
 	boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList) throws Exception;
 	boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception;
 	void resetQuestionsForUser(String userId);
+	List<IdentityQuestGroup> getAllIdentityQuestionGroupsDTO();
 }

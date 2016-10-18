@@ -38,10 +38,6 @@ public class SysConfiguration {
         return propertyValueSweeper.getString("org.openiam.affiliation.primary.type.id");
     }
 
-    public String getAffiliationDefaultTypeId() {
-        return propertyValueSweeper.getString("org.openiam.affiliation.default.type.id");
-    }
-    
     public boolean isCaseInSensitiveDatabase() {
     	return "ORACLE_INSENSITIVE".equalsIgnoreCase(dbType);
     }

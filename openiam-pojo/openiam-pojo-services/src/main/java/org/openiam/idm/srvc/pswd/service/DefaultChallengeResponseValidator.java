@@ -41,6 +41,7 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.domain.IdentityQuestGroupEntity;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -391,4 +392,10 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         }
         return answerList;
     }
+
+	@Override
+	@Transactional(readOnly=true)
+	public List<IdentityQuestGroupEntity> getAllIdentityQuestionGroups() {
+		return questionGroupDAO.findAll();
+	}
 }
