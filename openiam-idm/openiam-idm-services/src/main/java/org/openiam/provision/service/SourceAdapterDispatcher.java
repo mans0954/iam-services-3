@@ -715,7 +715,9 @@ public class SourceAdapterDispatcher implements Runnable {
         }
         Organization orgDB = null;
         if (organization.size() > 1) {
-            orgDB = organization.get(0);
+            warnings.append(getWarning("Could not define unique organization based on request " + org.toString()));
+            warnings.append(getWarning("Found "+organization.size()+" organizations. Skip Orgs processing." ));
+            return null;
         }
         orgDB = organization.get(0);
 
