@@ -742,6 +742,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
             if (status == UserStatusEnum.REMOVE) {
                 try {
+                    if (pUser.getSuperiors() != null) {
+                        for (User us : pUser.getSuperiors()) {
+                            us.setOperation(AttributeOperationEnum.DELETE);
+                        }
+                        modifyUser(pUser);
+                    }
                     userMgr.removeUser(userId);
                 } catch (Throwable e) {
                     log.error("Can't remove user", e);
