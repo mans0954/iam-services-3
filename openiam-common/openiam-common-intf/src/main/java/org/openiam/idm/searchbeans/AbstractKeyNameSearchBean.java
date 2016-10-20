@@ -43,7 +43,11 @@ public abstract class AbstractKeyNameSearchBean<T extends KeyNameDTO, KeyType ex
 	}
 
 	public void setNameToken(SearchParam nameToken) {
-		this.nameToken = nameToken;
+		if(nameToken != null && StringUtils.isNotBlank(nameToken.getValue())) {
+			this.nameToken = nameToken;
+		} else {
+			this.nameToken = null;
+		}
 	}
 
 	@Override
