@@ -137,5 +137,23 @@ public class AuthenticationRequest  extends BaseServiceRequest  {
 		this.skipUserStatusCheck = skipUserStatusCheck;
 	}
 
-    
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("AuthenticationRequest{");
+        sb.append(super.toString());
+        sb.append(", languageId='").append(languageId).append('\'');
+        sb.append(", principal='").append(principal).append('\'');
+        sb.append(", password='").append(password).append('\'');
+        sb.append(", clientIP='").append(clientIP).append('\'');
+        sb.append(", nodeIP='").append(nodeIP).append('\'');
+        sb.append(", requestSource='").append(requestSource).append('\'');
+        sb.append(", patternId='").append(patternId).append('\'');
+        sb.append(", methodId='").append(methodId).append('\'');
+        sb.append(", authPolicyId='").append(authPolicyId).append('\'');
+        sb.append(", socialUserProfile='").append(socialUserProfile).append('\'');
+        sb.append(", skipUserStatusCheck=").append(skipUserStatusCheck);
+        sb.append(", skipPasswordCheck=").append(skipPasswordCheck);
+        sb.append('}');
+        return sb.toString();
+    }
 }

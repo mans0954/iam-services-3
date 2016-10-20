@@ -694,7 +694,7 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
             oauthUserClientXrefDao.save(xrefEntityList);
         }
     }
-
+    @Transactional
     public void saveOAuthCode(OAuthCode oAuthCode){
         OAuthCodeEntity entity = oauthCodeDozerConverter.convertToEntity(oAuthCode, true);
         entity.setClient(this.getAuthProvider(oAuthCode.getClientId()));
@@ -704,7 +704,7 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
         entity.setRedirectUrl(oAuthCode.getRedirectUrl());
         oAuthCodeDao.save(entity);
     }
-
+    @Transactional(readOnly = true)
     public OAuthCode getOAuthCode(String code){
         OAuthCodeEntity codeEntity = oAuthCodeDao.getByCode(code);
         OAuthCode codeDto = null;

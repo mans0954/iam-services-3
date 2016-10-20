@@ -295,7 +295,10 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         Subject sub = null;
         try {
             sub = loginModule.login(authenticationContext);
-        } catch (Exception e) {
+        } catch (BasicDataServiceException e) {
+            log.error(String.format("Error while authentication: %s", e.getMessage()), e);
+            throw e;
+        }catch (Exception e) {
             log.error(String.format("Error while authentication: %s", e.getMessage()), e);
             throw new BasicDataServiceException(ResponseCode.AUTHENTICATION_EXCEPTION, e.getMessage());
         }
