@@ -74,6 +74,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
@@ -150,7 +151,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     protected LanguageDAO languageDAO;
 
     @Autowired
-    protected AuditLogService auditLogService;
+    protected AuditLogHelper auditLogHelper;
     
     @Autowired
     private AccessRightDAO accessRightDAO;
@@ -951,7 +952,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         auditLog.setTargetGroup(group.getId(), group.getName());
         auditLog.setAction(AuditAction.REMOVE_PARENT_GROUP.value());
         auditLog.put(parent.getEntity().getName(), parent.getId());
-        auditLogService.enqueue(auditLog);
+        auditLogHelper.enqueue(auditLog);
     }
 
 
@@ -963,7 +964,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         auditLog.setTargetGroupAttribute(groupAttr.getId(), groupAttr.getName());
         auditLog.setAction(AuditAction.DELETE_ATTRIBUTE.value());
         auditLog.put(groupAttr.getName(), groupAttr.getValue());
-        auditLogService.enqueue(auditLog);
+        auditLogHelper.enqueue(auditLog);
     }
 
     private void auditLogAddAttribute(final GroupEntity group, final GroupAttributeEntity groupAttr, final String requesterId){
@@ -974,7 +975,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         auditLog.setTargetGroupAttribute(groupAttr.getId(), groupAttr.getName());
         auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
         auditLog.put(groupAttr.getName(), groupAttr.getValue());
-        auditLogService.enqueue(auditLog);
+        auditLogHelper.enqueue(auditLog);
     }
 
 	@Override
@@ -1332,7 +1333,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             auditLog.fail();
             auditLog.setException(e);
         } finally {
-            auditLogService.enqueue(auditLog);
+            auditLogHelper.enqueue(auditLog);
         }
         return response;
     }
@@ -1369,7 +1370,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             auditLog.fail();
             auditLog.setException(e);
         } finally {
-            auditLogService.enqueue(auditLog);
+            auditLogHelper.enqueue(auditLog);
         }
         return response;
     }
@@ -1426,7 +1427,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             auditLog.fail();
             auditLog.setException(e);
         } finally {
-            auditLogService.enqueue(auditLog);
+            auditLogHelper.enqueue(auditLog);
         }
         return response;
     }
@@ -1462,7 +1463,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             auditLog.fail();
             auditLog.setException(e);
         } finally {
-            auditLogService.enqueue(auditLog);
+            auditLogHelper.enqueue(auditLog);
         }
         return response;
     }

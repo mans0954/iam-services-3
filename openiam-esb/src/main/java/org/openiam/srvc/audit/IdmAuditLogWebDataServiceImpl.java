@@ -25,17 +25,24 @@ import java.util.List;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.request.BaseSearchServiceRequest;
+import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.response.IdmAuditLogListResponse;
+import org.openiam.base.response.IdmAuditLogResponse;
+import org.openiam.base.response.IntResponse;
+import org.openiam.base.response.StringListResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.mq.constants.AuditLogAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +55,7 @@ import org.springframework.stereotype.Service;
 public class IdmAuditLogWebDataServiceImpl extends AbstractApiService implements IdmAuditLogWebDataService {
 	
 	@Autowired
-	private AuditLogService auditLogService;
+	private AuditLogHelper auditLogHelper;
 
 	private static final Log LOG = LogFactory.getLog(IdmAuditLogWebDataServiceImpl.class);
 
@@ -58,68 +65,42 @@ public class IdmAuditLogWebDataServiceImpl extends AbstractApiService implements
 
 	@Override
     public Response addLog(IdmAuditLogEntity record) {
-        final Response resp = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(record == null) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-
-            auditLogService.enqueue(record);
-
-        } catch(BasicDataServiceException e) {
-            resp.fail();
-            resp.setErrorCode(e.getCode());
-
-        } catch(Throwable e) {
-            LOG.error("Can't add log", e);
-            resp.fail();
-        }
-        return resp;
+		auditLogHelper.enqueue(record);
+        return new Response(ResponseStatus.SUCCESS);
     }
 
     @Override
 	public Response addLogs(List<IdmAuditLogEntity> events) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-    	try {
-    		if(events == null) {
-    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-    		}
-    		
-    		for(final IdmAuditLogEntity log : events) {
-    			auditLogService.enqueue(log);
-    		}
-    	} catch(BasicDataServiceException e) {
-    		resp.fail();
-    		resp.setErrorCode(e.getCode());
-    		
-    	} catch(Throwable e) {
-    		LOG.error("Can't add log", e);
-    		resp.fail();
-    	}
-        return resp;
+		if(CollectionUtils.isNotEmpty(events)) {
+			for(final IdmAuditLogEntity log : events) {
+				auditLogHelper.enqueue(log);
+			}
+		}
+        return new Response(ResponseStatus.SUCCESS);
 	}
 
 	@Override
 	public List<IdmAuditLogEntity> findBeans(final AuditLogSearchBean searchBean, final int from, final int size) {
-		final List<IdmAuditLogEntity> entityList = auditLogService.findBeans(searchBean, from, size);
-		return entityList;
+		BaseSearchServiceRequest<AuditLogSearchBean> request = new BaseSearchServiceRequest<>(searchBean, from, size);
+		return this.getValueList(AuditLogAPI.FindBeans, request, IdmAuditLogListResponse.class);
 	}
 
     @Override
-    public List<String> getIds(@WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean, @WebParam(name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size) {
-        final List<String> ids = auditLogService.findIDs(searchBean, from, size);
-        return ids;
+    public List<String> getIds(AuditLogSearchBean searchBean, int from, int size) {
+		BaseSearchServiceRequest<AuditLogSearchBean> request = new BaseSearchServiceRequest<>(searchBean, from, size);
+		return this.getValueList(AuditLogAPI.GetIds, request, StringListResponse.class);
     }
 
     @Override
 	public int count(final AuditLogSearchBean searchBean) {
-		return auditLogService.count(searchBean);
+		BaseSearchServiceRequest<AuditLogSearchBean> request = new BaseSearchServiceRequest<>(searchBean);
+		return this.getValue(AuditLogAPI.Count, request, IntResponse.class);
 	}
 
 	@Override
 	public IdmAuditLogEntity getLogRecord(final String id) {
-		final IdmAuditLogEntity entity = auditLogService.findById(id);
-		return entity;
+		IdServiceRequest request = new IdServiceRequest(id);
+		return this.getValue(AuditLogAPI.GetLogRecord, request, IdmAuditLogResponse.class);
 	}
 
 }

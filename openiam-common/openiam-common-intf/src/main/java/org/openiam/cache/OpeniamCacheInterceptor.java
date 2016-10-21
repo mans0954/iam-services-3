@@ -27,7 +27,9 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.aop.framework.AopProxyUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.interceptor.CacheEvictOperation;
@@ -54,8 +56,8 @@ import org.springframework.context.ApplicationContext;
 public class OpeniamCacheInterceptor extends CacheInterceptor {
 	
 	private static final Log LOG = LogFactory.getLog(OpeniamCacheInterceptor.class);
-	
-	private AuditLogService auditLogService;
+
+	private AuditLogHelper auditLogHelper;
 	private Map<String, Set<Object>> cacheManagementCache;
 	
 	private HazelcastConfiguration hazelcastConfiguration;
@@ -82,7 +84,7 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 
 	public void init() {
 		cacheManagementCache = hazelcastConfiguration.getMap("cacheManagementCache");
-		auditLogService = applicationContext.getBean(AuditLogService.class);
+		auditLogHelper = applicationContext.getBean(AuditLogHelper.class);
 	}
 	
 	private Set<BaseIdentity> getBaseIdentities(final Object cacheResult, final Class<?> clazz, Method method) {
@@ -371,7 +373,7 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 		log.put(AuditAttributeName.CACHE_NAME.name(), cache.getName());
 		log.put(AuditAttributeName.CACHE_KEY.name(), key.toString());
 		log.put(AuditAttributeName.NUM_OF_MULTIKEYS.name(), Integer.valueOf(numOfMultikeys).toString());
-		auditLogService.enqueue(log);
+		auditLogHelper.enqueue(log);
 	}
 	
 	private void logPut(final Cache cache, final Object key, final int numOfMultikeys) {
@@ -380,7 +382,7 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 		log.put(AuditAttributeName.CACHE_NAME.name(), cache.getName());
 		log.put(AuditAttributeName.CACHE_KEY.name(), key.toString());
 		log.put(AuditAttributeName.NUM_OF_MULTIKEYS.name(), Integer.valueOf(numOfMultikeys).toString());
-		auditLogService.enqueue(log);
+		auditLogHelper.enqueue(log);
 	}
 	
 	@Override

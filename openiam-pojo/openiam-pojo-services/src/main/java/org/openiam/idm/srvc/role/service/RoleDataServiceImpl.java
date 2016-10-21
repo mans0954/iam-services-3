@@ -50,6 +50,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
@@ -105,7 +106,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     private MetadataTypeDAO typeDAO;
 
     @Autowired
-    protected AuditLogService auditLogService;
+    protected AuditLogHelper auditLogHelper;
 
     @Autowired
     private AccessRightDAO accessRightDAO;
@@ -432,7 +433,7 @@ public class RoleDataServiceImpl implements RoleDataService {
         auditLog.setTargetRoleAttribute(roleAttr.getId(), roleAttr.getName());
         auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
         auditLog.put(roleAttr.getName(), roleAttr.getValue());
-        auditLogService.enqueue(auditLog);
+        auditLogHelper.enqueue(auditLog);
     }
 
     private ApproverAssociationEntity createDefaultApproverAssociations(final RoleEntity entity, final String requestorId) {

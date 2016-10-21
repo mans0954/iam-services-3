@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity;
 import org.openiam.idm.srvc.batch.service.BatchService;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -21,7 +22,7 @@ public abstract class AbstractBatchTaskThread implements Runnable {
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
     @Autowired
-    protected AuditLogService auditLogService;
+    protected AuditLogHelper auditLogHelper;
     @Autowired
     protected BatchService batchService;
 
@@ -40,7 +41,7 @@ public abstract class AbstractBatchTaskThread implements Runnable {
         idmAuditLog.addAttribute(AuditAttributeName.URL, entity.getTaskUrl());
         idmAuditLog.setSessionID(ctx.getId());
         idmAuditLog.succeed();
-        auditLogService.enqueue(idmAuditLog);
+        auditLogHelper.enqueue(idmAuditLog);
     }
 
     protected void logFail(Throwable e) {
@@ -51,7 +52,7 @@ public abstract class AbstractBatchTaskThread implements Runnable {
         idmAuditLog.addAttribute(AuditAttributeName.URL, entity.getTaskUrl());
         idmAuditLog.setSessionID(ctx.getId());
         idmAuditLog.fail();
-        auditLogService.enqueue(idmAuditLog);
+        auditLogHelper.enqueue(idmAuditLog);
     }
 
     @Override

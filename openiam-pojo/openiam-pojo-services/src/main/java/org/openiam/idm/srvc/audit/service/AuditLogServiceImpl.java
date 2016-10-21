@@ -69,9 +69,6 @@ public class AuditLogServiceImpl implements AuditLogService {
     protected SysConfiguration sysConfiguration;
     
     @Autowired
-    private RequestServiceGateway  requestServiceGateway;
-    
-    @Autowired
     private LoginElasticSearchRepository loginDAO;
 
     private static final Log LOG = LogFactory.getLog(AuditLogServiceImpl.class);
@@ -194,23 +191,6 @@ public class AuditLogServiceImpl implements AuditLogService {
             return false;
         return true;
     }
-
-    @Override
-	public void enqueue(final IdmAuditLogEntity event) {
-        if(event != null){
-		    send(event);
-        }
-	}
-	
-	 private void send(final IdmAuditLogEntity log) {
-         IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
-         wrapper.setLogEntity(log);
-
-         MQRequest<IdmAuditLogRequest, OpenIAMAPICommon> request = new MQRequest<>();
-         request.setRequestBody(wrapper);
-         request.setRequestApi(OpenIAMAPICommon.AuditLogSave);
-         requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
-	 }
 
 	@Override
 	@Transactional(readOnly=true)

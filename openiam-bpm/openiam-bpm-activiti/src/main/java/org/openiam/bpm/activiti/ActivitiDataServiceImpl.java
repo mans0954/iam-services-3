@@ -61,6 +61,7 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
@@ -192,6 +193,9 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 	@Autowired
 	private AuditLogHelper auditLogHelper;
+
+	@Autowired
+	private AuditLogService auditLogService;
 
 	@Override
 	public String sayHello() {

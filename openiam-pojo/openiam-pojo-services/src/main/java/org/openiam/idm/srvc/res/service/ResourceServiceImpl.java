@@ -63,6 +63,7 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
@@ -146,7 +147,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     private RoleDataService roleService;
 
     @Autowired
-    protected AuditLogService auditLogService;
+    protected AuditLogHelper auditLogHelper;
 
     @Autowired
     private AccessRightDAO accessRightDAO;
@@ -1071,7 +1072,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -1119,7 +1120,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -1161,7 +1162,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -1198,7 +1199,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -1254,7 +1255,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -1295,7 +1296,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -1351,7 +1352,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -1407,7 +1408,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }

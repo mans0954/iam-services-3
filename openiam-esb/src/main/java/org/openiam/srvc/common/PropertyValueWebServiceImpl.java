@@ -26,6 +26,7 @@ import org.openiam.idm.srvc.property.converter.PropertyValueConverter;
 import org.openiam.idm.srvc.property.service.PropertyValueService;
 import org.openiam.property.domain.PropertyValueEntity;
 import org.openiam.property.dto.PropertyValue;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +49,8 @@ public class PropertyValueWebServiceImpl extends AbstractBaseService implements 
 	 
 	 @Autowired
 	 private LanguageDAO languageDAO;
+	@Autowired
+	private AuditLogHelper auditLogHelper;
 	 
 	 private BasicDataServiceException getException(final PropertyValue dto, final String value) {
 		 BasicDataServiceException e = null;
@@ -166,7 +169,7 @@ public class PropertyValueWebServiceImpl extends AbstractBaseService implements 
             idmAuditLog.fail();
             idmAuditLog.setException(e);
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+			auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
 	 }

@@ -11,8 +11,7 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
  */
 public interface AuditLogService {
 
-    void enqueue(final IdmAuditLogEntity idmAuditLog);
-    
+
     List<IdmAuditLogEntity> findBeans(final AuditLogSearchBean searchBean, final int from, final int size);
     List<String> findIDs(final AuditLogSearchBean searchBean, final int from, final int size);
 

@@ -24,6 +24,7 @@ import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,8 @@ public class ProvisionConnectorWebServiceImpl extends AbstractBaseService implem
     
     @Autowired
     private ProvisionConnectorConverter provisionConnectorConverter;
+    @Autowired
+    private AuditLogHelper auditLogHelper;
 
     private static final Log log = LogFactory
             .getLog(ProvisionConnectorWebServiceImpl.class);
@@ -109,7 +112,7 @@ public class ProvisionConnectorWebServiceImpl extends AbstractBaseService implem
              idmAuditLog.fail();
              idmAuditLog.setException(e);
          } finally {
-             auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
          }
     	return response;
     }

@@ -150,7 +150,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                             }
                         }
                     } finally {
-                        auditLogService.enqueue(auditLog);
+                        auditLogHelper.enqueue(auditLog);
                     }
                     tmpRes.setStatus(ResponseStatus.SUCCESS);
                     return tmpRes;

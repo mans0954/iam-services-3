@@ -34,6 +34,7 @@ import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,7 +78,7 @@ public class BaseProvisioningHelper {
     protected ProvisionQueueService provQueueService;
 
     @Autowired
-    protected AuditLogService auditLogService;
+    protected AuditLogHelper auditLogHelper;
 
     @Autowired
     @Qualifier("transactionManager")
