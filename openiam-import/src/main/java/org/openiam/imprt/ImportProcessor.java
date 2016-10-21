@@ -318,7 +318,6 @@ public class ImportProcessor {
         MailboxHelper mailboxHelper = new MailboxHelper(skipUTF8BOM("/home/OpenIAM/data/openiam/upload/sync/AN_Exchange_DBs.csv"));
         bindingMap.put("MAILBOX_HELPER", mailboxHelper);
 
-
         //FIXME SINGLE BLOCK ^^^^^^^^^^^
         if (debugMode) {
             System.out.println("Time=" + (System.currentTimeMillis() - time1) + "ms");

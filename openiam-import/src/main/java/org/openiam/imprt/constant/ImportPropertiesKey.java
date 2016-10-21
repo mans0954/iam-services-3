@@ -12,7 +12,7 @@ public enum ImportPropertiesKey {
     KEYSTORE("openia.keystore"),
 
     SIMPLE_DATE_FORMAT("openiam.date.format"),
-
+    SERVER_MODE("openiam.server.mode"),
     KEY_SERVICE_WSDL("openiam.key.service.wsdl"),
     // jdbc connector properties
     DATABASE_USER("openiam.db.username"),

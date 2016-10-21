@@ -44,7 +44,7 @@ public class Transformation {
     final String g_GSS_MDMEmailWMS = "g_GSS_MDMEmailWMS".toLowerCase();
     final String ARCHIVE_CACHE_DISABLED = "g_gss_eus_maas_vaultcache_disabled - vv";
     final String INTERNET_GROUP_MASK = "a_.*_internetaccess";
-
+    final String serverMode = DataHolder.getInstance().getProperty(ImportPropertiesKey.SERVER_MODE);
     final String UNITY_ROLE_ID = "2c94b2574be50e06014be569449302ed";
     final String LYNC_MNG_SYS_ID = "2c94b25748eaf9ef01492d5507100273";
     final String EXCH_MNG_SYS_ID = "2c94b25748eaf9ef01492d5312d3026d";
@@ -57,6 +57,7 @@ public class Transformation {
 
     public int execute(LineObject rowObj, UserEntity user, Map<String, Object> bindingMap) {
         try {
+            System.out.println("Server Mode=" + serverMode);
             populateObject(rowObj, user, bindingMap);
         } catch (Exception ex) {
             System.out.println(ex.getCause());
@@ -125,39 +126,40 @@ public class Transformation {
             while (emplId.length() < 8) emplId = "0" + emplId;
         }
         user.setEmployeeId(emplId);
+        if (StringUtils.isBlank(user.getId())) {
+            //First Name
+            String fn = this.getValue(lo.get("givenName"));
+            if (StringUtils.isNotBlank(fn)) {
+                user.setFirstName(fn.substring(0, 1).toUpperCase() + fn.substring(1));
+            } else {
+                user.setFirstName("Admin");
+            }
+            //Initials
+            String initials = this.getValue(lo.get("initials"));
+            if (StringUtils.isBlank(initials) || "null".equalsIgnoreCase(initials)) {
+                initials = user.getFirstName().substring(0, 1);
+            }
+            initials = initials.replace(" ", "");
+            user.setMiddleInit(initials);
 
-        //First Name
-        String fn = this.getValue(lo.get("givenName"));
-        if (StringUtils.isNotBlank(fn)) {
-            user.setFirstName(fn.substring(0, 1).toUpperCase() + fn.substring(1));
+            //displayName
+            String displayName = this.getValue(lo.get("displayName"));
+            if (StringUtils.isBlank(displayName) || "null".equalsIgnoreCase(displayName)) {
+                displayName = genName(user.getLastName(), user.getFirstName(), user.getMiddleInit(), user.getPrefixLastName());
+            }
+
+            //NickName
+            user.setNickname(displayName);
+            addUserAttribute(user, new UserAttributeEntity("displayName", displayName));
+            //Last Name
+            String surname = this.getValue(lo.get("sn"));
+            if (StringUtils.isNotBlank(surname)) {
+                this.processLastName(user, surname, displayName);
+            } else {
+                user.setLastName(samAccountName);
+            }
         } else {
-            user.setFirstName("Admin");
-        }
-
-
-        //Initials
-        String initials = this.getValue(lo.get("initials"));
-        if (StringUtils.isBlank(initials) || "null".equalsIgnoreCase(initials)) {
-            initials = user.getFirstName().substring(0, 1);
-        }
-        initials = initials.replace(" ", "");
-        user.setMiddleInit(initials);
-
-        //displayName
-        String displayName = this.getValue(lo.get("displayName"));
-        if (StringUtils.isBlank(displayName) || "null".equalsIgnoreCase(displayName)) {
-            displayName = genName(user.getLastName(), user.getFirstName(), user.getMiddleInit(), user.getPrefixLastName());
-        }
-
-        //NickName
-        user.setNickname(displayName);
-        addUserAttribute(user, new UserAttributeEntity("displayName", displayName));
-        //Last Name
-        String surname = this.getValue(lo.get("sn"));
-        if (StringUtils.isNotBlank(surname)) {
-            this.processLastName(user, surname, displayName);
-        } else {
-            user.setLastName(samAccountName);
+            System.out.println("Update - skip Name parts import");
         }
         //Title
         user.setTitle(this.getValue(lo.get("title")));
@@ -485,8 +487,7 @@ public class Transformation {
             }
         }
 
-        boolean isMDM = containsNameGroup(memberOf, groupsMap, g_GSS_MDMEmailWMS)
-                || containsNameGroup(memberOf, groupsMap, g_GSS_MDMUsers);
+        boolean isMDM = containsNameGroup(memberOf, groupsMap, g_GSS_MDMEmailWMS) || containsNameGroup(memberOf, groupsMap, g_GSS_MDMUsers);
         boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
         boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
         boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
@@ -530,8 +531,7 @@ public class Transformation {
         //For AD
         addRoleId(user, "8a8da02e51a28fd20151a291ce360002");
 
-        String accessRoleId = ("AKZONOBEL_USER_MBX".equals(mdTypeId) ||
-                "AKZONOBEL_USER_NO_MBX".equals(mdTypeId)) ? "1" : "AKZONOBEL_ADM_ACCOUNT".equals(mdTypeId) ? "SUPPORT_ADMIN_ROLE_ID" : "SERVICE_ROLE_ID";
+        String accessRoleId = ("AKZONOBEL_USER_MBX".equals(mdTypeId) || "AKZONOBEL_USER_NO_MBX".equals(mdTypeId)) ? "1" : "AKZONOBEL_ADM_ACCOUNT".equals(mdTypeId) ? "SUPPORT_ADMIN_ROLE_ID" : "SERVICE_ROLE_ID";
         if (StringUtils.isNotBlank(accessRoleId)) {
             addRoleId(user, accessRoleId);
         }
@@ -553,11 +553,12 @@ public class Transformation {
         String userPrincipalName = this.getValue(lo.get("userPrincipalName"));
 
         // PROD
-        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
-
-        // STAGING
-//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
-
+        if ("PROD".equalsIgnoreCase(serverMode)) {
+            updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
+        } else if ("STAGING".equalsIgnoreCase(serverMode)) {
+            // STAGING
+            updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
+        }
         // lync
         String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
         sipAddress = StringUtils.isNotBlank(sipAddress) && sipAddress.startsWith("sip:") ? sipAddress.substring(4) : null;
@@ -623,6 +624,10 @@ public class Transformation {
                     secEmail.setIsActive(true);
                     secEmail.setEmailAddress(email);
                     user.getEmailAddresses().add(secEmail);
+                } else if (val.startsWith("SMTP:")) {
+                    String email = val.substring("SMTP:".length());
+                    System.out.println("Update Primary email from SMTP proxy Address=" + email);
+                    addEmail(user, email);
                 }
 
             }
@@ -663,8 +668,7 @@ public class Transformation {
                 if (lg != null) {
                     lg.setLogin("DELETE_FROM_DB");
                 }
-                if (userRole != null)
-                    removeRoleId(user, userRole.getId());
+                if (userRole != null) removeRoleId(user, userRole.getId());
             }
         } catch (Exception e) {
             System.out.println("Problems inside of updateLoginAndRole ");
@@ -673,8 +677,7 @@ public class Transformation {
 
     public boolean containsNameGroup(String[] userADNames, Map<String, String> groupsMap, String toFind) {
         boolean retVal = false;
-        if (userADNames == null)
-            return false;
+        if (userADNames == null) return false;
         try {
             String dn = groupsMap.get(toFind);
 
@@ -688,8 +691,7 @@ public class Transformation {
     }
 
     public boolean containsMaskGroup(String[] userADNames, Map<String, String> groupsMap, String mask) {
-        if (userADNames == null)
-            return false;
+        if (userADNames == null) return false;
         try {
             List<String> userADNamesList = Arrays.asList(userADNames);
             Pattern pattern = Pattern.compile(mask);
@@ -711,8 +713,7 @@ public class Transformation {
     }
 
     private void mergeGroups(String[] membersOf, Map<String, GroupEntity> groupsEntities, UserEntity user) {
-        if (membersOf == null)
-            return;
+        if (membersOf == null) return;
         for (String member : membersOf) {
             GroupEntity groupEntity = groupsEntities.get(member.toLowerCase());
             if (groupEntity != null) {
@@ -939,17 +940,13 @@ public class Transformation {
             return;
         }
 
-        final List<Column> userAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_ATTRIBUTES_ID, ImportPropertiesKey.USER_ATTRIBUTES_USER_ID,
-                ImportPropertiesKey.USER_ATTRIBUTES_NAME,
-                ImportPropertiesKey.USER_ATTRIBUTES_VALUE});
+        final List<Column> userAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_ATTRIBUTES_ID, ImportPropertiesKey.USER_ATTRIBUTES_USER_ID, ImportPropertiesKey.USER_ATTRIBUTES_NAME, ImportPropertiesKey.USER_ATTRIBUTES_VALUE});
 
         final String getUserAttributeByUserDN = "SELECT %s FROM USER_ATTRIBUTES ua WHERE ua.NAME='distinguishedName' AND ua.VALUE='%s'";
         UserAttributeEntityParser attributeEntityParser = new UserAttributeEntityParser();
         String userId = null;
         try {
-            List<UserAttributeEntity> userAttributeEntityList = attributeEntityParser.get(
-                    String.format(getUserAttributeByUserDN, Utils.columnsToSelectFields(userAttributeColumnList, "ua"),
-                            dn), userAttributeColumnList);
+            List<UserAttributeEntity> userAttributeEntityList = attributeEntityParser.get(String.format(getUserAttributeByUserDN, Utils.columnsToSelectFields(userAttributeColumnList, "ua"), dn), userAttributeColumnList);
             if (CollectionUtils.isNotEmpty(userAttributeColumnList)) {
                 userId = userAttributeEntityList.get(0).getUserId();
             }
@@ -1039,8 +1036,7 @@ public class Transformation {
             attributeValue = adPath + ("," + baseDN.toLowerCase());
         }
 
-        this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM",
-                String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", attributeValue, MatchType.END_WITH)));
+        this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM", String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", attributeValue, MatchType.END_WITH)));
     }
 
     private void getLinkedOrganization(String distinguishedName, String site, String bu, String country, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
@@ -1096,8 +1092,7 @@ public class Transformation {
                 for (LocationEntity l : locations) {
                     if (siteEntity.getId().equals(l.getOrganizationId())) {
                         addUserAttribute(user, new UserAttributeEntity("LOCATION_ID", l.getLocationId()));
-                        if (country == null)
-                            addUserAttribute(user, new UserAttributeEntity("COUNTRY", l.getCountry()));
+                        if (country == null) addUserAttribute(user, new UserAttributeEntity("COUNTRY", l.getCountry()));
                     }
                 }
             }
@@ -1143,7 +1138,6 @@ public class Transformation {
 
 
     private void processLastName(UserEntity user, String surname, String displayName) {
-        System.out.println("Surname=" + surname);
         List<String> formatValues = Arrays.asList("00", "0", "50", "51", "52", "53");
         UserAttributeEntity a = this.getUserAttributeByName(user, "USER_DISPLAY_NAME");
         UserAttributeEntity savedFormat = this.getUserAttributeByName(user, "USER_SAVED_NAME");
@@ -1164,7 +1158,6 @@ public class Transformation {
                 format = "50";
             }
         }
-        System.out.println("Format=" + format);
         if ("51".equals(format.trim())) { //LastName + "-" + partnerInfix + " "+partnerName +", " + infix
             String[] snParts = surname.split("-");
             if (snParts != null) {
