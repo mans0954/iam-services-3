@@ -7,98 +7,88 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * @author Lev Bornovalov
- * This class serves two purposes:
- * 1) Each Cached Entity should correspond to 1 unique bit
- * 2) All Entities have a String ID.  Using a bitSet as the hashCode key eliminates
- *    this possibility (since the bit is unique for each entity instance)
+ *         This class serves two purposes:
+ *         1) Each Cached Entity should correspond to 1 unique bit
+ *         2) All Entities have a String ID.  Using a bitSet as the hashCode key eliminates
+ *         this possibility (since the bit is unique for each entity instance)
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "AbstractAuthorizationEntity", propOrder = {
-        "id",
-        "name",
-        "description",
-        "status",
-        "managedSysId"
-})
+@XmlType(name = "AbstractAuthorizationEntity", propOrder = {"id", "name", "description", "status", "managedSysId", "metadataTypeId"})
 public abstract class AbstractAuthorizationEntity {
-	
-	public AbstractAuthorizationEntity() {}
-	
-	public AbstractAuthorizationEntity(final AbstractAuthorizationEntity entity) {
-		this.id = entity.id;
-		this.name = entity.name;
-	}
 
-	private String name;
-	private String id;
+    public AbstractAuthorizationEntity() {
+    }
+
+    public AbstractAuthorizationEntity(final AbstractAuthorizationEntity entity) {
+        this.id = entity.id;
+        this.name = entity.name;
+    }
+
+    private String name;
+    private String id;
     private String description;
     private String status;
     private String managedSysId;
+    private String metadataTypeId;
 
-	@XmlTransient
-	private int bitSetIdx = -1;
-	
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(final String id) {
-		this.id = id;
-	}
+    @XmlTransient
+    private int bitSetIdx = -1;
 
-	public int getBitSetIdx() {
-		return bitSetIdx;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setBitSetIdx(int bitSetIdx) {
-		this.bitSetIdx = bitSetIdx;
-	}
-	
-	public String getName() {
-		return name;
-	}
+    public void setId(final String id) {
+        this.id = id;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	protected void makeCopy(final AbstractAuthorizationEntity entity) {
-		entity.setId(id);
-		entity.setName(name);
-	}
-	
-	public abstract void compile();
+    public int getBitSetIdx() {
+        return bitSetIdx;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
+    public void setBitSetIdx(int bitSetIdx) {
+        this.bitSetIdx = bitSetIdx;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		AbstractAuthorizationEntity other = (AbstractAuthorizationEntity) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
-	}
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public String toString() {
-		return String.format("AbstractEntity [id=%s, bitSetIdx=%s]", id,
-				bitSetIdx);
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    protected void makeCopy(final AbstractAuthorizationEntity entity) {
+        entity.setId(id);
+        entity.setName(name);
+    }
+
+    public abstract void compile();
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        AbstractAuthorizationEntity other = (AbstractAuthorizationEntity) obj;
+        if (id == null) {
+            if (other.id != null) return false;
+        } else if (!id.equals(other.id)) return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("AbstractEntity [id=%s, bitSetIdx=%s]", id, bitSetIdx);
+    }
 
     public String getDescription() {
         return description;
@@ -122,5 +112,13 @@ public abstract class AbstractAuthorizationEntity {
 
     public void setManagedSysId(String managedSysId) {
         this.managedSysId = managedSysId;
+    }
+
+    public String getMetadataTypeId() {
+        return metadataTypeId;
+    }
+
+    public void setMetadataTypeId(String metadataTypeId) {
+        this.metadataTypeId = metadataTypeId;
     }
 }

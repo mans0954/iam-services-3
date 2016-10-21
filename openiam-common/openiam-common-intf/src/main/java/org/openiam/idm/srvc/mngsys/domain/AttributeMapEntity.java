@@ -21,9 +21,7 @@ import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(AttributeMap.class)
 public class AttributeMapEntity implements java.io.Serializable {
-    /**
-	 *
-	 */
+
     private static final long serialVersionUID = 1L;
 
     @Id

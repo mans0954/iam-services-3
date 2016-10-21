@@ -9,6 +9,7 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.criterion.*;
 import org.openiam.base.OrderConstants;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.base.ws.SortParam;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;

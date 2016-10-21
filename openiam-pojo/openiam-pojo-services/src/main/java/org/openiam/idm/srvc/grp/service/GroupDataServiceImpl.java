@@ -728,8 +728,12 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             // get admin resource
             ResourceEntity adminResource = group.getAdminResource();
             // clean users and groups
-            adminResource.getUsers().clear();
-            adminResource.getGroups().clear();
+            if (adminResource.getUsers() != null) {
+                adminResource.getUsers().clear();
+            }
+            if (adminResource.getGroups() != null) {
+                adminResource.getGroups().clear();
+            }
             // add new Owner;
             addOwner(adminResource, groupOwner, requestorId);
         }

@@ -47,6 +47,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -186,7 +187,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 }
             });
 
-        } catch(Throwable t){
+        } catch (Throwable t) {
             response.setErrorCode(ResponseCode.INTERNAL_ERROR);
             response.setStatus(ResponseStatus.FAILURE);
             t.printStackTrace();
@@ -207,7 +208,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 }
             });
 
-        } catch(Throwable t){
+        } catch (Throwable t) {
             response.setErrorCode(ResponseCode.INTERNAL_ERROR);
             response.setStatus(ResponseStatus.FAILURE);
             t.printStackTrace();
@@ -233,7 +234,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
         Set<Resource> resources = pGroup.getResources();
         if (resources != null) {
-            for(Resource res : resources) {
+            for (Resource res : resources) {
                 if (pGroup.getNotProvisioninResourcesIds().contains(res.getId())) {
                     continue;
                 }
@@ -251,8 +252,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                         continue;
                     }
                     IdentityDto groupTargetIdentity = identityService.getIdentityByManagedSys(pGroup.getId(), managedSysId);
-                    if (groupTargetIdentity != null && res.getOperation() == AttributeOperationEnum.ADD
-                            && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
+                    if (groupTargetIdentity != null && res.getOperation() == AttributeOperationEnum.ADD && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
                         groupTargetIdentity.setStatus(LoginStatusEnum.ACTIVE);
                     }
                     Response provIdentityResponse = provisioningIdentity(groupTargetIdentity, pGroup, managedSys, res, isAdd);
@@ -270,7 +270,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                         }
                     }
 
-                }  else {
+                } else {
                     // TODO WARNING
                 }
             }
@@ -291,13 +291,12 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         return response;
     }
 
-    protected Response provisioningIdentity(IdentityDto groupTargetIdentity, ProvisionGroup pGroup,
-                                           ManagedSysDto managedSys, Resource res, boolean isAdd) {
+    protected Response provisioningIdentity(IdentityDto groupTargetIdentity, ProvisionGroup pGroup, ManagedSysDto managedSys, Resource res, boolean isAdd) {
 
         Map<String, Object> bindingMap = new HashMap<>();
         Response response = new Response(ResponseStatus.SUCCESS);
 
-        if(groupTargetIdentity == null) {
+        if (groupTargetIdentity == null) {
             // Generate new identity
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
             bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
@@ -314,15 +313,15 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
             }
             try {
-            	if(log.isDebugEnabled()) {
-            		log.debug(" - Building principal Name for: " + managedSys.getId());
-            	}
+                if (log.isDebugEnabled()) {
+                    log.debug(" - Building principal Name for: " + managedSys.getId());
+                }
                 String newIdentity = ProvisionServiceUtil.buildGroupPrincipalName(attrMap, scriptRunner, bindingMap);
 
                 if (StringUtils.isBlank(newIdentity)) {
-                	if(log.isDebugEnabled()) {
-                		log.debug("Primary identity not found...");
-                	}
+                    if (log.isDebugEnabled()) {
+                        log.debug("Primary identity not found...");
+                    }
                     response.setStatus(ResponseStatus.FAILURE);
                     response.setErrorCode(ResponseCode.IDENTITY_NOT_FOUND);
                     return response;
@@ -367,12 +366,10 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         bindingMap.put("identity", groupTargetIdentity);
         bindingMap.put("requesterId", systemUserId);
 
-        List<AttributeMap> attrMapEntities = managedSystemService
-                .getAttributeMapsByManagedSysId(managedSys.getId());
+        List<AttributeMap> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSys.getId());
 
         ManagedSystemObjectMatch matchObj = null;
-        ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSys.getId(),
-                ManagedSystemObjectMatch.GROUP);
+        ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSys.getId(), ManagedSystemObjectMatch.GROUP);
         if (objList != null && objList.length > 0) {
             matchObj = objList[0];
         }
@@ -385,11 +382,10 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         String requestId = "R" + UUIDGen.getUUID();
         Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
 
-        boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, groupTargetIdentity, extObj, managedSys,
-                matchObj, currentValueMap, res);
+        boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, groupTargetIdentity, extObj, managedSys, matchObj, currentValueMap, res);
 
         boolean connectorSuccess = false;
-       // pre-processing
+        // pre-processing
         bindingMap.put("targetSystemAttributes", currentValueMap);
         ResourceProp preProcessProp = res.getResourceProperty("GROUP_PRE_PROCESS");
         String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
@@ -397,8 +393,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
             PreProcessor<ProvisionGroup> ppScript = createPreProcessScript(preProcessScript, bindingMap);
             if (ppScript != null) {
-                int executePreProcessResult = executePreProcess(ppScript, bindingMap, pGroup, null,
-                        isDelete ? "DELETE" : isExistedInTargetSystem ? "MODIFY" : "ADD");
+                int executePreProcessResult = executePreProcess(ppScript, bindingMap, pGroup, null, isDelete ? "DELETE" : isExistedInTargetSystem ? "MODIFY" : "ADD");
                 if (executePreProcessResult == ProvisioningConstants.FAIL) {
                     response.setStatus(ResponseStatus.FAILURE);
                     response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
@@ -409,8 +404,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
         if (isDelete && isExistedInTargetSystem) { // delete existing group
 
-            connectorSuccess = requestDelete(groupTargetIdentity, requestId, managedSys, matchObj)
-                    .getStatus() != StatusCodeType.FAILURE;
+            connectorSuccess = requestDelete(groupTargetIdentity, requestId, managedSys, matchObj).getStatus() != StatusCodeType.FAILURE;
 
         } else if (isDelete && !isExistedInTargetSystem) { // delete not existing group
 
@@ -422,8 +416,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             // updates the attributes with the correct operation codes
             extObj = ProvisionDispatcher.updateAttributeList(extObj, null);
 
-            connectorSuccess = requestAddModify(groupTargetIdentity, requestId, managedSys, matchObj, extObj, true)
-                    .getStatus() != StatusCodeType.FAILURE;
+            connectorSuccess = requestAddModify(groupTargetIdentity, requestId, managedSys, matchObj, extObj, true).getStatus() != StatusCodeType.FAILURE;
 
         } else { // if group exists in target system
 
@@ -431,12 +424,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             extObj = ProvisionDispatcher.updateAttributeList(extObj, currentValueMap);
 
             if (groupTargetIdentity.getOrigPrincipalName() != null) {
-                extObj.getAttributes().add(
-                        new ExtensibleAttribute("ORIG_IDENTITY", groupTargetIdentity.getOrigPrincipalName(),
-                                AttributeOperationEnum.REPLACE.getValue(), "String"));
+                extObj.getAttributes().add(new ExtensibleAttribute("ORIG_IDENTITY", groupTargetIdentity.getOrigPrincipalName(), AttributeOperationEnum.REPLACE.getValue(), "String"));
             }
-            connectorSuccess = requestAddModify(groupTargetIdentity, requestId, managedSys, matchObj, extObj, false)
-                    .getStatus() != StatusCodeType.FAILURE;
+            connectorSuccess = requestAddModify(groupTargetIdentity, requestId, managedSys, matchObj, extObj, false).getStatus() != StatusCodeType.FAILURE;
 
             if (!connectorSuccess) {
                 response.setStatus(ResponseStatus.FAILURE);
@@ -450,8 +440,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if (StringUtils.isNotBlank(postProcessScript)) {
             PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
             if (ppScript != null) {
-                int executePostProcessResult = executePostProcess(ppScript, bindingMap, pGroup, null,
-                        isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
+                int executePostProcessResult = executePostProcess(ppScript, bindingMap, pGroup, null, isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
 
                 if (executePostProcessResult == ProvisioningConstants.FAIL) {
                     response.setStatus(ResponseStatus.FAILURE);
@@ -466,47 +455,46 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
     private boolean isMemberAvailableInResource(final UserEntity member, final String resourceId) {
         boolean result = false;
-        for(ResourceEntity res : member.getResources()) {
-            if(res.getId().equalsIgnoreCase(resourceId)) {
+        for (ResourceEntity res : member.getResources()) {
+            if (res.getId().equalsIgnoreCase(resourceId)) {
                 return true;
             }
         }
-        for(RoleEntity re : member.getRoles()) {
-           for(ResourceEntity res : re.getResources()) {
-               if(res.getId().equalsIgnoreCase(resourceId)) {
-                   return true;
-               }
-           }
+        for (RoleEntity re : member.getRoles()) {
+            for (RoleToResourceMembershipXrefEntity res : re.getResources()) {
+                if (res.getMemberEntity().getId().equalsIgnoreCase(resourceId)) {
+                    return true;
+                }
+            }
         }
         return result;
     }
 
-    protected int callPreProcessor(String operation, ProvisionGroup pGroup, Map<String, Object> bindingMap ) {
+
+    protected int callPreProcessor(String operation, ProvisionGroup pGroup, Map<String, Object> bindingMap) {
 
         ProvisionServicePreProcessor addPreProcessScript = null;
-        if ( pGroup != null) {
-            System.out.println("======= callPreProcessor: isSkipPreprocessor="+pGroup.isSkipPreprocessor()+", ");
-            if (!pGroup.isSkipPreprocessor() &&
-                    (addPreProcessScript = createProvPreProcessScript(preProcessorGroup, bindingMap)) != null) {
+        if (pGroup != null) {
+            System.out.println("======= callPreProcessor: isSkipPreprocessor=" + pGroup.isSkipPreprocessor() + ", ");
+            if (!pGroup.isSkipPreprocessor() && (addPreProcessScript = createProvPreProcessScript(preProcessorGroup, bindingMap)) != null) {
                 addPreProcessScript.setMuleContext(MuleContextProvider.getCtx());
                 addPreProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
                 return executeProvisionPreProcess(addPreProcessScript, bindingMap, pGroup, null, operation);
 
             }
-            System.out.println("======= callPreProcessor: addPreProcessScript="+addPreProcessScript+", ");
+            System.out.println("======= callPreProcessor: addPreProcessScript=" + addPreProcessScript + ", ");
         }
         // pre-processor was skipped
         return ProvisioningConstants.SUCCESS;
     }
 
 
-    protected int callPostProcessor(String operation, ProvisionGroup pGroup, Map<String, Object> bindingMap ) {
+    protected int callPostProcessor(String operation, ProvisionGroup pGroup, Map<String, Object> bindingMap) {
 
         ProvisionServicePostProcessor addPostProcessScript;
 
-        if ( pGroup != null) {
-            if (!pGroup.isSkipPostProcessor() &&
-                    (addPostProcessScript = createProvPostProcessScript(postProcessorGroup, bindingMap)) != null) {
+        if (pGroup != null) {
+            if (!pGroup.isSkipPostProcessor() && (addPostProcessScript = createProvPostProcessScript(postProcessorGroup, bindingMap)) != null) {
                 addPostProcessScript.setMuleContext(MuleContextProvider.getCtx());
                 addPostProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
                 return executeProvisionPostProcess(addPostProcessScript, bindingMap, pGroup, null, operation);
@@ -516,8 +504,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         // pre-processor was skipped
         return ProvisioningConstants.SUCCESS;
     }
-    protected int executeProvisionPreProcess(ProvisionServicePreProcessor<ProvisionGroup> ppScript,
-                                             Map<String, Object> bindingMap, ProvisionGroup pGroup, PasswordSync passwordSync, String operation) {
+
+    protected int executeProvisionPreProcess(ProvisionServicePreProcessor<ProvisionGroup> ppScript, Map<String, Object> bindingMap, ProvisionGroup pGroup, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(pGroup, bindingMap);
         }
@@ -534,8 +522,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         return 0;
     }
 
-    protected int executeProvisionPostProcess(ProvisionServicePostProcessor<ProvisionGroup> ppScript,
-                                              Map<String, Object> bindingMap, ProvisionGroup pGroup, PasswordSync passwordSync, String operation) {
+    protected int executeProvisionPostProcess(ProvisionServicePostProcessor<ProvisionGroup> ppScript, Map<String, Object> bindingMap, ProvisionGroup pGroup, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(pGroup, bindingMap);
         }
@@ -570,8 +557,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         }
     }
 
-    protected int executePreProcess(PreProcessor<ProvisionGroup> ppScript,
-                                    Map<String, Object> bindingMap, ProvisionGroup group, PasswordSync passwordSync, String operation) {
+    protected int executePreProcess(PreProcessor<ProvisionGroup> ppScript, Map<String, Object> bindingMap, ProvisionGroup group, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(group, bindingMap);
         }
@@ -588,8 +574,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         return 0;
     }
 
-    protected int executePostProcess(PostProcessor<ProvisionGroup> ppScript,
-                                     Map<String, Object> bindingMap, ProvisionGroup group, PasswordSync passwordSync, String operation, boolean success) {
+    protected int executePostProcess(PostProcessor<ProvisionGroup> ppScript, Map<String, Object> bindingMap, ProvisionGroup group, PasswordSync passwordSync, String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(group, bindingMap, success);
         }
@@ -627,16 +612,16 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             return null;
         }
     }
-    private ObjectResponse requestAddModify(IdentityDto identityDto, String requestId, ManagedSysDto mSys,
-                                     ManagedSystemObjectMatch matchObj, ExtensibleObject extensibleObject, boolean isAdd) {
+
+    private ObjectResponse requestAddModify(IdentityDto identityDto, String requestId, ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, ExtensibleObject extensibleObject, boolean isAdd) {
 
         ObjectResponse resp = new ObjectResponse();
 
         if (mSys.getSkipGroupProvision()) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.SKIP_PROVISIONING);
-            if(log.isDebugEnabled()) {
-            	log.debug("GroupProvision:requestAddModify skipped: SkipGroupProvision flag TRUE");
+            if (log.isDebugEnabled()) {
+                log.debug("GroupProvision:requestAddModify skipped: SkipGroupProvision flag TRUE");
             }
             return resp;
         }
@@ -660,8 +645,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         userReq.setExtensibleObject(extensibleObject);
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        resp = isAdd ? connectorAdapter.addRequest(mSys, userReq)
-                : connectorAdapter.modifyRequest(mSys, userReq);
+        resp = isAdd ? connectorAdapter.addRequest(mSys, userReq) : connectorAdapter.modifyRequest(mSys, userReq);
         /*auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
                 : "MODIFY IDENTITY = ") + resp.getStatus() + " details:" + resp.getErrorMsgAsStr());*/
         return resp;
@@ -669,9 +653,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
     protected String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {
         String result = null;
-        if( managedSys.getPswd()!=null){
+        if (managedSys.getPswd() != null) {
             try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()),managedSys.getPswd());
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
             } catch (Exception e) {
                 log.error(e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
@@ -680,15 +664,14 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         return result;
     }
 
-    private boolean getCurrentObjectAtTargetSystem(String requestId, IdentityDto identityDto, ExtensibleObject extensibleObject,
-                                                   ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap, Resource res) {
+    private boolean getCurrentObjectAtTargetSystem(String requestId, IdentityDto identityDto, ExtensibleObject extensibleObject, ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap, Resource res) {
 
         String identity = identityDto.getIdentity();
         MuleContext muleContext = MuleContextProvider.getCtx();
-        if(log.isDebugEnabled()) {
-        	log.debug("Getting the current attributes in the target system for =" + identity);
+        if (log.isDebugEnabled()) {
+            log.debug("Getting the current attributes in the target system for =" + identity);
 
-        	log.debug("- IsRename: " + identityDto.getOrigPrincipalName());
+            log.debug("- IsRename: " + identityDto.getOrigPrincipalName());
         }
 
         if (identityDto.getOrigPrincipalName() != null && !identityDto.getOrigPrincipalName().isEmpty()) {
@@ -722,8 +705,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if (StringUtils.isNotBlank(preProcessScript)) {
             PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
             if (ppScript != null) {
-                int executePreProcessResult = AbstractProvisioningService.executePreProcess(ppScript, bindingMap, null, null, reqType,
-                        "LOOKUP");
+                int executePreProcessResult = AbstractProvisioningService.executePreProcess(ppScript, bindingMap, null, null, reqType, "LOOKUP");
                 if (executePreProcessResult == ProvisioningConstants.FAIL) {
                     return false;
                 }
@@ -736,24 +718,21 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if (StringUtils.isNotBlank(postProcessScript)) {
             PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
             if (ppScript != null) {
-                AbstractProvisioningService.executePostProcess(ppScript, bindingMap, null, null, lookupSearchResponse,
-                        "LOOKUP", lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS);
+                AbstractProvisioningService.executePostProcess(ppScript, bindingMap, null, null, lookupSearchResponse, "LOOKUP", lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS);
             }
         }
 
         if (lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
-            List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse
-                    .getObjectList().get(0).getAttributeList()
-                    : new LinkedList<ExtensibleAttribute>();
+            List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse.getObjectList().get(0).getAttributeList() : new LinkedList<ExtensibleAttribute>();
 
             if (extAttrList != null) {
                 for (ExtensibleAttribute obj : extAttrList) {
                     curValueMap.put(obj.getName(), obj);
                 }
             } else {
-            	if(log.isDebugEnabled()) {
-            		log.debug(" - NO attributes found in target system lookup ");
-            	}
+                if (log.isDebugEnabled()) {
+                    log.debug(" - NO attributes found in target system lookup ");
+                }
             }
             return true;
         }
@@ -762,22 +741,20 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     }
 
 
-    private ExtensibleObject buildFromRules(List<AttributeMap> attrMap,
-                                          Map<String, Object> bindingMap) {
+    private ExtensibleObject buildFromRules(List<AttributeMap> attrMap, Map<String, Object> bindingMap) {
 
         ExtensibleGroup extensibleObject = new ExtensibleGroup();
 
         if (attrMap != null) {
-        	if(log.isDebugEnabled()) {
-        		log.debug("buildFromRules: attrMap IS NOT null");
-        	}
+            if (log.isDebugEnabled()) {
+                log.debug("buildFromRules: attrMap IS NOT null");
+            }
 
             for (AttributeMap attr : attrMap) {
 
                 if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
                     continue;
                 }
-
 
 
                 String objectType = attr.getMapForObjectType();
@@ -794,11 +771,10 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                             log.error("Error in script = '", mpe);
                             continue;
                         }
-                        if(log.isDebugEnabled()) {
-	                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
-	                                ", SCRIPT OUTPUT=" +
-	                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
-	                                        ? "******" : output));
+                        if (log.isDebugEnabled()) {
+                            log.debug("buildFromRules: OBJECTTYPE=" + objectType + ", ATTRIBUTE=" + attr.getAttributeName() +
+                                    ", SCRIPT OUTPUT=" +
+                                    (hiddenAttributes.toLowerCase().contains("," + attr.getAttributeName().toLowerCase() + ",") ? "******" : output));
                         }
 
                         if (output != null) {
@@ -810,8 +786,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 // the connectors can detect a delete if an
                                 // attribute is not in the list
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, -1, attr
-                                        .getDataType().getValue());
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extensibleObject.getAttributes().add(newAttr);
 
@@ -822,8 +797,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 // the connectors can detect a delete if an
                                 // attribute is not in the list
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        ((Integer) output).toString(), -1, attr.getDataType().getValue());
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), ((Integer) output).toString(), -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extensibleObject.getAttributes().add(newAttr);
 
@@ -833,34 +807,29 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 String DATE_FORMAT = "MM/dd/yyyy";
                                 SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), -1, attr
-                                        .getDataType().getValue());
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 
                                 extensibleObject.getAttributes().add(newAttr);
                             } else if (output instanceof byte[]) {
-                                extensibleObject.getAttributes().add(
-                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, -1, attr
-                                                .getDataType().getValue()));
+                                extensibleObject.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, -1, attr.getDataType().getValue()));
 
                             } else if (output instanceof BaseAttributeContainer) {
                                 // process a complex object which can be passed
                                 // to the connector
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (BaseAttributeContainer) output, -1, attr.getDataType().getValue());
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (BaseAttributeContainer) output, -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extensibleObject.getAttributes().add(newAttr);
 
                             } else {
                                 // process a list - multi-valued object
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, -1, attr
-                                        .getDataType().getValue());
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 
                                 extensibleObject.getAttributes().add(newAttr);
-                                if(log.isDebugEnabled()) {
-                                	log.debug("buildFromRules: added attribute to extGroup:" + attr.getAttributeName());
+                                if (log.isDebugEnabled()) {
+                                    log.debug("buildFromRules: added attribute to extGroup:" + attr.getAttributeName());
                                 }
                             }
                         }
@@ -880,9 +849,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
     @Override
     public Response delete(String managedSystemId, String groupId, UserStatusEnum status, String requesterId) {
-    	if(log.isDebugEnabled()) {
-    		log.debug("----deleteGroup called.------");
-    	}
+        if (log.isDebugEnabled()) {
+            log.debug("----deleteGroup called.------");
+        }
 
         Response response = new Response(ResponseStatus.SUCCESS);
 
@@ -961,7 +930,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if (status == UserStatusEnum.REMOVE) {
             identityService.deleteIdentity(identityDto.getId());
             try {
-                groupDataWebService.deleteGroup(groupId,requesterId);
+                groupDataWebService.deleteGroup(groupId, requesterId);
             } catch (Exception e) {
                 e.printStackTrace();
                 response.setStatus(ResponseStatus.FAILURE);
@@ -996,16 +965,15 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
         ManagedSysDto mSys = managedSystemService.getManagedSys(identity.getManagedSysId());
         ManagedSystemObjectMatch matchObj = null;
-        ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParam(mSys.getId(),
-                ManagedSystemObjectMatch.GROUP);
+        ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.GROUP);
         if (matchObjAry != null && matchObjAry.length > 0) {
             matchObj = matchObjAry[0];
             bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
         }
 
-        if(log.isDebugEnabled()) {
-	        log.debug("Deleting identity: " + identity.getIdentity());
-	        log.debug(" - managed sys id: " + mSys.getId());
+        if (log.isDebugEnabled()) {
+            log.debug("Deleting identity: " + identity.getIdentity());
+            log.debug(" - managed sys id: " + mSys.getId());
         }
         // pre-processing
         String resourceId = mSys.getResourceId();
@@ -1064,26 +1032,20 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         }
     }
 
-    protected ObjectResponse requestDelete(
-            IdentityDto identityDto,
-            String requestId,
-            ManagedSysDto mSys,
-            ManagedSystemObjectMatch matchObj) {
+    protected ObjectResponse requestDelete(IdentityDto identityDto, String requestId, ManagedSysDto mSys, ManagedSystemObjectMatch matchObj) {
         ObjectResponse resp = new ObjectResponse();
 
         if (mSys.getSkipGroupProvision()) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.SKIP_PROVISIONING);
-            if(log.isDebugEnabled()) {
-            	log.debug("GroupProvision:requestDelete skipped: SkipGroupProvision flag TRUE");
+            if (log.isDebugEnabled()) {
+                log.debug("GroupProvision:requestDelete skipped: SkipGroupProvision flag TRUE");
             }
             return resp;
         }
         CrudRequest<ExtensibleGroup> request = new CrudRequest<>();
         request.setExtensibleObject(new ExtensibleGroup());
-        final String identity = StringUtils.isNotEmpty(identityDto.getOrigPrincipalName())
-                ? identityDto.getOrigPrincipalName()
-                : identityDto.getIdentity();
+        final String identity = StringUtils.isNotEmpty(identityDto.getOrigPrincipalName()) ? identityDto.getOrigPrincipalName() : identityDto.getIdentity();
         request.setObjectIdentity(identity);
 
         request.setRequestID(requestId);
@@ -1109,15 +1071,13 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         return resp;
     }
 
-    public LookupObjectResponse getTargetSystemObject(final String principalName,
-                                                      final String managedSysId,
-                                                  final List<ExtensibleAttribute> extensibleAttributes) {
+    public LookupObjectResponse getTargetSystemObject(final String principalName, final String managedSysId, final List<ExtensibleAttribute> extensibleAttributes) {
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_LOOKUP.value());
 
-        if(log.isDebugEnabled()) {
-        	log.debug("getTargetSystemUser called. for = " + principalName);
+        if (log.isDebugEnabled()) {
+            log.debug("getTargetSystemUser called. for = " + principalName);
         }
 
         LookupObjectResponse response = new LookupObjectResponse(ResponseStatus.SUCCESS);
@@ -1128,15 +1088,14 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSysId,
-                    ManagedSystemObjectMatch.GROUP);
+            ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.GROUP);
             if (objList.length > 0) {
                 matchObj = objList[0];
             }
 
             // do the lookup
-            if(log.isDebugEnabled()) {
-            	log.debug("Calling lookupRequest ");
+            if (log.isDebugEnabled()) {
+                log.debug("Calling lookupRequest ");
             }
 
             LookupRequest<ExtensibleGroup> reqType = new LookupRequest<>();
@@ -1176,9 +1135,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 return response;
             }
 
-            String targetPrincipalName = responseType.getObjectList().get(0).getObjectIdentity() != null
-                    ? responseType.getObjectList().get(0).getObjectIdentity()
-                    : parseGroupPrincipal(responseType.getObjectList().get(0).getAttributeList());
+            String targetPrincipalName = responseType.getObjectList().get(0).getObjectIdentity() != null ? responseType.getObjectList().get(0).getObjectIdentity() : parseGroupPrincipal(responseType.getObjectList().get(0).getAttributeList());
             response.setPrincipalName(targetPrincipalName);
             response.setAttrList(responseType.getObjectList().get(0).getAttributeList());
             response.setResponseValue(responseType.getObjectList().get(0));

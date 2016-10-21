@@ -29,7 +29,10 @@ import java.util.Set;
         "resource",
         "resourceAttributeMap",
         "chained",
-        "nextAuthProviderId"
+        "nextAuthProviderId",
+        "supportsCertAuth",
+        "certRegex",
+        "certGroovyScript"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider implements Serializable {
@@ -48,6 +51,11 @@ public class AuthProvider implements Serializable {
     private Set<AuthProviderAttribute> providerAttributeSet;
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
     private Resource resource;
+
+    private boolean supportsCertAuth;
+    private String certRegex;
+    private String certGroovyScript;
+
     @XmlTransient
     private Map<String, AuthProviderAttribute> providerAttributeMap=null;
 
@@ -188,6 +196,30 @@ public class AuthProvider implements Serializable {
 		this.nextAuthProviderId = nextAuthProviderId;
 	}
 
+    public boolean isSupportsCertAuth() {
+        return supportsCertAuth;
+    }
+
+    public void setSupportsCertAuth(boolean supportsCertAuth) {
+        this.supportsCertAuth = supportsCertAuth;
+    }
+
+    public String getCertRegex() {
+        return certRegex;
+    }
+
+    public void setCertRegex(String certRegex) {
+        this.certRegex = certRegex;
+    }
+
+    public String getCertGroovyScript() {
+        return certGroovyScript;
+    }
+
+    public void setCertGroovyScript(String certGroovyScript) {
+        this.certGroovyScript = certGroovyScript;
+    }
+
 	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -211,6 +243,16 @@ public class AuthProvider implements Serializable {
         if (resourceAttributeMap != null ? !resourceAttributeMap.equals(that.resourceAttributeMap) : that.resourceAttributeMap != null)
             return false;
         if (resource != null ? !resource.equals(that.resource) : that.resource != null) return false;
+        if (certGroovyScript == null) {
+            if (that.certGroovyScript != null)
+                return false;
+        } else if (!certGroovyScript.equals(that.certGroovyScript))
+            return false;
+        if (certRegex == null) {
+            if (that.certRegex != null)
+                return false;
+        } else if (!certRegex.equals(that.certRegex))
+            return false;
         return !(providerAttributeMap != null ? !providerAttributeMap.equals(that.providerAttributeMap) : that.providerAttributeMap != null);
 
     }
@@ -232,6 +274,8 @@ public class AuthProvider implements Serializable {
         result = 31 * result + (resourceAttributeMap != null ? resourceAttributeMap.hashCode() : 0);
         result = 31 * result + (resource != null ? resource.hashCode() : 0);
         result = 31 * result + (providerAttributeMap != null ? providerAttributeMap.hashCode() : 0);
+        result = 31 * result + ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+        result = 31 * result + ((certRegex == null) ? 0 : certRegex.hashCode());
         return result;
     }
 }

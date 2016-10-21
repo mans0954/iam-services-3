@@ -21,10 +21,10 @@ import java.util.Set;
 @XmlRootElement(name = "user", namespace = "http://www.openiam.org/service/provision/dto/srcadapter")
 public class SourceAdapterRequest implements Serializable {
     private SourceAdapterOperationEnum action;
-    private SourceAdapterKey key;
+    private UserSearchKey key;
     @XmlElement(required = true)
-    private SourceAdapterKey requestor;
-    private SourceAdapterKey alternativeContact;
+    private UserSearchKey requestor;
+    private UserSearchKey alternativeContact;
     private String firstName;
     private String lastName;
     private String employeeId;
@@ -161,11 +161,11 @@ public class SourceAdapterRequest implements Serializable {
         this.action = action;
     }
 
-    public SourceAdapterKey getKey() {
+    public UserSearchKey getKey() {
         return key;
     }
 
-    public void setKey(SourceAdapterKey key) {
+    public void setKey(UserSearchKey key) {
         this.key = key;
     }
 
@@ -369,11 +369,11 @@ public class SourceAdapterRequest implements Serializable {
 //        this.subordinates = subordinates;
 //    }
 
-    public SourceAdapterKey getRequestor() {
+    public UserSearchKey getRequestor() {
         return requestor;
     }
 
-    public void setRequestor(SourceAdapterKey requestor) {
+    public void setRequestor(UserSearchKey requestor) {
         this.requestor = requestor;
     }
 
@@ -425,11 +425,11 @@ public class SourceAdapterRequest implements Serializable {
         this.prefixLastName = prefixLastName;
     }
 
-    public SourceAdapterKey getAlternativeContact() {
+    public UserSearchKey getAlternativeContact() {
         return alternativeContact;
     }
 
-    public void setAlternativeContact(SourceAdapterKey alternativeContact) {
+    public void setAlternativeContact(UserSearchKey alternativeContact) {
         this.alternativeContact = alternativeContact;
     }
 }

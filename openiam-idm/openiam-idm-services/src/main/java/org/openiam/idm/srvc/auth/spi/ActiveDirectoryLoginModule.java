@@ -149,6 +149,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         attrs.add(new ExtensibleAttribute("AccountExpirationDate", null));
         attrs.add(new ExtensibleAttribute("ChangePasswordAtLogon", null));
         attrs.add(new ExtensibleAttribute("msDS-UserPasswordExpiryTimeComputed", null));
+        attrs.add(new ExtensibleAttribute("userAccountControl", null));
         if (log.isDebugEnabled()) {
             log.debug("AD_LOGIN_MODULE. Find in AD. Start");
         }
@@ -362,6 +363,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     private void validateFromAD(LookupUserResponse resp, LoginEntity login, int operation, Map<String, Object> bindingMap) throws AuthenticationException {
         boolean enabled = false;
         Date accExpDate = null;
+        boolean accountDisable = false;
         boolean changePsswdAtLogon = false;
         if (resp.isSuccess()) {
             for (ExtensibleAttribute a : resp.getAttrList()) {
@@ -390,6 +392,11 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
                     case "ChangePasswordAtLogon":
                         changePsswdAtLogon = StringUtils.equalsIgnoreCase("True", a.getValue());
                         break;
+                    case "userAccountControl":
+                        if ("514".equals(a.getValue())) {
+                            accountDisable = true;
+                        }
+                        break;
                 }
             }
         } else {
@@ -411,6 +418,10 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
                 throw new AuthenticationException(
                         AuthenticationConstants.RESULT_LOGIN_DISABLED);
             }
+        }
+        if (accountDisable) {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_LOGIN_DISABLED);
         }
         if (operation == AuthCredentialsValidator.NEW) {
             if (changePsswdAtLogon) {

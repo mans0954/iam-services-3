@@ -105,13 +105,6 @@ public class ResetPasswordLdapCommand extends AbstractLdapCommand<PasswordReques
             		log.debug("New password will be reset for user " + identityDN);
             	}
                 Directory dirSpecificImp = DirectorySpecificImplFactory.create(config.getManagedSys().getHandler5());
-                final String userAccountControll = dirSpecificImp.readAttributeValue(passwordRequest.getExtensibleObject(), "userAccountControl");
-                if ("514".equals(userAccountControll)) {
-                    String err = String.format("Account %s disabled in AD", identity);
-                    log.error(err);
-                    respType.setStatus(StatusCodeType.FAILURE);
-                    return respType;
-                }
                 ModificationItem[] mods = dirSpecificImp.resetPassword(passwordRequest);
                 ldapctx.modifyAttributes(identityDN, mods);
                 if(log.isDebugEnabled()) {

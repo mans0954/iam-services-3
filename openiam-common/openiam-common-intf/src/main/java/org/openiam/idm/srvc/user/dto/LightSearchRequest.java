@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.user.dto;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.SortParam;
 
@@ -119,5 +120,10 @@ public class LightSearchRequest implements Serializable {
 
     public void setSecondaryStatus(UserStatusEnum secondaryStatus) {
         this.secondaryStatus = secondaryStatus;
+    }
+
+    public boolean isNotBlank() {
+        return StringUtils.isNotBlank(this.getEmployeeId()) || StringUtils.isNotBlank(this.getEmailAddress()) || StringUtils.isNotBlank(this.getLogin())
+                || StringUtils.isNotBlank(this.getLastName()) || this.getStatus() != null || this.getSecondaryStatus() != null;
     }
 }

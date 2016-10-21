@@ -4,6 +4,7 @@ import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -68,7 +69,7 @@ import java.util.*;
         Resource.class
 })
 @DozerDTOCorrespondence(RoleEntity.class)
-public class Role extends AdminResourceDTO implements Comparable<Role> {
+public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
 
     /**
      *

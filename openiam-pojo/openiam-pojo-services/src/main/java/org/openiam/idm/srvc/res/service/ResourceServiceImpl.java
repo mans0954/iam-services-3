@@ -13,16 +13,16 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.MetadataElementSearchBean;
-import org.openiam.idm.searchbeans.ResourceSearchBean;
-import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
+import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
+import org.openiam.idm.srvc.access.dto.AccessRight;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
+import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -45,6 +45,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -71,11 +72,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service("resourceService")
 public class ResourceServiceImpl implements ResourceService, ApplicationContextAware {
@@ -144,6 +141,11 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Autowired
     private RoleDataService roleService;
 
+    @Autowired
+    private AccessRightProcessor accessRightProcessor;
+
+    @Autowired
+    private AccessRightDAO accessRightDAO;
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 
     private ApplicationContext ac;
@@ -267,8 +269,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         }
     }
 
-    private ApproverAssociationEntity createDefaultApproverAssociations(final ResourceEntity entity,
-                                                                        final String requestorId) {
+    private ApproverAssociationEntity createDefaultApproverAssociations(final ResourceEntity entity, final String requestorId) {
         final ApproverAssociationEntity association = new ApproverAssociationEntity();
         association.setAssociationEntityId(entity.getId());
         association.setAssociationType(AssociationType.RESOURCE);
@@ -280,8 +281,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     private ResourceEntity getNewAdminResource(final ResourceEntity entity, final String requestorId) {
         final ResourceEntity adminResource = new ResourceEntity();
-        adminResource.setName(String.format("RES_ADMIN_%s_%s", entity.getName(),
-                RandomStringUtils.randomAlphanumeric(2)));
+        adminResource.setName(String.format("RES_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
         adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
         adminResource.addUser(userDAO.findById(requestorId));
         return adminResource;
@@ -412,14 +412,10 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "resources-hack", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
     public List<Resource> findBeansLocalizedDto(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        //List<ResourceEntity> resourceEntityList = this.findBeansLocalized(searchBean, from, size, language);
-
-        //ResourceService bean = (ResourceService)ac.getBean("resourceService");
         List<ResourceEntity> resourceEntityList = this.getProxyService().findBeansLocalized(searchBean, from, size, language);
-
         List<Resource> resourceList = resourceConverter.convertToDTOList(resourceEntityList, searchBean.isDeepCopy());
+        accessRightProcessor.process(searchBean, resourceList, resourceEntityList);
         return resourceList;
     }
 
@@ -484,91 +480,91 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             resourcePropDao.delete(entity);
         }
     }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<ResourceEntity> getChildResources(String resourceId, int from, int size) {
+//        final ResourceEntity example = new ResourceEntity();
+//        final ResourceEntity parent = new ResourceEntity();
+//        parent.setId(resourceId);
+//        example.addParentResource(parent);
+//        final List<ResourceEntity> resultList = resourceDao.getByExample(example, from, size);
+//        return resultList;
+//    }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    @LocalizedServiceGet
+//    public List<Resource> getChildResourcesDto(String resourceId, int from, int size, Language language) {
+//        final ResourceEntity example = new ResourceEntity();
+//        final ResourceEntity parent = new ResourceEntity();
+//        parent.setId(resourceId);
+//        example.addParentResource(parent);
+//        final List<ResourceEntity> resultList = resourceDao.getByExample(example, from, size);
+//        return resourceConverter.convertToDTOList(resultList, false);
+//    }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    public int getNumOfChildResources(String resourceId) {
+//        final ResourceEntity example = new ResourceEntity();
+//        final ResourceEntity parent = new ResourceEntity();
+//        parent.setId(resourceId);
+//        example.addParentResource(parent);
+//        return resourceDao.count(example);
+//    }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceEntity> getChildResources(String resourceId, int from, int size) {
-        final ResourceEntity example = new ResourceEntity();
-        final ResourceEntity parent = new ResourceEntity();
-        parent.setId(resourceId);
-        example.addParentResource(parent);
-        final List<ResourceEntity> resultList = resourceDao.getByExample(example, from, size);
-        return resultList;
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<ResourceEntity> getParentResources(String resourceId, int from, int size) {
+//        final ResourceEntity example = new ResourceEntity();
+//        final ResourceEntity child = new ResourceEntity();
+//        child.setId(resourceId);
+//        example.addChildResource(child);
+//        return resourceDao.getByExample(example, from, size);
+//    }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    @LocalizedServiceGet
+//    public List<Resource> getParentResourcesDto(String resourceId, int from, int size, Language language) {
+//        final ResourceEntity example = new ResourceEntity();
+//        final ResourceEntity child = new ResourceEntity();
+//        child.setId(resourceId);
+//        example.addChildResource(child);
+//        List<ResourceEntity> resourceEntityList = resourceDao.getByExample(example, from, size);
+//        return resourceConverter.convertToDTOList(resourceEntityList, false);
+//    }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    public int getNumOfParentResources(String resourceId) {
+//        final ResourceEntity example = new ResourceEntity();
+//        final ResourceEntity child = new ResourceEntity();
+//        child.setId(resourceId);
+//        example.addChildResource(child);
+//        return resourceDao.count(example);
+//    }
 
-    @Override
-    @Transactional(readOnly = true)
-    @LocalizedServiceGet
-    public List<Resource> getChildResourcesDto(String resourceId, int from, int size, Language language) {
-        final ResourceEntity example = new ResourceEntity();
-        final ResourceEntity parent = new ResourceEntity();
-        parent.setId(resourceId);
-        example.addParentResource(parent);
-        final List<ResourceEntity> resultList = resourceDao.getByExample(example, from, size);
-        return resourceConverter.convertToDTOList(resultList, false);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int getNumOfChildResources(String resourceId) {
-        final ResourceEntity example = new ResourceEntity();
-        final ResourceEntity parent = new ResourceEntity();
-        parent.setId(resourceId);
-        example.addParentResource(parent);
-        return resourceDao.count(example);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceEntity> getParentResources(String resourceId, int from, int size) {
-        final ResourceEntity example = new ResourceEntity();
-        final ResourceEntity child = new ResourceEntity();
-        child.setId(resourceId);
-        example.addChildResource(child);
-        return resourceDao.getByExample(example, from, size);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @LocalizedServiceGet
-    public List<Resource> getParentResourcesDto(String resourceId, int from, int size, Language language) {
-        final ResourceEntity example = new ResourceEntity();
-        final ResourceEntity child = new ResourceEntity();
-        child.setId(resourceId);
-        example.addChildResource(child);
-        List<ResourceEntity> resourceEntityList = resourceDao.getByExample(example, from, size);
-        return resourceConverter.convertToDTOList(resourceEntityList, false);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int getNumOfParentResources(String resourceId) {
-        final ResourceEntity example = new ResourceEntity();
-        final ResourceEntity child = new ResourceEntity();
-        child.setId(resourceId);
-        example.addChildResource(child);
-        return resourceDao.count(example);
-    }
 
     @Override
     @Transactional
-    public void addChildResource(String parentResourceId, String childResourceId) {
+    public void addChildResource(final String parentResourceId, final String childResourceId, final Set<String> rights) {
         final ResourceEntity parent = resourceDao.findById(parentResourceId);
         final ResourceEntity child = resourceDao.findById(childResourceId);
-        parent.addChildResource(child);
-        resourceDao.save(parent);
-        resourceDao.evictCache();
+        parent.addChildResource(child, accessRightDAO.findByIds(rights));
+        resourceDao.merge(parent);
     }
 
     @Override
     @Transactional
-    public void deleteChildResource(String resourceId, String childResourceId) {
+    public void deleteChildResource(final String resourceId, final String childResourceId) {
         final ResourceEntity parent = resourceDao.findById(resourceId);
         final ResourceEntity child = resourceDao.findById(childResourceId);
         parent.removeChildResource(child);
         resourceDao.save(parent);
-        resourceDao.evictCache();
     }
+
 
     @Override
     @Transactional
@@ -592,53 +588,54 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    public void addResourceToRole(String resourceId, String roleId) {
-        final ResourceEntity entity = resourceDao.findById(resourceId);
-        final RoleEntity roleEntity = roleDao.findById(roleId);
-        entity.addRole(roleEntity);
-        resourceDao.save(entity);
-        resourceDao.evictCache();
+    public void addResourceToRole(final String resourceId, final String roleId, final Set<String> rightIds) {
+        final ResourceEntity resource = resourceDao.findById(resourceId);
+        final RoleEntity role = roleDao.findById(roleId);
+        if (resource != null & role != null) {
+            role.addResource(resource, accessRightDAO.findByIds(rightIds));
+            roleDao.save(role);
+        }
     }
+
 
     @Override
     @Transactional
-    public void deleteResourceRole(String resourceId, String roleId) {
-        final ResourceEntity entity = resourceDao.findById(resourceId);
-        final RoleEntity roleEntity = roleDao.findById(roleId);
-        entity.remove(roleEntity);
-        resourceDao.save(entity);
-        resourceDao.evictCache();
+    public void deleteResourceRole(final String resourceId, String roleId) {
+        final ResourceEntity resource = resourceDao.findById(resourceId);
+        final RoleEntity role = roleDao.findById(roleId);
+        if (resource != null && role != null) {
+            role.removeResource(resource);
+            roleDao.update(role);
+        }
     }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int getNumOfResourcesForRole(String roleId, final ResourceSearchBean searchBean) {
-        return resourceDao.getNumOfResourcesForRole(roleId, searchBean);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForRole(String roleId, int from, int size,
-                                                    final ResourceSearchBean searchBean) {
-        return resourceDao.getResourcesForRole(roleId, from, size, searchBean);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @LocalizedServiceGet
-    public List<Resource> getResourcesDtoForRole(String roleId, int from, int size,
-                                                 final ResourceSearchBean searchBean, Language language) {
-        List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForRole(roleId, from, size, searchBean);
-        return resourceConverter.convertToDTOList(resourceEntityList, false);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "resources", key = "{ #roleId, #from, #size, #searchBean.cacheUniqueBeanKey}")
-    public List<Resource> getResourcesForRoleNoLocalized(String roleId, int from, int size, ResourceSearchBean searchBean) {
-        List<ResourceEntity> resourceEntities = resourceDao.getResourcesForRoleNoLocalized(roleId, from, size, searchBean);
-        return resourceConverter.convertToDTOList(resourceEntities, searchBean.isDeepCopy());
-    }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    public int getNumOfResourcesForRole(String roleId, final ResourceSearchBean searchBean) {
+//        return resourceDao.getNumOfResourcesForRole(roleId, searchBean);
+//    }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<ResourceEntity> getResourcesForRole(String roleId, int from, int size, final ResourceSearchBean searchBean) {
+//        return resourceDao.getResourcesForRole(roleId, from, size, searchBean);
+//    }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    @LocalizedServiceGet
+//    public List<Resource> getResourcesDtoForRole(String roleId, int from, int size, final ResourceSearchBean searchBean, Language language) {
+//        List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForRole(roleId, from, size, searchBean);
+//        return resourceConverter.convertToDTOList(resourceEntityList, false);
+//    }
+//
+//    @Override
+//    @Transactional(readOnly = true)
+//    @Cacheable(value = "resources", key = "{ #roleId, #from, #size, #searchBean.cacheUniqueBeanKey}")
+//    public List<Resource> getResourcesForRoleNoLocalized(String roleId, int from, int size, ResourceSearchBean searchBean) {
+//        List<ResourceEntity> resourceEntities = resourceDao.getResourcesForRoleNoLocalized(roleId, from, size, searchBean);
+//        return resourceConverter.convertToDTOList(resourceEntities, searchBean.isDeepCopy());
+//    }
 
     @Override
     @Transactional(readOnly = true)
@@ -648,16 +645,14 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForGroup(String groupId, int from, int size,
-                                                     final ResourceSearchBean searchBean) {
+    public List<ResourceEntity> getResourcesForGroup(String groupId, int from, int size, final ResourceSearchBean searchBean) {
         return resourceDao.getResourcesForGroup(groupId, from, size, searchBean);
     }
 
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<Resource> getResourcesDtoForGroup(String groupId, int from, int size,
-                                                  final ResourceSearchBean searchBean, Language language) {
+    public List<Resource> getResourcesDtoForGroup(String groupId, int from, int size, final ResourceSearchBean searchBean, Language language) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForGroup(groupId, from, size, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, false);
     }
@@ -678,32 +673,28 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForUser(String userId, int from, int size,
-                                                    final ResourceSearchBean searchBean) {
+    public List<ResourceEntity> getResourcesForUser(String userId, int from, int size, final ResourceSearchBean searchBean) {
         return resourceDao.getResourcesForUser(userId, from, size, searchBean);
     }
 
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<Resource> getResourcesDtoForUser(String userId, int from, int size,
-                                                 final ResourceSearchBean searchBean, Language language) {
+    public List<Resource> getResourcesDtoForUser(String userId, int from, int size, final ResourceSearchBean searchBean, Language language) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForUser(userId, from, size, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, false);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId,
-                                                          final ResourceSearchBean searchBean) {
+    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId, final ResourceSearchBean searchBean) {
         return resourceDao.getResourcesForUserByType(userId, resourceTypeId, searchBean);
     }
 
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<Resource> getResourcesDtoForUserByType(String userId, String resourceTypeId,
-                                                       final ResourceSearchBean searchBean, Language language) {
+    public List<Resource> getResourcesDtoForUserByType(String userId, String resourceTypeId, final ResourceSearchBean searchBean, Language language) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForUserByType(userId, resourceTypeId, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, true);
     }
@@ -736,11 +727,9 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    public void validateResource2ResourceAddition(final String parentId, final String memberId)
-            throws BasicDataServiceException {
+    public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException {
         if (StringUtils.isBlank(parentId) || StringUtils.isBlank(memberId)) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
-                    "Parent ResourceId or Child ResourceId is null");
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Parent ResourceId or Child ResourceId is null");
         }
 
         final ResourceEntity parent = resourceDao.findById(parentId);
@@ -754,22 +743,20 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
         }
 
-        if (parent.hasChildResoruce(child)) {
-            throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
-        }
+//        if (parent.hasChildResource(child)) {
+//            throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+//        }
 
         if (StringUtils.equals(parentId, memberId)) {
             throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
         }
 
         if (parent.getResourceType() != null && !parent.getResourceType().isSupportsHierarchy()) {
-            throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY, parent
-                    .getResourceType().getDescription());
+            throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY, parent.getResourceType().getDescription());
         }
 
         if (child.getResourceType() != null && !child.getResourceType().isSupportsHierarchy()) {
-            throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY, child
-                    .getResourceType().getDescription());
+            throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY, child.getResourceType().getDescription());
         }
     }
 
@@ -781,14 +768,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
             final List<ManagedSysEntity> managedSystems = managedSysDAO.findByResource(resourceId);
             if (CollectionUtils.isNotEmpty(managedSystems)) {
-                throw new BasicDataServiceException(ResponseCode.LINKED_TO_MANAGED_SYSTEM, managedSystems.get(0)
-                        .getName());
+                throw new BasicDataServiceException(ResponseCode.LINKED_TO_MANAGED_SYSTEM, managedSystems.get(0).getName());
             }
 
             final List<ContentProviderEntity> contentProviders = contentProviderDAO.getByResourceId(resourceId);
             if (CollectionUtils.isNotEmpty(contentProviders)) {
-                throw new BasicDataServiceException(ResponseCode.LINKED_TO_CONTENT_PROVIDER, contentProviders.get(0)
-                        .getName());
+                throw new BasicDataServiceException(ResponseCode.LINKED_TO_CONTENT_PROVIDER, contentProviders.get(0).getName());
             }
 
             final List<URIPatternEntity> uriPatterns = uriPatternDAO.getByResourceId(resourceId);
@@ -798,64 +783,57 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
             final List<AuthProviderEntity> authProviders = authProviderDAO.getByResourceId(resourceId);
             if (CollectionUtils.isNotEmpty(authProviders)) {
-                throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, authProviders
-                        .get(0).getName());
+                throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, authProviders.get(0).getName());
             }
 
             final List<MetadataElementEntity> metadataElements = elementDAO.getByResourceId(resourceId);
             if (CollectionUtils.isNotEmpty(metadataElements)) {
-                throw new BasicDataServiceException(ResponseCode.LINKED_TO_METADATA_ELEMENT, metadataElements.get(0)
-                        .getAttributeName());
+                throw new BasicDataServiceException(ResponseCode.LINKED_TO_METADATA_ELEMENT, metadataElements.get(0).getAttributeName());
             }
 
             final List<MetadataElementPageTemplateEntity> pageTemplates = templateDAO.getByResourceId(resourceId);
             if (CollectionUtils.isNotEmpty(pageTemplates)) {
-                throw new BasicDataServiceException(ResponseCode.LINKED_TO_PAGE_TEMPLATE, pageTemplates.get(0)
-                        .getName());
+                throw new BasicDataServiceException(ResponseCode.LINKED_TO_PAGE_TEMPLATE, pageTemplates.get(0).getName());
             }
 
-            final ResourceEntity searchBean = new ResourceEntity();
-            searchBean.setAdminResource(new ResourceEntity(resourceId));
-            final List<ResourceEntity> adminOfResources = resourceDao.getByExample(searchBean);
+            final ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
+            resourceSearchBean.setAdminResourceId(resourceId);
+            final List<ResourceEntity> adminOfResources = resourceDao.getByExample(resourceSearchBean, 0, 1);
             if (CollectionUtils.isNotEmpty(adminOfResources)) {
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_RESOURCE, adminOfResources
-                        .get(0).getName());
+                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_RESOURCE, adminOfResources.get(0).getName());
             }
 
-            final RoleEntity roleSearchBean = new RoleEntity();
-            roleSearchBean.setAdminResource(new ResourceEntity(resourceId));
-            final List<RoleEntity> adminOfRoles = roleDao.getByExample(roleSearchBean);
+            final RoleSearchBean roleSearchBean = new RoleSearchBean();
+            roleSearchBean.setAdminResourceId(resourceId);
+            final List<RoleEntity> adminOfRoles = roleDao.getByExample(roleSearchBean, 0, 1);
             if (CollectionUtils.isNotEmpty(adminOfRoles)) {
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ROLE, adminOfRoles.get(0)
-                        .getName());
+                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ROLE, adminOfRoles.get(0).getName());
             }
 
-            final GroupEntity groupSearchBean = new GroupEntity();
-            groupSearchBean.setAdminResource(new ResourceEntity(resourceId));
-            final List<GroupEntity> adminOfGroups = groupDao.getByExample(groupSearchBean);
+            final GroupSearchBean groupSearchBean = new GroupSearchBean();
+            groupSearchBean.setAdminResourceId(resourceId);
+            final List<GroupEntity> adminOfGroups = groupDao.getByExample(groupSearchBean, 0, 1);
             if (CollectionUtils.isNotEmpty(adminOfGroups)) {
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_GROUP, adminOfGroups.get(0)
-                        .getName());
+                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_GROUP, adminOfGroups.get(0).getName());
             }
 
             final OrganizationEntity orgSearchBean = new OrganizationEntity();
             orgSearchBean.setAdminResource(new ResourceEntity(resourceId));
             final List<OrganizationEntity> adminOfOrgs = orgDAO.getByExample(orgSearchBean);
             if (CollectionUtils.isNotEmpty(adminOfOrgs)) {
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ORG, adminOfOrgs.get(0)
-                        .getName());
+                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ORG, adminOfOrgs.get(0).getName());
             }
         }
     }
 
-    private boolean causesCircularDependency(final ResourceEntity parent, final ResourceEntity child,
-                                             final Set<ResourceEntity> visitedSet) {
+    private boolean causesCircularDependency(final ResourceEntity parent, final ResourceEntity child, final Set<ResourceEntity> visitedSet) {
         boolean retval = false;
         if (parent != null && child != null) {
             if (!visitedSet.contains(child)) {
                 visitedSet.add(child);
                 if (CollectionUtils.isNotEmpty(parent.getParentResources())) {
-                    for (final ResourceEntity entity : parent.getParentResources()) {
+                    for (final ResourceToResourceMembershipXrefEntity xref : parent.getParentResources()) {
+                        final ResourceEntity entity = xref.getEntity();
                         retval = entity.getId().equals(child.getId());
                         if (retval) {
                             break;
@@ -929,11 +907,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resourcePropCache", allEntries = true),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", allEntries = true), @CacheEvict(value = "resourcePropCache", allEntries = true), @CacheEvict(value = "resources-hack", allEntries = true)})
     @Transactional
     public ResourceEntity saveResource(Resource resource, final String requesterId) throws BasicDataServiceException {
         //final Response response = new Response(ResponseStatus.SUCCESS);
@@ -957,8 +931,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         if (StringUtils.isNotBlank(prop.getId())) {
             final ResourcePropEntity dbObject = this.findResourcePropById(prop.getId());
             if (dbObject == null) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND,
-                        "No Resource Property object is found");
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "No Resource Property object is found");
             }
         }
 
@@ -967,13 +940,11 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         }
 
         if (StringUtils.isBlank(entity.getValue())) {
-            throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_VALUE_MISSING,
-                    "Resource Property value is not set");
+            throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_VALUE_MISSING, "Resource Property value is not set");
         }
 
         if (entity == null || StringUtils.isBlank(entity.getResource().getId())) {
-            throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_RESOURCE_ID_MISSING,
-                    "Resource ID is not set for Resource Property object");
+            throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_RESOURCE_ID_MISSING, "Resource ID is not set for Resource Property object");
         }
         this.save(entity);
         ResourcePropEntity resourcePropEntity = entity;
@@ -988,17 +959,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional
     public void removeResourceProp(String resourcePropId, String requesterId) throws BasicDataServiceException {
         if (StringUtils.isBlank(resourcePropId)) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
-                    "Resource property ID is not specified");
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Resource property ID is not specified");
         }
         this.deleteResourceProp(resourcePropId);
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", allEntries = true), @CacheEvict(value = "resources-hack", allEntries = true)})
     @Transactional
     public void removeUserFromResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
 
@@ -1022,10 +989,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", allEntries = true), @CacheEvict(value = "resources-hack", allEntries = true)})
     public void addUserToResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
 
 
@@ -1048,10 +1012,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", allEntries = true), @CacheEvict(value = "resources-hack", allEntries = true)})
     @Transactional
     public void deleteResourceWeb(String resourceId, String requesterId) throws BasicDataServiceException {
         if (resourceId == null) {
@@ -1063,12 +1024,9 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", allEntries = true), @CacheEvict(value = "resources-hack", allEntries = true)})
     @Transactional
-    public void addChildResourceWeb(String resourceId, String childResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
+    public void addChildResourceWeb(String resourceId, String childResourceId, String requesterId, final Set<String> rights, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_CHILD_RESOURCE.value());
         ResourceEntity resourceEntity = this.findResourceById(resourceId);
@@ -1076,18 +1034,45 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         ResourceEntity resourceEntityChild = this.findResourceById(childResourceId);
         idmAuditLog.setTargetResource(childResourceId, resourceEntityChild.getName());
 
-        idmAuditLog.setAuditDescription(
-                String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
+        StringBuilder sb = new StringBuilder();
+        sb.append("Add child resource: ");
+        if(childResourceId != null) {
+            ResourceEntity reChild = resourceDao.findById(childResourceId);
+            if (reChild != null) {
+                sb.append(reChild.getName());
+            }
+        }
+        sb.append(" (id=");
+        sb.append(childResourceId);
+        sb.append(") to resource: ");
+        if(resourceId != null) {
+            ResourceEntity re = resourceDao.findById(resourceId);
+            if (re != null) {
+                sb.append(re.getName());
+            }
+        }
+        sb.append(" (id=");
+        sb.append(resourceId);
+        sb.append(")");
 
+        if (rights != null && rights.size() > 0) {
+            sb.append(" with rights: [ ");
+            List<AccessRightEntity> arl = accessRightDAO.findByIds(rights);
+            for (AccessRightEntity are : arl) {
+                sb.append(are.getName());
+                sb.append(" (id=");
+                sb.append(are.getId());
+                sb.append("), ");
+            }
+            sb.append("]");
+        }
+        idmAuditLog.setAuditDescription(sb.toString());
         this.validateResource2ResourceAddition(resourceId, childResourceId);
-        this.addChildResource(resourceId, childResourceId);
+        this.addChildResource(resourceId, childResourceId, rights);
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", allEntries = true), @CacheEvict(value = "resources-hack", allEntries = true)})
     @Transactional
     public void deleteChildResourceWeb(String resourceId, String memberResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1097,22 +1082,17 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         ResourceEntity resourceEntityChild = this.findResourceById(memberResourceId);
         idmAuditLog.setTargetResource(memberResourceId, resourceEntityChild.getName());
 
-        idmAuditLog.setAuditDescription(
-                String.format("Remove child resource: %s from resource: %s", memberResourceId, resourceId));
+        idmAuditLog.setAuditDescription(String.format("Remove child resource: %s from resource: %s", memberResourceId, resourceId));
 
         if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(memberResourceId)) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
-                    "Parent ResourceId or Child ResourceId is null");
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Parent ResourceId or Child ResourceId is null");
         }
 
         this.deleteChildResource(resourceId, memberResourceId);
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", allEntries = true), @CacheEvict(value = "resources-hack", allEntries = true)})
     @Transactional
     public void addGroupToResourceWeb(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1131,20 +1111,14 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     //TODO fix me
-    @Caching(evict = {
-            @CacheEvict(value = "resources", key = "{#roleId}"),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", key = "{#roleId}"), @CacheEvict(value = "resources-hack", allEntries = true)})
     public void invalidateCache(String roleId) {
         //TODO fix me
         //FIXME we added this together to fix UI USER-Resource entitlements. (IDM-3179)
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", allEntries = true), @CacheEvict(value = "resources-hack", allEntries = true)})
     @Transactional
     public void removeGroupToResource(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1163,12 +1137,9 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", allEntries = true), @CacheEvict(value = "resources-hack", allEntries = true)})
     @Transactional
-    public void addRoleToResourceWeb(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
+    public void addRoleToResourceWeb(String resourceId, String roleId, String requesterId, Set<String> rights, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);
@@ -1176,20 +1147,49 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         ResourceEntity resourceEntity = this.findResourceById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
 
-        idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
+        StringBuilder sb = new StringBuilder();
+        sb.append("Add role: ");
+        if(roleId != null) {
+            RoleEntity roleEnt = roleDao.findById(roleId);
+            if (roleEnt != null) {
+                sb.append(roleEnt.getName());
+            }
+        }
+        sb.append(" (id=");
+        sb.append(roleId);
+        sb.append(") to resource: ");
+        if(resourceId != null) {
+            ResourceEntity re = resourceDao.findById(resourceId);
+            if (re != null) {
+                sb.append(re.getName());
+            }
+        }
+        sb.append(" (id=");
+        sb.append(resourceId);
+        sb.append(")");
+
+        if (rights != null && rights.size() > 0) {
+            sb.append(" with rights: [ ");
+            List<AccessRightEntity> arl = accessRightDAO.findByIds(rights);
+            for (AccessRightEntity are : arl) {
+                sb.append(are.getName());
+                sb.append(" (id=");
+                sb.append(are.getId());
+                sb.append("), ");
+            }
+            sb.append("]");
+        }
+        idmAuditLog.setAuditDescription(sb.toString());
 
         if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
         }
 
-        this.addResourceToRole(resourceId, roleId);
+        this.addResourceToRole(resourceId, roleId, rights);
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resources-hack", allEntries = true)
-    })
+    @Caching(evict = {@CacheEvict(value = "resources", allEntries = true), @CacheEvict(value = "resources-hack", allEntries = true)})
     @Transactional
     public void removeRoleToResource(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);

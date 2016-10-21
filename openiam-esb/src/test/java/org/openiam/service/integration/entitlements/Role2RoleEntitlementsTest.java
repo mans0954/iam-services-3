@@ -27,7 +27,7 @@ public class Role2RoleEntitlementsTest extends AbstractEntitlementsTest<Role, Ro
 
 	@Override
 	protected Response addChildToParent(Role parent, Role child) {
-		return roleServiceClient.addChildRole(parent.getId(), child.getId(), null);
+		return roleServiceClient.addChildRole(parent.getId(), child.getId(), null,null);
 	}
 
 	@Override

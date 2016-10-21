@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlType;
         "providerName",
         "managedSysId",
         "providerType",
+        "linkableToContentProvider",
         "nextAuthProviderId"
 })
 public class AuthProviderSearchBean extends AbstractSearchBean<AuthProvider, String> {
@@ -19,6 +20,7 @@ public class AuthProviderSearchBean extends AbstractSearchBean<AuthProvider, Str
     private String managedSysId;
     private String providerType;
     private String nextAuthProviderId;
+    private Boolean linkableToContentProvider;
 
     public String getProviderName() {
         return providerName;
@@ -42,6 +44,14 @@ public class AuthProviderSearchBean extends AbstractSearchBean<AuthProvider, Str
 
     public void setProviderType(String providerType) {
         this.providerType = providerType;
+    }
+
+    public Boolean getLinkableToContentProvider() {
+        return linkableToContentProvider;
+    }
+
+    public void setLinkableToContentProvider(Boolean linkableToContentProvider) {
+        this.linkableToContentProvider = linkableToContentProvider;
     }
 
     public String getNextAuthProviderId() {

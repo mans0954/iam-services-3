@@ -124,7 +124,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
         	
             AuthenticationException changePassword = null;
             try {
-                authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
+            	if(!authContext.isSkipUserStatusCheck()) {
+            		authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
+            	}
 
             } catch (AuthenticationException ae) {
                 // we should validate password before change password

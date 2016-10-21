@@ -1499,9 +1499,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
-                    List<UserEntity> supervisorList = userMgr.getSuperiors(userId, 0, Integer.MAX_VALUE);
+                    List<User> supervisorList = userMgr.getSuperiorsDto(userId, 0, Integer.MAX_VALUE);
                     if (CollectionUtils.isNotEmpty(supervisorList)) {
-                        for (UserEntity se : supervisorList) {
+                        for (User se : supervisorList) {
                             if (StringUtils.equals(se.getId(), e.getId())) {
                                 userMgr.removeSupervisor(se.getId(), userId);
                                 log.info(String.format("Removed a supervisor user %s from user %s",
@@ -1512,7 +1512,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                                 auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
-                                LoginEntity loginSupervisor = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
+                                Login loginSupervisor = UserUtils.getUserManagedSysIdentity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
                                 auditLog.setTargetUser(userEntity.getId(), loginStr);
                                 auditLog.setTargetUser(se.getId(), login != null ? loginSupervisor.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.DELETE_SUPERVISOR.value());
@@ -1687,18 +1687,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     }
                 }
             }
-            if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
-                for (final RoleEntity ure : userEntity.getRoles()) {
-                    final Role ar = roleDozerConverter.convertToDTO(ure, false);
-                    for (final Role r : pUser.getRoles()) {
-                        if (StringUtils.equals(r.getId(), ar.getId())) {
-                            ar.setOperation(r.getOperation()); // get operation value from pUser
-                            break;
-                        }
+        }
+        if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
+            for (final RoleEntity ure : userEntity.getRoles()) {
+                final Role ar = roleDozerConverter.convertToDTO(ure, false);
+                for (final Role r : pUser.getRoles()) {
+                    if (StringUtils.equals(r.getId(), ar.getId())) {
+                        ar.setOperation(r.getOperation()); // get operation value from pUser
+                        break;
                     }
-                    roleSet.add(ar);
                 }
+                roleSet.add(ar);
             }
+
         }
     }
 
