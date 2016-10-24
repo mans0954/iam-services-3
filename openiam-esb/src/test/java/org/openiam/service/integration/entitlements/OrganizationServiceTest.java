@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.common.lang3.StringUtils;
+import org.junit.Assert;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -87,6 +90,26 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 			int size) {
 		searchBean.setLanguage(getDefaultLanguage());
 		return organizationServiceClient.findBeans(searchBean, null, from, size);
+	}
+	
+	@Test
+	public void testInternationalizationOfOrganizationTypeWhenUsingElasticSearch() {
+		final OrganizationSearchBean sb = new OrganizationSearchBean();
+		sb.setLanguage(getDefaultLanguage());
+		sb.setUseElasticSearch(true);
+		List<Organization> retval = organizationServiceClient.findBeans(sb, getRequestorId(), 0, 3);
+		assertOrganizationTypePresent(retval);
+		
+		sb.setNameToken(new SearchParam("a", MatchType.CONTAINS));
+		retval = organizationServiceClient.findBeans(sb, getRequestorId(), 0, 3);
+		assertOrganizationTypePresent(retval);
+	}
+	
+	private void assertOrganizationTypePresent(final List<Organization> retval) {
+		Assert.assertTrue(CollectionUtils.isNotEmpty(retval));
+		retval.forEach(e -> {
+			Assert.assertTrue(StringUtils.isNotBlank(e.getOrganizationTypeName()));
+		});
 	}
 
 	@Test
