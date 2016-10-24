@@ -5,12 +5,14 @@ import java.util.Collection;
 import java.util.List;
 
 import org.openiam.base.BaseIdentity;
+import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
+import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.NoRepositoryBean;
 
 @NoRepositoryBean
-public interface AbstractCustomElasticSearchRepository<T extends BaseIdentity, S extends SearchBean, ID extends Serializable> {
+public interface AbstractCustomElasticSearchRepository<T extends BaseIdentity, S extends AbstractSearchBean, ID extends Serializable> {
 
 	public List<T> findBeans(S searchBean, int from, int size);
 	public List<T> findByIds(Collection<String> ids, Pageable pageable);

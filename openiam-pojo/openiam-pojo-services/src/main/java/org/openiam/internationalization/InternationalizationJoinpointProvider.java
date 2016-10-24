@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -56,13 +58,22 @@ public class InternationalizationJoinpointProvider implements InitializingBean, 
 		}
 	}
 	
-	@AfterReturning(pointcut="@annotation(org.openiam.internationalization.LocalizedDatabaseGet)", returning="returnValue")
+	@AfterReturning(pointcut="@annotation(org.openiam.internationalization.LocalizedDatabaseGet) || execution(* org.openiam.elasticsearch.dao.*.find*(..))", returning="returnValue")
 	public void afterDatabaseGet(final Object returnValue) {
 		if(returnValue != null) {
 			if(returnValue instanceof Collection) {
 				for(final Object obj : (Collection)returnValue) {
 					if(obj instanceof KeyEntity) {
 						internationalizationProvider.doDatabaseGet((KeyEntity)obj);
+					}
+				}
+			} else if(returnValue instanceof Page) {
+				final Collection collection = ((Page)returnValue).getContent();
+				if(CollectionUtils.isNotEmpty(collection)) {
+					for(final Object obj : collection) {
+						if(obj instanceof KeyEntity) {
+							internationalizationProvider.doDatabaseGet((KeyEntity)obj);
+						}
 					}
 				}
 			} else {

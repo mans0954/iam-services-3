@@ -21,6 +21,7 @@ import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SortParam;
 import org.openiam.elasticsearch.dao.AbstractCustomElasticSearchRepository;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -232,6 +233,7 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	}
 	
 	@Override
+	@LocalizedDatabaseGet
 	public List<T> findByIds(Collection<String> ids, Pageable pageable) {
 		List<T> retval = null;
 		if(CollectionUtils.isNotEmpty(ids)) {
@@ -247,6 +249,7 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	
 	
 	@Override
+	@LocalizedDatabaseGet
 	public List<T> findBeans(S searchBean, int from, int size) {
 		final Pageable pageable = getPageable(searchBean, from, size);
 		List<T> retval = Collections.EMPTY_LIST;
@@ -259,6 +262,9 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 		}
 		return retval;
 	}
+	
+	
+	
 	@Override
 	public int count(final S searchBean) {
 		final CriteriaQuery criteria = getCriteria(searchBean);
