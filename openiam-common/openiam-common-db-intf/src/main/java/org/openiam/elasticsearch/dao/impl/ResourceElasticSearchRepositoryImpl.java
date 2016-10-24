@@ -15,8 +15,14 @@ public class ResourceElasticSearchRepositoryImpl extends AbstractElasticSearchRe
 	}
 
 	@Override
-	protected Class<ResourceEntity> getEntityClass() {
+	public Class<ResourceEntity> getEntityClass() {
 		return ResourceEntity.class;
+	}
+
+	@Override
+	public void prepare(ResourceEntity entity) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

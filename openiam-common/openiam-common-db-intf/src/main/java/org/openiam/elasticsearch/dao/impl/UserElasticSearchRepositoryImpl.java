@@ -166,7 +166,13 @@ public class UserElasticSearchRepositoryImpl extends AbstractElasticSearchReposi
 	}
 
 	@Override
-	protected Class<UserEntity> getEntityClass() {
+	public Class<UserEntity> getEntityClass() {
 		return UserEntity.class;
+	}
+
+	@Override
+	public void prepare(UserEntity entity) {
+		// TODO Auto-generated method stub
+		
 	}
 }

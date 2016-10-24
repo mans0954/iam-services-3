@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.stereotype.Repository;
 
-@Repository
+@Repository("gropuElasticSearchRepositoryImpl")
 public class GroupElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<GroupEntity, String, GroupSearchBean> implements GroupElasticSearchRepositoryCustom {
 
 	@Override
@@ -34,8 +34,14 @@ public class GroupElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 	}
 
 	@Override
-	protected Class<GroupEntity> getEntityClass() {
+	public Class<GroupEntity> getEntityClass() {
 		return GroupEntity.class;
+	}
+
+	@Override
+	public void prepare(GroupEntity entity) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

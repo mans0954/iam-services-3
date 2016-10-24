@@ -70,14 +70,9 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	protected Document document;
 	
 	protected abstract CriteriaQuery getCriteria(final S searchBean);
-	protected abstract Class<T> getEntityClass();
 	
 	public boolean allowReindex(final ElasticsearchRepository repo) {
 		return (repo != null) ? (repo.count() <= 0) : false;
-	}
-	
-	public void prepare(final T entity) {
-		
 	}
 	
 	@Override

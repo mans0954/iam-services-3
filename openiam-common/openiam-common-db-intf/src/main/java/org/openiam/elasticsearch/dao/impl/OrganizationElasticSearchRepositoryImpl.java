@@ -29,8 +29,14 @@ public class OrganizationElasticSearchRepositoryImpl extends AbstractElasticSear
 	}
 
 	@Override
-	protected Class<OrganizationEntity> getEntityClass() {
+	public Class<OrganizationEntity> getEntityClass() {
 		return OrganizationEntity.class;
+	}
+
+	@Override
+	public void prepare(OrganizationEntity entity) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -17,6 +17,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseIdentity;
 import org.openiam.core.dao.BaseDao;
+import org.openiam.elasticsearch.dao.AbstractCustomElasticSearchRepository;
 import org.openiam.elasticsearch.dao.OpeniamElasticSearchRepository;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
 import org.openiam.elasticsearch.service.ElasticsearchReindexProcessor;
@@ -51,7 +52,7 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 	
 	private Map<Class<?>, OpeniamElasticSearchRepository> repoMap = new HashMap<Class<?>, OpeniamElasticSearchRepository>();
 	private Map<Class<?>, BaseDao> daoMap = new HashMap<Class<?>, BaseDao>();
-	private Map<Class<?>, AbstractElasticSearchRepository> customRepoImplMap = new HashMap<>();
+	private Map<Class<?>, AbstractCustomElasticSearchRepository> customRepoImplMap = new HashMap<>();
 	
 	public Set<Class<?>> getIndexedClasses() {
 		return repoMap.keySet();
@@ -63,7 +64,7 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 			daoMap.put(bean.getDomainClass(), bean);
 		});
 		
-		ctx.getBeansOfType(AbstractElasticSearchRepository.class).forEach((beanName, bean) -> {
+		ctx.getBeansOfType(AbstractCustomElasticSearchRepository.class).forEach((beanName, bean) -> {
 			customRepoImplMap.put(bean.getEntityClass(), bean);
 		});
 		

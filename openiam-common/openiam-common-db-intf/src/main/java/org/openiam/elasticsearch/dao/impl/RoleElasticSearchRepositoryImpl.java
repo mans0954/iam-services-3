@@ -34,8 +34,14 @@ public class RoleElasticSearchRepositoryImpl extends AbstractElasticSearchReposi
 	}
 
 	@Override
-	protected Class<RoleEntity> getEntityClass() {
+	public Class<RoleEntity> getEntityClass() {
 		return RoleEntity.class;
+	}
+
+	@Override
+	public void prepare(RoleEntity entity) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

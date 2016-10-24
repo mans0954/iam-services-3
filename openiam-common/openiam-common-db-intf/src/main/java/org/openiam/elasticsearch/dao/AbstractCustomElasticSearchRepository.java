@@ -9,6 +9,7 @@ import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 
 @NoRepositoryBean
@@ -20,4 +21,7 @@ public interface AbstractCustomElasticSearchRepository<T extends BaseIdentity, S
 	public int count(final S searchBean);
 	public boolean isValidSearchBean(final S searchBean);
 	public Pageable getPageable(final S searchBean, final int from, final int size);
+	public boolean allowReindex(final ElasticsearchRepository repo);
+	public abstract Class<T> getEntityClass();
+	public void prepare(final T entity);
 }

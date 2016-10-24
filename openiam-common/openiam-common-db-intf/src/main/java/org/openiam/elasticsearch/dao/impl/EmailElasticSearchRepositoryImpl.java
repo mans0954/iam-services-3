@@ -90,7 +90,7 @@ public class EmailElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 	}
 
 	@Override
-	protected Class<EmailAddressEntity> getEntityClass() {
+	public Class<EmailAddressEntity> getEntityClass() {
 		return EmailAddressEntity.class;
 	}
 

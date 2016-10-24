@@ -127,7 +127,7 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
 	}
 
 	@Override
-	protected Class<IdmAuditLogEntity> getEntityClass() {
+	public Class<IdmAuditLogEntity> getEntityClass() {
 		return IdmAuditLogEntity.class;
 	}
 
@@ -140,7 +140,6 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
 					entity.put(e.getKey(), e.getValue());
 				});
 			}
-			super.prepare(entity);
 		}
 	}
 
