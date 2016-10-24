@@ -3,6 +3,7 @@ package org.openiam.util;
 import org.openiam.base.request.IdmAuditLogRequest;
 import org.openiam.base.response.AuditLogResponse;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.mq.constants.AuditLogAPI;
 import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
@@ -24,9 +25,9 @@ public class AuditLogHelper {
         IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
         wrapper.setLogEntity(event);
 
-        MQRequest<IdmAuditLogRequest, OpenIAMAPICommon> request = new MQRequest<>();
+        MQRequest<IdmAuditLogRequest, AuditLogAPI> request = new MQRequest<>();
         request.setRequestBody(wrapper);
-        request.setRequestApi(OpenIAMAPICommon.AuditLogSave);
+        request.setRequestApi(AuditLogAPI.AuditLogSave);
         MQResponse<AuditLogResponse> response = (MQResponse<AuditLogResponse>)requestServiceGateway.sendAndReceive(OpenIAMQueue.AuditLog, request);
 
         return response.getResponseBody().getEvent();
@@ -37,9 +38,9 @@ public class AuditLogHelper {
             IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
             wrapper.setLogEntity(event);
 
-            MQRequest<IdmAuditLogRequest, OpenIAMAPICommon> request = new MQRequest<>();
+            MQRequest<IdmAuditLogRequest, AuditLogAPI> request = new MQRequest<>();
             request.setRequestBody(wrapper);
-            request.setRequestApi(OpenIAMAPICommon.AuditLogSave);
+            request.setRequestApi(AuditLogAPI.AuditLogSave);
             requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
         }
     }

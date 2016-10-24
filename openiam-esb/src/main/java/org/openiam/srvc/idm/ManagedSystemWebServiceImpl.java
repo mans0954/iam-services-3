@@ -54,6 +54,7 @@ import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.util.SSLCert;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -104,7 +105,7 @@ public class ManagedSystemWebServiceImpl extends AbstractApiService implements M
     private ApproverAssociationDozerConverter approverAssociationDozerConverter;
 
     @Autowired
-    private AuditLogService auditLogService;
+    private AuditLogHelper auditLogHelper;
 
     @Autowired
     private DefaultReconciliationAttributeMapDozerConverter defaultReconciliationAttributeMapDozerConverter;
@@ -154,7 +155,7 @@ public class ManagedSystemWebServiceImpl extends AbstractApiService implements M
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.INTERNAL_ERROR);
         } finally {
-            auditLogService.enqueue(auditLog);
+            auditLogHelper.enqueue(auditLog);
         }
         return response;
     }

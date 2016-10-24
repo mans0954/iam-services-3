@@ -55,6 +55,7 @@ import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.PrePostExecutor;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -106,7 +107,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     @Autowired
     protected MatchRuleFactory matchRuleFactory;
     @Autowired
-    protected AuditLogService auditLogService;
+    protected AuditLogHelper auditLogHelper;
 	@Autowired
 	ReconciliationConfigService reconConfigService;
 
@@ -141,7 +142,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
         if ("INACTIVE".equalsIgnoreCase(config.getStatus())) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Reconciliation config is in 'INACTIVE' status");
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
             ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_PROCESS_INACTIVE);
             return resp;
@@ -151,7 +152,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
                 processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Previous reconciliation run is not finished yet");
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
             return processCheckResponse;
         }
 		boolean reconFailed = false;
@@ -206,7 +207,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
         } finally {
             endTask(config.getId());
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
 
 			ReconExecStatusOptions actualStatus = reconConfigService.getExecStatus(config.getId());
 			final ReconExecStatusOptions execStatus =

@@ -114,7 +114,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                             }
                         }
                     } finally {
-                        auditLogService.enqueue(auditLog);
+                        auditLogHelper.enqueue(auditLog);
                     }
                     tmpRes.setStatus(ResponseStatus.SUCCESS);
                     return tmpRes;

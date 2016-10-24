@@ -45,7 +45,7 @@ public class ElasticSearchWebServiceImpl extends AbstractBaseService implements 
 			response.setErrorText(ExceptionUtils.getFullStackTrace(e));
 			logger.error(String.format("Can't reindex %s", entityClass), e);
 		} finally {
-			auditLogService.enqueue(auditLog);
+			auditLogHelper.enqueue(auditLog);
 		}
 		return response;
 	}

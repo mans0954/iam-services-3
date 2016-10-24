@@ -154,7 +154,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             }
             return response;
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
     }
 
@@ -260,14 +260,14 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     if (auditLog != null) {
                         auditLog.addChild(idmAuditLog);
                         //idmAuditLog.addParent(auditLog);
-                        idmAuditLog = auditLogService.save(idmAuditLog);
+                        idmAuditLog = auditLogHelper.save(idmAuditLog);
                     }
-                    idmAuditLog = auditLogService.save(idmAuditLog);
+                    idmAuditLog = auditLogHelper.save(idmAuditLog);
 
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
 
-                    auditLogService.enqueue(idmAuditLog);
+                    auditLogHelper.enqueue(idmAuditLog);
                     //idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
@@ -345,7 +345,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     }
                     //idmAuditLog = auditLogService.save(idmAuditLog);
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
-                    auditLogService.save(idmAuditLog);
+                    auditLogHelper.save(idmAuditLog);
                     //idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
@@ -790,7 +790,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
         } finally {
             if (auditLog == null) {
-                auditLogService.enqueue(idmAuditLog);
+                auditLogHelper.enqueue(idmAuditLog);
             }
         }
         response.setStatus(ResponseStatus.SUCCESS);
@@ -1815,7 +1815,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 if (!allResetOK) {
                     idmAuditLog.fail();
                 }
-                auditLogService.save(idmAuditLog);
+                auditLogHelper.save(idmAuditLog);
             }
         }
         if (!allResetOK) {
@@ -2202,7 +2202,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (!allSetOK) {
                 idmAuditLog.fail();
             }
-            auditLogService.save(idmAuditLog); //SIA 2015-08-01
+            auditLogHelper.save(idmAuditLog); //SIA 2015-08-01
         }
     }
 
@@ -2580,7 +2580,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 auditLog.fail();
             }
             if (saveAuditLog) {
-                auditLogService.save(auditLog);
+                auditLogHelper.save(auditLog);
             }
         }
     }
@@ -2862,7 +2862,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 } else {
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Successfully processed " + bulkRequest.getUserIds().size() + " users");
                 }
-                auditLogService.enqueue(idmAuditLog);
+                auditLogHelper.enqueue(idmAuditLog);
             }
         }
 
@@ -3008,7 +3008,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 idmAuditLog.succeed();
             }
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
 
         return response;
@@ -3040,7 +3040,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 idmAuditLog.succeed();
             }
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
 
         return response;
@@ -3365,7 +3365,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 }
             }
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
 
         if (callPostProcessor("DISABLE", user, bindingMap, null) != ProvisioningConstants.SUCCESS) {

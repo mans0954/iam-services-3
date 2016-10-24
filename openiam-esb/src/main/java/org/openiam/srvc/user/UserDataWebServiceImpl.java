@@ -77,6 +77,7 @@ import org.openiam.base.response.UserResponse;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.common.MailService;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -101,7 +102,7 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     protected SysConfiguration sysConfiguration;
 
     @Autowired
-    protected AuditLogService auditLogService;
+    protected AuditLogHelper auditLogHelper;
 
     @Autowired
     @Qualifier("userManager")
@@ -1235,7 +1236,7 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
             idmAuditLog.setException(e);
 
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -1269,7 +1270,7 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
             idmAuditLog.setException(e);
 
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -1306,7 +1307,7 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
             idmAuditLog.setException(e);
 
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
         return response;
     }

@@ -118,6 +118,7 @@ import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.UserUtils;
 import org.openiam.util.encrypt.Cryptor;
@@ -273,7 +274,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     protected ProvisionQueueService provQueueService;
 
     @Autowired
-    protected AuditLogService auditLogService;
+    protected AuditLogHelper auditLogHelper;
     @Autowired
     protected MetadataTypeDAO metadataTypeDAO;
     

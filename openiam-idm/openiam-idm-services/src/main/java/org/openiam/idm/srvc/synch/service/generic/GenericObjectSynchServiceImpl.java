@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.synch.service.SynchConfigDAO;
 import org.openiam.idm.srvc.synch.service.SynchConfigDataMappingDAO;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
     private String systemUserId;
 
     @Autowired
-    private AuditLogService auditLogService;
+    private AuditLogHelper auditLogHelper;
 
     private static final Log log = LogFactory.getLog(GenericObjectSynchServiceImpl.class);
 
@@ -93,7 +94,7 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
             resp.setErrorText(e.getMessage());
             return resp;
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
     }
 

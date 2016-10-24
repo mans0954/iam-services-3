@@ -59,6 +59,7 @@ import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.utils.ProvisionUtils;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,7 +154,7 @@ public class GroupProvisionDataServiceImpl implements ObjectProvisionDataService
     @Autowired
     ProvisionServiceUtil provisionServiceUtil;
     @Autowired
-    protected AuditLogService auditLogService;
+    protected AuditLogHelper auditLogHelper;
 
     @Override
     public Response add(final ProvisionGroup group) throws Exception {
@@ -1127,7 +1128,7 @@ public class GroupProvisionDataServiceImpl implements ObjectProvisionDataService
             idmAuditLog.succeed();
 
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
 
         return response;

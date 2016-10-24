@@ -7,7 +7,6 @@ public enum OpenIAMAPICommon implements OpenIAMAPI {
     MetadataTypeGet,
     UpdateAttributesByMetadata,
     SendEmail,
-    AuditLogSave,
     UserProvisioning,
     GetUsedLanguages,
     FindLanguages,

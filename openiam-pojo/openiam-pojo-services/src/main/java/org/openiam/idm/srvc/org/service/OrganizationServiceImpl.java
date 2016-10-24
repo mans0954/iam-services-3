@@ -599,7 +599,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             if(StringUtils.isBlank(idmAuditLog.getResult())) {
                 idmAuditLog.fail();
             }
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
     }
 
@@ -1052,7 +1052,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             if(StringUtils.isBlank(idmAuditLog.getResult())) {
                 idmAuditLog.fail();
             }
-            auditLogService.enqueue(idmAuditLog);
+            auditLogHelper.enqueue(idmAuditLog);
         }
 
     }

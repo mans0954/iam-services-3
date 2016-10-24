@@ -138,7 +138,7 @@ public class BatchTaskScheduler extends AbstractBaseService implements Initializ
 	        				for(final BatchTaskEntity entity : batchList) {
 	        					schedule(entity);
 	        					final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-	        					auditLogService.enqueue(idmAuditLog);
+								auditLogHelper.enqueue(idmAuditLog);
 	        					batchDao.save(entity);
 	        				}
 	        			}

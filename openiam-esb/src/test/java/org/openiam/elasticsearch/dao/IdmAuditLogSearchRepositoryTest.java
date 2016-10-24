@@ -10,6 +10,7 @@ import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDAO;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,9 +22,9 @@ public class IdmAuditLogSearchRepositoryTest extends AbstractElasticSearchReposi
 
 	@Autowired
 	private IdmAuditLogDAO dao;
-	
+
 	@Autowired
-	private AuditLogService service;
+	private AuditLogHelper auditLogHelper;
 	
 	private IdmAuditLogEntity entity;
 	
@@ -32,7 +33,7 @@ public class IdmAuditLogSearchRepositoryTest extends AbstractElasticSearchReposi
 		entity = newEntity();
 		entity.addTarget("3000", AuditTarget.USER.value(), "sysadmin");
 		entity.addTarget("3006", AuditTarget.USER.value(), "sysadmin");
-		service.save(entity);
+		auditLogHelper.save(entity);
 		Assert.assertNotNull(entity);
 		Assert.assertTrue(StringUtils.isNotBlank(entity.getId()));
 		Thread.sleep(5); /* need to wait until it's available to search */
@@ -58,7 +59,7 @@ public class IdmAuditLogSearchRepositoryTest extends AbstractElasticSearchReposi
 		entity.addChild(newEntity());
 		entity.addTarget("3000", AuditTarget.USER.value(), "sysadmin");
 		entity.addTarget("3006", AuditTarget.USER.value(), "sysadmin");
-		service.save(entity);
+		auditLogHelper.save(entity);
 		
 		entity = repo.findOne(entity.getId());
 		Assert.assertNotNull(entity);
@@ -86,7 +87,7 @@ public class IdmAuditLogSearchRepositoryTest extends AbstractElasticSearchReposi
 	@Test
 	public void testEnqueue() {
 		final IdmAuditLogEntity entity = newEntity();
-		service.enqueue(entity);
+		auditLogHelper.enqueue(entity);
 	}
 
 	@Test
