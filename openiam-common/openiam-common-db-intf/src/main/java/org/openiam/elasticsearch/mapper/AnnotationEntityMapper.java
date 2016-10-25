@@ -23,6 +23,7 @@ import org.openiam.elasticsearch.annotation.NestedFieldType;
 import org.openiam.elasticsearch.annotation.SimpleElasticSearchJSONMapping;
 import org.openiam.elasticsearch.bridge.ElasticsearchBrigde;
 import org.openiam.idm.util.CustomJacksonMapper;
+import org.openiam.util.SpringContextProvider;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.NestedField;
 import org.springframework.data.elasticsearch.core.EntityMapper;
@@ -38,6 +39,8 @@ public class AnnotationEntityMapper implements EntityMapper {
 	private static final Log LOG = LogFactory.getLog(AnnotationEntityMapper.class);
 	
 	final ObjectMapper mapper = new CustomJacksonMapper();
+	
+	private Map<Class<?>, ElasticsearchBrigde> bridgeCache = new HashMap<Class<?>, ElasticsearchBrigde>();
 	
 	public AnnotationEntityMapper() {
 		
@@ -56,8 +59,9 @@ public class AnnotationEntityMapper implements EntityMapper {
 
 	@Override
 	public <T> T mapToObject(String source, Class<T> clazz) throws IOException {
+		T retval = null;
 		if(clazz.getAnnotation(SimpleElasticSearchJSONMapping.class) != null) {
-			return mapper.readValue(source, clazz);
+			retval = mapper.readValue(source, clazz);
 		} else {
 			final Map<String, Object> valueMap = mapper.readValue(source, Map.class);
 			T entity = null;
@@ -67,8 +71,9 @@ public class AnnotationEntityMapper implements EntityMapper {
 				throw new RuntimeException(e);
 			}
 			populateObject(valueMap, entity, clazz);
-			return entity;
+			retval = entity;
 		}
+		return retval;
 	}
 	
 	private void populateObject(final Map<String, Object> valueMap, final Object entity, final Class<?> clazz) throws JsonParseException, JsonMappingException, IOException {
@@ -148,11 +153,17 @@ public class AnnotationEntityMapper implements EntityMapper {
 	}
 	
 	private ElasticsearchBrigde getBridge(final ElasticsearchFieldBridge bridge) {
-		try {
-			return ((ElasticsearchBrigde)bridge.impl().newInstance());
-		} catch(Throwable e) {
-			throw new RuntimeException(e);
+		ElasticsearchBrigde esBridge = bridgeCache.get(bridge.impl());
+		if(esBridge == null) {
+			try {
+				esBridge = ((ElasticsearchBrigde)bridge.impl().newInstance());
+				SpringContextProvider.autowire(esBridge);
+				bridgeCache.put(bridge.impl(), esBridge);
+			} catch(Throwable e) {
+				throw new RuntimeException(e);
+			}
 		}
+		return esBridge;
 	}
 
 	private void populateMap(final Map<String, Object> valueMap, final Object entity, final Class<?> clazz) {

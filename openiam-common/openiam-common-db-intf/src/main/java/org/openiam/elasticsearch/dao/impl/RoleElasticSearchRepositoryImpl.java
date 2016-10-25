@@ -25,7 +25,7 @@ public class RoleElasticSearchRepositoryImpl extends AbstractElasticSearchReposi
 				}
 			}
 			
-			Criteria criteria = exactCriteria("managedSysId", searchBean.getManagedSysId());
+			Criteria criteria = exactCriteria("managedSystem", searchBean.getManagedSysId());
 			if(criteria != null) {
 				query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
 			}

@@ -23,6 +23,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
+import org.openiam.elasticsearch.bridge.ManagedSysBridge;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
@@ -71,6 +73,8 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
+    @ElasticsearchFieldBridge(impl = ManagedSysBridge.class)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private ManagedSysEntity managedSystem;
     
     @Column(name = "GROUP_DESC", length = 512)

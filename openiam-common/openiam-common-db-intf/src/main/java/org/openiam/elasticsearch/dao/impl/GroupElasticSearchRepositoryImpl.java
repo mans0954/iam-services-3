@@ -25,7 +25,7 @@ public class GroupElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 				}
 			}
 			
-			Criteria criteria = exactCriteria("managedSysId", searchBean.getManagedSysId());
+			Criteria criteria = exactCriteria("managedSystem", searchBean.getManagedSysId());
 			if(criteria != null) {
 				query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
 			}
