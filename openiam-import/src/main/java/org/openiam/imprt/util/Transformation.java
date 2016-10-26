@@ -323,7 +323,6 @@ public class Transformation {
             isDefaultSet = !hideMobilePhone;
         }
 
-
         if (StringUtils.isNotBlank(officePhone)) {
             addUserAttribute(user, new UserAttributeEntity("OfficePhone", officePhone));
             isDefaultSet = hideMobilePhone || StringUtils.isBlank(mobilePhoneExt);
@@ -713,10 +712,11 @@ public class Transformation {
                 }
                 addRoleId(user, roleId);
             } else {
-                if (lg != null) {
-                    lg.setLogin("DELETE_FROM_DB");
-                }
-                if (userRole != null) removeRoleId(user, userRole.getId());
+                //due to problems with mailboxes it may be an issue
+//                if (lg != null) {
+//                    lg.setLogin("DELETE_FROM_DB");
+//                }
+//                if (userRole != null) removeRoleId(user, userRole.getId());
             }
         } catch (Exception e) {
             System.out.println("Problems inside of updateLoginAndRole ");
