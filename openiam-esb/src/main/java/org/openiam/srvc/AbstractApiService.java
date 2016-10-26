@@ -84,17 +84,15 @@ public abstract class AbstractApiService {
         return response.getList();
     }
 
-    protected <V extends KeyDTO, API extends OpenIAMAPI, ApiRequest extends BaseCrudServiceRequest<V>, ApiResponse extends BaseDataResponse> Response manageGrudApiRequest(API apiName, ApiRequest request, Class<ApiResponse> clazz){
+    protected <V extends KeyDTO, API extends OpenIAMAPI, ApiResponse extends BaseDataResponse<V>> Response manageGrudApiRequest(API apiName, V data, Class<ApiResponse> clazz){
+        BaseCrudServiceRequest<V> request = new BaseCrudServiceRequest<>(data);
         ApiResponse response = getResponse(apiName, request, clazz);
         return response.convertToBase();
     }
-    protected <V extends KeyDTO, API extends OpenIAMAPI, ApiResponse extends BaseDataResponse> Response manageGrudApiRequest(API apiName, V data, Class<ApiResponse> clazz){
-        return manageGrudApiRequest(apiName, new BaseCrudServiceRequest<>(data), clazz);
-    }
     protected <V extends KeyDTO, API extends OpenIAMAPI> Response manageGrudApiRequest(API apiName, V data){
-//        BaseCrudServiceRequest<V> request = new BaseCrudServiceRequest<>(data);
-//        StringResponse response = getResponse(apiName, request, StringResponse.class);
-        return manageGrudApiRequest(apiName, data, StringResponse.class);
+        BaseCrudServiceRequest<V> request = new BaseCrudServiceRequest<>(data);
+        StringResponse response = getResponse(apiName, request, StringResponse.class);
+        return response.convertToBase();
     }
     protected <API extends OpenIAMAPI> Response manageGrudApiRequest(API apiName, String id){
         IdServiceRequest request = new IdServiceRequest();
