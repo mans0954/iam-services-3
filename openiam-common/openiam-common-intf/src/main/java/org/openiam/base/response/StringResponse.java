@@ -11,29 +11,6 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "StringResponse", propOrder = {
-        "value"
 })
-public class StringResponse extends Response {
-    private String value;
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuffer sb = new StringBuffer("StringResponse{");
-        sb.append(super.toString());
-        sb.append(", value='").append(value).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-
-    protected Object getValueInternal(){
-        return this.value;
-    }
+public class StringResponse extends BaseDataResponse<String> {
 }

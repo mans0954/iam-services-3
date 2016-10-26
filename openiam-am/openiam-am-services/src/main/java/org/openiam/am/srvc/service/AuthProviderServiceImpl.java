@@ -640,8 +640,8 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     @LocalizedServiceGet
     @Transactional(readOnly=true)
     public List<Resource> getAuthorizedScopes(String clientId, OAuthToken token, Language language){
-        //TODO: need to review scopeauthorization and add scopes to token as a link.
-        //TODO: this will allow to handle scope arg in roken endpoint
+        //TODO: need to review scope authorization and add scopes to token as a link.
+        //TODO: this will allow to handle scope arg in token endpoint
         if("RESOURCE_OWNER".equals(token.getGrandFlow().trim())){
             AuthProvider client = this.getOAuthClient(clientId);
             final Optional<AuthProviderAttribute> scopeOptional = client.getAttributes().stream().filter(attr -> "OAuthClientScopes".equals(attr.getAttributeId())).findFirst();

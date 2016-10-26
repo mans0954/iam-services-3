@@ -2,9 +2,7 @@ package org.openiam.am.srvc.service.dispatcher;
 
 import org.openiam.am.srvc.dto.AuthProviderType;
 import org.openiam.am.srvc.service.AuthProviderService;
-import org.openiam.base.request.BaseGrudServiceRequest;
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.base.response.AuthProviderTypeListResponse;
+import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
@@ -17,7 +15,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 19/09/16.
  */
 @Component
-public class AddAuthProviderTypeDispatcher extends AbstractAPIDispatcher<BaseGrudServiceRequest<AuthProviderType>, Response, AuthProviderAPI> {
+public class AddAuthProviderTypeDispatcher extends AbstractAPIDispatcher<BaseCrudServiceRequest<AuthProviderType>, Response, AuthProviderAPI> {
     @Autowired
     private AuthProviderService authProviderService;
 
@@ -26,7 +24,7 @@ public class AddAuthProviderTypeDispatcher extends AbstractAPIDispatcher<BaseGru
     }
 
     @Override
-    protected Response processingApiRequest(AuthProviderAPI openIAMAPI, BaseGrudServiceRequest<AuthProviderType> request) throws BasicDataServiceException {
+    protected Response processingApiRequest(AuthProviderAPI openIAMAPI, BaseCrudServiceRequest<AuthProviderType> request) throws BasicDataServiceException {
         Response response = new Response(ResponseStatus.SUCCESS);
         authProviderService.addProviderType(request.getObject());
         return response;

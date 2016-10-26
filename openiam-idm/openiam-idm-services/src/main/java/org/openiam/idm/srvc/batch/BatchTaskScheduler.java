@@ -132,7 +132,7 @@ public class BatchTaskScheduler extends AbstractBaseService implements Initializ
 	        		public Boolean doInTransaction(TransactionStatus status) {
 	        			final BatchTaskSearchBean searchBean = new BatchTaskSearchBean();
 	        			searchBean.setEnabled(true);
-	        			final List<BatchTaskEntity> batchList = batchService.findBeans(searchBean, 0, Integer.MAX_VALUE);
+	        			final List<BatchTaskEntity> batchList = batchService.findEntityBeans(searchBean, 0, Integer.MAX_VALUE);
 	        			//final Map<String, BatchTaskEntity> batchMap = new HashMap<String, BatchTaskEntity>();
 	        			if(CollectionUtils.isNotEmpty(batchList)) {
 	        				for(final BatchTaskEntity entity : batchList) {

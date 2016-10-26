@@ -4,16 +4,24 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dozer.util.ReflectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.BatchTaskDozerConverter;
+import org.openiam.dozer.converter.BatchTaskScheduleDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.BatchTaskScheduleSearchBean;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.batch.dao.BatchConfigDAO;
 import org.openiam.idm.srvc.batch.dao.BatchScheduleDAO;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity;
+import org.openiam.idm.srvc.batch.dto.BatchTask;
+import org.openiam.idm.srvc.batch.dto.BatchTaskSchedule;
 import org.openiam.idm.srvc.batch.thread.BatchTaskGroovyThread;
 import org.openiam.idm.srvc.batch.thread.BatchTaskSpringThread;
+import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -45,6 +54,13 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
     
     @Autowired
     private BatchScheduleDAO batchScheduleDAO;
+	@Autowired
+	private BatchTaskDozerConverter converter;
+	@Autowired
+	private BatchTaskScheduleDozerConverter taskDozerConverter;
+	@Autowired
+	@Qualifier("configurableGroovyScriptEngine")
+	private ScriptIntegration scriptRunner;
     
     @Autowired
     @Qualifier("transactionManager")
@@ -55,12 +71,16 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 			throws BeansException {
 		this.ctx = applicationContext;
 	}
-
+	@Override
+	@Transactional(readOnly=true)
+	public List<BatchTaskEntity> findEntityBeans(BatchTaskSearchBean searchBean, int from, int size) {
+		return batchDao.getByExample(searchBean, from, size);
+	}
     @Override
     @Transactional(readOnly=true)
-    public List<BatchTaskEntity> findBeans(BatchTaskSearchBean searchBean, int from,
-                                           int size) {
-        return batchDao.getByExample(searchBean, from, size);
+    public List<BatchTask> findBeans(BatchTaskSearchBean searchBean, int from, int size) {
+		List<BatchTaskEntity> entityList = batchDao.getByExample(searchBean, from, size);
+		return converter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
 
     @Override
@@ -87,6 +107,71 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
     		batchDao.save(entity);
     	}
     }
+	@Override
+	@Transactional
+	public String save(final BatchTask task, final boolean purgeNonExecutedTasks) throws BasicDataServiceException {
+		if(task == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
+
+		if(StringUtils.isBlank(task.getName())) {
+			throw new BasicDataServiceException(ResponseCode.NO_NAME);
+		}
+
+		if(StringUtils.isBlank(task.getCronExpression()) && task.getRunOn() == null) {
+			throw new BasicDataServiceException(ResponseCode.NO_EXEUCUTION_TIME);
+		}
+
+		if(StringUtils.isNotBlank(task.getCronExpression())) {
+			try {
+				new CronTrigger(task.getCronExpression());
+			} catch(Throwable e) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_CRON_EXRPESSION);
+			}
+			task.setRunOn(null);
+		}
+
+		if(task.getRunOn() != null) {
+			if(task.getRunOn().before(new Date())) {
+				throw new BasicDataServiceException(ResponseCode.DATE_INVALID);
+			}
+			task.setCronExpression(null);
+		}
+
+		if(StringUtils.isBlank(task.getTaskUrl()) &&
+		  (StringUtils.isBlank(task.getSpringBean()) || StringUtils.isBlank(task.getSpringBeanMethod()))) {
+			throw new BasicDataServiceException(ResponseCode.SPRING_BEAN_OR_SCRIPT_REQUIRED);
+		}
+
+		if(StringUtils.isNotBlank(task.getTaskUrl())) {
+			if(!scriptRunner.scriptExists(task.getTaskUrl())) {
+				throw new BasicDataServiceException(ResponseCode.FILE_DOES_NOT_EXIST);
+			}
+			task.setSpringBean(null);
+			task.setSpringBeanMethod(null);
+		} else {
+			boolean validBeanDefinition = false;
+			try {
+				if(ctx.containsBean(task.getSpringBean())) {
+					final Object bean = ctx.getBean(task.getSpringBean());
+					final Method method = ReflectionUtils.getMethod(bean, task.getSpringBeanMethod());
+					if(method != null && method.getParameterTypes().length == 0) {
+						validBeanDefinition = true;
+						task.setTaskUrl(null);
+					}
+				}
+			} catch(Throwable beanE) {
+				validBeanDefinition = false;
+			}
+
+			if(!validBeanDefinition) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_SPRING_BEAN);
+			}
+		}
+		final BatchTaskEntity entity = converter.convertToEntity(task, true);
+		this.save(entity, purgeNonExecutedTasks);
+		return entity.getId();
+	}
 
     @Override
     @Transactional
@@ -102,8 +187,13 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
     @Override
     @Transactional(readOnly=true)
     public BatchTaskEntity findById(String id) {
-        return batchDao.findById(id);
+		return batchDao.findById(id);
     }
+	@Override
+	@Transactional(readOnly=true)
+	public BatchTask findDto(final String id){
+		return converter.convertToDTO(findById(id), true);
+	}
 
 	@Override
 	@Transactional(readOnly=true)
@@ -214,9 +304,10 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<BatchTaskScheduleEntity> getSchedulesForTask(final BatchTaskScheduleSearchBean searchBean,
-			int from, int size) {
-		return batchScheduleDAO.getByExample(searchBean, from, size);
+	public List<BatchTaskSchedule> getSchedulesForTask(final BatchTaskScheduleSearchBean searchBean,
+													   int from, int size) {
+		List<BatchTaskScheduleEntity> entityList = batchScheduleDAO.getByExample(searchBean, from, size);
+		return taskDozerConverter.convertToDTOList(entityList, true);
 	}
 	
 	@Override
@@ -240,7 +331,7 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 		final BatchTaskScheduleSearchBean searchBean = new BatchTaskScheduleSearchBean();
 		searchBean.setNextScheduledRunTo(date);
 		searchBean.setCompleted(false);
-		return getSchedulesForTask(searchBean, 0, Integer.MAX_VALUE);
+		return batchScheduleDAO.getByExample(searchBean, 0, Integer.MAX_VALUE);
 	}
 
 	@Override

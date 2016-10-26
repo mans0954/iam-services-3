@@ -1,9 +1,8 @@
 package org.openiam.am.srvc.service.dispatcher;
 
-import org.openiam.am.srvc.dto.AuthLevelAttribute;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.service.ContentProviderService;
-import org.openiam.base.request.BaseGrudServiceRequest;
+import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.base.response.StringResponse;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.ContentProviderAPI;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 23/09/16.
  */
 @Component
-public class SaveAuthLevelGroupingDispatcher extends AbstractAPIDispatcher<BaseGrudServiceRequest<AuthLevelGrouping>, StringResponse, ContentProviderAPI> {
+public class SaveAuthLevelGroupingDispatcher extends AbstractAPIDispatcher<BaseCrudServiceRequest<AuthLevelGrouping>, StringResponse, ContentProviderAPI> {
     @Autowired
     private ContentProviderService contentProviderService;
 
@@ -24,7 +23,7 @@ public class SaveAuthLevelGroupingDispatcher extends AbstractAPIDispatcher<BaseG
     }
 
     @Override
-    protected StringResponse processingApiRequest(ContentProviderAPI openIAMAPI, BaseGrudServiceRequest<AuthLevelGrouping> request) throws BasicDataServiceException {
+    protected StringResponse processingApiRequest(ContentProviderAPI openIAMAPI, BaseCrudServiceRequest<AuthLevelGrouping> request) throws BasicDataServiceException {
         StringResponse response = new StringResponse();
         response.setValue(contentProviderService.saveAuthLevelGrouping(request.getObject()));
         return response;

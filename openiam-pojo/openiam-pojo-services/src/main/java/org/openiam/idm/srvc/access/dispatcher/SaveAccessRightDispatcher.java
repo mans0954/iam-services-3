@@ -1,6 +1,6 @@
 package org.openiam.idm.srvc.access.dispatcher;
 
-import org.openiam.base.request.BaseGrudServiceRequest;
+import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.base.response.StringResponse;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.access.dto.AccessRight;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 08/09/16.
  */
 @Component
-public class SaveAccessRightDispatcher extends AbstractAPIDispatcher<BaseGrudServiceRequest<AccessRight>, StringResponse, AccessRightAPI> {
+public class SaveAccessRightDispatcher extends AbstractAPIDispatcher<BaseCrudServiceRequest<AccessRight>, StringResponse, AccessRightAPI> {
     @Autowired
     private AccessRightService accessRightService;
 
@@ -23,7 +23,7 @@ public class SaveAccessRightDispatcher extends AbstractAPIDispatcher<BaseGrudSer
     }
 
     @Override
-    protected StringResponse processingApiRequest(AccessRightAPI openIAMAPI, BaseGrudServiceRequest<AccessRight> request) throws BasicDataServiceException {
+    protected StringResponse processingApiRequest(AccessRightAPI openIAMAPI, BaseCrudServiceRequest<AccessRight> request) throws BasicDataServiceException {
         StringResponse response = new StringResponse();
         response.setValue(accessRightService.save(request.getObject()));
         return response;
