@@ -72,22 +72,22 @@ import org.springframework.transaction.annotation.Transactional;
 //@Transactional
 public class BatchDataServiceImpl extends AbstractApiService implements BatchDataService {
 	
-	private static final Log LOG = LogFactory.getLog(BatchDataServiceImpl.class);
-	
-	private ApplicationContext ctx;
-	
-	@Autowired
-    @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
-	
-	@Autowired
-	private BatchTaskDozerConverter converter;
-	
-	@Autowired
-	private BatchTaskScheduleDozerConverter taskDozerConverter;
-	
-	@Autowired
-	private BatchService batchService;
+//	private static final Log LOG = LogFactory.getLog(BatchDataServiceImpl.class);
+//
+//	private ApplicationContext ctx;
+//
+//	@Autowired
+//    @Qualifier("configurableGroovyScriptEngine")
+//    private ScriptIntegration scriptRunner;
+//
+//	@Autowired
+//	private BatchTaskDozerConverter converter;
+//
+//	@Autowired
+//	private BatchTaskScheduleDozerConverter taskDozerConverter;
+//
+//	@Autowired
+//	private BatchService batchService;
 
 	public BatchDataServiceImpl() {
 		super(OpenIAMQueue.BatchTaskQueue);
