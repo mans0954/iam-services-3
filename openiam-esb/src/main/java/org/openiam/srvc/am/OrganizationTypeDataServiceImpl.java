@@ -57,12 +57,12 @@ public class OrganizationTypeDataServiceImpl extends AbstractApiService implemen
 
 	@Override
 	public Response save(final OrganizationType type) {
-		return this.manageGrudApiRequest(OrganizationTypeAPI.Save, type);
+		return this.manageCrudApiRequest(OrganizationTypeAPI.Save, type);
 	}
 
 	@Override
 	public Response delete(final String id) {
-		return this.manageGrudApiRequest(OrganizationTypeAPI.Delete, id);
+		return this.manageCrudApiRequest(OrganizationTypeAPI.Delete, id);
 	}
 
 	@Override

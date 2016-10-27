@@ -44,22 +44,22 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 
 	@Override
 	public Response saveAuthLevelAttribute(AuthLevelAttribute attribute) {
-        return manageGrudApiRequest(ContentProviderAPI.SaveAuthLevelAttribute, attribute);
+        return manageCrudApiRequest(ContentProviderAPI.SaveAuthLevelAttribute, attribute);
 	}
 
 	@Override
 	public Response deleteAuthLevelAttribute(String id) {
-        return this.manageGrudApiRequest(ContentProviderAPI.DeleteAuthLevelAttribute, id);
+        return this.manageCrudApiRequest(ContentProviderAPI.DeleteAuthLevelAttribute, id);
 	}
     
     @Override
     public Response saveAuthLevelGrouping(final AuthLevelGrouping grouping) {
-        return manageGrudApiRequest(ContentProviderAPI.SaveAuthLevelGrouping, grouping);
+        return manageCrudApiRequest(ContentProviderAPI.SaveAuthLevelGrouping, grouping);
     }
 
 	@Override
 	public Response deleteAuthLevelGrouping(String id) {
-        return this.manageGrudApiRequest(ContentProviderAPI.DeleteAuthLevelGrouping, id);
+        return this.manageCrudApiRequest(ContentProviderAPI.DeleteAuthLevelGrouping, id);
 	}
 
 	@Override
@@ -101,17 +101,17 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 
 	@Override
 	public Response setupApplication(final ContentProvider provider) {
-        return manageGrudApiRequest(ContentProviderAPI.SetupApplication, provider);
+        return manageCrudApiRequest(ContentProviderAPI.SetupApplication, provider);
 	}
 
     @Override
     public Response saveContentProvider(ContentProvider provider) {
-        return manageGrudApiRequest(ContentProviderAPI.SaveContentProvider, provider);
+        return manageCrudApiRequest(ContentProviderAPI.SaveContentProvider, provider);
     }
 
     @Override
     public Response deleteContentProvider(String providerId){
-        return manageGrudApiRequest(ContentProviderAPI.DeleteContentProvider, providerId);
+        return manageCrudApiRequest(ContentProviderAPI.DeleteContentProvider, providerId);
     }
 
     @Override
@@ -151,12 +151,12 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 
     @Override
     public Response saveURIPattern(final @WebParam(name = "pattern", targetNamespace = "") URIPattern pattern) {
-        return manageGrudApiRequest(ContentProviderAPI.SaveURIPattern, pattern);
+        return manageCrudApiRequest(ContentProviderAPI.SaveURIPattern, pattern);
     }
 
     @Override
     public Response deleteProviderPattern(@WebParam(name = "providerId", targetNamespace = "") String providerId) {
-        return this.manageGrudApiRequest(ContentProviderAPI.DeleteProviderPattern, providerId);
+        return this.manageCrudApiRequest(ContentProviderAPI.DeleteProviderPattern, providerId);
     }
 
     @Override
@@ -166,6 +166,6 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 
 	@Override
 	public Response createDefaultURIPatterns(String providerId) {
-        return this.manageGrudApiRequest(ContentProviderAPI.CreateDefaultURIPatterns, providerId);
+        return this.manageCrudApiRequest(ContentProviderAPI.CreateDefaultURIPatterns, providerId);
 	}
 }
