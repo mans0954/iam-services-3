@@ -224,6 +224,10 @@
             <b>metadataTypeName</b>
         </field>
         <field>
+			<a>type.grouping</a>
+			<b>mdGrouping</b>
+		</field>
+        <field>
             <a>parent.id</a>
             <b>parentId</b>
         </field>
@@ -241,6 +245,10 @@
             <b>metadataTypeName</b>
         </field>
         <field>
+			<a>type.grouping</a>
+			<b>mdGrouping</b>
+		</field>
+        <field>
         	<a>parent.id</a>
         	<b>parentId</b>
         </field>
@@ -256,6 +264,10 @@
             <a>type.displayName</a>
             <b>metadataTypeName</b>
         </field>
+        <field>
+			<a>type.grouping</a>
+			<b>mdGrouping</b>
+		</field>
     </mapping>
 
 
@@ -388,6 +400,10 @@
 		<field>
 			<a>type.displayName</a>
 			<b>metadataTypeName</b>
+		</field>
+		<field>
+			<a>type.grouping</a>
+			<b>mdGrouping</b>
 		</field>
         <field>
             <a>managedSystem.id</a>

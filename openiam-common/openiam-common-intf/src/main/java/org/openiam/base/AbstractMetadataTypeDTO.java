@@ -4,15 +4,19 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractMetadataTypeDTO", propOrder = {
 	"mdTypeId",
-	"metadataTypeName"
+	"metadataTypeName",
+	"mdGrouping"
 })
 public abstract class AbstractMetadataTypeDTO extends KeyNameDTO {
 
 	protected String mdTypeId;
     protected String metadataTypeName;
+    protected MetadataTypeGrouping mdGrouping;
 
     public String getMdTypeId() {
         return mdTypeId;
@@ -28,10 +32,21 @@ public abstract class AbstractMetadataTypeDTO extends KeyNameDTO {
 	public void setMetadataTypeName(String metadataTypeName) {
 		this.metadataTypeName = metadataTypeName;
 	}
+
+	public MetadataTypeGrouping getMdGrouping() {
+		return mdGrouping;
+	}
+
+	public void setMdGrouping(MetadataTypeGrouping mdGrouping) {
+		this.mdGrouping = mdGrouping;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result
+				+ ((mdGrouping == null) ? 0 : mdGrouping.hashCode());
 		result = prime * result
 				+ ((mdTypeId == null) ? 0 : mdTypeId.hashCode());
 		result = prime
@@ -39,6 +54,7 @@ public abstract class AbstractMetadataTypeDTO extends KeyNameDTO {
 				+ ((metadataTypeName == null) ? 0 : metadataTypeName.hashCode());
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -48,6 +64,8 @@ public abstract class AbstractMetadataTypeDTO extends KeyNameDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractMetadataTypeDTO other = (AbstractMetadataTypeDTO) obj;
+		if (mdGrouping != other.mdGrouping)
+			return false;
 		if (mdTypeId == null) {
 			if (other.mdTypeId != null)
 				return false;
@@ -60,11 +78,12 @@ public abstract class AbstractMetadataTypeDTO extends KeyNameDTO {
 			return false;
 		return true;
 	}
+
 	@Override
 	public String toString() {
-		return String
-				.format("AbstractMetadataTypeDTO [metadataTypeId=%s, metadataTypeName=%s, toString()=%s]",
-                        mdTypeId, metadataTypeName, super.toString());
+		return "AbstractMetadataTypeDTO [mdTypeId=" + mdTypeId
+				+ ", metadataTypeName=" + metadataTypeName + ", mdGrouping="
+				+ mdGrouping + "]";
 	}
 	
 	
