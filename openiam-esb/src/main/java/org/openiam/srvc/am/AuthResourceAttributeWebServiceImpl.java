@@ -1,16 +1,9 @@
 package org.openiam.srvc.am;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
-import org.openiam.am.srvc.dozer.converter.AuthResourceAMAttributeDozerConverter;
-import org.openiam.am.srvc.dozer.converter.AuthResourceAttributeMapDozerConverter;
 import org.openiam.am.srvc.dto.AuthResourceAMAttribute;
 import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
 import org.openiam.am.srvc.dto.SSOAttribute;
-import org.openiam.am.srvc.service.AuthResourceAttributeService;
-import org.openiam.base.request.BaseGrudServiceRequest;
+import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.request.SSOAttributesRequest;
@@ -19,15 +12,10 @@ import org.openiam.base.response.AuthResourceAttributeMapResponse;
 import org.openiam.base.response.SSOAttributeListResponse;
 import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.AuthResourceAttributeAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -61,7 +49,7 @@ public class AuthResourceAttributeWebServiceImpl extends AbstractApiService impl
 
     @Override
     public Response saveAttributeMap(AuthResourceAttributeMap attributeMap) {
-        StringResponse response= this.manageApiRequest(AuthResourceAttributeAPI.SaveAttributeMap, new BaseGrudServiceRequest<AuthResourceAttributeMap>(attributeMap), StringResponse.class);
+        StringResponse response= this.manageApiRequest(AuthResourceAttributeAPI.SaveAttributeMap, new BaseCrudServiceRequest<AuthResourceAttributeMap>(attributeMap), StringResponse.class);
         return response.convertToBase();
     }
 

@@ -1,10 +1,5 @@
 package org.openiam.srvc.am;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openiam.base.request.BaseGrudServiceRequest;
 import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.request.MembershipRequest;
@@ -12,23 +7,13 @@ import org.openiam.base.response.IntResponse;
 import org.openiam.base.response.OrganizationTypeListResponse;
 import org.openiam.base.response.OrganizationTypeResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.OrganizationDozerConverter;
-import org.openiam.dozer.converter.OrganizationTypeDozerBeanConverter;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
-import org.openiam.idm.srvc.org.service.OrganizationTypeService;
-import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.constants.OrganizationTypeAPI;
 import org.openiam.srvc.AbstractApiService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
 
@@ -72,12 +57,12 @@ public class OrganizationTypeDataServiceImpl extends AbstractApiService implemen
 
 	@Override
 	public Response save(final OrganizationType type) {
-		return this.manageGrudApiRequest(OrganizationTypeAPI.Save, type);
+		return this.manageCrudApiRequest(OrganizationTypeAPI.Save, type);
 	}
 
 	@Override
 	public Response delete(final String id) {
-		return this.manageGrudApiRequest(OrganizationTypeAPI.Delete, id);
+		return this.manageCrudApiRequest(OrganizationTypeAPI.Delete, id);
 	}
 
 	@Override

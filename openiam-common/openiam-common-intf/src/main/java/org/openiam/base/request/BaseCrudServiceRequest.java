@@ -5,10 +5,10 @@ import org.openiam.base.KeyDTO;
 /**
  * Created by alexander on 09/08/16.
  */
-public class BaseGrudServiceRequest<V extends KeyDTO> extends BaseServiceRequest {
+public class BaseCrudServiceRequest<V extends KeyDTO> extends BaseServiceRequest {
     private V object;
 
-    public BaseGrudServiceRequest(V object) {
+    public BaseCrudServiceRequest(V object) {
         this.object = object;
     }
 
@@ -22,7 +22,7 @@ public class BaseGrudServiceRequest<V extends KeyDTO> extends BaseServiceRequest
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("BaseGrudServiceRequest{");
+        final StringBuffer sb = new StringBuffer("BaseCrudServiceRequest{");
         sb.append("object=").append(object);
         sb.append('}');
         return sb.toString();

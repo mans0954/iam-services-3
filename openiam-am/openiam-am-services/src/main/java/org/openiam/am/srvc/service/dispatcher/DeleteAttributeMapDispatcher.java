@@ -1,10 +1,7 @@
 package org.openiam.am.srvc.service.dispatcher;
 
-import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
 import org.openiam.am.srvc.service.AuthResourceAttributeService;
-import org.openiam.base.request.BaseGrudServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
-import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.AuthResourceAttributeAPI;

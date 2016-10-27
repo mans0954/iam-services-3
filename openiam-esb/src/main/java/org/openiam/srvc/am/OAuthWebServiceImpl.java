@@ -85,11 +85,11 @@ public class OAuthWebServiceImpl extends AbstractApiService implements OAuthWebS
         model.setUserId(userId);
         model.setId(providerId);
         model.setOauthUserClientXrefList(oauthUserClientXrefList);
-        return this.manageGrudApiRequest(OAuthAPI.SaveClientScopeAuthorization, model);
+        return this.manageCrudApiRequest(OAuthAPI.SaveClientScopeAuthorization, model);
     }
     @Override
     public Response saveOAuthCode(OAuthCode oAuthCode){
-        return this.manageGrudApiRequest(OAuthAPI.SaveOAuthCode, oAuthCode);
+        return this.manageCrudApiRequest(OAuthAPI.SaveOAuthCode, oAuthCode);
     }
 
     public OAuthCode getOAuthCode(String code){
@@ -109,7 +109,7 @@ public class OAuthWebServiceImpl extends AbstractApiService implements OAuthWebS
 
     @Override
     public Response saveOAuthToken(OAuthToken oAuthToken){
-        return this.manageGrudApiRequest(OAuthAPI.SaveOAuthToken, oAuthToken,OAuthTokenResponse.class);
+        return this.manageCrudApiRequest(OAuthAPI.SaveOAuthToken, oAuthToken,OAuthTokenResponse.class);
     }
 
 

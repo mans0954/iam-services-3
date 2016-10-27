@@ -6,10 +6,7 @@ import java.util.List;
 
 import javax.jws.WebService;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openiam.base.request.BaseGrudServiceRequest;
+import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.request.IdsServiceRequest;
@@ -18,23 +15,13 @@ import org.openiam.base.response.AccessRightResponse;
 import org.openiam.base.response.IntResponse;
 import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.AccessRightDozerConverter;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
-import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.dto.AccessRight;
-import org.openiam.idm.srvc.access.service.AccessRightService;
-import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.model.AccessViewResponse;
-import org.openiam.mq.constants.AccessReviewAPI;
 import org.openiam.mq.constants.AccessRightAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service("accessRightWS")
@@ -47,7 +34,7 @@ public class AccessRightDataServiceImpl extends AbstractApiService implements Ac
 
 	@Override
 	public StringResponse save(final AccessRight dto) {
-		final BaseGrudServiceRequest<AccessRight> request = new BaseGrudServiceRequest<>(dto);
+		final BaseCrudServiceRequest<AccessRight> request = new BaseCrudServiceRequest<>(dto);
 		final StringResponse response= this.manageApiRequest(AccessRightAPI.Save, request, StringResponse.class);
 		return response;
 	}

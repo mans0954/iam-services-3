@@ -2,7 +2,7 @@ package org.openiam.am.srvc.service.dispatcher;
 
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.service.ContentProviderService;
-import org.openiam.base.request.BaseGrudServiceRequest;
+import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.base.response.StringResponse;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.ContentProviderAPI;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 23/09/16.
  */
 @Component
-public class SaveContentProviderDispatcher extends AbstractAPIDispatcher<BaseGrudServiceRequest<ContentProvider>, StringResponse, ContentProviderAPI> {
+public class SaveContentProviderDispatcher extends AbstractAPIDispatcher<BaseCrudServiceRequest<ContentProvider>, StringResponse, ContentProviderAPI> {
     @Autowired
     private ContentProviderService contentProviderService;
 
@@ -23,7 +23,7 @@ public class SaveContentProviderDispatcher extends AbstractAPIDispatcher<BaseGru
     }
 
     @Override
-    protected StringResponse processingApiRequest(ContentProviderAPI openIAMAPI, BaseGrudServiceRequest<ContentProvider> request) throws BasicDataServiceException {
+    protected StringResponse processingApiRequest(ContentProviderAPI openIAMAPI, BaseCrudServiceRequest<ContentProvider> request) throws BasicDataServiceException {
         StringResponse response = new StringResponse();
         switch (openIAMAPI){
             case SaveContentProvider:

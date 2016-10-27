@@ -1,8 +1,8 @@
 package org.openiam.srvc.common;
 
+import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.mq.constants.OpenIAMAPICommon;
 import org.openiam.srvc.AbstractApiService;
-import org.openiam.base.request.BaseGrudServiceRequest;
 import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.response.CountResponse;
 import org.openiam.base.response.IdServiceResponse;
@@ -10,9 +10,7 @@ import org.openiam.base.response.LanguageListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.srvc.common.LanguageWebService;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
@@ -55,7 +53,7 @@ public class LanguageWebServiceImpl extends AbstractApiService implements Langua
 
     @Override
     public Response save(Language language) {
-        BaseGrudServiceRequest<Language> request = new BaseGrudServiceRequest<>(language);
+        BaseCrudServiceRequest<Language> request = new BaseCrudServiceRequest<>(language);
         IdServiceResponse response =  this.manageApiRequest(OpenIAMAPICommon.SaveLanguage, request, IdServiceResponse.class);
 
        return response.convertToBase();
