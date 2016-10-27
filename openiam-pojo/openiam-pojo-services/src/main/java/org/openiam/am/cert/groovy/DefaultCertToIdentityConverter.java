@@ -22,7 +22,7 @@ public class DefaultCertToIdentityConverter {
 	protected static final Log LOG = LogFactory.getLog(DefaultCertToIdentityConverter.class);
 	
 	protected X509Certificate clientCert;
-	
+
 	protected String regex;
 	
 	@Autowired
@@ -51,7 +51,7 @@ public class DefaultCertToIdentityConverter {
 	public void setClientDNRegex(final String regex) {
 		this.regex = regex;
 	}
-	
+
 	/**
 	 * Returns the Login associated with the X509Certificate
 	 * @return

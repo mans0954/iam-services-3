@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
+import org.openiam.am.cert.groovy.DefaultCACertCheck;
 import org.openiam.am.cert.groovy.DefaultCertToIdentityConverter;
 import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.service.AuthProviderService;
@@ -94,6 +95,7 @@ public class URIFederationRestController {
 
 			final String regex = StringUtils.trimToNull(provider.getCertRegex());
 			final String regexScript = StringUtils.trimToNull(provider.getCertGroovyScript());
+			final String caValidScript = StringUtils.trimToNull(provider.getCaValidateGroovyScript());
 			if(StringUtils.isBlank(regex) && StringUtils.isBlank(regexScript)) {
 				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
 			}
@@ -105,11 +107,29 @@ public class URIFederationRestController {
 				certToIdentityConverter.setClientDNRegex(regex);
 			} else {
 				if(!scriptIntegration.scriptExists(regexScript)) {
-					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, "regexScript - not exist ");
 				}
 				certToIdentityConverter = (DefaultCertToIdentityConverter)scriptIntegration.instantiateClass(null, regexScript);
 				if(certToIdentityConverter == null) {
 					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+				}
+			}
+
+			DefaultCACertCheck caCertCheck = null;
+			if(StringUtils.isNotBlank(caValidScript)) {
+				if(!scriptIntegration.scriptExists(caValidScript)) {
+					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, "caValidScript - not exist ");
+				}
+				caCertCheck = (DefaultCACertCheck)scriptIntegration.instantiateClass(null, caValidScript);
+				if(caCertCheck == null) {
+					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, "Error on execute caValidScript");
+				}
+			}
+			if (caCertCheck != null) {
+				caCertCheck.setCertficiate(clientCert);
+				caCertCheck.init();
+				if (!caCertCheck.resolve()) {
+					throw new BasicDataServiceException(ResponseCode.CERT_INVALID_VERIFY_WITH_CA);
 				}
 			}
 

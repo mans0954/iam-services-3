@@ -32,7 +32,8 @@ import java.util.Set;
         "nextAuthProviderId",
         "supportsCertAuth",
         "certRegex",
-        "certGroovyScript"
+        "certGroovyScript",
+        "caValidateGroovyScript"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider implements Serializable {
@@ -55,6 +56,7 @@ public class AuthProvider implements Serializable {
     private boolean supportsCertAuth;
     private String certRegex;
     private String certGroovyScript;
+    private String caValidateGroovyScript;
 
     @XmlTransient
     private Map<String, AuthProviderAttribute> providerAttributeMap=null;
@@ -220,6 +222,14 @@ public class AuthProvider implements Serializable {
         this.certGroovyScript = certGroovyScript;
     }
 
+    public String getCaValidateGroovyScript() {
+        return caValidateGroovyScript;
+    }
+
+    public void setCaValidateGroovyScript(String caValidateGroovyScript) {
+        this.caValidateGroovyScript = caValidateGroovyScript;
+    }
+
 	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -248,6 +258,11 @@ public class AuthProvider implements Serializable {
                 return false;
         } else if (!certGroovyScript.equals(that.certGroovyScript))
             return false;
+        if (caValidateGroovyScript == null) {
+            if (that.caValidateGroovyScript != null)
+                return false;
+        } else if (!caValidateGroovyScript.equals(that.caValidateGroovyScript))
+            return false;
         if (certRegex == null) {
             if (that.certRegex != null)
                 return false;
@@ -275,6 +290,7 @@ public class AuthProvider implements Serializable {
         result = 31 * result + (resource != null ? resource.hashCode() : 0);
         result = 31 * result + (providerAttributeMap != null ? providerAttributeMap.hashCode() : 0);
         result = 31 * result + ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+        result = 31 * result + ((caValidateGroovyScript == null) ? 0 : caValidateGroovyScript.hashCode());
         result = 31 * result + ((certRegex == null) ? 0 : certRegex.hashCode());
         return result;
     }
