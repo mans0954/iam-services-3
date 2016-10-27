@@ -100,7 +100,16 @@ public class URIFederationRestController {
 				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
 			}
 
+			X509Certificate caCert = null;
+			if ((provider.getCaCert() != null) && (provider.getCaCert().length > 0)) {
+				try {
+					caCert = X509Certificate.getInstance(new ByteArrayInputStream(provider.getCaCert()));
+				} catch (Exception ex) {
+					throw new BasicDataServiceException(ResponseCode.CERT_CA_INVALID, "Can not parse CA Cert");
+				}
+			}
 			final X509Certificate clientCert = X509Certificate.getInstance(new ByteArrayInputStream(certContents.getBytes()));
+
 			DefaultCertToIdentityConverter certToIdentityConverter;
 			if(regex != null) {
 				certToIdentityConverter = new DefaultCertToIdentityConverter();
@@ -126,6 +135,9 @@ public class URIFederationRestController {
 				}
 			}
 			if (caCertCheck != null) {
+				if (caCert != null) {
+					caCertCheck.setCACert(caCert);
+				}
 				caCertCheck.setCertficiate(clientCert);
 				caCertCheck.init();
 				if (!caCertCheck.resolve()) {
@@ -144,7 +156,7 @@ public class URIFederationRestController {
 			wsResponse.succeed();
 		} catch(BasicDataServiceException e) {
 			wsResponse.fail();
-			wsResponse.setErrorText(e.getMessage());
+			wsResponse.setErrorText(e.getResponseValue() + " : " + e.getMessage());
 			wsResponse.setErrorCode(e.getCode());
 			LOG.info("Cannot cert identity", e);
 		} catch(Throwable e) {

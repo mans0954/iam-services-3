@@ -33,7 +33,8 @@ import java.util.Set;
         "supportsCertAuth",
         "certRegex",
         "certGroovyScript",
-        "caValidateGroovyScript"
+        "caValidateGroovyScript",
+        "caCert"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider implements Serializable {
@@ -57,6 +58,7 @@ public class AuthProvider implements Serializable {
     private String certRegex;
     private String certGroovyScript;
     private String caValidateGroovyScript;
+    private byte[] caCert;
 
     @XmlTransient
     private Map<String, AuthProviderAttribute> providerAttributeMap=null;
@@ -131,6 +133,14 @@ public class AuthProvider implements Serializable {
 
     public void setPrivateKey(byte[] privateKey) {
         this.privateKey = privateKey;
+    }
+
+    public byte[] getCaCert() {
+        return caCert;
+    }
+
+    public void setCaCert(byte[] caCert) {
+        this.caCert = caCert;
     }
 
     public Set<AuthProviderAttribute> getProviderAttributeSet() {
@@ -248,6 +258,7 @@ public class AuthProvider implements Serializable {
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (!Arrays.equals(publicKey, that.publicKey)) return false;
         if (!Arrays.equals(privateKey, that.privateKey)) return false;
+        if (!Arrays.equals(caCert, that.caCert)) return false;
         if (providerAttributeSet != null ? !providerAttributeSet.equals(that.providerAttributeSet) : that.providerAttributeSet != null)
             return false;
         if (resourceAttributeMap != null ? !resourceAttributeMap.equals(that.resourceAttributeMap) : that.resourceAttributeMap != null)
@@ -285,6 +296,7 @@ public class AuthProvider implements Serializable {
         result = 31 * result + (chained ? 1 : 0);
         result = 31 * result + (publicKey != null ? Arrays.hashCode(publicKey) : 0);
         result = 31 * result + (privateKey != null ? Arrays.hashCode(privateKey) : 0);
+        result = 31 * result + (caCert != null ? Arrays.hashCode(caCert) : 0);
         result = 31 * result + (providerAttributeSet != null ? providerAttributeSet.hashCode() : 0);
         result = 31 * result + (resourceAttributeMap != null ? resourceAttributeMap.hashCode() : 0);
         result = 31 * result + (resource != null ? resource.hashCode() : 0);

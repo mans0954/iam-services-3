@@ -57,6 +57,10 @@ public class AuthProviderEntity implements Serializable {
     @Lob
     private byte[] privateKey=null;
 
+    @Column(name = "CA_CERT", nullable = true)
+    @Lob
+    private byte[] caCert=null;
+
     @Column(name="SUPPORTS_CERT_AUTH")
     @Type(type = "yes_no")
     private boolean supportsCertAuth;
@@ -163,6 +167,14 @@ public class AuthProviderEntity implements Serializable {
 
     public void setPrivateKey(byte[] privateKey) {
         this.privateKey = privateKey;
+    }
+
+    public byte[] getCaCert() {
+        return caCert;
+    }
+
+    public void setCaCert(byte[] caCert) {
+        this.caCert = caCert;
     }
 
     public AuthProviderTypeEntity getType() {
@@ -286,6 +298,7 @@ public class AuthProviderEntity implements Serializable {
 				* result
 				+ ((nextAuthProvider == null) ? 0 : nextAuthProvider.hashCode());
 		result = prime * result + Arrays.hashCode(privateKey);
+        result = prime * result + Arrays.hashCode(caCert);
 		result = prime * result
 				+ ((providerId == null) ? 0 : providerId.hashCode());
 		result = prime * result
@@ -338,6 +351,8 @@ public class AuthProviderEntity implements Serializable {
 			return false;
 		if (!Arrays.equals(privateKey, other.privateKey))
 			return false;
+        if (!Arrays.equals(caCert, other.caCert))
+            return false;
 		if (providerId == null) {
 			if (other.providerId != null)
 				return false;

@@ -255,6 +255,9 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
             if(provider.getPublicKey()!=null && provider.getPublicKey().length>0){
                 entity.setPublicKey(provider.getPublicKey());
             }
+            if(provider.getCaCert()!=null && provider.getCaCert().length>0){
+                entity.setCaCert(provider.getCaCert());
+            }
             entity.setSignRequest(provider.isSignRequest());
             
             if(!entity.getType().isChainable()) {
