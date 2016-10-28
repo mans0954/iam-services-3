@@ -521,6 +521,19 @@
 			"cacheable" : false
 		},
 		{
+			"pattern" : "/idp/debugSAMLResponse.html",
+			"ignoreXSS" : true,
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : false
+		},
+		{
 			"pattern" : "/idp/rest/api/password/validation/*",
 			"isPublic" : true,
 			"groupingXrefs" : [
