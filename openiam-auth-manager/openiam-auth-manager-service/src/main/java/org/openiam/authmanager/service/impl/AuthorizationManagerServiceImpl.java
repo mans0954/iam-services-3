@@ -635,12 +635,15 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	private boolean isEntitled(final AuthorizationUser user, final AuthorizationResource resource) {
 		boolean retVal = false;
 		if(user != null && resource != null) {
-			AuthorizationResource toCheck = null;
+			AuthorizationResource toCheck = new AuthorizationResource();
 			if(resource.getId() != null) {
 				toCheck = resourceIdCache.get(resource.getId());
 			} else if(resource.getName() != null) {
 				toCheck = resourceNameCache.get(resource.getName());
 			}
+			log.info("Auth resource: " + resource);
+			log.info("User requestor: " + user.getId());
+			log.info("Resource to check: " + toCheck);
 			retVal = toCheck.isPublic() || user.isEntitledTo(toCheck);
 		}
 		return retVal;
