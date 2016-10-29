@@ -51,6 +51,10 @@ import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MapEvent;
+import com.hazelcast.map.listener.EntryAddedListener;
+import com.hazelcast.map.listener.EntryMergedListener;
+import com.hazelcast.map.listener.EntryUpdatedListener;
+import com.hazelcast.map.listener.MapListener;
 
 /**
  * Created by: Alexander Duckardt Date: 09.10.12
@@ -141,7 +145,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         return (userKeyDao.countAll().intValue() > 0);
     }
 
-    private class JKSEntryListener implements EntryListener<String, byte[]> {
+    private class JKSEntryListener implements EntryAddedListener<String, byte[]>, EntryMergedListener<String, byte[]>, EntryUpdatedListener<String, byte[]> {
 
         void addOrUpdate(final byte[] value) {
             log.warn("Received add or update JKS event");
@@ -181,29 +185,11 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
             addOrUpdate(event.getValue());
         }
 
-
-        @Override
-        public void entryRemoved(EntryEvent<String, byte[]> event) {
-            // TODO Auto-generated method stub
-        }
-
-        @Override
-        public void entryEvicted(EntryEvent<String, byte[]> event) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void mapCleared(MapEvent arg0) {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public void mapEvicted(MapEvent arg0) {
-            // TODO Auto-generated method stub
-
-        }
+		@Override
+		public void entryMerged(EntryEvent<String, byte[]> event) {
+			log.warn("entryMerged() event called for jks key");
+            addOrUpdate(event.getValue());
+		}
 
     }
 
