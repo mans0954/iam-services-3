@@ -368,21 +368,25 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 	}
 	
 	private void logEviction(final Cache cache, final Object key, final int numOfMultikeys) {
+		/*
 		final IdmAuditLogEntity log = new IdmAuditLogEntity();
 		log.setAction(AuditAction.CACHE_EVICT.value());
 		log.put(AuditAttributeName.CACHE_NAME.name(), cache.getName());
 		log.put(AuditAttributeName.CACHE_KEY.name(), key.toString());
 		log.put(AuditAttributeName.NUM_OF_MULTIKEYS.name(), Integer.valueOf(numOfMultikeys).toString());
 		auditLogHelper.enqueue(log);
+		*/
 	}
 	
 	private void logPut(final Cache cache, final Object key, final int numOfMultikeys) {
+		/*
 		final IdmAuditLogEntity log = new IdmAuditLogEntity();
 		log.setAction(AuditAction.CACHE_PUT.value());
 		log.put(AuditAttributeName.CACHE_NAME.name(), cache.getName());
 		log.put(AuditAttributeName.CACHE_KEY.name(), key.toString());
 		log.put(AuditAttributeName.NUM_OF_MULTIKEYS.name(), Integer.valueOf(numOfMultikeys).toString());
 		auditLogHelper.enqueue(log);
+		*/
 	}
 	
 	@Override
