@@ -191,16 +191,18 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	
 	protected Sort getSort(final S searchBean) {
 		Sort sortBy = null;
-		final List<SortParam> sortParamList = searchBean.getSortBy();
-		if(CollectionUtils.isNotEmpty(sortParamList)) {
-			for (final SortParam sort : sortParamList) {
-				final Direction direction = OrderConstants.ASC.equals(sort.getOrderBy()) ? Direction.ASC : Direction.DESC;
-				if(isSortByValid(sort.getSortBy())) {
-					final Sort currentSort = new Sort(direction, sort.getSortBy());
-					if(sortBy == null) {
-						sortBy = currentSort;
-					} else {
-						sortBy.and(currentSort);
+		if(searchBean != null) {
+			final List<SortParam> sortParamList = searchBean.getSortBy();
+			if(CollectionUtils.isNotEmpty(sortParamList)) {
+				for (final SortParam sort : sortParamList) {
+					final Direction direction = OrderConstants.ASC.equals(sort.getOrderBy()) ? Direction.ASC : Direction.DESC;
+					if(isSortByValid(sort.getSortBy())) {
+						final Sort currentSort = new Sort(direction, sort.getSortBy());
+						if(sortBy == null) {
+							sortBy = currentSort;
+						} else {
+							sortBy.and(currentSort);
+						}
 					}
 				}
 			}
