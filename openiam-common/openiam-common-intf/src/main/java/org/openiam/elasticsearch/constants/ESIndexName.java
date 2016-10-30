@@ -18,6 +18,7 @@ public class ESIndexName {
     public static final String GROUP = "group";
     public static final String RESOURCE = "resource";
     public static final String ORGANIZATION = "organization";
+    public static final String METADATA_TYPE = "metadatatype";
     
     public static final String USER_TO_ROLE_XREF="userrolexref";
     public static final String USER_TO_GROUP_XREF="usergroupxref";

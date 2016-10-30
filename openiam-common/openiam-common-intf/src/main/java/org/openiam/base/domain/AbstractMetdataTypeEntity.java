@@ -6,8 +6,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 
+import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
+import org.openiam.elasticsearch.bridge.MetadataTypeBridge;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.internationalization.Internationalized;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @MappedSuperclass
 public abstract class AbstractMetdataTypeEntity extends KeyEntity {
@@ -15,6 +20,8 @@ public abstract class AbstractMetdataTypeEntity extends KeyEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)
     @Internationalized
+    @ElasticsearchFieldBridge(impl = MetadataTypeBridge.class)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     protected MetadataTypeEntity type;
 
 	public MetadataTypeEntity getType() {

@@ -2,9 +2,14 @@ package org.openiam.base.domain;
 
 import javax.persistence.MappedSuperclass;
 
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+
 @MappedSuperclass
 public abstract class AbstractKeyNameEntity extends KeyEntity {
 
+	@Field(type = FieldType.String, index = FieldIndex.analyzed)
 	protected String name;
 
 	public String getName() {

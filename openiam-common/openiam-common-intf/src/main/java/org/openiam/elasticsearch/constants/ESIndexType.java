@@ -17,6 +17,7 @@ public class ESIndexType {
     public static final String IDENTITY = "identity";
     public static final String LOCATION = "location";
     public static final String ORGANIZATION = "organization";
+    public static final String METADATA_TYPE = "metadatatype";
     
     public static final String USER_TO_ROLE_XREF="userrolexref";
     public static final String USER_TO_GROUP_XREF="usergroupxref";

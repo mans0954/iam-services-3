@@ -7,17 +7,24 @@ import org.hibernate.annotations.*;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import javax.persistence.*;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,6 +39,7 @@ import java.util.Set;
 	@AttributeOverride(name = "id", column = @Column(name = "TYPE_ID")),
 	@AttributeOverride(name = "name", column = @Column(name = "NAME", length = 100, nullable = true))
 })
+@Document(indexName = ESIndexName.METADATA_TYPE, type= ESIndexType.METADATA_TYPE)
 public class MetadataTypeEntity extends AbstractKeyNameEntity {
 
     private static final long serialVersionUID = 1L;
@@ -58,6 +66,7 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "GROUPING", length = 100)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private MetadataTypeGrouping grouping;
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = { CascadeType.ALL })

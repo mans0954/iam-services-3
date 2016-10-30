@@ -16,6 +16,7 @@ import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
+import org.openiam.elasticsearch.dao.MetadataTypeElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
@@ -52,6 +53,9 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     @Autowired
     private MetadataTypeDAO metadataTypeDao;
+    
+    @Autowired
+    private MetadataTypeElasticSearchRepository metadataTypeRepo;
     
     @Autowired
     private MetadataElementDAO metadataElementDao;
@@ -160,10 +164,22 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Cacheable(value="metadataTypes", key="{ #searchBean, #from, #size, #language}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataTypeEntity> retVal = null;
-		if(searchBean != null && searchBean.hasMultipleKeys()) {
-			retVal = metadataTypeDao.findByIds(searchBean.getKeys());
+		if(searchBean != null) {
+			if(CollectionUtils.isNotEmpty(searchBean.getKeys())) {
+				retVal = metadataTypeDao.findByIds(searchBean.getKeys());
+			} else {
+				if(searchBean.isUseElasticSearch()) {
+					if(metadataTypeRepo.isValidSearchBean(searchBean)) {
+						retVal = metadataTypeRepo.findBeans(searchBean, from, size);
+					} else {
+						retVal = metadataTypeRepo.findAll(metadataTypeRepo.getPageable(searchBean, from, size)).getContent();
+					}
+				} else {
+					retVal = metadataTypeDao.getByExample(searchBean, from, size);
+				}
+			}
 		} else {
-			retVal = metadataTypeDao.getByExample(searchBean, from, size);
+			retVal = metadataTypeRepo.findAll(metadataTypeRepo.getPageable(searchBean, from, size)).getContent();
 		}
         return (retVal != null) ? metaDataTypeDozerConverter.convertToDTOList(retVal,true) : null;
 	}

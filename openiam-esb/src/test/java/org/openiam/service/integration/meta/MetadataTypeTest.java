@@ -60,6 +60,17 @@ public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, M
 		searchBean.setDeepCopy(true);
 		return metadataServiceClient.findTypeBeans(searchBean, from, size, getDefaultLanguage());
 	}
+	
+	@Test
+	public void testSearchWithElasticSearch() {
+		final MetadataType type = createAndSave();
+		sleep(3); /* ES thread */
+		
+		final MetadataTypeSearchBean sb = newSearchBean();
+		sb.setNameToken(new SearchParam(type.getName(), MatchType.CONTAINS));
+		sb.setUseElasticSearch(true);
+		Assert.assertTrue((CollectionUtils.isNotEmpty(find(sb, 0, 1))));
+	}
 
 	private MetadataTypeSearchBean getCacheableSearchBean(final MetadataType entity) {
 		final MetadataTypeSearchBean sb = new MetadataTypeSearchBean();
@@ -83,6 +94,7 @@ public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, M
 	 * Not sure what the cause is, but it does not seem to be a bug in the code, as there
 	 * were no commits made to trigger a failure
 	 */
+	/*
 	@Test(enabled=false)
 	public void testSearchBeanCache() throws Exception {
 		for(int j = 0; j < 2; j++) {
@@ -113,16 +125,16 @@ public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, M
 		final MetadataType entity = createAndSave();
 		final MetadataTypeSearchBean sb = getCacheableSearchBean(entity);
 		try {
-			/* trigger and assert cache hit */
+			// trigger and assert cache hit 
 			searchAndAssertCacheHit(sb, entity, "metadataTypes");
 			
 			saveAndAssertCachePurge(sb, entity, new String[] {"metadataTypes"}, 1, 1);
 			
-			/* trigger and assert cache hit */
+			// trigger and assert cache hit 
 			searchAndAssertCacheHit(sb, entity, "metadataTypes");
 		} finally {
 			deleteAndAssert(entity);
 		}
 	}
-
+	*/
 }
