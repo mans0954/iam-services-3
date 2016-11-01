@@ -377,18 +377,18 @@ public class Transformation {
         attr = this.getValue(lo.get("homeDirectory"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("homeDirectory", attr));
-            if ("PROD".equalsIgnoreCase(serverMode)) {
-                addGroup(HOME_DIR_GROUP_ID, user);
-            } else if ("STAGING".equalsIgnoreCase(serverMode)) {
-                addGroup(HOME_DIR_GROUP_ID_STAGING, user);
-            }
+//            if ("PROD".equalsIgnoreCase(serverMode)) {
+//                addGroup(HOME_DIR_GROUP_ID, user);
+//            } else if ("STAGING".equalsIgnoreCase(serverMode)) {
+//                addGroup(HOME_DIR_GROUP_ID_STAGING, user);
+//            }
         } else {
             addUserAttribute(user, new UserAttributeEntity("homeDirectory", ""));
-            if ("PROD".equalsIgnoreCase(serverMode)) {
-                deleteGroup(HOME_DIR_GROUP_ID, user);
-            } else if ("STAGING".equalsIgnoreCase(serverMode)) {
-                deleteGroup(HOME_DIR_GROUP_ID_STAGING, user);
-            }
+//            if ("PROD".equalsIgnoreCase(serverMode)) {
+//                deleteGroup(HOME_DIR_GROUP_ID, user);
+//            } else if ("STAGING".equalsIgnoreCase(serverMode)) {
+//                deleteGroup(HOME_DIR_GROUP_ID_STAGING, user);
+//            }
         }
         attr = this.getValue(lo.get("homeDrive"));
         if (StringUtils.isNotBlank(attr)) {
@@ -933,17 +933,12 @@ public class Transformation {
         ph.setMetadataType(metatype);
         ph.setIsDefault(defaultPhone);
         ph.setIsActive(true);
-        String[] parts = phoneValue.split(" ");
-        if (parts != null && parts.length > 1) {
-            String newP = "";
-            for (int i = 1; i < parts.length; i++) {
-                newP += parts[i];
-            }
-            ph.setPhoneNbr(fixNull(newP));
-            ph.setCountryCd(parts[0]);
-        } else {
-            ph.setPhoneNbr(fixNull(phoneValue));
+        phoneValue = phoneValue.replace("-", "").replace("_", "").replace("(", "").replace(")", "").replace(".", "");
+        phoneValue = phoneValue.replace(" ", "").trim();
+        if (!phoneValue.startsWith("+")) {
+            phoneValue = "+" + phoneValue;
         }
+        ph.setPhoneNbr(fixNull(phoneValue));
         addPhone(user, ph);
     }
 
