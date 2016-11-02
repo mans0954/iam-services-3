@@ -72,11 +72,11 @@ public class GroupAttributeDAOImpl extends BaseDaoImpl<GroupAttributeEntity, Str
 	public List<Map<String,String>> getAttributeByGroupIds(List<String> groupIds, String attrName) {
 		String sql = new String("SELECT new map(ga.value as value, ge.id as id, ge.name as name) "
 				+ "from org.openiam.idm.srvc.grp.domain.GroupAttributeEntity ga, org.openiam.idm.srvc.grp.domain.GroupEntity ge "
-				+ "where ga.group.id=ge.id and ge.id in (:groupIds) ");
+				+ "where ga.group.id=ge.id and ge.id in (:groupIds) and ga.name=:attrName");
 		Session session = getSession();
 		Query qry = session.createQuery(sql);
 		qry.setParameterList("groupIds", groupIds);
-		log.info("sql = " + qry.toString());
+		qry.setString("attrName", attrName);
 
 		List<Map<String,String>> results = (List<Map<String,String>>) qry.setCacheable(this.cachable()).list();
 		return results;
@@ -86,10 +86,11 @@ public class GroupAttributeDAOImpl extends BaseDaoImpl<GroupAttributeEntity, Str
 	public String getAttributeByGroupId(String groupId, String attrName){
 		String sql = new String("SELECT ga.value as value "
 				+ "from org.openiam.idm.srvc.grp.domain.GroupAttributeEntity ga "
-				+ "where ga.group.id=:groupIds ");
+				+ "where ga.group.id=:groupIds and ga.name=:attrName");
 		Session session = getSession();
 		Query qry = session.createQuery(sql);
 		qry.setString("groupIds", groupId);
+		qry.setString("attrName", attrName);
 
 		List<String> results = (List<String>) qry.setCacheable(this.cachable()).list();
 		if (results == null) {
