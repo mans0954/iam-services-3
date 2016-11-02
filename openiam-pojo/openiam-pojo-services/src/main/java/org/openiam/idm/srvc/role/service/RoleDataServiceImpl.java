@@ -584,7 +584,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "roleEntities", key = "{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
+/*    @Cacheable(value = "roleEntities", key = "{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")*/
     public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size) {
 /*		Set<String> filter = getDelegationFilter(requesterId);
         if(StringUtils.isBlank(searchBean.getKey()))
