@@ -1,11 +1,13 @@
 package org.openiam.service.integration.authprovider;
 
+import java.net.URL;
 import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.searchbean.AuthAttributeSearchBean;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.srvc.am.AuthProviderWebService;
 import org.openiam.srvc.am.AuthResourceAttributeWebService;
 import org.openiam.srvc.am.OAuthWebService;
@@ -55,8 +57,10 @@ public class OAuthServiceTest extends AbstractServiceTest {
 	private AuthProvider authProvider;
 
 	private List<Resource> resourceList;
+	private List<Resource> roleResourceList;
 
 	private User testUser;
+	private Role role;
 
 	private String clientID;
 	private String OAuthClientSecret;
@@ -64,6 +68,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 	private Map<String, String> attributeValues = new HashMap<String, String>();
 
 	private static final int MAX_SCOPE_LIST_SIZE=10;
+	private static final int MAX_ROLE_SCOPE_LIST_SIZE=2;
 	private static final int SCOPES_TO_DELETE=2;
 
 
@@ -86,6 +91,15 @@ public class OAuthServiceTest extends AbstractServiceTest {
 			testUser.addResourceWithRights(r, null,null,null);
 		}
 		saveAndAssert(testUser);
+
+		rsb = new ResourceSearchBean();
+		rsb.setResourceTypeId("OAUTH_SCOPE");
+		roleResourceList = resourceServiceClient.findBeans(rsb,0,MAX_ROLE_SCOPE_LIST_SIZE,null);
+		role = createRole();
+		for(Resource r: roleResourceList){
+			resourceServiceClient.addRoleToResource(r.getId(), role.getId(), "3000", null, null, null);
+		}
+		refreshAuthorizationManager();
 
 		attributeValues = new HashMap<String, String>();
 		attributeValues.put("OAuthAuthorizationGrantFlow", "IMPLICIT");
@@ -118,6 +132,16 @@ public class OAuthServiceTest extends AbstractServiceTest {
 	public void destroy() {
 		if(authProvider != null) {
 			final Response wsResponse = authProviderServiceClient.deleteAuthProvider(authProvider.getId());
+			Assert.assertNotNull(wsResponse);
+			Assert.assertTrue(wsResponse.isSuccess());
+		}
+		if(testUser!=null){
+			final Response wsResponse = userServiceClient.deleteUser(testUser.getId());
+			Assert.assertNotNull(wsResponse);
+			Assert.assertTrue(wsResponse.isSuccess());
+		}
+		if(role!=null){
+			final Response wsResponse = roleServiceClient.removeRole(role.getId(), "3000");
 			Assert.assertNotNull(wsResponse);
 			Assert.assertTrue(wsResponse.isSuccess());
 		}
@@ -184,6 +208,120 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		Assert.assertTrue(CollectionUtils.isNotEmpty(authorizedScopes));
 		Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE).equals(authorizedScopes.size()));
 
+	}
+
+	@Test
+	public void testOAuthProviderCleanAuthorizedScopes() {
+		// get oauth client by client id
+		AuthProvider provider = oauthServiceClient.getClient(clientID);
+		Assert.assertNotNull(provider);
+		Assert.assertTrue(provider.getId().equals(authProvider.getId()));
+
+		// get scope for authorization should be MAX_SCOPE_LIST_SIZE
+		OAuthScopesResponse scopesResponse = oauthServiceClient.getScopesForAuthrorization(clientID, testUser.getId(), null);
+		Assert.assertNotNull(scopesResponse);
+		Assert.assertTrue(clientID.equals(scopesResponse.getClientId()));
+
+		if(CollectionUtils.isNotEmpty(scopesResponse.getList())){
+			Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE).equals(scopesResponse.getList().size()));
+			// do authorization
+			doAuthorization(scopesResponse);
+		}
+
+		// get authorized scopes should be MAX_SCOPE_LIST_SIZE
+		List<Resource> authorizedScopes = oauthServiceClient.getAuthorizedScopesByUser(clientID, testUser.getId(), null);
+		Assert.assertTrue(CollectionUtils.isNotEmpty(authorizedScopes));
+		Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE).equals(authorizedScopes.size()));
+
+		// remove SCOPES_TO_DELETE from user
+		List<Resource> deletedResource = new ArrayList<>(SCOPES_TO_DELETE);
+		for(int i=0;i<SCOPES_TO_DELETE;i++){
+			deletedResource.add(resourceList.get(i));
+			testUser.removeResource(resourceList.get(i));
+		}
+		saveAndAssert(testUser);
+		refreshAuthorizationManager();
+		cleanAuthorizedScopes();
+		// get authorized scopes should be MAX_SCOPE_LIST_SIZE-SCOPES_TO_DELETE
+		authorizedScopes = oauthServiceClient.getAuthorizedScopesByUser(clientID, testUser.getId(), null);
+		Assert.assertTrue(CollectionUtils.isNotEmpty(authorizedScopes));
+		Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE-SCOPES_TO_DELETE).equals(authorizedScopes.size()));
+		authorizedScopes.forEach(s ->{
+			for(Resource dr : deletedResource){
+				Assert.assertTrue(!s.getId().equals(dr.getId()), String.format("Scope %s should not be authorized", dr.getId()));
+			}
+		});
+
+		// add resources back to the user
+		deletedResource.forEach(dr ->{
+			testUser.addResourceWithRights(dr, null,null,null);
+		});
+		saveAndAssert(testUser);
+		refreshAuthorizationManager();
+		// get scope for authorization should be deletedResource.size()
+		scopesResponse = oauthServiceClient.getScopesForAuthrorization(clientID, testUser.getId(), null);
+		Assert.assertNotNull(scopesResponse);
+		Assert.assertTrue(clientID.equals(scopesResponse.getClientId()));
+		Assert.assertTrue(CollectionUtils.isNotEmpty(scopesResponse.getList()));
+		Assert.assertTrue(new Integer(SCOPES_TO_DELETE).equals(scopesResponse.getList().size()));
+		doAuthorization(scopesResponse);
+		// get scope for authorization should be 0
+		scopesResponse = oauthServiceClient.getScopesForAuthrorization(clientID, testUser.getId(), null);
+		Assert.assertNotNull(scopesResponse);
+		Assert.assertTrue(clientID.equals(scopesResponse.getClientId()));
+		Assert.assertTrue(CollectionUtils.isEmpty(scopesResponse.getList()));
+
+		// add scope to client
+		List<Resource> newScopes = new ArrayList<>(resourceList);
+		newScopes.addAll(roleResourceList);
+
+		updateScopeAttribute(provider, buildScopeAttributeValue(newScopes));
+		Response wsResponse = authProviderServiceClient.saveAuthProvider(provider, getRequestorId());
+		Assert.assertNotNull(wsResponse);
+		Assert.assertTrue(wsResponse.isSuccess());
+
+
+		// add role with 2 resources to the user
+		testUser.addRoleWithRights(role, null, null, null);
+		saveAndAssert(testUser);
+		refreshAuthorizationManager();
+		// get scope for authorization should be roleResourceList.size()
+		scopesResponse = oauthServiceClient.getScopesForAuthrorization(clientID, testUser.getId(), null);
+		Assert.assertNotNull(scopesResponse);
+		Assert.assertTrue(clientID.equals(scopesResponse.getClientId()));
+		Assert.assertTrue(CollectionUtils.isNotEmpty(scopesResponse.getList()));
+		Assert.assertTrue(new Integer(roleResourceList.size()).equals(scopesResponse.getList().size()));
+		doAuthorization(scopesResponse);
+		// get scope for authorization should be 0
+		scopesResponse = oauthServiceClient.getScopesForAuthrorization(clientID, testUser.getId(), null);
+		Assert.assertNotNull(scopesResponse);
+		Assert.assertTrue(clientID.equals(scopesResponse.getClientId()));
+		Assert.assertTrue(CollectionUtils.isEmpty(scopesResponse.getList()));
+		// get authorized scopes should be MAX_SCOPE_LIST_SIZE+roleResourceList.size()
+		authorizedScopes = oauthServiceClient.getAuthorizedScopesByUser(clientID, testUser.getId(), null);
+		Assert.assertTrue(CollectionUtils.isNotEmpty(authorizedScopes));
+		Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE+roleResourceList.size()).equals(authorizedScopes.size()));
+
+		// now remove role from user and check once more
+		testUser.removeRole(role.getId());
+		saveAndAssert(testUser);
+		refreshAuthorizationManager();
+		cleanAuthorizedScopes();
+
+		// get authorized scopes should be MAX_SCOPE_LIST_SIZE
+		authorizedScopes = oauthServiceClient.getAuthorizedScopesByUser(clientID, testUser.getId(), null);
+		Assert.assertTrue(CollectionUtils.isNotEmpty(authorizedScopes));
+		Assert.assertTrue(new Integer(MAX_SCOPE_LIST_SIZE).equals(authorizedScopes.size()));
+	}
+
+	private void cleanAuthorizedScopes(){
+		try {
+			oauthServiceClient.cleanAuthorizedScopes();
+			Thread.sleep(500L);
+		} catch (Exception e) {
+			logger.error("Can't refresh auth manager", e);
+			throw new RuntimeException(e);
+		}
 	}
 
 	private void updateScopeAttribute(AuthProvider provider, String scopeAttributeValue) {
@@ -280,4 +418,5 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		}
 		return userResponse;
 	}
+
 }
