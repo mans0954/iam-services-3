@@ -69,6 +69,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.thread.Sweepable;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,12 +77,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
 @WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService",
         targetNamespace = "urn:idm.openiam.org/bpm/request/service",
         serviceName = "ActivitiService")
-public class ActivitiServiceImpl extends AbstractBaseService implements ActivitiService {
+public class ActivitiServiceImpl extends AbstractBaseService implements ActivitiService, Sweepable {
 
     private static final Log log = LogFactory.getLog(ActivitiServiceImpl.class);
 
@@ -1181,5 +1183,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Transactional(readOnly=true)
     public List<String> getApproverUserIds(List<String> associationIds, final String targetUserId) {
         return activitiHelper.getCandidateUserIds(associationIds, targetUserId, null);
+    }
+
+    @Scheduled(fixedRate=180000)
+    public void sweep() {
+        int numTaskForSys = this.getNumOfAssignedTasks("3000");
+        log.info("SWEEP NOW " + numTaskForSys);
     }
 }
