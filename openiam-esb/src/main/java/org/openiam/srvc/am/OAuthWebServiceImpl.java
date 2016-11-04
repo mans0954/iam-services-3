@@ -118,6 +118,12 @@ public class OAuthWebServiceImpl extends AbstractApiService implements OAuthWebS
         this.sendAsync(OAuthAPI.CleanAuthorizedScopes, new BaseServiceRequest());
         return new Response();
     }
-
+    @Override
+    public Response deAuthorizeClient(String clientId, String userId){
+        OAuthScopesRequest request = new OAuthScopesRequest();
+        request.setUserId(userId);
+        request.setClientId(clientId);
+        return this.getResponse(OAuthAPI.DeAuthorizeClient, request, Response.class);
+    }
 
 }

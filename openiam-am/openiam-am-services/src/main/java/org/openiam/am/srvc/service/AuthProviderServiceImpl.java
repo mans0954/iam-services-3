@@ -835,41 +835,45 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
         int end=batchSize;
         final StopWatch sw = new StopWatch();
         sw.start();
-        Long totalRowNumber = transactionTemplate.execute(status -> {
-            return oauthUserClientXrefDao.countAll();
-        });
-//        if(log.isDebugEnabled()) {
+        Long totalRowNumber = transactionTemplate.execute(status -> oauthUserClientXrefDao.countAll());
+        if(log.isDebugEnabled()) {
             log.info("Total Number of authorized scopes:" + totalRowNumber);
-//        }
+        }
 
         int totalProcessedRows = 0;
         while (start < totalRowNumber){
             int finalStart = start;
             int finalEnd = end;
             totalProcessedRows += transactionTemplate.execute(status -> {
-//                if(log.isDebugEnabled()) {
+                if(log.isDebugEnabled()) {
                     log.info(String.format("Processing batch from %d to %d", finalStart, finalEnd));
-//                }
+                }
                 List<OAuthUserClientXrefEntity> dataList = oauthUserClientXrefDao.find(finalStart, finalEnd);
                 long count = dataList.stream()
                         .filter(e-> (e!=null && !authorizationManagerService.isEntitled(e.getUser().getId(), e.getScope().getId())))
                         .peek(entity -> oauthUserClientXrefDao.deleteByUserIdScopeId(entity.getUser().getId(), entity.getScope().getId()))
                         .count();
-//                if(log.isDebugEnabled()) {
+                if(log.isDebugEnabled()) {
                     log.info(String.format("Deleted rows: %d", count));
-//                }
+                }
                 return (int)count;
             });
             start = end;
             end+=batchSize;
         }
-//        if(log.isDebugEnabled()) {
+        if(log.isDebugEnabled()) {
             log.info(String.format("Total Deleted rows: %d", totalProcessedRows));
-//        }
+        }
         sw.stop();
-//        if(log.isDebugEnabled()) {
+        if(log.isDebugEnabled()) {
             log.info(String.format("Clean the OAuth client authorization took %s ms", sw.getTime()));
-//        }
+        }
+    }
+    @Override
+    @Transactional
+    public void  deAuthorizeClient(String clientId, String userId){
+        AuthProvider provider = getOAuthClient(clientId);
+        oauthUserClientXrefDao.deleteByClientIdUserId(provider.getId(), userId);
     }
     @Override
     public AuthProvider getCachedOAuthProviderById(String id) {

@@ -32,6 +32,8 @@ public class OAuthListener extends AbstractRabbitMQListener<OAuthAPI> {
     private SaveOAuthTokenDispatcher saveOAuthTokenDispatcher;
     @Autowired
     private CleanAuthorizedScopesDispatcher cleanAuthorizedScopesDispatcher;
+    @Autowired
+    private DeAuthorizeClientDispatcher deAuthorizeClientDispatcher;
 
     public OAuthListener() {
         super(OpenIAMQueue.OAuthQueue);
@@ -69,6 +71,9 @@ public class OAuthListener extends AbstractRabbitMQListener<OAuthAPI> {
                 break;
             case CleanAuthorizedScopes:
                 addTask(cleanAuthorizedScopesDispatcher, correlationId, message, apiName, isAsync);
+                break;
+            case DeAuthorizeClient:
+                addTask(deAuthorizeClientDispatcher, correlationId, message, apiName, isAsync);
                 break;
             default:
                 break;

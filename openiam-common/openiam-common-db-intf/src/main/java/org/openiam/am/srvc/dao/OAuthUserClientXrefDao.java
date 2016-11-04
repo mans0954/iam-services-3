@@ -12,4 +12,5 @@ public interface OAuthUserClientXrefDao  extends BaseDao<OAuthUserClientXrefEnti
     List<OAuthUserClientXrefEntity> getByClientAndUser(String clientId, String userId, Boolean isAuthorized);
     void deleteByScopeId(String scopeId);
     void deleteByUserIdScopeId(String userId, String scopeId);
+    void deleteByClientIdUserId(String providerId, String userId);
 }

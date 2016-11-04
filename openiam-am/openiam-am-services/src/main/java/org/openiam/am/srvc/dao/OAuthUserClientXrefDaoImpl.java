@@ -53,4 +53,10 @@ public class OAuthUserClientXrefDaoImpl extends BaseDaoImpl<OAuthUserClientXrefE
         getSession().createQuery("delete from " + this.domainClass.getName() + " obj where obj.user.id=? and obj.scope.id=?")
                 .setParameter(0, userId).setParameter(1, scopeId).executeUpdate();
     }
+
+    @Override
+    public void deleteByClientIdUserId(String providerId, String userId){
+        getSession().createQuery("delete from " + this.domainClass.getName() + " obj where obj.user.id=? and obj.client.id=?")
+                .setParameter(0, userId).setParameter(1, providerId).executeUpdate();
+    }
 }

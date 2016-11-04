@@ -60,4 +60,6 @@ public interface OAuthWebService {
     AuthProvider getCachedOAuthProviderByName(final String name);
     @WebMethod
     Response cleanAuthorizedScopes();
+    @WebMethod
+    Response deAuthorizeClient(String clientId, String userId);
 }
