@@ -28,6 +28,11 @@
 		<property name="minPoolSize" value="${activiti.db.pool.min}" />
 		<property name="maxPoolSize" value="${activiti.db.pool.max}" />
 		<property name="loginTimeout" value="300"/>
+		<property name="idleConnectionTestPeriod" value="${activiti.db.idleConnectionTestPeriod}"/>
+		<property name="maxIdleTime" value="${activiti.db.maxIdleTime}"/>
+		<property name="testConnectionOnCheckin" value="${activiti.db.testConnectionOnCheckin}"/>
+		<property name="testConnectionOnCheckout" value="${activiti.db.testConnectionOnCheckout}"/>
+		<property name="preferredTestQuery" value="${activiti.db.preferredTestQuery}"/>
 	</bean>
 
     <!--
