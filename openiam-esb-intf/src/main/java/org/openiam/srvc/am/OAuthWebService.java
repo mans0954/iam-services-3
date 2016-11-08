@@ -56,6 +56,10 @@ public interface OAuthWebService {
                                        @WebParam(name = "userId", targetNamespace = "")  String userId,
                                        @WebParam(name = "lang", targetNamespace = "")  Language language);
     
-    public AuthProvider getCachedOAuthProviderById(final String id);
-    public AuthProvider getCachedOAuthProviderByName(final String name);
+    AuthProvider getCachedOAuthProviderById(final String id);
+    AuthProvider getCachedOAuthProviderByName(final String name);
+    @WebMethod
+    Response cleanAuthorizedScopes();
+    @WebMethod
+    Response deAuthorizeClient(String clientId, String userId);
 }

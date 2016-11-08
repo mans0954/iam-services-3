@@ -1,6 +1,8 @@
 package org.openiam.am.srvc.dao;
 
 import org.hibernate.Criteria;
+import org.hibernate.criterion.ProjectionList;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
 import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * Created by alexander on 15/07/15.
@@ -43,5 +47,16 @@ public class OAuthUserClientXrefDaoImpl extends BaseDaoImpl<OAuthUserClientXrefE
     public void deleteByScopeId(String scopeId) {
         getSession().createQuery("delete from " + this.domainClass.getName() + " obj where obj.scope.id=?")
                 .setParameter(0, scopeId).executeUpdate();
+    }
+    @Override
+    public void deleteByUserIdScopeId(String userId, String scopeId){
+        getSession().createQuery("delete from " + this.domainClass.getName() + " obj where obj.user.id=? and obj.scope.id=?")
+                .setParameter(0, userId).setParameter(1, scopeId).executeUpdate();
+    }
+
+    @Override
+    public void deleteByClientIdUserId(String providerId, String userId){
+        getSession().createQuery("delete from " + this.domainClass.getName() + " obj where obj.user.id=? and obj.client.id=?")
+                .setParameter(0, userId).setParameter(1, providerId).executeUpdate();
     }
 }

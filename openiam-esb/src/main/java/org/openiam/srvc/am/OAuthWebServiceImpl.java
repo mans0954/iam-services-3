@@ -1,9 +1,8 @@
 package org.openiam.srvc.am;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.openiam.am.srvc.dto.*;
-import org.openiam.am.srvc.service.AuthProviderService;
+import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.request.OAuthScopesRequest;
 import org.openiam.base.request.model.OAuthClientScopeModel;
@@ -11,27 +10,17 @@ import org.openiam.base.response.AuthProviderResponse;
 import org.openiam.base.response.OAuthCodeResponse;
 import org.openiam.base.response.OAuthTokenResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.mq.constants.OAuthAPI;
 import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.hazelcast.core.Message;
-import com.hazelcast.core.MessageListener;
-
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by alexander on 06/07/15.
@@ -122,5 +111,19 @@ public class OAuthWebServiceImpl extends AbstractApiService implements OAuthWebS
 	public AuthProvider getCachedOAuthProviderByName(String name) {
         return this.getValue(OAuthAPI.GetCachedOAuthProviderByName, new IdServiceRequest(name), AuthProviderResponse.class);
 	}
+
+
+    @Override
+    public Response cleanAuthorizedScopes(){
+        this.sendAsync(OAuthAPI.CleanAuthorizedScopes, new BaseServiceRequest());
+        return new Response();
+    }
+    @Override
+    public Response deAuthorizeClient(String clientId, String userId){
+        OAuthScopesRequest request = new OAuthScopesRequest();
+        request.setUserId(userId);
+        request.setClientId(clientId);
+        return this.getResponse(OAuthAPI.DeAuthorizeClient, request, Response.class);
+    }
 
 }

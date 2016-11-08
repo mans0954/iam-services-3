@@ -72,4 +72,6 @@ public interface AuthProviderService {
     public AuthProvider getCachedOAuthProviderById(final String id);
     public AuthProvider getCachedOAuthProviderByName(final String name);
     public void sweepOAuthProvider();
+    void sweepAuthorizedScopes();
+    void  deAuthorizeClient(String clientId, String userId);
 }

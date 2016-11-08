@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.cert.groovy.DefaultCertToIdentityConverter;
@@ -64,9 +65,14 @@ import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service("authProviderService")
 public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
@@ -131,6 +137,9 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
 
+    @Autowired
+    @Qualifier("transactionManager")
+    private PlatformTransactionManager platformTransactionManager;
     /*
     *==================================================
     * AuthProviderType section
@@ -816,7 +825,56 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
             oAuthNameCache = tempNameCache;
         }
     }
+    @ManagedOperation(description="Clean the OAuth client authorization")
+    @Scheduled(fixedRateString="${org.openiam.am.oauth.client.threadsweep}", initialDelay=100)
+    public void sweepAuthorizedScopes() {
+        TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
 
+        int batchSize = 1000;
+        int start=0;
+        int end=batchSize;
+        final StopWatch sw = new StopWatch();
+        sw.start();
+        Long totalRowNumber = transactionTemplate.execute(status -> oauthUserClientXrefDao.countAll());
+        if(log.isDebugEnabled()) {
+            log.info("Total Number of authorized scopes:" + totalRowNumber);
+        }
+
+        int totalProcessedRows = 0;
+        while (start < totalRowNumber){
+            int finalStart = start;
+            int finalEnd = end;
+            totalProcessedRows += transactionTemplate.execute(status -> {
+                if(log.isDebugEnabled()) {
+                    log.info(String.format("Processing batch from %d to %d", finalStart, finalEnd));
+                }
+                List<OAuthUserClientXrefEntity> dataList = oauthUserClientXrefDao.find(finalStart, finalEnd);
+                long count = dataList.stream()
+                        .filter(e-> (e!=null && !authorizationManagerService.isEntitled(e.getUser().getId(), e.getScope().getId())))
+                        .peek(entity -> oauthUserClientXrefDao.deleteByUserIdScopeId(entity.getUser().getId(), entity.getScope().getId()))
+                        .count();
+                if(log.isDebugEnabled()) {
+                    log.info(String.format("Deleted rows: %d", count));
+                }
+                return (int)count;
+            });
+            start = end;
+            end+=batchSize;
+        }
+        if(log.isDebugEnabled()) {
+            log.info(String.format("Total Deleted rows: %d", totalProcessedRows));
+        }
+        sw.stop();
+        if(log.isDebugEnabled()) {
+            log.info(String.format("Clean the OAuth client authorization took %s ms", sw.getTime()));
+        }
+    }
+    @Override
+    @Transactional
+    public void  deAuthorizeClient(String clientId, String userId){
+        AuthProvider provider = getOAuthClient(clientId);
+        oauthUserClientXrefDao.deleteByClientIdUserId(provider.getId(), userId);
+    }
     @Override
     public AuthProvider getCachedOAuthProviderById(String id) {
 		return oAuthIdCache.get(id);
