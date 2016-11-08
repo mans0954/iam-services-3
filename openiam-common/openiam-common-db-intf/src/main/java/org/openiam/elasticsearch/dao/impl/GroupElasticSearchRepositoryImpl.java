@@ -34,7 +34,7 @@ public class GroupElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 	}
 
 	@Override
-	public Class<GroupEntity> getEntityClass() {
+	public Class<GroupEntity> getDocumentClass() {
 		return GroupEntity.class;
 	}
 

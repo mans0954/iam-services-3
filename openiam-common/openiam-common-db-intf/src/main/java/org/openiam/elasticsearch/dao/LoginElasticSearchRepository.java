@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 public interface LoginElasticSearchRepository extends OpeniamElasticSearchRepository<LoginEntity, String>, LoginElasticSearchRepositoryCustom {
 
 	@Override
-	public default Class<LoginEntity> getEntityClass() {
+	public default Class<LoginEntity> getDocumentClass() {
 		return LoginEntity.class;
 	}
 	

@@ -15,7 +15,7 @@ public class ResourceElasticSearchRepositoryImpl extends AbstractElasticSearchRe
 	}
 
 	@Override
-	public Class<ResourceEntity> getEntityClass() {
+	public Class<ResourceEntity> getDocumentClass() {
 		return ResourceEntity.class;
 	}
 

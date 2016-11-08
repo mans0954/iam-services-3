@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 public interface PhoneElasticSearchRepository extends OpeniamElasticSearchRepository<PhoneEntity, String>, PhoneElasticSearchRepositoryCustom  {
 
 	@Override
-	public default Class<PhoneEntity> getEntityClass() {
+	public default Class<PhoneEntity> getDocumentClass() {
 		return PhoneEntity.class;
 	}
 }

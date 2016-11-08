@@ -10,5 +10,5 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface OpeniamElasticSearchRepository<T, ID extends Serializable> extends ElasticsearchRepository<T, ID> {
 
-	Class<T> getEntityClass();
+	Class<T> getDocumentClass();
 }

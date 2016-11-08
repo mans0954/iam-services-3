@@ -22,6 +22,6 @@ public interface AbstractCustomElasticSearchRepository<T extends BaseIdentity, S
 	public boolean isValidSearchBean(final S searchBean);
 	public Pageable getPageable(final S searchBean, final int from, final int size);
 	public boolean allowReindex(final ElasticsearchRepository repo);
-	public abstract Class<T> getEntityClass();
+	public abstract Class<T> getDocumentClass();
 	public void prepare(final T entity);
 }

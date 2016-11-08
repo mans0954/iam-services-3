@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 public interface UserElasticSearchRepository extends OpeniamElasticSearchRepository<UserEntity, String>, UserElasticSearchRepositoryCustom {
 
 	@Override
-	public default Class<UserEntity> getEntityClass() {
+	public default Class<UserEntity> getDocumentClass() {
 		return UserEntity.class;
 	}
 }

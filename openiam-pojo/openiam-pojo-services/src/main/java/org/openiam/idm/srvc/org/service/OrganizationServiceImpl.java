@@ -28,7 +28,9 @@ import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
+import org.openiam.elasticsearch.converter.OrganizationDocumentToEntityConverter;
 import org.openiam.elasticsearch.dao.OrganizationElasticSearchRepository;
+import org.openiam.elasticsearch.model.OrganizationDoc;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
@@ -66,6 +68,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.internationalization.InternationalizationProvider;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
@@ -142,6 +145,12 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     @Autowired
     private RoleDAO roleDAO;
+    
+    @Autowired
+	private InternationalizationProvider internationalizationProvider;
+    
+	@Autowired
+	private OrganizationDocumentToEntityConverter organizationDocConverter;
     
     @Autowired
     private OrganizationElasticSearchRepository organizationElasticSearchRepository;
@@ -322,11 +331,16 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         	}
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	/* aop translation won't handle this, since the return type is not a KeyEntity */
+        	List<OrganizationDoc> docs = null;
         	if(organizationElasticSearchRepository.isValidSearchBean(searchBean)) {
-        		return organizationElasticSearchRepository.findBeans(searchBean, from, size);
+        		docs = organizationElasticSearchRepository.findBeans(searchBean, from, size);
         	} else {
-        		return organizationElasticSearchRepository.findAll(organizationElasticSearchRepository.getPageable(searchBean, from, size)).getContent();
+        		docs = organizationElasticSearchRepository.findAll(organizationElasticSearchRepository.getPageable(searchBean, from, size)).getContent();
         	}
+        	final List<OrganizationEntity> entities = organizationDocConverter.convertToEntityList(docs);
+        	internationalizationProvider.doDatabaseGet(entities);
+        	return entities;
         } else {
         	return orgDao.getByExample(searchBean, from, size);
         }

@@ -60,7 +60,7 @@ public class PhoneElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 	}
 
 	@Override
-	public Class<PhoneEntity> getEntityClass() {
+	public Class<PhoneEntity> getDocumentClass() {
 		return PhoneEntity.class;
 	}
 

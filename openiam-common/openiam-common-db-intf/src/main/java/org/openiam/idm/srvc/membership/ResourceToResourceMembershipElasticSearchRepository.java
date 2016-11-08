@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 public interface ResourceToResourceMembershipElasticSearchRepository extends MembershipElasticSearchRepository<ResourceToResourceMembershipXrefEntity> {
 
 	@Override
-	public default Class<ResourceToResourceMembershipXrefEntity> getEntityClass() {
+	public default Class<ResourceToResourceMembershipXrefEntity> getDocumentClass() {
 		return ResourceToResourceMembershipXrefEntity.class;
 	}
 }

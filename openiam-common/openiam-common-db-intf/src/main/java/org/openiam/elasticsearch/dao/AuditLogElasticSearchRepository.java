@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 public interface AuditLogElasticSearchRepository extends OpeniamElasticSearchRepository<IdmAuditLogEntity, String>, AuditLogElasticSearchRepositoryCustom  {
 
 	@Override
-	public default Class<IdmAuditLogEntity> getEntityClass() {
+	public default Class<IdmAuditLogEntity> getDocumentClass() {
 		return IdmAuditLogEntity.class;
 	}
 }

@@ -16,6 +16,7 @@ import org.hibernate.internal.util.ReflectHelper;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.persister.entity.EntityPersister;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.elasticsearch.annotation.DocumentRepresentation;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
 import org.openiam.elasticsearch.service.ElasticsearchReindexService;
 import org.springframework.beans.factory.InitializingBean;
@@ -107,8 +108,7 @@ public class OpeniamHibernateEventListener implements InitializingBean,
     }
 
     private boolean isEntityIndexed(Class<?> clazz) {
-        final Document annotation =  clazz.getAnnotation(Document.class);
-        return annotation != null;
+    	return clazz.isAnnotationPresent(Document.class) || clazz.isAnnotationPresent(DocumentRepresentation.class);
     }
 
     private void registerEntityHolder(Class<?> clazz) {

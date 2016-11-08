@@ -34,7 +34,7 @@ public class RoleElasticSearchRepositoryImpl extends AbstractElasticSearchReposi
 	}
 
 	@Override
-	public Class<RoleEntity> getEntityClass() {
+	public Class<RoleEntity> getDocumentClass() {
 		return RoleEntity.class;
 	}
 

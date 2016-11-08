@@ -67,7 +67,7 @@ public abstract class AbstractElasticSearchRepositoryTest<E extends BaseIdentity
 	@Test
 	public void testReindex() {
 		//getRepository().deleteAll();
-		Assert.assertTrue(reindexer.reindex(getRepository().getEntityClass()) > 0);
+		Assert.assertTrue(reindexer.reindex(getRepository().getDocumentClass()) > 0);
 	}
 	
 	@Test

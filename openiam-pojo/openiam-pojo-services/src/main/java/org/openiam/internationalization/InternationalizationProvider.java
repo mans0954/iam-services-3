@@ -232,6 +232,16 @@ public class InternationalizationProvider {
 		}
 	}
 	
+	/* should be called from within a transaction */
+	public void doDatabaseGet(final Collection<? extends KeyEntity> collection) {
+		if(CollectionUtils.isNotEmpty(collection)) {
+			collection.forEach(object ->  {
+				doDatabaseGet(object);
+			});
+		}
+	}
+	
+	/* should be called from within a transaction */
 	public void doDatabaseGet(final KeyEntity object) {
 		final Set<TargetInternationalizedField> fieldList = getTargetFields(object, false);
 		if(CollectionUtils.isNotEmpty(fieldList)) {

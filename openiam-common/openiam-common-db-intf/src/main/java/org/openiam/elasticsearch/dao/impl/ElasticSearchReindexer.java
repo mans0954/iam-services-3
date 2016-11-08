@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
@@ -15,8 +16,14 @@ import javax.transaction.Transactional;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dozer.Mapper;
+import org.elasticsearch.common.netty.util.internal.ConcurrentHashMap;
 import org.openiam.base.BaseIdentity;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.BaseDao;
+import org.openiam.elasticsearch.annotation.DocumentRepresentation;
+import org.openiam.elasticsearch.annotation.EntityRepresentation;
+import org.openiam.elasticsearch.converter.AbstractDocumentToEntityConverter;
 import org.openiam.elasticsearch.dao.AbstractCustomElasticSearchRepository;
 import org.openiam.elasticsearch.dao.OpeniamElasticSearchRepository;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
@@ -26,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
@@ -50,37 +58,47 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
     @Qualifier("transactionTemplate")
     private TransactionTemplate transactionTemplate;
 	
-	private Map<Class<?>, OpeniamElasticSearchRepository> repoMap = new HashMap<Class<?>, OpeniamElasticSearchRepository>();
-	private Map<Class<?>, BaseDao> daoMap = new HashMap<Class<?>, BaseDao>();
-	private Map<Class<?>, AbstractCustomElasticSearchRepository> customRepoImplMap = new HashMap<>();
+	private Map<Class<?>, Class<?>> documentRepresentationClass = new ConcurrentHashMap<Class<?>, Class<?>>();
+	
+	private Map<Class<? extends KeyEntity>, BaseDao> daoMap = new HashMap<>();
+	private Map<Class<? extends KeyEntity>, AbstractDocumentToEntityConverter> entity2DocConverterMap = new HashMap<>();
+	private Map<Class<? extends KeyEntity>, Class<? extends BaseIdentity>> entity2DocumentClassMap = new HashMap<>();
+	
+	private Map<Class<?>, OpeniamElasticSearchRepository> documentRepositoryMap = new HashMap<Class<?>, OpeniamElasticSearchRepository>();
+	private Map<Class<?>, AbstractCustomElasticSearchRepository> customDocumentRepositoryImplMap = new HashMap<>();
 	
 	public Set<Class<?>> getIndexedClasses() {
-		return repoMap.keySet();
+		return documentRepositoryMap.keySet();
 	}
 	
 	@PostConstruct
 	public void init() {
+		ctx.getBeansOfType(AbstractDocumentToEntityConverter.class).forEach((beanName, bean) -> {
+			entity2DocConverterMap.put(bean.getEntityClass(), bean);
+			entity2DocumentClassMap.put(bean.getEntityClass(), bean.getDocumentClass());
+		}); 
+		
 		ctx.getBeansOfType(BaseDao.class).forEach((beanName, bean) -> {
 			daoMap.put(bean.getDomainClass(), bean);
 		});
 		
 		ctx.getBeansOfType(AbstractCustomElasticSearchRepository.class).forEach((beanName, bean) -> {
-			customRepoImplMap.put(bean.getEntityClass(), bean);
+			customDocumentRepositoryImplMap.put(bean.getDocumentClass(), bean);
 		});
 		
 		ctx.getBeansOfType(OpeniamElasticSearchRepository.class).forEach((beanName, bean) -> {
-			final Class<?> entityClass = bean.getEntityClass();
-			repoMap.put(entityClass, bean);
+			final Class<?> documentClass = bean.getDocumentClass();
+			documentRepositoryMap.put(documentClass, bean);
 			transactionTemplate.execute(new TransactionCallback<Void>() {
 
 				@Override
 				public Void doInTransaction(TransactionStatus arg0) {
 					boolean reindex = false;
-					if(customRepoImplMap.containsKey(entityClass)) {
-						reindex = customRepoImplMap.get(entityClass).allowReindex(bean);
+					if(customDocumentRepositoryImplMap.containsKey(documentClass)) {
+						reindex = customDocumentRepositoryImplMap.get(documentClass).allowReindex(bean);
 					}
 					if(reindex) {
-						reindex(entityClass);
+						reindex(documentClass);
 					}
 					return null;
 				}
@@ -123,11 +141,12 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
     }
     
     private void processingRequest(ElasticsearchReindexRequest reindexRequest) throws Exception {
+    	final Class<?> documentClass = getDocumentClass(reindexRequest.getEntityClass());
     	transactionTemplate.execute(new TransactionCallback<Void>() {
 
 			@Override
 			public Void doInTransaction(TransactionStatus arg0) {
-		    	final OpeniamElasticSearchRepository repo = repoMap.get(reindexRequest.getEntityClass());
+		    	final OpeniamElasticSearchRepository repo = documentRepositoryMap.get(documentClass);
 		    	if(repo != null && CollectionUtils.isNotEmpty(reindexRequest.getEntityIdList())) {
 			        if(reindexRequest.isSaveOrUpdate()){
 			        	reindex(reindexRequest.getEntityClass(), reindexRequest.getEntityIdList());
@@ -161,31 +180,43 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 	
 	@Transactional
 	/* returns the number of reindexed items */
-	public int reindex(final Class<?> clazz) {
+	public int reindex(final Class<?> documentClazz) {
 		if(logger.isDebugEnabled()) {
-			logger.debug(String.format("Attempting to fully re-index: %s", clazz));
+			logger.debug(String.format("Attempting to fully re-index: %s", documentClazz));
 		}
-		final OpeniamElasticSearchRepository repo = repoMap.get(clazz);
+		final OpeniamElasticSearchRepository repo = documentRepositoryMap.get(documentClazz);
 		if(repo != null) {
-			elasticSearchTemplate.deleteIndex(clazz);
-			elasticSearchTemplate.createIndex(clazz);
+			elasticSearchTemplate.deleteIndex(documentClazz);
+			elasticSearchTemplate.createIndex(documentClazz);
 			repo.deleteAll();
-			return reindex(clazz, null);
+			
+			Class<?> entityClass = documentClazz;
+			if(documentClazz.isAnnotationPresent(EntityRepresentation.class)) {
+				entityClass = documentClazz.getAnnotation(EntityRepresentation.class).value();
+			}
+			return reindex(entityClass, null);
 		} else {
-			throw new RuntimeException(String.format("No elastic search repo found for %s", clazz));
+			throw new RuntimeException(String.format("No elastic search repo found for %s", documentClazz));
 		}
 	}
 	
-	private int reindex(final Class<?> clazz, final Collection<String> ids) {
+	private Class<?> getDocumentClass(final Class<?> entityClass) {
+		return (entity2DocumentClassMap.containsKey(entityClass)) ? entity2DocumentClassMap.get(entityClass) : entityClass;
+	}
+	
+	private int reindex(final Class<?> entityClass, final Collection<String> ids) {
 		if(ids != null) {
 			if(logger.isDebugEnabled()) {
-				logger.debug(String.format("Hibernate listener re-index request for %s", clazz));
+				logger.debug(String.format("Hibernate listener re-index request for %s", entityClass));
 			}
 		}
+		final AbstractDocumentToEntityConverter converter = entity2DocConverterMap.get(entityClass);
+		final Class<?> documentClass = getDocumentClass(entityClass);
+		
 		int numOfReindexedItems = 0;
 		final int maxSize = 1000;
-		final ElasticsearchRepository repo = repoMap.get(clazz);
-		final BaseDao baseDAO = daoMap.get(clazz);
+		final ElasticsearchRepository repo = documentRepositoryMap.get(documentClass);
+		final BaseDao baseDAO = daoMap.get(entityClass);
 		if(repo != null && baseDAO != null) {
 			for (int from = 0; ; from += maxSize) {
         		try {
@@ -202,11 +233,21 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
         			if(logger.isDebugEnabled()) {
         				logger.debug(String.format("Fetched from %s, size: %s.  Indexing...", from, maxSize));
         			}
+        			//convert to *Doc form, if required
+        			if(converter != null) {
+        				if(logger.isDebugEnabled()) {
+        					logger.debug(String.format("Converting %s to %s using dozer", converter.getEntityClass(), converter.getDocumentClass()));
+        				}
+        				if(list != null) {
+        					list = list.stream().map(e -> converter.convertToDocument((BaseIdentity)e)).collect(Collectors.toList());
+        				}
+        			}
+        			
         			if(CollectionUtils.isNotEmpty(list)) {
         				//if(CollectionUtils.isEmpty(ids)) {
-        				if(customRepoImplMap.containsKey(clazz)) {
+        				if(customDocumentRepositoryImplMap.containsKey(documentClass)) {
         					list.forEach(e -> {
-        						customRepoImplMap.get(clazz).prepare((BaseIdentity)e);
+        						customDocumentRepositoryImplMap.get(documentClass).prepare((BaseIdentity)e);
         					});
         				}
         				repo.save(list); /* same as index */

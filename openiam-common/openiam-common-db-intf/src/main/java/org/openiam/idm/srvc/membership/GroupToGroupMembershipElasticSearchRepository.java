@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 public interface GroupToGroupMembershipElasticSearchRepository extends MembershipElasticSearchRepository<GroupToGroupMembershipXrefEntity> {
 
 	@Override
-	public default Class<GroupToGroupMembershipXrefEntity> getEntityClass() {
+	public default Class<GroupToGroupMembershipXrefEntity> getDocumentClass() {
 		return GroupToGroupMembershipXrefEntity.class;
 	}
 }

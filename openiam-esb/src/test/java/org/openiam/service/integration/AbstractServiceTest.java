@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.junit.runner.RunWith;
@@ -447,9 +448,11 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected Organization createOrganization() {
+		final List<MetadataType> types = metadataServiceClient.findTypeBeans(null, 0, 10, getDefaultLanguage());
 		Organization organization = new Organization();
 		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, null).get(0).getId());
 		organization.setName(getRandomName());
+		organization.setMdTypeId(types.get(RandomUtils.nextInt(0, types.size())).getId());
 		Response wsResponse = organizationServiceClient.saveOrganization(organization, null);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", organization, wsResponse));
 		organization = organizationServiceClient.getOrganizationLocalized((String)wsResponse.getResponseValue(), null, getDefaultLanguage());
