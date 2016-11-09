@@ -32,7 +32,6 @@ public class OpeniamHibernateEventRegister {
 
         log.info("Registering event listeners");
 
-
         eventRegistry.prependListeners(EventType.POST_COMMIT_DELETE, listener);
         eventRegistry.prependListeners(EventType.POST_COMMIT_INSERT, listener);
         eventRegistry.prependListeners(EventType.POST_COMMIT_UPDATE, listener);

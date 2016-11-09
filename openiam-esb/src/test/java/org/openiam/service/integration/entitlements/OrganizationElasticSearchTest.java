@@ -30,12 +30,19 @@ public class OrganizationElasticSearchTest extends AbstractServiceTest {
 	@Qualifier("organizationTypeClient")
 	private OrganizationTypeDataService organizationTypeClient;
 
-	
+	private String parentOrganizationId;
 	private Organization organization = null;
 	
 	@BeforeClass
 	protected void _setUp() throws Exception {
 		organization = super.createOrganization();
+		parentOrganizationId = organizationServiceClient.findBeans(null, getRequestorId(), 0, 10)
+																		   .stream()
+																		   .filter(e -> !e.getId().equals(organization.getId()))
+																		   .findAny()
+																		   .get()
+																		   .getId();
+		assertSuccess(organizationServiceClient.addChildOrganization(parentOrganizationId, organization.getId(), getRequestorId(), null, null, null));
 		sleep(3);
 	}
 	
@@ -70,23 +77,31 @@ public class OrganizationElasticSearchTest extends AbstractServiceTest {
 			Assert.assertTrue(StringUtils.isNotBlank(e.getOrganizationTypeName()));
 		});
 	}
-
+	
+	private void assertOrganizationPresent(final OrganizationSearchBean sb) {
+		final List<Organization> found = organizationServiceClient.findBeans(sb, getRequestorId(), 0, 100);
+		Assert.assertTrue(CollectionUtils.isNotEmpty(found));
+		Assert.assertTrue(found.stream().filter(e -> e.getId().equals(organization.getId())).count() > 0);
+	}
 
 	@Test
 	public void testOrganizationSearchWithMetadataType() {
 		final OrganizationSearchBean sb = newSearchBean();
 		sb.setMetadataType(organization.getMdTypeId());
-		final List<Organization> found = organizationServiceClient.findBeans(sb, getRequestorId(), 0, 100);
-		Assert.assertTrue(CollectionUtils.isNotEmpty(found));
-		Assert.assertTrue(found.stream().filter(e -> e.getId().equals(organization.getId())).count() > 0);
+		assertOrganizationPresent(sb);
 	}
 	
 	@Test
 	public void testOrganizationSearchWithOrganizationType() {
 		final OrganizationSearchBean sb = newSearchBean();
 		sb.setOrganizationTypeId(organization.getOrganizationTypeId());
-		final List<Organization> found = organizationServiceClient.findBeans(sb, getRequestorId(), 0, 100);
-		Assert.assertTrue(CollectionUtils.isNotEmpty(found));
-		Assert.assertTrue(found.stream().filter(e -> e.getId().equals(organization.getId())).count() > 0);
+		assertOrganizationPresent(sb);
+	}
+	
+	@Test
+	public void testSearchWithParentOrganizationId() {
+		final OrganizationSearchBean sb = newSearchBean();
+		sb.addParentId(parentOrganizationId);
+		assertOrganizationPresent(sb);
 	}
 }

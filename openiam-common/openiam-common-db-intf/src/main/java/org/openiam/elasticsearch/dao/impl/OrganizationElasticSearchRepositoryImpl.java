@@ -56,6 +56,18 @@ public class OrganizationElasticSearchRepositoryImpl extends AbstractElasticSear
 				}
 			}
 			
+			final Set<String> parentIds = searchBean.getParentIdSet();
+			if(CollectionUtils.isNotEmpty(parentIds)) {
+				Criteria subcriteria = null;
+				for(final String parentId : parentIds) {
+					final Criteria criteria = eq("parentIds", parentId);
+					subcriteria = (subcriteria != null) ? subcriteria.or(criteria) : criteria;
+				}
+				if(subcriteria != null) {
+					query = (query != null) ? query.addCriteria(subcriteria) : new CriteriaQuery(subcriteria);
+				}
+			}
+			
 			if(StringUtils.isNotBlank(searchBean.getValidParentTypeId())) {
 				final Criteria criteria = eq("parentOrganizationTypeIds", searchBean.getValidParentTypeId());
 				if(criteria != null) {
