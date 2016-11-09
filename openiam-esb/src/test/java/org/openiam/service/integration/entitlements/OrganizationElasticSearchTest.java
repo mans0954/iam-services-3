@@ -104,4 +104,11 @@ public class OrganizationElasticSearchTest extends AbstractServiceTest {
 		sb.addParentId(parentOrganizationId);
 		assertOrganizationPresent(sb);
 	}
+	
+	@Test
+	public void testSearchWithParentOrganizationTypeId() {
+		final OrganizationSearchBean sb = newSearchBean();
+		sb.setValidParentTypeId(organizationServiceClient.getOrganizationLocalized(parentOrganizationId, getRequestorId(), getDefaultLanguage()).getOrganizationTypeId());
+		assertOrganizationPresent(sb);
+	}
 }
