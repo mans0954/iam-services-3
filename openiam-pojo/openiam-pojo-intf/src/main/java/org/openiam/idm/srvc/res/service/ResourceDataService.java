@@ -326,4 +326,6 @@ public interface ResourceDataService {
     @WebMethod
     Response deleteResourceType(final @WebParam(name = "resourceTypeId", targetNamespace = "") String resourceTypeId, final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
+    @WebMethod
+    List<ResourceProp> getAllResourceProp(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 }
