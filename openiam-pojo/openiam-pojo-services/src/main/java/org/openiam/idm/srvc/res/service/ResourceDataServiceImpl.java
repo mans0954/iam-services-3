@@ -47,6 +47,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     private ResourcePropDozerConverter resourcePropConverter;
 
     @Autowired
+    private ResourcePropDAO resourcePropDAO;
+
+    @Autowired
     private UserDataService userDataService;
     @Autowired
     private ResourceService resourceService;
@@ -861,5 +864,17 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             response.setErrorText(e.getMessage());
         }
         return response;
+    }
+
+    @Override
+    //@LocalizedServiceGet
+    public List<ResourceProp> getAllResourceProp(final String resourceId) {
+        List<ResourceProp> resourcePropList = null;
+        try {
+            resourcePropList = resourcePropConverter.convertToDTOList(resourcePropDAO.getProperties(resourceId), true);
+        } catch (Throwable e) {
+            log.error("Can't get all resource prop", e);
+        }
+        return resourcePropList;
     }
 }
