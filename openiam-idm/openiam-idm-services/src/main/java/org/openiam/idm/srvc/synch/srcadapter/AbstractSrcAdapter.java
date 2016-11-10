@@ -87,7 +87,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
     @Value("${openiam.service_base}")
     private String serviceHost;
-    
+
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
@@ -241,9 +241,21 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
          if(log.isDebugEnabled()) {
              log.debug(" - Row Attr..." + rowAttr);
          }
-        User usr;
+        User usr = null;
+        boolean skipUser = false;
         synchronized (mutex) {
-            usr = matchRule.lookup(config, rowAttr);
+            try {
+                usr = matchRule.lookup(config, rowAttr);
+            }
+            catch (IllegalArgumentException e)
+            {
+                log.error("matchAttrName and matchAttrValue can not be blank");
+                skipUser=true;
+            }
+            catch (NullPointerException npe){
+                log.error("Wrong matchAttrName in sync configuration or empty matchAttrValue ");
+                skipUser=true;
+            }
         }
 
         long startTime = System.currentTimeMillis();
@@ -256,6 +268,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
         if (transformScripts != null && transformScripts.size() > 0) {
             for (TransformScript transformScript : transformScripts) {
                 synchronized (mutex) {
+                    if(!skipUser){
                     transformScript.init();
                     // initialize the transform script
                     if (usr != null) {
@@ -271,23 +284,28 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                         transformScript.setPrincipalList(null);
                         transformScript.setUserRoleList(null);
                     }
-                    if(log.isDebugEnabled()) {
+                    if (log.isDebugEnabled()) {
                         log.debug(" - Execute transform script");
                     }
                     //Disable PRE and POST processors/performance optimizations
                     pUser.setSkipPreprocessor(true);
                     pUser.setSkipPostProcessor(true);
                     retval = transformScript.execute(rowObj, pUser);
-                    if(log.isDebugEnabled()) {
+                    if (log.isDebugEnabled()) {
                         log.debug("Transform result=" + retval);
                     }
+                }else // skipping user
+                {
+                    String matchAttrName = config.getCustomMatchAttr();
+                    log.error("User was skipped during sync. Attribute name=["+matchAttrName +"] is not presented in target system");
                 }
-                if(log.isInfoEnabled()) {
+                }
+                if (log.isInfoEnabled()) {
                     log.debug(" - Execute complete transform script");
                 }
             }
-            if(log.isDebugEnabled()) {
-                log.debug("================ After Transformation => "+(System.currentTimeMillis()-startTime));
+            if (log.isDebugEnabled()) {
+                log.debug("================ After Transformation => " + (System.currentTimeMillis() - startTime));
             }
 
             if (retval != -1) {
@@ -303,28 +321,28 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                     // call prov service
                     if (retval != TransformScript.DELETE) {
                         if (usr != null) {
-                            if(log.isDebugEnabled()) {
+                            if (log.isDebugEnabled()) {
                                 log.debug(" - Updating existing user");
                             }
                             pUser.setId(usr.getId());
                             try {
 
                                 provService.modifyUser(pUser);
-                                if(log.isDebugEnabled()) {
-                                    log.debug("================ After Modify => "+(System.currentTimeMillis()-startTime));
+                                if (log.isDebugEnabled()) {
+                                    log.debug("================ After Modify => " + (System.currentTimeMillis() - startTime));
                                 }
                             } catch (Throwable e) {
                                 log.error(e);
                             }
                         } else {
-                            if(log.isDebugEnabled()) {
+                            if (log.isDebugEnabled()) {
                                 log.debug(" - New user is being provisioned");
                             }
                             pUser.setId(null);
                             try {
                                 provService.addUser(pUser);
-                                if(log.isDebugEnabled()) {
-                                    log.debug("================ After Add => "+(System.currentTimeMillis()-startTime));
+                                if (log.isDebugEnabled()) {
+                                    log.debug("================ After Add => " + (System.currentTimeMillis() - startTime));
                                 }
                             } catch (Exception e) {
                                 log.error(e);
@@ -334,6 +352,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                 }
             }
         }
+
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
