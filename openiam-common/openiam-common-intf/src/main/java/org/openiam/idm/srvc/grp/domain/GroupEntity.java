@@ -21,6 +21,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
+import org.openiam.base.domain.AbstractEntitlementPolicyEntity;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
@@ -58,7 +59,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @DozerDTOCorrespondence(Group.class)
 @Internationalized
 @Document(indexName = ESIndexName.GROUP, type= ESIndexType.GROUP)
-public class GroupEntity extends AbstractMetdataTypeEntity {
+public class GroupEntity extends AbstractEntitlementPolicyEntity {
 
     @Column(name = "GRP_NAME", length = 255)
     @Size(max = 255, message = "group.name.too.long")

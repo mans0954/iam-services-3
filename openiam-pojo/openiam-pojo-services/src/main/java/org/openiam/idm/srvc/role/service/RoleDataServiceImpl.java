@@ -38,6 +38,7 @@ import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -118,6 +119,9 @@ public class RoleDataServiceImpl implements RoleDataService {
     private GroupDataService groupDataService;
     @Autowired
     private SysConfiguration sysConfiguration;
+    
+    @Autowired
+    private PolicyDAO policyDAO;
 
     private ApplicationContext ac;
 
@@ -316,6 +320,12 @@ public class RoleDataServiceImpl implements RoleDataService {
                 role.setType(typeDAO.findById(role.getType().getId()));
             } else {
                 role.setType(null);
+            }
+            
+            if(role.getPolicy() != null && StringUtils.isNotBlank(role.getPolicy().getId())) {
+            	role.setPolicy(policyDAO.findById(role.getPolicy().getId()));
+            } else {
+            	role.setPolicy(null);
             }
 
             if (StringUtils.isBlank(role.getId())) {

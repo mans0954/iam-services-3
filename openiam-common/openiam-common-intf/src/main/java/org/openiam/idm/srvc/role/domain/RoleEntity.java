@@ -24,6 +24,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Where;
+import org.openiam.base.domain.AbstractEntitlementPolicyEntity;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
@@ -52,7 +53,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @AttributeOverride(name = "id", column = @Column(name = "ROLE_ID"))
 @Internationalized
 @Document(indexName = ESIndexName.ROLE, type= ESIndexType.ROLE)
-public class RoleEntity extends AbstractMetdataTypeEntity {
+public class RoleEntity extends AbstractEntitlementPolicyEntity {
 
     @Column(name="ROLE_NAME",length=80)
     @Size(max = 80, message = "role.name.too.long")

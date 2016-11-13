@@ -937,4 +937,13 @@
 			<b>scopeName</b>
 		</field>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.base.domain.AbstractEntitlementPolicyEntity</class-a>
+		<class-b>org.openiam.idm.srvc.entitlements.AbstractPolicyEntitlementsDTO</class-b>
+		<field>
+			<a>policy.id</a>
+			<b>policyId</b>
+		</field>
+	</mapping>
 </mappings>

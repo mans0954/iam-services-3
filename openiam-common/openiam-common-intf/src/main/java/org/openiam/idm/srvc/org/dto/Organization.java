@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
+import org.openiam.idm.srvc.entitlements.AbstractPolicyEntitlementsDTO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 
 /**
@@ -51,7 +52,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
         "classification"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
-public class Organization extends AbstractEntitlementsDTO implements Serializable, Comparable<Organization> {
+public class Organization extends AbstractPolicyEntitlementsDTO implements Serializable, Comparable<Organization> {
 
     private static final long serialVersionUID = -6297113958697455428L;
 

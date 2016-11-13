@@ -20,6 +20,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
+import org.openiam.idm.srvc.entitlements.AbstractPolicyEntitlementsDTO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.org.dto.GroupToOrgMembershipXref;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -64,7 +65,7 @@ import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
         User.class
 })
 @DozerDTOCorrespondence(GroupEntity.class)
-public class Group extends AbstractEntitlementsDTO {
+public class Group extends AbstractPolicyEntitlementsDTO {
 
     private static final long serialVersionUID = 7657568959406790313L;
 

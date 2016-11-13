@@ -56,6 +56,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -145,6 +146,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     @Autowired
     private RoleDAO roleDAO;
+    
+    @Autowired
+    private PolicyDAO policyDAO;
     
     @Autowired
 	private InternationalizationProvider internationalizationProvider;
@@ -526,6 +530,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 if (StringUtils.isNotBlank(newEntity.getOrganizationType().getId())) {
                     curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
                 }
+                if(curEntity.getPolicy() != null && StringUtils.isNotBlank(curEntity.getPolicy().getId())) {
+                	curEntity.setPolicy(policyDAO.findById(curEntity.getPolicy().getId()));
+                } else {
+                	curEntity.setPolicy(null);
+                }
                 if (StringUtils.isNotBlank(newEntity.getType().getId())) {
                     curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
                 }
@@ -535,6 +544,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 curEntity = orgDao.findById(organization.getId());
                 mergeOrgProperties(curEntity, newEntity);
                 mergeAttributes(curEntity, newEntity);
+                if(newEntity.getPolicy() != null && StringUtils.isNotBlank(newEntity.getPolicy().getId())) {
+                	curEntity.setPolicy(policyDAO.findById(newEntity.getPolicy().getId()));
+                } else {
+                	curEntity.setPolicy(null);
+                }
                 /*
                 newEntity.setResources(dbEntity.getResources());
                 newEntity.setUsers(dbEntity.getUsers());
@@ -889,7 +903,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         BeanUtils.copyProperties(newEntity, curEntity,
                 new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
-                "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy", "resources", "roles"});
+                "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy", "resources", "roles", "policy"});
     }
 
     private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
