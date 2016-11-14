@@ -72,50 +72,50 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("uriFederationService")
 //@ManagedResource(objectName="org.openiam.am.srvc.service:name=URIFederationService")
 public class URIFederationServiceImpl implements URIFederationService, ApplicationContextAware, InitializingBean, Sweepable {
-	
+
 	private static Logger LOG = Logger.getLogger(URIFederationServiceImpl.class);
 	private ApplicationContext ctx;
 
 	private ContentProviderTree contentProviderTree;
-	
+
 	private Map<String, AuthLevelGrouping> groupingMap;
-	
+
 	@Autowired
 	private ContentProviderDao contentProviderDAO;
-	
+
 	@Autowired
 	private AuthorizationManagerService authorizationManager;
-	
+
 	@Autowired
 	private ContentProviderDozerConverter cpDozerConverter;
-	
+
 	@Autowired
 	private URIPatternDozerConverter patternDozerConverter;
-	
+
 	@Autowired
 	private URIPatternMetaDozerConverter patternMetaDozerConverter;
-	
+
 	@Autowired
 	private URIPatternMetaValueDozerConverter patternValueDozerConverter;
-	
+
 	@Autowired
 	private LoginDataService loginDS;
-	
+
 	@Autowired
 	private AuthLevelGroupingDao authLevelGroupingDAO;
-	
-    @Autowired
-    @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
-    
-    @Autowired
-    private AuthLevelGroupingDozerConverter authLevelGroupingDozerConverter;
-	
+
+	@Autowired
+	@Qualifier("configurableGroovyScriptEngine")
+	private ScriptIntegration scriptRunner;
+
+	@Autowired
+	private AuthLevelGroupingDozerConverter authLevelGroupingDozerConverter;
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		sweep();
 	}
-	
+
 	/*
 	 * Caches DTO Objects, so that we're not tied to the Hibernate Session
 	 */
@@ -125,33 +125,33 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		try {
 			LOG.info("Attemtping to refresh Content Provider Cache...");
 			final ContentProviderTree tempTree = new ContentProviderTree();
-			
+
 			/* get all content providers */
 			final List<ContentProviderEntity> contentProviderEntityList = contentProviderDAO.findAll();
 			if(CollectionUtils.isNotEmpty(contentProviderEntityList)) {
 				for(final ContentProviderEntity cpEntity : contentProviderEntityList) {
-					
+
 					/* dont' cache CPs who don't have servers */
 					if(CollectionUtils.isNotEmpty(cpEntity.getServerSet())) {
 						if(CollectionUtils.isNotEmpty(cpEntity.getGroupingXrefs())) {
 							/* convert the content provider to a DTO */
 							final ContentProvider cp = cpDozerConverter.convertToDTO(cpEntity, true);
 							if(CollectionUtils.isNotEmpty(cpEntity.getPatternSet())) {
-								
+
 								/* process the URI patterns, but converting any subcollections to DTOs manually, since our Dozer converter will only go 2 levels deep */
 								final Map<String, URIPattern> uriPatternMap = new LinkedHashMap<String, URIPattern>();
 								for(final URIPatternEntity uriEntity : cpEntity.getPatternSet()) {
-									
+
 									/* convert pattern */
 									final URIPattern pattern = patternDozerConverter.convertToDTO(uriEntity, true);
 									uriPatternMap.put(pattern.getId(), pattern);
 									if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
-										
+
 										/* convert meta */
 										final Map<String, URIPatternMeta> metaMap = new LinkedHashMap<String, URIPatternMeta>();
 										for(final URIPatternMetaEntity metaEntity : uriEntity.getMetaEntitySet()) {
 											final URIPatternMeta meta = patternMetaDozerConverter.convertToDTO(metaEntity, true);
-											
+
 											/* check that the spring bean exists */
 											final URIPatternMetaType type = meta.getMetaType();
 											if(type != null && StringUtils.isNotBlank(type.getSpringBeanName())) {
@@ -160,7 +160,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 													final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
 													LOG.info(String.format("Spring Bean %s will be used for URI Pattern %s", springBeanName, pattern));
 													metaMap.put(meta.getId(), meta);
-											
+
 													/* convert values */
 													if(CollectionUtils.isNotEmpty(metaEntity.getMetaValueSet())) {
 														final Map<String, URIPatternMetaValue> valueMap = new LinkedHashMap<String, URIPatternMetaValue>();
@@ -187,7 +187,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 												}
 											}
 										}
-										
+
 										pattern.setMetaEntitySet(new LinkedHashSet<URIPatternMeta>(metaMap.values()));
 									}
 								}
@@ -202,7 +202,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 					}
 				}
 			}
-			
+
 			final List<AuthLevelGroupingEntity> groupingEntityList = authLevelGroupingDAO.findAll();
 			final Map<String, AuthLevelGrouping> tempGroupingMap = new HashMap<String, AuthLevelGrouping>();
 			if(CollectionUtils.isNotEmpty(groupingEntityList)) {
@@ -211,7 +211,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 					tempGroupingMap.put(grouping.getId(), grouping);
 				}
 			}
-			
+
 			synchronized(this) {
 				contentProviderTree = tempTree;
 				groupingMap = tempGroupingMap;
@@ -220,22 +220,22 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			LOG.error("Can't refresh content provider cache", e);
 		}
 	}
-	
+
 	@ManagedOperation(description="Print Cache Contents")
 	public String printCacheContents() {
 		final String ls = System.getProperty("line.separator");
-		
+
 		final StringBuilder cacheContents = new StringBuilder();
 		cacheContents.append((contentProviderTree != null) ? contentProviderTree : "");
-		
+
 		return cacheContents.toString();
 	}
-	
+
 	@ManagedOperation(description="Test Federation agains parameters")
 	public String federateProxyURIJMX(final String userId, final int authLevel, final String proxyURI) {
 		return federateProxyURI(userId, authLevel, proxyURI).toString();
 	}
-	
+
 
 	@Override
 	public AuthenticationRequest createAuthenticationRequest(final String principal, final String proxyURI) throws BasicDataServiceException {
@@ -252,16 +252,16 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				LOG.error(String.format("Proxy identity not found for principal '%s', proxyURI: '%s", principal, proxyURI));
 				throw new BasicDataServiceException(ResponseCode.IDENTITY_NOT_FOUND);
 			}
-				
+
 			final LoginEntity primaryLogin = loginDS.getPrimaryIdentity(login.getUserId());
 			if(primaryLogin == null) {
 				LOG.error(String.format("Primary identity not found for principal '%s', proxyURI: '%s", principal, proxyURI));
 				throw new BasicDataServiceException(ResponseCode.IDENTITY_NOT_FOUND);
 			}
-				
+
 			final AuthenticationRequest request = new AuthenticationRequest();
 			request.setPrincipal(primaryLogin.getLogin());
-			
+
 			final String password = loginDS.decryptPassword(primaryLogin.getUserId(), primaryLogin.getPassword());
 			if(StringUtils.isBlank(password)) {
 				LOG.warn(String.format("Null password for user %s:%s.  This user will likely not be allowed to succesfully login", primaryLogin.getUserId(), primaryLogin.getLogin()));
@@ -275,13 +275,13 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			throw new BasicDataServiceException(ResponseCode.FAIL_OTHER);
 		}
 	}
-	
+
 	@Override
 	public URIFederationResponse getMetadata(String proxyURI) {
 		final URIFederationResponse response = new URIFederationResponse();
 		final StopWatch sw = new StopWatch();
 		sw.start();
-		
+
 		final List<AuthLevelGrouping> groupingList = new LinkedList<AuthLevelGrouping>();
 		ContentProvider cp = null;
 		URIPattern uriPattern = null;
@@ -292,19 +292,19 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
 			}
 			cp = cpNode.getContentProvider();
-			
+
 			final URIPatternSearchResult uriPatternToken = (cpNode.getPatternTree() != null) ? cpNode.getPatternTree().find(uri) : null;
-			
+
 			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
 			if(uriPatternToken != null && uriPatternToken.hasPatterns()) {
-				
+
 				/* check entitlements and auth level on patterns */
 				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
 					uriPattern = pattern;
 					break;
 				}
 			}
-			
+
 			if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
 				for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
 					final String groupingId = xref.getId().getGroupingId();
@@ -353,7 +353,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				for(final AuthLevelGrouping grouping : groupingList) {
 					final AuthLevel level = grouping.getAuthLevel();
 					final Set<AuthLevelAttribute> attributes = grouping.getAttributes();
-					
+
 					final URIAuthLevelToken token = new URIAuthLevelToken();
 					token.setAuthLevelId(level.getId());
 					if(CollectionUtils.isNotEmpty(attributes)) {
@@ -383,7 +383,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		final URIFederationResponse response = new URIFederationResponse();
 		final StopWatch sw = new StopWatch();
 		sw.start();
-		
+
 		ContentProvider cp = null;
 		URIPattern uriPattern = null;
 		final List<AuthLevelGrouping> groupingList = new LinkedList<AuthLevelGrouping>();
@@ -397,12 +397,12 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			if(!cp.getIsPublic() && !isEntitled(userId, cp.getResourceId())) {
 				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 			}
-			
+
 			final URIPatternSearchResult uriPatternToken = (cpNode.getPatternTree() != null) ? cpNode.getPatternTree().find(uri) : null;
-			
+
 			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
 			if(uriPatternToken != null && uriPatternToken.hasPatterns()) {
-				
+
 				/* check entitlements and auth level on patterns */
 				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
 					if(!pattern.getIsPublic() && !isEntitled(userId, pattern.getResourceId())) {
@@ -410,7 +410,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 					}
 					//TODO:  set auth levels here
 				}
-			
+
 				/* do rule processes */
 				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
 					if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
@@ -435,7 +435,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 					uriPattern = pattern;
 				}
 			}
-			
+
 			if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
 				for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
 					final String groupingId = xref.getId().getGroupingId();
@@ -455,22 +455,22 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 					}
 				}
 			}
-			
+
 			if(CollectionUtils.isEmpty(groupingList)) {
 				throw new BasicDataServiceException(ResponseCode.FAIL_OTHER);
 			}
-			
+
 			boolean requiresAuthentication = false;
 			for(final AuthLevelGrouping grouping : groupingList) {
 				if(grouping.getAuthLevel().isRequiresAuthentication()) {
 					requiresAuthentication = true;
 				}
 			}
-			
+
 			if(StringUtils.isEmpty(userId) && requiresAuthentication) {
 				throw new BasicDataServiceException(ResponseCode.UNAUTHORIZED);
 			}
-			
+
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
@@ -500,7 +500,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				for(final AuthLevelGrouping grouping : groupingList) {
 					final AuthLevel level = grouping.getAuthLevel();
 					final Set<AuthLevelAttribute> attributes = grouping.getAttributes();
-					
+
 					final URIAuthLevelToken token = new URIAuthLevelToken();
 					token.setAuthLevelId(level.getId());
 					if(CollectionUtils.isNotEmpty(attributes)) {
@@ -524,7 +524,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		}
 		return response;
 	}
-	
+
 	private boolean isEntitled(final String userId, final String resourceId) {
 		final AuthorizationResource resource = new AuthorizationResource();
 		resource.setId(resourceId);

@@ -1178,4 +1178,20 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     public void validateGroupRequest(final GroupRequestModel request) throws Exception {
         pageTemplateService.validate(request);
     }
+
+    public List<Map<String,String>> getAttributeByGroupIds(List<String> groupIds, String attrName) {
+        if ((groupIds == null)||(groupIds.size() < 1)||(attrName == null)) {
+            return null;
+        }
+        return groupAttrDao.getAttributeByGroupIds(groupIds, attrName);
+
+    }
+
+    public String getAttributeByGroupId(String groupId, String attrName){
+        if ((groupId == null)||(attrName == null)) {
+            return null;
+        }
+        return groupAttrDao.getAttributeByGroupId(groupId, attrName);
+
+    }
 }

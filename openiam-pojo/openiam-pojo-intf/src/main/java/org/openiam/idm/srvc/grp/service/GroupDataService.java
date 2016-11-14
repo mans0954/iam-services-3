@@ -12,6 +12,7 @@ import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -130,4 +131,7 @@ public interface GroupDataService {
     public void saveGroupRequest(final GroupRequestModel request) throws Exception;
     public void validateGroupRequest(final GroupRequestModel request) throws Exception;
     public List<GroupOwner> getOwnersBeansForGroup(String groupId);
+
+    public List<Map<String,String>> getAttributeByGroupIds(List<String> groupIds, String attrName);
+    public String getAttributeByGroupId(String groupId, String attrName);
 }

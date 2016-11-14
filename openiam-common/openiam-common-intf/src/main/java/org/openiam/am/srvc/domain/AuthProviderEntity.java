@@ -57,6 +57,10 @@ public class AuthProviderEntity implements Serializable {
     @Lob
     private byte[] privateKey=null;
 
+    @Column(name = "CA_CERT", nullable = true)
+    @Lob
+    private byte[] caCert=null;
+
     @Column(name="SUPPORTS_CERT_AUTH")
     @Type(type = "yes_no")
     private boolean supportsCertAuth;
@@ -66,6 +70,9 @@ public class AuthProviderEntity implements Serializable {
 
     @Column(name="CERT_AUTH_REGEX_SCRIPT",length=19)
     private String certGroovyScript;
+
+    @Column(name="CERT_AUTH_CA_VALIDATE_SCRIPT",length=19)
+    private String caValidateGroovyScript;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="PROVIDER_TYPE", referencedColumnName = "PROVIDER_TYPE", insertable = false, updatable = false)
@@ -162,6 +169,14 @@ public class AuthProviderEntity implements Serializable {
         this.privateKey = privateKey;
     }
 
+    public byte[] getCaCert() {
+        return caCert;
+    }
+
+    public void setCaCert(byte[] caCert) {
+        this.caCert = caCert;
+    }
+
     public AuthProviderTypeEntity getType() {
         return type;
     }
@@ -242,6 +257,14 @@ public class AuthProviderEntity implements Serializable {
         this.certGroovyScript = certGroovyScript;
     }
 
+    public String getCaValidateGroovyScript() {
+        return caValidateGroovyScript;
+    }
+
+    public void setCaValidateGroovyScript(String caValidateGroovyScript) {
+        this.caValidateGroovyScript = caValidateGroovyScript;
+    }
+
     public Set<ContentProviderEntity> getContentProviders() {
         return contentProviders;
     }
@@ -258,6 +281,9 @@ public class AuthProviderEntity implements Serializable {
         result = prime
                 * result
                 + ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+        result = prime
+                * result
+                + ((caValidateGroovyScript == null) ? 0 : caValidateGroovyScript.hashCode());
         result = prime * result
                 + ((certRegex == null) ? 0 : certRegex.hashCode());
 		result = prime * result
@@ -272,6 +298,7 @@ public class AuthProviderEntity implements Serializable {
 				* result
 				+ ((nextAuthProvider == null) ? 0 : nextAuthProvider.hashCode());
 		result = prime * result + Arrays.hashCode(privateKey);
+        result = prime * result + Arrays.hashCode(caCert);
 		result = prime * result
 				+ ((providerId == null) ? 0 : providerId.hashCode());
 		result = prime * result
@@ -324,6 +351,8 @@ public class AuthProviderEntity implements Serializable {
 			return false;
 		if (!Arrays.equals(privateKey, other.privateKey))
 			return false;
+        if (!Arrays.equals(caCert, other.caCert))
+            return false;
 		if (providerId == null) {
 			if (other.providerId != null)
 				return false;
@@ -350,6 +379,11 @@ public class AuthProviderEntity implements Serializable {
             if (other.certGroovyScript != null)
                 return false;
         } else if (!certGroovyScript.equals(other.certGroovyScript))
+            return false;
+        if (caValidateGroovyScript == null) {
+            if (other.caValidateGroovyScript != null)
+                return false;
+        } else if (!caValidateGroovyScript.equals(other.caValidateGroovyScript))
             return false;
         if (certRegex == null) {
             if (other.certRegex != null)

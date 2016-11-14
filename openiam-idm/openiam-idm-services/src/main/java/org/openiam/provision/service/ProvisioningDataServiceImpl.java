@@ -69,6 +69,8 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.res.service.ResourcePropDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
@@ -112,6 +114,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     @Autowired
     private BuildUserPolicyMapHelper buildPolicyMapHelper;
+
+    @Autowired
+    private ResourcePropDAO resourcePropDao;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -663,11 +668,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                                         if (resourceId != null) {
                                             processedResources.add(resourceId);
-                                            resource = resourceService.getResourceDTO(resourceId, true);
+                                            resource = resourceService.getResourceDTO(resourceId, false);
                                             if (resource != null) {
                                                 bindingMap.put(TARGET_SYS_RES, resource);
 
-                                                String preProcessScript = getResProperty(resource.getResourceProps(), "PRE_PROCESS");
+                                                String preProcessScript = resourcePropDao.findValueByName(resourceId,"PRE_PROCESS"); //getResProperty(resource.getResourceProps(), "PRE_PROCESS");
                                                 if (preProcessScript != null && !preProcessScript.isEmpty()) {
                                                     PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                                     if (ppScript != null) {
@@ -685,7 +690,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                         // SET POST ATTRIBUTES FOR TARGET SYS SCRIPT
                                         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
                                         if (resource != null) {
-                                            String postProcessScript = getResProperty(resource.getResourceProps(), "POST_PROCESS");
+                                            String postProcessScript = resourcePropDao.findValueByName(resourceId, "POST_PROCESS");//getResProperty(resource.getResourceProps(), "POST_PROCESS");
                                             if (postProcessScript != null && !postProcessScript.isEmpty()) {
                                                 PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                                 if (ppScript != null) {
@@ -742,12 +747,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
             if (status == UserStatusEnum.REMOVE) {
                 try {
-                    if (pUser.getSuperiors() != null) {
-                        for (User us : pUser.getSuperiors()) {
-                            us.setOperation(AttributeOperationEnum.DELETE);
-                        }
-                        modifyUser(pUser);
-                    }
                     userMgr.removeUser(userId);
                 } catch (Throwable e) {
                     log.error("Can't remove user", e);

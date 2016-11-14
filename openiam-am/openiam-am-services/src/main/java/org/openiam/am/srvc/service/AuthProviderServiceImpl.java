@@ -247,12 +247,16 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
             entity.setSupportsCertAuth(provider.isSupportsCertAuth());
             entity.setCertGroovyScript(provider.getCertGroovyScript());
             entity.setCertRegex(provider.getCertRegex());
+            entity.setCaValidateGroovyScript(provider.getCaValidateGroovyScript());
 
             if(provider.getPrivateKey()!=null && provider.getPrivateKey().length>0){
                 entity.setPrivateKey(provider.getPrivateKey());
             }
             if(provider.getPublicKey()!=null && provider.getPublicKey().length>0){
                 entity.setPublicKey(provider.getPublicKey());
+            }
+            if(provider.getCaCert()!=null && provider.getCaCert().length>0){
+                entity.setCaCert(provider.getCaCert());
             }
             entity.setSignRequest(provider.isSignRequest());
             

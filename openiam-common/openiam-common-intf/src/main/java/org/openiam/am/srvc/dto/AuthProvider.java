@@ -32,7 +32,9 @@ import java.util.Set;
         "nextAuthProviderId",
         "supportsCertAuth",
         "certRegex",
-        "certGroovyScript"
+        "certGroovyScript",
+        "caValidateGroovyScript",
+        "caCert"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider implements Serializable {
@@ -55,6 +57,8 @@ public class AuthProvider implements Serializable {
     private boolean supportsCertAuth;
     private String certRegex;
     private String certGroovyScript;
+    private String caValidateGroovyScript;
+    private byte[] caCert;
 
     @XmlTransient
     private Map<String, AuthProviderAttribute> providerAttributeMap=null;
@@ -129,6 +133,14 @@ public class AuthProvider implements Serializable {
 
     public void setPrivateKey(byte[] privateKey) {
         this.privateKey = privateKey;
+    }
+
+    public byte[] getCaCert() {
+        return caCert;
+    }
+
+    public void setCaCert(byte[] caCert) {
+        this.caCert = caCert;
     }
 
     public Set<AuthProviderAttribute> getProviderAttributeSet() {
@@ -220,6 +232,14 @@ public class AuthProvider implements Serializable {
         this.certGroovyScript = certGroovyScript;
     }
 
+    public String getCaValidateGroovyScript() {
+        return caValidateGroovyScript;
+    }
+
+    public void setCaValidateGroovyScript(String caValidateGroovyScript) {
+        this.caValidateGroovyScript = caValidateGroovyScript;
+    }
+
 	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -238,6 +258,7 @@ public class AuthProvider implements Serializable {
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (!Arrays.equals(publicKey, that.publicKey)) return false;
         if (!Arrays.equals(privateKey, that.privateKey)) return false;
+        if (!Arrays.equals(caCert, that.caCert)) return false;
         if (providerAttributeSet != null ? !providerAttributeSet.equals(that.providerAttributeSet) : that.providerAttributeSet != null)
             return false;
         if (resourceAttributeMap != null ? !resourceAttributeMap.equals(that.resourceAttributeMap) : that.resourceAttributeMap != null)
@@ -247,6 +268,11 @@ public class AuthProvider implements Serializable {
             if (that.certGroovyScript != null)
                 return false;
         } else if (!certGroovyScript.equals(that.certGroovyScript))
+            return false;
+        if (caValidateGroovyScript == null) {
+            if (that.caValidateGroovyScript != null)
+                return false;
+        } else if (!caValidateGroovyScript.equals(that.caValidateGroovyScript))
             return false;
         if (certRegex == null) {
             if (that.certRegex != null)
@@ -270,11 +296,13 @@ public class AuthProvider implements Serializable {
         result = 31 * result + (chained ? 1 : 0);
         result = 31 * result + (publicKey != null ? Arrays.hashCode(publicKey) : 0);
         result = 31 * result + (privateKey != null ? Arrays.hashCode(privateKey) : 0);
+        result = 31 * result + (caCert != null ? Arrays.hashCode(caCert) : 0);
         result = 31 * result + (providerAttributeSet != null ? providerAttributeSet.hashCode() : 0);
         result = 31 * result + (resourceAttributeMap != null ? resourceAttributeMap.hashCode() : 0);
         result = 31 * result + (resource != null ? resource.hashCode() : 0);
         result = 31 * result + (providerAttributeMap != null ? providerAttributeMap.hashCode() : 0);
         result = 31 * result + ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+        result = 31 * result + ((caValidateGroovyScript == null) ? 0 : caValidateGroovyScript.hashCode());
         result = 31 * result + ((certRegex == null) ? 0 : certRegex.hashCode());
         return result;
     }

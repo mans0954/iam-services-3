@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -18,4 +19,8 @@ public interface GroupAttributeDAO extends BaseDao<GroupAttributeEntity, String>
 	//public void deleteByGroupId(final String groupId);
 
     public List<GroupAttributeEntity> findGroupAttributes(String groupId);
+
+    public List<Map<String,String>> getAttributeByGroupIds(List<String> groupIds, String attrName);
+    public String getAttributeByGroupId(String groupId, String attrName);
+
 }

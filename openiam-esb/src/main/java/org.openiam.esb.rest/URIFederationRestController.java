@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
+import org.openiam.am.cert.groovy.DefaultCACertCheck;
 import org.openiam.am.cert.groovy.DefaultCertToIdentityConverter;
 import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.service.AuthProviderService;
@@ -94,22 +95,53 @@ public class URIFederationRestController {
 
 			final String regex = StringUtils.trimToNull(provider.getCertRegex());
 			final String regexScript = StringUtils.trimToNull(provider.getCertGroovyScript());
+			final String caValidScript = StringUtils.trimToNull(provider.getCaValidateGroovyScript());
 			if(StringUtils.isBlank(regex) && StringUtils.isBlank(regexScript)) {
 				throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
 			}
 
+			X509Certificate caCert = null;
+			if ((provider.getCaCert() != null) && (provider.getCaCert().length > 0)) {
+				try {
+					caCert = X509Certificate.getInstance(new ByteArrayInputStream(provider.getCaCert()));
+				} catch (Exception ex) {
+					throw new BasicDataServiceException(ResponseCode.CERT_CA_INVALID, "Can not parse CA Cert");
+				}
+			}
 			final X509Certificate clientCert = X509Certificate.getInstance(new ByteArrayInputStream(certContents.getBytes()));
+
 			DefaultCertToIdentityConverter certToIdentityConverter;
 			if(regex != null) {
 				certToIdentityConverter = new DefaultCertToIdentityConverter();
 				certToIdentityConverter.setClientDNRegex(regex);
 			} else {
 				if(!scriptIntegration.scriptExists(regexScript)) {
-					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, "regexScript - not exist ");
 				}
 				certToIdentityConverter = (DefaultCertToIdentityConverter)scriptIntegration.instantiateClass(null, regexScript);
 				if(certToIdentityConverter == null) {
 					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID);
+				}
+			}
+
+			DefaultCACertCheck caCertCheck = null;
+			if(StringUtils.isNotBlank(caValidScript)) {
+				if(!scriptIntegration.scriptExists(caValidScript)) {
+					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, "caValidScript - not exist ");
+				}
+				caCertCheck = (DefaultCACertCheck)scriptIntegration.instantiateClass(null, caValidScript);
+				if(caCertCheck == null) {
+					throw new BasicDataServiceException(ResponseCode.CERT_CONFIG_INVALID, "Error on execute caValidScript");
+				}
+			}
+			if (caCertCheck != null) {
+				if (caCert != null) {
+					caCertCheck.setCACert(caCert);
+				}
+				caCertCheck.setCertficiate(clientCert);
+				caCertCheck.init();
+				if (!caCertCheck.resolve()) {
+					throw new BasicDataServiceException(ResponseCode.CERT_INVALID_VERIFY_WITH_CA);
 				}
 			}
 
@@ -124,7 +156,7 @@ public class URIFederationRestController {
 			wsResponse.succeed();
 		} catch(BasicDataServiceException e) {
 			wsResponse.fail();
-			wsResponse.setErrorText(e.getMessage());
+			wsResponse.setErrorText(e.getResponseValue() + " : " + e.getMessage());
 			wsResponse.setErrorCode(e.getCode());
 			LOG.info("Cannot cert identity", e);
 		} catch(Throwable e) {

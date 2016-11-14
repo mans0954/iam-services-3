@@ -275,11 +275,11 @@ public class UserEntity implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ResourceEntity> resources = new HashSet<ResourceEntity>(0);
 
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "employee", fetch = FetchType.LAZY)
+    @OneToMany(orphanRemoval = true, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy = "employee", fetch = FetchType.LAZY)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<SupervisorEntity> supervisors;
 
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "supervisor", fetch = FetchType.LAZY)
+    @OneToMany(orphanRemoval = true, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy = "supervisor", fetch = FetchType.LAZY)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<SupervisorEntity> subordinates;
 

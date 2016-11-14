@@ -47,6 +47,15 @@ public enum ResponseCode {
     @XmlEnumValue("CERT_CONFIG_INVALID")
     CERT_CONFIG_INVALID("CERT_CONFIG_INVALID"),
 
+    @XmlEnumValue("CERT_CLIENT_INVALID")
+    CERT_CLIENT_INVALID("CERT_CLIENT_INVALID"),
+
+    @XmlEnumValue("CERT_CA_INVALID")
+    CERT_CA_INVALID("CERT_CA_INVALID"),
+
+    @XmlEnumValue("CERT_INVALID_VERIFY_WITH_CA")
+    CERT_INVALID_VERIFY_WITH_CA("CERT_INVALID_VERIFY_WITH_CA"),
+
     @XmlEnumValue("noName")
     NO_NAME("noName"),
 
