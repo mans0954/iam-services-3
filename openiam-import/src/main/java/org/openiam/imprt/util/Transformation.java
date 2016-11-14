@@ -48,8 +48,6 @@ public class Transformation {
     final String UNITY_ROLE_ID = "2c94b2574be50e06014be569449302ed";
     final String LYNC_MNG_SYS_ID = "2c94b25748eaf9ef01492d5507100273";
     final String EXCH_MNG_SYS_ID = "2c94b25748eaf9ef01492d5312d3026d";
-    final String HOME_DIR_GROUP_ID = "88ecf05ea9404430b9bb3cfd49a9e610";
-    final String HOME_DIR_GROUP_ID_STAGING = "0ff4da647bf64af49db810ef95e2f8db";
     final List<String> activeStatuses = Arrays.asList("512", "544", "66048", "66080", "262656", "262688", "328192", "328224");
     final String DEFAULT_DATE = "01/01/2020 12:00:00";
     final private String baseDN = "DC=d30,DC=intra";
@@ -377,18 +375,8 @@ public class Transformation {
         attr = this.getValue(lo.get("homeDirectory"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("homeDirectory", attr));
-//            if ("PROD".equalsIgnoreCase(serverMode)) {
-//                addGroup(HOME_DIR_GROUP_ID, user);
-//            } else if ("STAGING".equalsIgnoreCase(serverMode)) {
-//                addGroup(HOME_DIR_GROUP_ID_STAGING, user);
-//            }
         } else {
             addUserAttribute(user, new UserAttributeEntity("homeDirectory", ""));
-//            if ("PROD".equalsIgnoreCase(serverMode)) {
-//                deleteGroup(HOME_DIR_GROUP_ID, user);
-//            } else if ("STAGING".equalsIgnoreCase(serverMode)) {
-//                deleteGroup(HOME_DIR_GROUP_ID_STAGING, user);
-//            }
         }
         attr = this.getValue(lo.get("homeDrive"));
         if (StringUtils.isNotBlank(attr)) {
