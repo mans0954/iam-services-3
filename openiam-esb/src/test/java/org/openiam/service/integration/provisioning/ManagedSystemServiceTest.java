@@ -4,9 +4,15 @@ package org.openiam.service.integration.provisioning;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.ManagedSysSearchBean;
+import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.dto.PolicyConstants;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
+import org.openiam.srvc.common.PolicyDataService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -18,6 +24,7 @@ public class ManagedSystemServiceTest extends AbstractKeyNameServiceTest<Managed
 	protected ManagedSysDto newInstance() {
 		final ManagedSysDto dto = new ManagedSysDto();
 		dto.setConnectorId(provisionConnectorWebServiceClient.getProvisionConnectors(null, 0, 1).get(0).getId());
+		dto.setPolicyId(getPasswordPolicy().getId());
 		return dto;
 	}
 

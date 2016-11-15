@@ -28,7 +28,7 @@ import org.openiam.am.srvc.dto.jdbc.xref.RoleRoleXref;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationRole", propOrder = {
 })
-public class AuthorizationRole extends AbstractAuthorizationEntity {
+public class AuthorizationRole extends AbstractAuthorizationPolicyEntity {
 
     private static final Log log = LogFactory.getLog(AuthorizationRole.class);
 

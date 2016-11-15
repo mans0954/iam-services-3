@@ -45,7 +45,9 @@ public class RoleServiceTest extends AbstractAttributeServiceTest<Role, RoleSear
 
 	@Override
 	protected Role newInstance() {
-		return new Role();
+		final Role dto = new Role();
+		dto.setPolicyId(getPasswordPolicy().getId());
+		return dto;
 	}
 
 	@Override

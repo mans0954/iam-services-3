@@ -74,6 +74,9 @@ public class PolicyEntity extends AbstractKeyNameEntity {
     @Column(name = "ACTIVE")
     @Type(type = "yes_no")
     private boolean active;
+    
+    @Column(name="POLICY_PRIORITY")
+    private Integer priority;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "policy", orphanRemoval = true)
     @Fetch(FetchMode.SUBSELECT)
@@ -219,6 +222,14 @@ public class PolicyEntity extends AbstractKeyNameEntity {
 		this.active = active;
 	}
 
+	public Integer getPriority() {
+		return priority;
+	}
+
+	public void setPriority(Integer priority) {
+		this.priority = priority;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -236,6 +247,8 @@ public class PolicyEntity extends AbstractKeyNameEntity {
 				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
 		result = prime * result
 				+ ((policyDef == null) ? 0 : policyDef.hashCode());
+		result = prime * result
+				+ ((priority == null) ? 0 : priority.hashCode());
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
 		result = prime * result
 				+ ((ruleSrcUrl == null) ? 0 : ruleSrcUrl.hashCode());
@@ -284,6 +297,11 @@ public class PolicyEntity extends AbstractKeyNameEntity {
 				return false;
 		} else if (!policyDef.equals(other.policyDef))
 			return false;
+		if (priority == null) {
+			if (other.priority != null)
+				return false;
+		} else if (!priority.equals(other.priority))
+			return false;
 		if (rule == null) {
 			if (other.rule != null)
 				return false;
@@ -300,16 +318,6 @@ public class PolicyEntity extends AbstractKeyNameEntity {
 		} else if (!status.equals(other.status))
 			return false;
 		return true;
-	}
-
-	@Override
-	public String toString() {
-		return "PolicyEntity [policyDef=" + policyDef + ", description="
-				+ description + ", status=" + status + ", createDate="
-				+ createDate + ", createdBy=" + createdBy + ", lastUpdate="
-				+ lastUpdate + ", lastUpdatedBy=" + lastUpdatedBy + ", rule="
-				+ rule + ", ruleSrcUrl=" + ruleSrcUrl + ", active=" + active
-				+ "]";
 	}
 
 	

@@ -111,7 +111,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         if (StringUtils.isNotBlank(userId)) {
             PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
             searchBean.setUserId(userId);
-            passwordPolicy = passwordService.getPasswordPolicyForUser(searchBean);
+            passwordPolicy = passwordService.getPasswordPolicy(searchBean);
         }
         if (passwordPolicy == null) {
             passwordPolicy = passwordService.getGlobalPasswordPolicy();
@@ -139,7 +139,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         if (StringUtils.isNotBlank(userId)) {
             PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
             searchBean.setUserId(userId);
-            passwordPolicy = passwordService.getPasswordPolicyForUser(searchBean);
+            passwordPolicy = passwordService.getPasswordPolicy(searchBean);
         }
         if (passwordPolicy == null) {
             passwordPolicy = passwordService.getGlobalPasswordPolicy();

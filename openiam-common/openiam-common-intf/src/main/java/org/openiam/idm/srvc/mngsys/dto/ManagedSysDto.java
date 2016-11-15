@@ -44,7 +44,7 @@ import java.util.Set;
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
         "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "groups",
-        "roles", "skipGroupProvision", "changedByEndUser"})
+        "roles", "skipGroupProvision", "changedByEndUser", "policyId"})
 @XmlSeeAlso({KeyDTO.class, KeyNameDTO.class, BaseObject.class})
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto extends KeyNameDTO {
@@ -83,6 +83,7 @@ public class ManagedSysDto extends KeyNameDTO {
     private String handler5;
     private Boolean skipGroupProvision;
     private boolean changedByEndUser = true;
+    private String policyId;
 
     //private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
 
@@ -99,23 +100,6 @@ public class ManagedSysDto extends KeyNameDTO {
     public ManagedSysDto(String id, String connectorId) {
         setId(id);
         this.connectorId = connectorId;
-    }
-
-    public ManagedSysDto(String id, String name, String description, String status, String connectorId, String hostUrl,
-            Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
-        setId(id);
-        setName(name);
-        this.description = description;
-        this.status = status;
-        this.connectorId = connectorId;
-        this.hostUrl = hostUrl;
-        this.port = port;
-        this.commProtocol = commProtocol;
-        this.userId = userId;
-        this.pswd = pswd;
-        this.startDate = startDate;
-        this.endDate = endDate;
-
     }
 
     public String getDescription() {
@@ -461,7 +445,15 @@ public class ManagedSysDto extends KeyNameDTO {
 		this.skipGroupProvision = skipGroupProvision;
 	}
 
-    @Override
+    public String getPolicyId() {
+		return policyId;
+	}
+
+	public void setPolicyId(String policyId) {
+		this.policyId = policyId;
+	}
+
+	@Override
     public String toString() {
         return "ManagedSysDto{" + "managedSysId='" + id + '\'' + ", name='" + getName() + '\'' + ", description='"
                 + description + '\'' + ", status='" + status + '\'' + ", connectorId='" + connectorId + '\''
@@ -550,6 +542,8 @@ public class ManagedSysDto extends KeyNameDTO {
 		result = prime * result
 				+ ((updateSecondary == null) ? 0 : updateSecondary.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		
+		result = prime * result + ((policyId == null) ? 0 : policyId.hashCode());
 		return result;
 	}
 
@@ -709,6 +703,12 @@ public class ManagedSysDto extends KeyNameDTO {
 			if (other.userId != null)
 				return false;
 		} else if (!userId.equals(other.userId))
+			return false;
+		
+		if (policyId == null) {
+			if (other.policyId != null)
+				return false;
+		} else if (!policyId.equals(other.policyId))
 			return false;
 		return true;
 	}

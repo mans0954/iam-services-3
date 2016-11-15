@@ -12,13 +12,15 @@ import java.util.Set;
 @XmlType(name = "BulkOperationRequest", propOrder = {
         "requesterId",
         "userIds",
-        "operations"
+        "operations",
+        "contentProviderId"
 })
 public class BulkOperationRequest implements Serializable {
 
     private String requesterId;
     private Set<String> userIds = new HashSet<String>();
     private Set<OperationBean> operations = new LinkedHashSet<OperationBean>();
+    private String contentProviderId;
 
     public String getRequesterId() {
         return requesterId;
@@ -43,4 +45,14 @@ public class BulkOperationRequest implements Serializable {
     public void setOperations(Set<OperationBean> operations) {
         this.operations = operations;
     }
+
+	public String getContentProviderId() {
+		return contentProviderId;
+	}
+
+	public void setContentProviderId(String contentProviderId) {
+		this.contentProviderId = contentProviderId;
+	}
+    
+    
 }

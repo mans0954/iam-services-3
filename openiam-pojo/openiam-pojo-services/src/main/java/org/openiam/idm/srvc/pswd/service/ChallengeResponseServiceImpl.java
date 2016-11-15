@@ -155,7 +155,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
         int requiredCorrectUserSpecified = 0;
         PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
         searchBean.setUserId(userId);
-        final Policy policy = passwordMgr.getPasswordPolicyForUser(searchBean);
+        final Policy policy = passwordMgr.getPasswordPolicy(searchBean);
         final PolicyAttribute attrEnterprise = policy.getAttribute("QUEST_ANSWER_CORRECT");
         final PolicyAttribute attrUserSpecified = policy.getAttribute("CUSTOM_QUEST_ANSWER_COUNT");
         if (attrEnterprise != null) {

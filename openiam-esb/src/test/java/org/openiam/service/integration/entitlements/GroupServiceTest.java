@@ -44,7 +44,9 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 
 	@Override
 	protected Group newInstance() {
-		return new Group();
+		final Group dto = new Group();
+		dto.setPolicyId(getPasswordPolicy().getId());
+		return dto;
 	}
 
 	@Override

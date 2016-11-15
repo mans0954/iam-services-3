@@ -695,6 +695,12 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 			entity.setResource(resource);
 			*/
         }
+        
+        if(entity.getPolicy() != null && StringUtils.isNotBlank(entity.getPolicy().getId())) {
+        	entity.setPolicy(policyDAO.findById(entity.getPolicy().getId()));
+        } else {
+        	entity.setPolicy(null);
+        }
 
         if (StringUtils.isBlank(entity.getId())) {
             managedSysDAO.save(entity);

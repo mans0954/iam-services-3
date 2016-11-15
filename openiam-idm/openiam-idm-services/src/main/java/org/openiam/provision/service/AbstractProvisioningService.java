@@ -1961,7 +1961,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         return connectorAdapter.resetPasswordRequest(mSys, req);
     }
 
-    protected ProvisionUserResponse validatePassword(Login primaryLogin, ProvisionUser user, String requestId) {
+    protected ProvisionUserResponse validatePassword(Login primaryLogin, ProvisionUser user, String contentProviderId, String requestId) {
 
         ProvisionUserResponse resp = new ProvisionUserResponse();
 
@@ -1974,7 +1974,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         if (passwordPolicy == null) {
         	final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
         	searchBean.setUserId(user.getUser().getId());
-        	passwordPolicy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+        	searchBean.setContentProviderId(contentProviderId);
+        	searchBean.setPrincipal(primaryLogin.getLogin());
+        	searchBean.setManagedSysId(primaryLogin.getManagedSysId());
+        	passwordPolicy = passwordPolicyProvider.getPasswordPolicy(searchBean);
         }
 
         try {

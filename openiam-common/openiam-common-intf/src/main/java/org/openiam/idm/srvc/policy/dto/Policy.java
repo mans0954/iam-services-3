@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.policy.dto;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -27,8 +28,9 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 	"lastUpdatedBy", 
 	"rule", 
 	"ruleSrcUrl", 
-	"policyAttributes", 
-	"enablement" 
+	"policyAttributes",
+	"active",
+	"priority"
 })
 @DozerDTOCorrespondence(PolicyEntity.class)
 public class Policy extends KeyNameDTO {
@@ -45,7 +47,8 @@ public class Policy extends KeyNameDTO {
     private String lastUpdatedBy;
     private String rule;
     private String ruleSrcUrl;
-    private Integer enablement;
+    private boolean active;
+    private Integer priority;
 
     private Set<PolicyAttribute> policyAttributes = new HashSet<PolicyAttribute>(
             0);
@@ -151,25 +154,27 @@ public class Policy extends KeyNameDTO {
         this.ruleSrcUrl = ruleSrcUrl;
     }
 
-    /**
-     * @return the enablemement
-     */
-    public Integer getEnablement() {
-        return enablement;
-    }
+	public boolean isActive() {
+		return active;
+	}
 
-    /**
-     * @param enablemement
-     *            the enablemement to set
-     */
-    public void setEnablement(Integer enablemement) {
-        this.enablement = enablemement;
-    }
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+	public Integer getPriority() {
+		return priority;
+	}
+
+	public void setPriority(Integer priority) {
+		this.priority = priority;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + (active ? 1231 : 1237);
 		result = prime * result
 				+ ((createDate == null) ? 0 : createDate.hashCode());
 		result = prime * result
@@ -177,13 +182,13 @@ public class Policy extends KeyNameDTO {
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
-				+ ((enablement == null) ? 0 : enablement.hashCode());
-		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result
 				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
 		result = prime * result
 				+ ((policyDefId == null) ? 0 : policyDefId.hashCode());
+		result = prime * result
+				+ ((priority == null) ? 0 : priority.hashCode());
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
 		result = prime * result
 				+ ((ruleSrcUrl == null) ? 0 : ruleSrcUrl.hashCode());
@@ -200,6 +205,8 @@ public class Policy extends KeyNameDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		Policy other = (Policy) obj;
+		if (active != other.active)
+			return false;
 		if (createDate == null) {
 			if (other.createDate != null)
 				return false;
@@ -215,11 +222,6 @@ public class Policy extends KeyNameDTO {
 				return false;
 		} else if (!description.equals(other.description))
 			return false;
-		if (enablement == null) {
-			if (other.enablement != null)
-				return false;
-		} else if (!enablement.equals(other.enablement))
-			return false;
 		if (lastUpdate == null) {
 			if (other.lastUpdate != null)
 				return false;
@@ -234,6 +236,11 @@ public class Policy extends KeyNameDTO {
 			if (other.policyDefId != null)
 				return false;
 		} else if (!policyDefId.equals(other.policyDefId))
+			return false;
+		if (priority == null) {
+			if (other.priority != null)
+				return false;
+		} else if (!priority.equals(other.priority))
 			return false;
 		if (rule == null) {
 			if (other.rule != null)
@@ -253,14 +260,5 @@ public class Policy extends KeyNameDTO {
 		return true;
 	}
 
-	@Override
-	public String toString() {
-		return String
-				.format("Policy [policyDefId=%s, description=%s, status=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s, rule=%s, ruleSrcUrl=%s, enablement=%s]",
-						policyDefId, description, status, createDate,
-						createdBy, lastUpdate, lastUpdatedBy, rule, ruleSrcUrl,
-						enablement);
-	}
-
-    
+	
 }

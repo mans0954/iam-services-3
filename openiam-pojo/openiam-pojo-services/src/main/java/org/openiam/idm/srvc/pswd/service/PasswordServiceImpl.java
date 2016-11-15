@@ -112,18 +112,14 @@ public class PasswordServiceImpl implements PasswordService {
     private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
     private static final long DAY_AS_MILLIS = 86400000l;
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.openiam.idm.srvc.policy.pswd.PasswordService#isPasswordValid(org.
-     * openiam.idm.srvc.policy.dto.Password)
-     */
     @Override
     public PasswordValidationResponse isPasswordValid(Password pswd)  {
-        PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
-        Policy pswdPolicy = getPasswordPolicyUsingContentProvider(
-                pswd.getPrincipal(), pswd.getManagedSysId(), null);
+        final PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
+        final PasswordPolicyAssocSearchBean sb = new PasswordPolicyAssocSearchBean();
+        sb.setContentProviderId(pswd.getContentProviderId());
+        sb.setManagedSysId(pswd.getManagedSysId());
+        sb.setPrincipal(pswd.getPrincipal());
+        final Policy pswdPolicy = getPasswordPolicy(sb);
         if (pswdPolicy == null) {
             retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
             retVal.fail();
@@ -156,7 +152,10 @@ public class PasswordServiceImpl implements PasswordService {
         
         final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
     	searchBean.setUserId(user.getId());
-        Policy pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+    	searchBean.setContentProviderId(pswd.getContentProviderId());
+    	searchBean.setManagedSysId(pswd.getManagedSysId());
+    	searchBean.setPrincipal(pswd.getPrincipal());
+        Policy pswdPolicy = passwordPolicyProvider.getPasswordPolicy(searchBean);
         if (pswdPolicy == null) {
             retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
             retVal.fail();
@@ -190,8 +189,11 @@ public class PasswordServiceImpl implements PasswordService {
         Policy pswdPolicy = policy;
         if (pswdPolicy == null) {
             final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+            searchBean.setContentProviderId(pswd.getContentProviderId());
+        	searchBean.setManagedSysId(pswd.getManagedSysId());
+        	searchBean.setPrincipal(pswd.getPrincipal());
         	searchBean.setUserId(user.getId());
-            pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+            pswdPolicy = getPasswordPolicy(searchBean);
         }
 
         if (pswdPolicy == null) {
@@ -218,13 +220,6 @@ public class PasswordServiceImpl implements PasswordService {
         return retVal;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.openiam.idm.srvc.pswd.service.PasswordService#daysToPasswordExpiration
-     * (java.lang.String, java.lang.String, java.lang.String)
-     */
     @Override
     public int daysToPasswordExpiration(String principal,
                                         String managedSysId) {
@@ -246,41 +241,6 @@ public class PasswordServiceImpl implements PasswordService {
         return (int) diffInDays;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.openiam.idm.srvc.pswd.service.PasswordService#isPasswordChangeAllowed
-     * (java.lang.String, java.lang.String, java.lang.String)
-     */
-    @Override
-    public boolean isPasswordChangeAllowed(String principal, String managedSysId) {
-        boolean enabled = false;
-        Policy policy = getPasswordPolicyUsingContentProvider(principal, managedSysId, null);
-        log.info("Password policy=" + policy);
-        PolicyAttribute changeAttr = policy
-                .getAttribute("PASSWORD_CHANGE_ALLOWED");
-        if (changeAttr != null) {
-            if (changeAttr.getValue1() != null
-                    && changeAttr.getValue1().equalsIgnoreCase("0")) {
-                return false;
-            }
-        }
-        PolicyAttribute attribute = policy.getAttribute("RESET_PER_TIME");
-        if (attribute != null && attribute.getValue1() != null) {
-            enabled = true;
-        }
-        if (enabled) {
-            int changeCount = passwordChangeCount(principal,
-                    managedSysId);
-            int changesAllowed = Integer.parseInt(attribute.getValue1());
-            if (changeCount >= changesAllowed) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     @Override
     public int passwordChangeCount(String principal, String managedSysId) {
         LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
@@ -291,14 +251,8 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
-    @Deprecated
-    public Policy getPasswordPolicy(String principal, String managedSysId) {
-        return getPasswordPolicyUsingContentProvider(principal, managedSysId, null);
-    }
-
-    @Override
-    public Policy getPasswordPolicyForUser(final PasswordPolicyAssocSearchBean passwordPolicyAssocSearchBean) {
-        return passwordPolicyProvider.getPasswordPolicyByUser(passwordPolicyAssocSearchBean);
+    public Policy getPasswordPolicy(final PasswordPolicyAssocSearchBean passwordPolicyAssocSearchBean) {
+        return passwordPolicyProvider.getPasswordPolicy(passwordPolicyAssocSearchBean);
     }
     
     /**
@@ -323,7 +277,12 @@ public class PasswordServiceImpl implements PasswordService {
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
         }
-        Policy pl = getPasswordPolicyUsingContentProvider(request.getPrincipal(), request.getManagedSysId(), request.getContentProviderId());
+        final PasswordPolicyAssocSearchBean sb = new PasswordPolicyAssocSearchBean();
+        sb.setManagedSysId(request.getManagedSysId());
+        sb.setPrincipal(request.getPrincipal());
+        sb.setContentProviderId(request.getContentProviderId());
+        
+        final Policy pl = getPasswordPolicy(sb);
         if (pl == null) {
             log.warn("can't generate password reset token - can't get password policy");
             resp.setStatus(ResponseStatus.FAILURE);
@@ -382,37 +341,11 @@ public class PasswordServiceImpl implements PasswordService {
         long tokenLife = numberOfDays * DAY_AS_MILLIS;
         return (curTime + tokenLife);
     }
-    @Override
-    public Policy getPasswordPolicyUsingContentProvider(String principal, String managedSysId, String contentProviderId) {
-        final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
-        final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
-    	searchBean.setUserId(lg.getUserId());
-    	searchBean.setContentProviderId(contentProviderId);
-        return passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
-    }
 
     @Override
     @Transactional(readOnly = true)
     public Set<PasswordHistory> getPasswordHistory(String id, Integer from, Integer count) {
         Set<PasswordHistoryEntity> phESet = new HashSet<PasswordHistoryEntity>(passwordHistoryDao.getPasswordHistoryByLoginId(id, 0, count));
         return passwordHistoryDozerConverter.convertToDTOSet(phESet, false);
-    }
-
-    @Override
-    public Policy getPasswordPolicy(LoginEntity lg) {
-        // Find a password policy for this user
-        // order of search, type, classification, domain, global
-
-        // get the user for this principal
-        log.info(String.format("login=%s", lg));
-//		final UserEntity user = userManager.getUser(lg.getUserId());
-        PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
-        if (lg != null) {
-            searchBean.setUserId(lg.getUserId());
-            searchBean.setManagedSystemId(lg.getManagedSysId());
-            return passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
-        } else {
-            return passwordPolicyProvider.getGlobalPasswordPolicy();
-        }
     }
 }

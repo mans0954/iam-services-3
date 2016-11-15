@@ -103,10 +103,7 @@ public interface LoginDataService {
      * @param password
      * @return
      */
-    @Deprecated
-    boolean setPassword(String principal, String sysId, String password, boolean preventChangeCountIncrement);
-    
-    boolean setPasswordUsingContentProvider(String login, String sysId,
+    boolean setPassword(String login, String sysId,
                                             String password, boolean preventChangeCountIncrement, final String contentProviderId);
 
     /**

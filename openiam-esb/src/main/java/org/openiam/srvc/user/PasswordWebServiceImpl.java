@@ -24,6 +24,7 @@ package org.openiam.srvc.user;
 import javax.jws.WebService;
 
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.base.request.PasswordResetTokenRequest;
@@ -60,13 +61,13 @@ public class PasswordWebServiceImpl implements PasswordWebService {
         return passwordDS.validatePasswordResetToken(token);
     }
 
-    @Override
-    public Policy getPasswordPolicy(String principal, String msysId) {
-        return passwordDS.getPasswordPolicy(principal, msysId);
-    }
-
 	@Override
 	public String getPasswordResetToken(PasswordResetTokenRequest request) {
 		return passwordDS.getPasswordResetToken(request);
+	}
+
+	@Override
+	public Policy getPasswordPolicy(final PasswordPolicyAssocSearchBean searchBean) {
+		return passwordDS.getPasswordPolicy(searchBean);
 	}
 }

@@ -57,6 +57,7 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 	protected Organization newInstance() {
 		final Organization organization = new Organization();
 		organization.setOrganizationTypeId(organizationTypeClient.findBeans(new OrganizationTypeSearchBean(), 0, 1, null).get(0).getId());
+		organization.setPolicyId(getPasswordPolicy().getId());
 		return organization;
 	}
 

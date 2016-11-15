@@ -30,6 +30,7 @@ import org.openiam.srvc.am.AuthProviderWebService;
 import org.openiam.srvc.am.ContentProviderWebService;
 import org.openiam.srvc.am.AuthenticationService;
 import org.openiam.srvc.common.LanguageWebService;
+import org.openiam.srvc.common.PolicyDataService;
 import org.openiam.srvc.am.AuthorizationManagerWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -37,6 +38,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.http.client.OpenIAMHttpClient;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.srvc.am.AccessRightDataService;
@@ -58,6 +60,8 @@ import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.srvc.idm.ManagedSystemWebService;
 import org.openiam.srvc.idm.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.dto.PolicyConstants;
 import org.openiam.srvc.am.OrganizationDataService;
 import org.openiam.srvc.am.OrganizationTypeDataService;
 import org.openiam.srvc.common.PropertyValueWebService;
@@ -85,6 +89,16 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 
 	protected ContentProvider cp = null;
 	protected User user = null;
+	
+    @Autowired
+    @Qualifier("policyServiceClient")
+    protected PolicyDataService policyServiceClient;
+    
+    protected Policy getPasswordPolicy() {
+    	final PolicySearchBean sb = new PolicySearchBean();
+    	sb.setPolicyDefId(PolicyConstants.PASSWORD_POLICY);
+    	return policyServiceClient.findBeans(sb, 0, 10).get(0);
+    }
 	
 	@Autowired
 	@Qualifier("languageServiceClient")

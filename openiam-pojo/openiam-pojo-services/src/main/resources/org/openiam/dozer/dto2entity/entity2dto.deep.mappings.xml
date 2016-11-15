@@ -703,6 +703,10 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-a>
 		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysDto</class-b>
+		<field>
+			<a>policy.id</a>
+			<b>policyId</b>
+		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
