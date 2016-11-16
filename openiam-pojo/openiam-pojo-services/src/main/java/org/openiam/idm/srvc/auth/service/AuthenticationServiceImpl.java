@@ -605,6 +605,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
     }
 
     @Override
+    @Transactional
     public void confirmOTPToken(final OTPServiceRequest request) throws BasicDataServiceException {
         final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(request.getUserId());
@@ -700,6 +701,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
     }
 
     @Override
+    @Transactional
     public boolean isOTPActive(final OTPServiceRequest request) throws BasicDataServiceException {
         final IdmAuditLogEntity event = AuditLogHolder.getInstance().getEvent();
         event.setUserId(null);
