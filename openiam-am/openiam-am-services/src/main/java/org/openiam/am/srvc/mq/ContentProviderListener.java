@@ -1,12 +1,21 @@
 package org.openiam.am.srvc.mq;
 
-import org.openiam.am.srvc.service.dispatcher.*;
-import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.am.srvc.dto.AuthLevelAttribute;
+import org.openiam.am.srvc.dto.AuthLevelGrouping;
+import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.am.srvc.searchbean.ContentProviderSearchBean;
+import org.openiam.am.srvc.searchbean.URIPatternSearchBean;
+import org.openiam.am.srvc.service.ContentProviderService;
+import org.openiam.base.request.*;
+import org.openiam.base.response.*;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.ContentProviderAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.listener.AbstractRabbitMQListener;
+import org.openiam.mq.constants.queue.am.ContentProviderQueue;
+import org.openiam.mq.listener.AbstractListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,107 +23,147 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 23/09/16.
  */
 @Component
-public class ContentProviderListener extends AbstractRabbitMQListener<ContentProviderAPI> {
-    @Autowired
-    private GetAllMetaTypeDispatcher getAllMetaTypeDispatcher;
-    @Autowired
-    private GetAuthLevelAttributeDispatcher getAuthLevelAttributeDispatcher;
-    @Autowired
-    private GetAuthLevelGroupingDispatcher getAuthLevelGroupingDispatcher;
-    @Autowired
-    private GetAuthLevelGroupingListDispatcher getAuthLevelGroupingListDispatcher;
-    @Autowired
-    private GetAuthLevelListDispatcher getAuthLevelListDispatcher;
-    @Autowired
-    private GetContentProviderDispatcher getContentProviderDispatcher;
-    @Autowired
-    private GetNumOfContentProviderDispatcher getNumOfContentProviderDispatcher;
-    @Autowired
-    private GetNumOfUriPatternDispatcher getNumOfUriPatternDispatcher;
-    @Autowired
-    private GetUriPatternProviderDispatcher getUriPatternProviderDispatcher;
-    @Autowired
-    private FindContentProvidersDispatcher findContentProvidersDispatcher;
-    @Autowired
-    private FindUriPatternDispatcher findUriPatternDispatcher;
-    @Autowired
-    private CreateDefaultURIPatternsDispatcher createDefaultURIPatternsDispatcher;
-    @Autowired
-    private SaveAuthLevelAttributeDispatcher saveAuthLevelAttributeDispatcher;
-    @Autowired
-    private SaveAuthLevelGroupingDispatcher saveAuthLevelGroupingDispatcher;
-    @Autowired
-    private SaveContentProviderDispatcher saveContentProviderDispatcher;
-    @Autowired
-    private SaveUriPatternDispatcher saveUriPatternDispatcher;
-    @Autowired
-    private DeleteContentProviderDispatcher deleteContentProviderDispatcher;
+@RabbitListener(id="contentProviderListener",
+        queues = "#{ContentProviderQueue.name}",
+        containerFactory = "amRabbitListenerContainerFactory")
+public class ContentProviderListener extends AbstractListener<ContentProviderAPI> {
 
-    public ContentProviderListener() {
-        super(OpenIAMQueue.ContentProviderQueue);
+    @Autowired
+    private ContentProviderService contentProviderService;
+
+    @Autowired
+    public ContentProviderListener(ContentProviderQueue queue) {
+        super(queue);
     }
 
     @Override
-    protected void doOnMessage(MQRequest<BaseServiceRequest, ContentProviderAPI> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        ContentProviderAPI apiName = message.getRequestApi();
-        switch (apiName){
-            case GetAllMetaType:
-                addTask(getAllMetaTypeDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetAuthLevelAttribute:
-                addTask(getAuthLevelAttributeDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetAuthLevelGrouping:
-                addTask(getAuthLevelGroupingDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetAuthLevelGroupingList:
-                addTask(getAuthLevelGroupingListDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetAuthLevelList:
-                addTask(getAuthLevelListDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetContentProvider:
-                addTask(getContentProviderDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetNumOfContentProviders:
-                addTask(getNumOfContentProviderDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetNumOfUriPatterns:
-                addTask(getNumOfUriPatternDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetURIPattern:
-                addTask(getUriPatternProviderDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case FindContentProviderBeans:
-                addTask(findContentProvidersDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case FindUriPatterns:
-                addTask(findUriPatternDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case CreateDefaultURIPatterns:
-                addTask(createDefaultURIPatternsDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case SaveAuthLevelAttribute:
-                addTask(saveAuthLevelAttributeDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case SaveAuthLevelGrouping:
-                addTask(saveAuthLevelGroupingDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case SaveContentProvider:
-            case SetupApplication:
-                addTask(saveContentProviderDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case SaveURIPattern:
-                addTask(saveUriPatternDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case DeleteAuthLevelAttribute:
-            case DeleteAuthLevelGrouping:
-            case DeleteContentProvider:
-            case DeleteProviderPattern:
-                addTask(deleteContentProviderDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            default:
-                break;
-        }
+    protected RequestProcessor<ContentProviderAPI, EmptyServiceRequest> getEmptyRequestProcessor() {
+        return new RequestProcessor<ContentProviderAPI, EmptyServiceRequest>(){
+            @Override
+            public Response doProcess(ContentProviderAPI api, EmptyServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case GetAllMetaType:
+                        response = new URIPatternMetaTypeListResponse();
+                        ((URIPatternMetaTypeListResponse)response).setList(contentProviderService.getAllMetaType());
+                        return response;
+                    case GetAuthLevelGroupingList:
+                        response = new AuthLevelGroupingListResponse();
+                        ((AuthLevelGroupingListResponse)response).setList(contentProviderService.getAuthLevelGroupingList());
+                        return response;
+                    case GetAuthLevelList:
+                        response = new AuthLevelListResponse();
+                        ((AuthLevelListResponse)response).setList(contentProviderService.getAuthLevelList());
+                        return response;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+            }
+        };
+    }
+
+    @Override
+    protected RequestProcessor<ContentProviderAPI, BaseSearchServiceRequest> getSearchRequestProcessor() {
+        return new RequestProcessor<ContentProviderAPI, BaseSearchServiceRequest>(){
+            @Override
+            public Response doProcess(ContentProviderAPI api, BaseSearchServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case GetNumOfContentProviders:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(contentProviderService.getNumOfContentProviders(((BaseSearchServiceRequest<ContentProviderSearchBean>)request).getSearchBean()));
+                        return response;
+                    case GetNumOfUriPatterns:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(contentProviderService.getNumOfUriPatterns(((BaseSearchServiceRequest<URIPatternSearchBean>)request).getSearchBean()));
+                        return response;
+                    case FindContentProviderBeans:
+                        response = new ContentProviderListResponse();
+                        ((ContentProviderListResponse)response).setList(contentProviderService.findBeans(((BaseSearchServiceRequest<ContentProviderSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize()));
+                        return response;
+                    case FindUriPatterns:
+                        response = new URIPatternListResponse();
+                        ((URIPatternListResponse)response).setList(contentProviderService.getUriPatternsList(((BaseSearchServiceRequest<URIPatternSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize()));
+                        return response;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+            }
+        };
+    }
+
+    @Override
+    protected RequestProcessor<ContentProviderAPI, IdServiceRequest> getGetRequestProcessor() {
+        return new RequestProcessor<ContentProviderAPI, IdServiceRequest>(){
+            @Override
+            public Response doProcess(ContentProviderAPI api, IdServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case GetAuthLevelAttribute:
+                        response = new AuthLevelAttributeResponse();
+                        ((AuthLevelAttributeResponse)response).setValue(contentProviderService.getAuthLevelAttribute(request.getId()));
+                        return response;
+                    case GetAuthLevelGrouping:
+                        response = new AuthLevelGroupingResponse();
+                        ((AuthLevelGroupingResponse)response).setValue(contentProviderService.getAuthLevelGrouping(request.getId()));
+                        return response;
+                    case GetContentProvider:
+                        response = new ContentProviderResponse();
+                        ((ContentProviderResponse)response).setValue(contentProviderService.getContentProvider(request.getId()));
+                        return response;
+                    case GetURIPattern:
+                        response = new URIPatternResponse();
+                        ((URIPatternResponse)response).setValue(contentProviderService.getURIPattern(request.getId()));
+                        return response;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+            }
+        };
+    }
+
+    @Override
+    protected RequestProcessor<ContentProviderAPI, BaseCrudServiceRequest> getCrudRequestProcessor() {
+        return new RequestProcessor<ContentProviderAPI, BaseCrudServiceRequest>(){
+            @Override
+            public Response doProcess(ContentProviderAPI api, BaseCrudServiceRequest request) throws BasicDataServiceException {
+                StringResponse response = new StringResponse();
+                switch (api){
+                    case SaveAuthLevelAttribute:
+                        response.setValue(contentProviderService.saveAuthLevelAttibute(((BaseCrudServiceRequest<AuthLevelAttribute>)request).getObject()));
+                        break;
+                    case SaveAuthLevelGrouping:
+                        response.setValue(contentProviderService.saveAuthLevelGrouping(((BaseCrudServiceRequest<AuthLevelGrouping>)request).getObject()));
+                        break;
+                    case SaveContentProvider:
+                        response.setValue(contentProviderService.saveContentProvider(((BaseCrudServiceRequest<ContentProvider>)request).getObject()));
+                        break;
+                    case SetupApplication:
+                        response.setValue(contentProviderService.setupApplication(((BaseCrudServiceRequest<ContentProvider>)request).getObject()));
+                        break;
+                    case SaveURIPattern:
+                        response.setValue(contentProviderService.saveURIPattern(((BaseCrudServiceRequest<URIPattern>)request).getObject()));
+                        break;
+                    case CreateDefaultURIPatterns:
+                        contentProviderService.createDefaultURIPatterns(request.getObject().getId());
+                        return new Response();
+                    case DeleteAuthLevelAttribute:
+                        contentProviderService.deleteAuthLevelAttribute(request.getObject().getId());
+                        return new Response();
+                    case DeleteAuthLevelGrouping:
+                        contentProviderService.deleteAuthLevelGrouping(request.getObject().getId());
+                        return new Response();
+                    case DeleteContentProvider:
+                        contentProviderService.deleteContentProvider(request.getObject().getId());
+                        return new Response();
+                    case DeleteProviderPattern:
+                        contentProviderService.deleteProviderPattern(request.getObject().getId());
+                        return new Response();
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
     }
 }

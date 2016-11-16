@@ -4,7 +4,8 @@ import com.rabbitmq.client.Channel;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;
 import org.openiam.mq.gateway.RequestServiceGateway;
@@ -18,12 +19,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 /**
  * Created by alexander on 27/07/16.
  */
-public abstract class AbstractRabbitMQListener< API extends OpenIAMAPI> extends AbstractMessageListener<BaseServiceRequest, API> implements ChannelAwareMessageListener{
+public abstract class AbstractRabbitMQListener<API extends OpenIAMAPI> extends AbstractMessageListener<BaseServiceRequest, API> implements ChannelAwareMessageListener{
     @Autowired
     @Qualifier("rabbitRequestServiceGateway")
     private RequestServiceGateway requestServiceGateway;
 
-    public AbstractRabbitMQListener(OpenIAMQueue queueToListen) {
+    public AbstractRabbitMQListener(MqQueue queueToListen) {
         super(queueToListen);
     }
 

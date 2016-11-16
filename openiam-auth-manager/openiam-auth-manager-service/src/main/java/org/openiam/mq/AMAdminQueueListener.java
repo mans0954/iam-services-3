@@ -1,41 +1,68 @@
 package org.openiam.mq;
 
-import org.openiam.authmanager.service.dispatcher.OwnerMapRequestDispatcher;
-import org.openiam.authmanager.service.dispatcher.UserEntitlementsMatrixDispatcher;
-import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.authmanager.service.AuthorizationManagerAdminService;
+import org.openiam.base.request.*;
+import org.openiam.base.response.EntityOwnerResponse;
+import org.openiam.base.response.UserEntitlementsMatrixResponse;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.AMAdminAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.listener.AbstractRabbitMQListener;
+import org.openiam.mq.constants.MQConstant;
+import org.openiam.mq.constants.queue.am.AMAdminQueue;
+import org.openiam.mq.listener.AbstractListener;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by alexander on 10/08/16.
  */
 @Component
-public class AMAdminQueueListener extends AbstractRabbitMQListener<AMAdminAPI> {
-    @Autowired
-    private UserEntitlementsMatrixDispatcher userEntitlementsMatrixDispatcher;
-    @Autowired
-    private OwnerMapRequestDispatcher ownerMapRequestDispatcher;
+@RabbitListener(id="amAdminQueueListener",
+        queues = "#{AMAdminQueue.name}",
+        containerFactory = "amRabbitListenerContainerFactory")
+public class AMAdminQueueListener extends AbstractListener<AMAdminAPI> {
 
-    public AMAdminQueueListener() {
-        super(OpenIAMQueue.AMAdminQueue);
+    @Autowired
+    private AuthorizationManagerAdminService authManagerAdminService;
+
+    @Autowired
+    public AMAdminQueueListener(AMAdminQueue queue) {
+        super(queue);
     }
 
-    @Override
-    protected void doOnMessage(MQRequest<BaseServiceRequest, AMAdminAPI> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        AMAdminAPI api = message.getRequestApi();
-        switch (api){
-            case UserEntitlementsMatrix:
-                addTask(userEntitlementsMatrixDispatcher, correlationId, message, message.getRequestApi(), isAsync);
-                break;
-            case OwnerIdsForResourceSet:
-            case OwnerIdsForGroupSet:
-                addTask(ownerMapRequestDispatcher, correlationId, message, message.getRequestApi(), isAsync);
-                break;
-        }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) AMAdminAPI api, UserEntitlementsMatrixRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<AMAdminAPI, UserEntitlementsMatrixRequest>(){
+            @Override
+            public Response doProcess(AMAdminAPI api, UserEntitlementsMatrixRequest request) throws BasicDataServiceException {
+                UserEntitlementsMatrixResponse response = new UserEntitlementsMatrixResponse();
+                response.setMatrix(authManagerAdminService.getUserEntitlementsMatrix(request.getUserId(), request.getDate()));
+                return response;
+            }
+        });
+    }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) AMAdminAPI api, EntityOwnerRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<AMAdminAPI, EntityOwnerRequest>(){
+            @Override
+            public Response doProcess(AMAdminAPI api, EntityOwnerRequest request) throws BasicDataServiceException {
+                EntityOwnerResponse response = new EntityOwnerResponse();
+                switch (api){
+                    case OwnerIdsForResourceSet:
+                        response.setOwnersMap(authManagerAdminService.getOwnerIdsForResourceSet(request.getEntityIdSet(), request.getDate()));
+                        break;
+                    case OwnerIdsForGroupSet:
+                        response.setOwnersMap(authManagerAdminService.getOwnerIdsForGroupSet(request.getEntityIdSet(), request.getDate()));
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        });
     }
 }

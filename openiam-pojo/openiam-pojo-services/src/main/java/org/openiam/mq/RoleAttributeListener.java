@@ -1,6 +1,7 @@
 package org.openiam.mq;
 
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.openiam.idm.srvc.role.service.UpdateRoleAttributeByMetadataDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ public class RoleAttributeListener extends AbstractAttributeListener {
     @Autowired
     private UpdateRoleAttributeByMetadataDispatcher attributeByMetadataProcessor;
 
-    public RoleAttributeListener(OpenIAMQueue queueToListen) {
+    public RoleAttributeListener(MqQueue queueToListen) {
         super(queueToListen);
     }
 

@@ -5,6 +5,7 @@ import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
+import org.openiam.base.request.EmptyServiceRequest;
 import org.openiam.constants.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
 import org.openiam.base.request.BaseServiceRequest;
@@ -26,7 +27,7 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
 import org.openiam.mq.constants.ActivitiAPI;
 import org.openiam.mq.constants.ManagedSystemAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.utils.RabbitMQSender;
 import org.openiam.base.response.TaskWrapper;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
@@ -188,7 +189,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         Map<String, ManagedSysDto> managedSysMap = new HashMap<>();
 //        ManagedSysSearchBean searchBean = new ManagedSysSearchBean();
 
-        ManagedSysListResponse response = rabbitMQSender.sendAndReceive(OpenIAMQueue.ManagedSysQueue, ManagedSystemAPI.GetAllManagedSys, new BaseServiceRequest(), ManagedSysListResponse.class);
+        ManagedSysListResponse response = rabbitMQSender.sendAndReceive(OpenIAMQueue.ManagedSysQueue, ManagedSystemAPI.GetAllManagedSys, new EmptyServiceRequest(), ManagedSysListResponse.class);
         List<ManagedSysDto> results = null;
         if(response.isSuccess()){
             results = response.getManagedSysList();

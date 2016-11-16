@@ -2,7 +2,7 @@ package org.openiam.mq;
 
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.idm.srvc.org.service.dispatcher.*;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMQueue;
 import org.openiam.mq.constants.OrganizationTypeAPI;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;
@@ -29,7 +29,7 @@ public class OrganizationTypeListener extends AbstractRabbitMQListener<Organizat
     private OrgTypeMembershipDispatcher orgTypeMembershipDispatcher;
 
     public OrganizationTypeListener() {
-        super(OpenIAMQueue.OrganizationTypeQueue);
+        super(AMQueue.OrganizationTypeQueue);
     }
 
     @Override

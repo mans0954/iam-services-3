@@ -1,6 +1,5 @@
 package org.openiam.srvc.idm;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.jws.WebParam;
@@ -29,7 +28,6 @@ import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -52,7 +50,7 @@ import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.util.SSLCert;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.util.AuditLogHelper;
 import org.openiam.util.encrypt.Cryptor;

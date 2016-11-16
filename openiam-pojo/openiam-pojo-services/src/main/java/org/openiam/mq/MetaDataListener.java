@@ -2,9 +2,9 @@ package org.openiam.mq;
 
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.idm.srvc.meta.service.MetadataTypeGetDispatcher;
-import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMAPICommon;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.exception.RejectMessageException;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.listener.AbstractRabbitMQListener;
@@ -19,7 +19,7 @@ public class MetaDataListener extends AbstractRabbitMQListener<OpenIAMAPICommon>
     @Autowired
     private MetadataTypeGetDispatcher metadataTypeGetDispatcher;
 
-    public MetaDataListener(OpenIAMQueue queueToListen) {
+    public MetaDataListener(MqQueue queueToListen) {
         super(queueToListen);
     }
 

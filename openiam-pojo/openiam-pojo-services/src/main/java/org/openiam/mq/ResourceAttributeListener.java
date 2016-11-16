@@ -1,9 +1,8 @@
 package org.openiam.mq;
 
 import org.openiam.idm.srvc.res.service.UpdateResourceAttributeByMetadataDispatcher;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
-import org.openiam.idm.srvc.grp.service.UpdateGroupAttributeByMetadataDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

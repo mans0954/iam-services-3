@@ -20,7 +20,7 @@ import java.io.Serializable;
         "requestorSessionID",
         "testRequest"
 })
-public class BaseServiceRequest implements Serializable{
+public abstract class BaseServiceRequest implements Serializable{
     private static final long serialVersionUID = 1L;
     // track the source of the request
     protected String requesterId;

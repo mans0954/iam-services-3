@@ -27,26 +27,17 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.jws.WebService;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.openiam.base.request.*;
 import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.PolicySearchBean;
-import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.policy.dto.ITPolicy;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
-import org.openiam.idm.srvc.policy.dto.*;
 
 import org.openiam.idm.srvc.policy.service.*;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.constants.PolicyAPI;
-import org.openiam.mq.constants.RoleAPI;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -123,13 +114,13 @@ public class PolicyDataServiceImpl extends AbstractApiService implements PolicyD
 
     @Override
     public ITPolicy findITPolicy() {
-        return this.manageApiRequest(PolicyAPI.FindITPolicy, new BaseServiceRequest(),
+        return this.manageApiRequest(PolicyAPI.FindITPolicy, new EmptyServiceRequest(),
                 ITPolicyResponse.class).getItPolicy();
     }
 
     @Override
     public Response resetITPolicy() {
-        return this.manageApiRequest(PolicyAPI.ResetITPolicy, new BaseServiceRequest(),
+        return this.manageApiRequest(PolicyAPI.ResetITPolicy, new EmptyServiceRequest(),
                 Response.class);
     }
 

@@ -3,18 +3,15 @@ package org.openiam.srvc.am;
 import org.openiam.am.srvc.dto.AuthResourceAMAttribute;
 import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
 import org.openiam.am.srvc.dto.SSOAttribute;
-import org.openiam.base.request.BaseCrudServiceRequest;
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.base.request.IdServiceRequest;
-import org.openiam.base.request.SSOAttributesRequest;
+import org.openiam.base.request.*;
 import org.openiam.base.response.AuthResourceAMAttributeListResponse;
 import org.openiam.base.response.AuthResourceAttributeMapResponse;
 import org.openiam.base.response.SSOAttributeListResponse;
-import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.mq.constants.AuthResourceAttributeAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AuthResourceAttributeQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebParam;
@@ -27,14 +24,15 @@ import java.util.List;
             serviceName = "AuthResourceAttributeWebService")
 public class AuthResourceAttributeWebServiceImpl extends AbstractApiService implements AuthResourceAttributeWebService{
 
-    public AuthResourceAttributeWebServiceImpl() {
-        super(OpenIAMQueue.AuthResourceAttributeQueue);
+    @Autowired
+    public AuthResourceAttributeWebServiceImpl(AuthResourceAttributeQueue queue) {
+        super(queue);
     }
 
 
     @Override
     public List<AuthResourceAMAttribute> getAmAttributeList() {
-        AuthResourceAMAttributeListResponse response = this.manageApiRequest(AuthResourceAttributeAPI.GetAmAttributeList, new BaseServiceRequest(), AuthResourceAMAttributeListResponse.class);
+        AuthResourceAMAttributeListResponse response = this.manageApiRequest(AuthResourceAttributeAPI.GetAmAttributeList, new EmptyServiceRequest(), AuthResourceAMAttributeListResponse.class);
         if(response.isFailure()){
             return null;
         }
@@ -49,15 +47,14 @@ public class AuthResourceAttributeWebServiceImpl extends AbstractApiService impl
 
     @Override
     public Response saveAttributeMap(AuthResourceAttributeMap attributeMap) {
-        StringResponse response= this.manageApiRequest(AuthResourceAttributeAPI.SaveAttributeMap, new BaseCrudServiceRequest<AuthResourceAttributeMap>(attributeMap), StringResponse.class);
-        return response.convertToBase();
+        return this.manageCrudApiRequest(AuthResourceAttributeAPI.SaveAttributeMap, attributeMap);
     }
 
     @Override
     public Response removeAttributeMap(String attributeMapId) {
-        IdServiceRequest request = new IdServiceRequest();
-        request.setId(attributeMapId);
-        return this.manageApiRequest(AuthResourceAttributeAPI.DeleteAttributeMap, request, Response.class);
+        AuthResourceAttributeMap obj = new AuthResourceAttributeMap();
+        obj.setId(attributeMapId);
+        return this.manageCrudApiRequest(AuthResourceAttributeAPI.DeleteAttributeMap, obj);
     }
 
     @Override

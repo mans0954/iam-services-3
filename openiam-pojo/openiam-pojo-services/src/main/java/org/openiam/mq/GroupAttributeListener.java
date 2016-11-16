@@ -1,6 +1,7 @@
 package org.openiam.mq;
 
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.openiam.idm.srvc.grp.service.UpdateGroupAttributeByMetadataDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ public class GroupAttributeListener extends AbstractAttributeListener {
     @Autowired
     private UpdateGroupAttributeByMetadataDispatcher attributeByMetadataProcessor;
 
-    public GroupAttributeListener(OpenIAMQueue queueToListen) {
+    public GroupAttributeListener(MqQueue queueToListen) {
         super(queueToListen);
     }
 

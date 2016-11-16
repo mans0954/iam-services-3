@@ -2,7 +2,7 @@ package org.openiam.mq;
 
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.idm.srvc.role.service.dispatcher.*;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMQueue;
 import org.openiam.mq.constants.RoleAPI;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;
@@ -73,7 +73,7 @@ public class RoleListener extends AbstractRabbitMQListener<RoleAPI> {
     private RoleHasChildEntitiesDispatcher roleHasChildEntitiesDispatcher;
 
     public RoleListener() {
-        super(OpenIAMQueue.RoleQueue);
+        super(AMQueue.RoleQueue);
     }
 
     @Override

@@ -8,9 +8,10 @@ import org.openiam.base.response.OrganizationTypeListResponse;
 import org.openiam.base.response.OrganizationTypeResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
+import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMQueue;
 import org.openiam.mq.constants.OrganizationTypeAPI;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ import java.util.List;
 public class OrganizationTypeDataServiceImpl extends AbstractApiService implements OrganizationTypeDataService {
 	
 	public OrganizationTypeDataServiceImpl() {
-		super(OpenIAMQueue.OrganizationTypeQueue);
+		super(AMQueue.OrganizationTypeQueue);
 	}
 
 	@Override
@@ -62,7 +63,9 @@ public class OrganizationTypeDataServiceImpl extends AbstractApiService implemen
 
 	@Override
 	public Response delete(final String id) {
-		return this.manageCrudApiRequest(OrganizationTypeAPI.Delete, id);
+		OrganizationType obj = new OrganizationType();
+		obj.setId(id);
+		return this.manageCrudApiRequest(OrganizationTypeAPI.Delete, obj);
 	}
 
 	@Override

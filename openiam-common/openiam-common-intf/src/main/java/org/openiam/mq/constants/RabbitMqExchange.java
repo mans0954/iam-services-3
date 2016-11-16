@@ -1,5 +1,7 @@
 package org.openiam.mq.constants;
 
+import org.springframework.amqp.core.ExchangeTypes;
+
 /**
  * @author Alexander Dukkardt
  * 
@@ -7,31 +9,36 @@ package org.openiam.mq.constants;
 public enum RabbitMqExchange {
     COMMON_EXCHANGE,
     METADATA_ELEMENT_EXCHANGE,
-    REFRESH_OAUTH_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT),
-    URI_FEDERATION_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT),
-    CHECK_LISTENER_EXCHANGE(RabbitMqExchangeType.FANOUT),
-    AM_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT);
 
-    private final RabbitMqExchangeType type;
+    CHECK_LISTENER_EXCHANGE(ExchangeTypes.FANOUT),
+
+
+    /*Exchanges for AM vhost*/
+    AM_EXCHANGE,
+    REFRESH_OAUTH_CACHE_EXCHANGE(ExchangeTypes.FANOUT),
+    URI_FEDERATION_CACHE_EXCHANGE(ExchangeTypes.FANOUT),
+    AM_CACHE_EXCHANGE(ExchangeTypes.FANOUT);
+
+    private final String type;
 
     /**
      * 
      */
     private RabbitMqExchange() {
-        type = RabbitMqExchangeType.DIRECT;
+        type = ExchangeTypes.DIRECT;
     }
 
     /**
      * @return the type
      */
-    public RabbitMqExchangeType getType() {
+    public String getType() {
         return type;
     }
 
     /**
      * 
      */
-    private RabbitMqExchange(RabbitMqExchangeType type) {
+    private RabbitMqExchange(String type) {
         this.type = type;
     }
 }

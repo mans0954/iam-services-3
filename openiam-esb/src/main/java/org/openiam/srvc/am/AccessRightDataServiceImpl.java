@@ -20,16 +20,19 @@ import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.mq.constants.AccessRightAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMQueue;
+import org.openiam.mq.constants.queue.am.AccessRightQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service("accessRightWS")
 @WebService(endpointInterface = "org.openiam.srvc.am.AccessRightDataService", targetNamespace = "urn:idm.openiam.org/srvc/access/service", portName = "AccessRightDataServicePort", serviceName = "AccessRightDataService")
 public class AccessRightDataServiceImpl extends AbstractApiService implements AccessRightDataService {
 
-	public AccessRightDataServiceImpl() {
-		super(OpenIAMQueue.AccessRightQueue);
+	@Autowired
+	public AccessRightDataServiceImpl(AccessRightQueue queue) {
+		super(queue);
 	}
 
 	@Override
@@ -41,9 +44,9 @@ public class AccessRightDataServiceImpl extends AbstractApiService implements Ac
 
 	@Override
 	public Response delete(String id) {
-		final IdServiceRequest request= new IdServiceRequest();
-		request.setId(id);
-		return this.manageApiRequest(AccessRightAPI.Delete, request, Response.class);
+		AccessRight dto = new AccessRight();
+		dto.setId(id);
+		return this.manageCrudApiRequest(AccessRightAPI.Delete, dto);
 	}
 
 	@Override

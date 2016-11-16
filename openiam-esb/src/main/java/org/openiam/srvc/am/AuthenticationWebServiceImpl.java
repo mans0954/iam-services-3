@@ -8,8 +8,9 @@ import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.service.AuthenticationModule;
 import org.openiam.mq.constants.AuthenticationAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AuthenticationQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
@@ -25,8 +26,9 @@ import java.util.stream.Collectors;
             portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
 public class AuthenticationWebServiceImpl extends AbstractApiService implements AuthenticationService {
 
-    public AuthenticationWebServiceImpl() {
-        super(OpenIAMQueue.AuthenticationQueue);
+    @Autowired
+    public AuthenticationWebServiceImpl(AuthenticationQueue queue) {
+        super(queue);
     }
 
     @Override

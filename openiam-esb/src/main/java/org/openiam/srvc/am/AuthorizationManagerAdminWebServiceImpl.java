@@ -9,13 +9,10 @@ import org.openiam.base.request.EntityOwnerRequest;
 import org.openiam.base.request.UserEntitlementsMatrixRequest;
 import org.openiam.base.response.EntityOwnerResponse;
 import org.openiam.base.response.SetStringResponse;
-import org.openiam.base.response.StringResponse;
 import org.openiam.base.response.UserEntitlementsMatrixResponse;
 import org.openiam.model.UserEntitlementsMatrix;
-import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.mq.constants.AMAdminAPI;
-import org.openiam.mq.constants.AccessRightAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMAdminQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,8 +24,9 @@ import org.springframework.stereotype.Service;
 			serviceName = "AuthorizationManagerAdminWebService")
 public class AuthorizationManagerAdminWebServiceImpl extends AbstractApiService implements AuthorizationManagerAdminWebService {
 
-    public AuthorizationManagerAdminWebServiceImpl() {
-        super(OpenIAMQueue.AMAdminQueue);
+    @Autowired
+    public AuthorizationManagerAdminWebServiceImpl(AMAdminQueue queue) {
+        super(queue);
     }
 
     @Override

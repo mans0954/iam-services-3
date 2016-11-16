@@ -1,6 +1,7 @@
 package org.openiam.mq;
 
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.openiam.idm.srvc.org.service.UpdateOrgAttributeByMetadataDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ public class OrganizationAttributeListener extends AbstractAttributeListener {
     @Autowired
     private UpdateOrgAttributeByMetadataDispatcher attributeByMetadataProcessor;
 
-    public OrganizationAttributeListener(OpenIAMQueue queueToListen) {
+    public OrganizationAttributeListener(MqQueue queueToListen) {
         super(queueToListen);
     }
 

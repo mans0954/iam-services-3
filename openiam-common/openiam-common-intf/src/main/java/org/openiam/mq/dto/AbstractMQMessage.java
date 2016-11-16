@@ -7,15 +7,15 @@ import java.io.Serializable;
  */
 public abstract class AbstractMQMessage implements Serializable {
     private static final long serialVersionUID = 1L;
-    private  byte[] correlationId;
+//    private  byte[] correlationId;
 
 
-    public byte[] getCorrelationId() {
-        return correlationId;
-    }
-
-    public void setCorrelationId(byte[] correlationId) {
-        this.correlationId = correlationId;
-    }
+//    public byte[] getCorrelationId() {
+//        return correlationId;
+//    }
+//
+//    public void setCorrelationId(byte[] correlationId) {
+//        this.correlationId = correlationId;
+//    }
 
 }

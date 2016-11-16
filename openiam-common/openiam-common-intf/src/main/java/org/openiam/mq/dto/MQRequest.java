@@ -46,7 +46,7 @@ public class MQRequest<RequestBody extends BaseServiceRequest, API extends OpenI
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("MQRequest{");
-        sb.append("correlationID='").append((getCorrelationId()!=null)?OpenIAMUtils.byteArrayToString(getCorrelationId()):"null").append('\'');
+//        sb.append("correlationID='").append((getCorrelationId()!=null)?OpenIAMUtils.byteArrayToString(getCorrelationId()):"null").append('\'');
         sb.append(", replyTo='").append(replyTo).append('\'');
         sb.append(", requestApi=").append(requestApi);
         sb.append(", requestBody=").append(requestBody);

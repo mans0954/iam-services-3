@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.jws.WebService;
 
+import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.base.request.*;
 import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
@@ -34,7 +35,7 @@ import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.batch.dto.BatchTaskSchedule;
 import org.openiam.mq.constants.BatchTaskAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,7 +71,9 @@ public class BatchDataServiceImpl extends AbstractApiService implements BatchDat
 
 	@Override
 	public Response removeBatchTask(String taskId) {
-		return this.manageCrudApiRequest(BatchTaskAPI.Delete, taskId);
+		BatchTask obj = new BatchTask();
+		obj.setId(taskId);
+		return this.manageCrudApiRequest(BatchTaskAPI.Delete, obj);
 	}
 
 	@Override
@@ -115,6 +118,8 @@ public class BatchDataServiceImpl extends AbstractApiService implements BatchDat
 
 	@Override
 	public Response deleteScheduledTask(String id) {
-		return this.manageCrudApiRequest(BatchTaskAPI.DeleteScheduledTask, id);
+		BatchTaskSchedule obj = new BatchTaskSchedule();
+		obj.setId(id);
+		return this.manageCrudApiRequest(BatchTaskAPI.DeleteScheduledTask, obj);
 	}
 }

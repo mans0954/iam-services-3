@@ -20,7 +20,6 @@ import org.openiam.elasticsearch.dao.MetadataTypeElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
-import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -34,6 +33,8 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.mq.constants.*;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.gateway.RequestServiceGateway;
 import org.openiam.util.SpringContextProvider;
@@ -287,7 +288,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			mqRequest.setRequestBody(request);
 			mqRequest.setRequestApi(OpenIAMAPICommon.UpdateAttributesByMetadata);
 
-			OpenIAMQueue queue = null;
+			MqQueue queue = null;
 			switch (entity.getMetadataType().getGrouping()) {
 				case USER_OBJECT_TYPE:
 					queue = OpenIAMQueue.UserAttributeQueue;
@@ -308,7 +309,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 					return;
 			}
 			try {
-				requestServiceGateway.send(queue, mqRequest);
+				requestServiceGateway.send(queue, OpenIAMAPICommon.UpdateAttributesByMetadata, request);
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
 			}

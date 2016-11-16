@@ -3,6 +3,7 @@ package org.openiam.srvc.am;
 import org.apache.log4j.Logger;
 import org.openiam.am.srvc.dto.*;
 import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.base.request.EmptyServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.request.OAuthScopesRequest;
 import org.openiam.base.request.model.OAuthClientScopeModel;
@@ -13,8 +14,10 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.mq.constants.OAuthAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMQueue;
+import org.openiam.mq.constants.queue.am.OAuthQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
@@ -33,8 +36,9 @@ import java.util.List;
 public class OAuthWebServiceImpl extends AbstractApiService implements OAuthWebService {
     private static Logger log = Logger.getLogger(OAuthWebServiceImpl.class);
 
-    public OAuthWebServiceImpl() {
-        super(OpenIAMQueue.OAuthQueue);
+    @Autowired
+    public OAuthWebServiceImpl(OAuthQueue queue) {
+        super(queue);
     }
 
     @Override
@@ -115,7 +119,7 @@ public class OAuthWebServiceImpl extends AbstractApiService implements OAuthWebS
 
     @Override
     public Response cleanAuthorizedScopes(){
-        this.sendAsync(OAuthAPI.CleanAuthorizedScopes, new BaseServiceRequest());
+        this.sendAsync(OAuthAPI.CleanAuthorizedScopes, new EmptyServiceRequest());
         return new Response();
     }
     @Override

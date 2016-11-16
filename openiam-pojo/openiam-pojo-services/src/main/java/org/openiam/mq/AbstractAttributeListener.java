@@ -1,8 +1,8 @@
 package org.openiam.mq;
 
-import org.openiam.mq.constants.OpenIAMAPI;
 import org.openiam.mq.constants.OpenIAMAPICommon;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;
 import org.openiam.mq.listener.AbstractRabbitMQListener;
@@ -12,7 +12,7 @@ import org.openiam.mq.processor.AbstractAPIDispatcher;
  * Created by alexander on 01/08/16.
  */
 public abstract class AbstractAttributeListener extends AbstractRabbitMQListener {
-    public AbstractAttributeListener(OpenIAMQueue queue) {
+    public AbstractAttributeListener(MqQueue queue) {
         super(queue);
     }
 

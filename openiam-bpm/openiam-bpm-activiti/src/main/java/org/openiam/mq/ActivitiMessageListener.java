@@ -3,7 +3,7 @@ package org.openiam.mq;
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.bpm.activiti.dispatcher.*;
 import org.openiam.mq.constants.ActivitiAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;
 import org.openiam.mq.listener.AbstractRabbitMQListener;

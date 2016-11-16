@@ -4,8 +4,7 @@ import org.openiam.base.request.IdmAuditLogRequest;
 import org.openiam.base.response.AuditLogResponse;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.mq.constants.AuditLogAPI;
-import org.openiam.mq.constants.OpenIAMAPICommon;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.dto.MQResponse;
 import org.openiam.mq.gateway.RequestServiceGateway;
@@ -25,12 +24,12 @@ public class AuditLogHelper {
         IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
         wrapper.setLogEntity(event);
 
-        MQRequest<IdmAuditLogRequest, AuditLogAPI> request = new MQRequest<>();
-        request.setRequestBody(wrapper);
-        request.setRequestApi(AuditLogAPI.AuditLogSave);
-        MQResponse<AuditLogResponse> response = (MQResponse<AuditLogResponse>)requestServiceGateway.sendAndReceive(OpenIAMQueue.AuditLog, request);
+//        MQRequest<IdmAuditLogRequest, AuditLogAPI> request = new MQRequest<>();
+//        request.setRequestBody(wrapper);
+//        request.setRequestApi(AuditLogAPI.AuditLogSave);
+        AuditLogResponse response = (AuditLogResponse)requestServiceGateway.sendAndReceive(OpenIAMQueue.AuditLog, AuditLogAPI.AuditLogSave, wrapper);
 
-        return response.getResponseBody().getEvent();
+        return response.getEvent();
     }
 
     public void enqueue(final IdmAuditLogEntity event){
@@ -38,10 +37,10 @@ public class AuditLogHelper {
             IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
             wrapper.setLogEntity(event);
 
-            MQRequest<IdmAuditLogRequest, AuditLogAPI> request = new MQRequest<>();
-            request.setRequestBody(wrapper);
-            request.setRequestApi(AuditLogAPI.AuditLogSave);
-            requestServiceGateway.send(OpenIAMQueue.AuditLog, request);
+//            MQRequest<IdmAuditLogRequest, AuditLogAPI> request = new MQRequest<>();
+//            request.setRequestBody(wrapper);
+//            request.setRequestApi(AuditLogAPI.AuditLogSave);
+            requestServiceGateway.send(OpenIAMQueue.AuditLog, AuditLogAPI.AuditLogSave, wrapper);
         }
     }
 }

@@ -29,7 +29,7 @@ import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMQueue;
 import org.openiam.mq.constants.RoleAPI;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.stereotype.Service;
@@ -50,7 +50,7 @@ import java.util.Set;
 public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDataWebService {
 
     public RoleDataWebServiceImpl() {
-        super(OpenIAMQueue.RoleQueue);
+        super(AMQueue.RoleQueue);
     }
 
     @Override

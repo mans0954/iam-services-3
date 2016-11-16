@@ -112,7 +112,7 @@ public class MQResponse<ResponseBody> extends AbstractMQMessage {
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("MQResponse{");
-        sb.append("correlationId=").append(OpenIAMUtils.byteArrayToString(getCorrelationId()));
+//        sb.append("correlationId=").append(OpenIAMUtils.byteArrayToString(getCorrelationId()));
         sb.append(", status=").append(status);
         sb.append(", errorCode=").append(errorCode);
         sb.append(", errorText='").append(errorText).append('\'');

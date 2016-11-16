@@ -23,7 +23,8 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.mq.constants.AccessReviewAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMQueue;
+import org.openiam.mq.constants.queue.am.AccessReviewQueue;
 import org.openiam.mq.utils.RabbitMQSender;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,9 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
     protected RabbitMQSender rabbitMQSender;
     @Autowired
     protected SysConfiguration sysConfiguration;
+
+    @Autowired
+    protected AccessReviewQueue accessReviewQueue;
 
     public EntityMembershipDelegate() {
         super();
@@ -159,7 +163,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 request.setViewType(AccessReviewConstant.RESOURCE_VIEW);
                                 request.setDate(null);
                                 request.setLanguage(null);
-                                AccessViewResponse accessViewResponse = rabbitMQSender.sendAndReceive(OpenIAMQueue.AccessReviewQueue, AccessReviewAPI.AccessReviewSubTree, request, AccessViewResponse.class);
+                                AccessViewResponse accessViewResponse = rabbitMQSender.sendAndReceive(accessReviewQueue, AccessReviewAPI.AccessReviewSubTree, request, AccessViewResponse.class);
 
                                 if (accessViewResponse != null && CollectionUtils.isNotEmpty(accessViewResponse.getBeans())) {
                                     // look through the tree for direct entitlements

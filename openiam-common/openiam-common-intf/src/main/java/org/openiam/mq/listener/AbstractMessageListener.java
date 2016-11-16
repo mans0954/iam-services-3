@@ -2,7 +2,8 @@ package org.openiam.mq.listener;
 
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class AbstractMessageListener<RequestBody extends BaseServiceRequest, API extends OpenIAMAPI> {
     protected Logger log = LoggerFactory.getLogger(this.getClass());
-    private OpenIAMQueue queueToListen;
+    private MqQueue queueToListen;
     private boolean isInitialized=false;
 
     @Autowired
@@ -31,7 +32,7 @@ public abstract class AbstractMessageListener<RequestBody extends BaseServiceReq
 
     private ConcurrentHashMap<API, AbstractAPIDispatcher> workerMap = new ConcurrentHashMap<API, AbstractAPIDispatcher>();
 
-    public AbstractMessageListener(OpenIAMQueue queueToListen){
+    public AbstractMessageListener(MqQueue queueToListen){
         this.queueToListen=queueToListen;
     }
 
@@ -44,12 +45,12 @@ public abstract class AbstractMessageListener<RequestBody extends BaseServiceReq
     }
 
     protected void addTask(AbstractAPIDispatcher processor, byte[] correlationId, MQRequest<RequestBody, API> message, API apiName, boolean isAsync) throws RejectMessageException, CloneNotSupportedException  {
-        if(message.getCorrelationId()==null){
-            message.setCorrelationId(correlationId);
-        }
+//        if(message.getCorrelationId()==null){
+//            message.setCorrelationId(correlationId);
+//        }
         baseBackgroundProcessorService.addTask(processor,message,apiName,isAsync);
     }
-    public OpenIAMQueue getQueueToListen() {
+    public MqQueue getQueueToListen() {
         return queueToListen;
     }
 

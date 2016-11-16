@@ -1,13 +1,20 @@
 package org.openiam.am.srvc.mq;
 
-import org.openiam.am.srvc.service.dispatcher.*;
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.base.response.ActivitiUserField;
+import org.openiam.am.srvc.dto.AuthProvider;
+import org.openiam.am.srvc.dto.AuthProviderType;
+import org.openiam.am.srvc.searchbean.AuthAttributeSearchBean;
+import org.openiam.am.srvc.searchbean.AuthProviderSearchBean;
+import org.openiam.am.srvc.service.AuthProviderService;
+import org.openiam.base.request.*;
+import org.openiam.base.response.*;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.AuthProviderAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.listener.AbstractRabbitMQListener;
+import org.openiam.mq.constants.queue.am.AuthProviderQueue;
+import org.openiam.mq.listener.AbstractListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,64 +22,111 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 19/09/16.
  */
 @Component
-public class AuthProviderListener  extends AbstractRabbitMQListener<AuthProviderAPI> {
-    @Autowired
-    private FindAuthAttributesDispatcher findAuthAttributesDispatcher;
-    @Autowired
-    private GetAuthProviderTypeDispatcher getAuthProviderTypeDispatcher;
-    @Autowired
-    private AuthProviderTypeListDispatcher authProviderTypeListDispatcher;
-    @Autowired
-    private AddAuthProviderTypeDispatcher addAuthProviderTypeDispatcher;
-    @Autowired
-    private FindAuthProvidersDispatcher findAuthProvidersDispatcher;
-    @Autowired
-    private CountAuthProvidersDispatcher countAuthProvidersDispatcher;
-    @Autowired
-    private GetAuthProvidersDispatcher getAuthProvidersDispatcher;
-    @Autowired
-    private SaveAuthProvidersDispatcher saveAuthProvidersDispatcher;
-    @Autowired
-    private DeleteAuthProvidersDispatcher deleteAuthProvidersDispatcher;
+@RabbitListener(id="authProviderListener",
+        queues = "#{AuthProviderQueue.name}",
+        containerFactory = "amRabbitListenerContainerFactory")
+public class AuthProviderListener  extends AbstractListener<AuthProviderAPI> {
 
-    public AuthProviderListener() {
-        super(OpenIAMQueue.AuthProviderQueue);
+    @Autowired
+    private AuthProviderService authProviderService;
+
+    @Autowired
+    public AuthProviderListener(AuthProviderQueue queue) {
+        super(queue);
     }
 
     @Override
-    protected void doOnMessage(MQRequest<BaseServiceRequest, AuthProviderAPI> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        AuthProviderAPI apiName = message.getRequestApi();
-        switch (apiName){
-            case FindAuthAttributes:
-                addTask(findAuthAttributesDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetAuthProviderType:
-                addTask(getAuthProviderTypeDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetAuthProviderTypeList:
-            case GetSocialAuthProviderTypeList:
-                addTask(authProviderTypeListDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case AddProviderType:
-                addTask(addAuthProviderTypeDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case FindAuthProviders:
-                addTask(findAuthProvidersDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case CountAuthProviders:
-                addTask(countAuthProvidersDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetAuthProvider:
-                addTask(getAuthProvidersDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case SaveAuthProvider:
-                addTask(saveAuthProvidersDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case DeleteAuthProvider:
-                addTask(deleteAuthProvidersDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            default:
-                break;
-        }
+    protected RequestProcessor<AuthProviderAPI, EmptyServiceRequest> getEmptyRequestProcessor() {
+        return new RequestProcessor<AuthProviderAPI, EmptyServiceRequest>(){
+            @Override
+            public Response doProcess(AuthProviderAPI api, EmptyServiceRequest request) throws BasicDataServiceException {
+                AuthProviderTypeListResponse response = new AuthProviderTypeListResponse();
+                switch (api){
+                    case GetAuthProviderTypeList:
+                        response.setAuthProviderTypeList(authProviderService.getAuthProviderTypeList());
+                        break;
+                    case GetSocialAuthProviderTypeList:
+                        response.setAuthProviderTypeList(authProviderService.getSocialAuthProviderTypeList());
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
+    }
+
+    @Override
+    protected RequestProcessor<AuthProviderAPI, BaseSearchServiceRequest> getSearchRequestProcessor() {
+        return new RequestProcessor<AuthProviderAPI, BaseSearchServiceRequest>(){
+            @Override
+            public Response doProcess(AuthProviderAPI api, BaseSearchServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case FindAuthProviders:
+                        response = new AuthProviderListResponse();
+                        ((AuthProviderListResponse)response).setAuthProviderList(authProviderService.findAuthProviderBeans(((BaseSearchServiceRequest<AuthProviderSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize()));
+                        return response;
+                    case CountAuthProviders:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(authProviderService.countAuthProviderBeans(((BaseSearchServiceRequest<AuthProviderSearchBean>)request).getSearchBean()));
+                        return response;
+                    case FindAuthAttributes:
+                        response = new AuthAttributeListResponse();
+                        ((AuthAttributeListResponse)response).setAttributeList(authProviderService.findAuthAttributeBeans(((BaseSearchServiceRequest<AuthAttributeSearchBean>)request).getSearchBean(), request.getSize(), request.getFrom()));
+                        return response;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+            }
+        };
+    }
+
+    @Override
+    protected RequestProcessor<AuthProviderAPI, IdServiceRequest> getGetRequestProcessor() {
+        return new RequestProcessor<AuthProviderAPI, IdServiceRequest>(){
+            @Override
+            public Response doProcess(AuthProviderAPI api, IdServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case GetAuthProviderType:
+                        response = new AuthProviderTypeResponse();
+                        ((AuthProviderTypeResponse)response).setAuthProviderType(authProviderService.getAuthProviderType(request.getId()));
+                        return response;
+                    case GetAuthProvider:
+                        response = new AuthProviderResponse();
+                        ((AuthProviderResponse)response).setValue(authProviderService.getProvider(request.getId()));
+                        return response;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+            }
+        };
+    }
+
+    @Override
+    protected RequestProcessor<AuthProviderAPI, BaseCrudServiceRequest> getCrudRequestProcessor() {
+        return new RequestProcessor<AuthProviderAPI, BaseCrudServiceRequest>(){
+            @Override
+            public Response doProcess(AuthProviderAPI api, BaseCrudServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case AddProviderType:
+                        response = new Response(ResponseStatus.SUCCESS);
+                        authProviderService.addProviderType(((BaseCrudServiceRequest<AuthProviderType>)request).getObject());
+                        return response;
+                    case SaveAuthProvider:
+                        response = new StringResponse();
+                        ((StringResponse)response).setValue(authProviderService.saveAuthProvider(((BaseCrudServiceRequest<AuthProvider>)request).getObject(), request.getRequesterId()));
+                        return response;
+                    case DeleteAuthProvider:
+                        response = new Response();
+                        authProviderService.deleteAuthProvider(((BaseCrudServiceRequest<AuthProvider>)request).getObject().getId());
+                        return response;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+            }
+        };
     }
 }

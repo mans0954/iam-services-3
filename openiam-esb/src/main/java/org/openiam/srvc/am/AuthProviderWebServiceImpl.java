@@ -10,15 +10,14 @@ import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.dto.AuthProviderType;
 import org.openiam.am.srvc.searchbean.AuthAttributeSearchBean;
 import org.openiam.am.srvc.searchbean.AuthProviderSearchBean;
-import org.openiam.base.request.BaseCrudServiceRequest;
-import org.openiam.base.request.BaseSearchServiceRequest;
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.request.*;
 import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
 import org.openiam.mq.constants.AuthProviderAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMQueue;
+import org.openiam.mq.constants.queue.am.AuthProviderQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service("authProviderWS")
@@ -27,8 +26,9 @@ import org.springframework.stereotype.Service;
             serviceName = "AuthProviderWebService")
 public class AuthProviderWebServiceImpl extends AbstractApiService implements AuthProviderWebService {
 
-    public AuthProviderWebServiceImpl() {
-        super(OpenIAMQueue.AuthProviderQueue);
+    @Autowired
+    public AuthProviderWebServiceImpl(AuthProviderQueue queue) {
+        super(queue);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class AuthProviderWebServiceImpl extends AbstractApiService implements Au
 
     @Override
     public List<AuthProviderType> getAuthProviderTypeList() {
-        AuthProviderTypeListResponse response = this.manageApiRequest(AuthProviderAPI.GetAuthProviderTypeList, new BaseServiceRequest(), AuthProviderTypeListResponse.class);
+        AuthProviderTypeListResponse response = this.manageApiRequest(AuthProviderAPI.GetAuthProviderTypeList, new EmptyServiceRequest(), AuthProviderTypeListResponse.class);
         if(response.isFailure()){
             return Collections.EMPTY_LIST;
         }
@@ -69,7 +69,7 @@ public class AuthProviderWebServiceImpl extends AbstractApiService implements Au
 
     @Override
     public List<AuthProviderType> getSocialAuthProviderTypeList(){
-        AuthProviderTypeListResponse response = this.manageApiRequest(AuthProviderAPI.GetSocialAuthProviderTypeList, new BaseServiceRequest(), AuthProviderTypeListResponse.class);
+        AuthProviderTypeListResponse response = this.manageApiRequest(AuthProviderAPI.GetSocialAuthProviderTypeList, new EmptyServiceRequest(), AuthProviderTypeListResponse.class);
         if(response.isFailure()){
             return Collections.EMPTY_LIST;
         }
@@ -128,9 +128,8 @@ public class AuthProviderWebServiceImpl extends AbstractApiService implements Au
 
     @Override
     public Response deleteAuthProvider(String providerId) {
-        IdServiceRequest request=new IdServiceRequest();
-        request.setId(providerId);
-
-        return this.manageApiRequest(AuthProviderAPI.DeleteAuthProvider, request, Response.class);
+        AuthProvider obj=new AuthProvider();
+        obj.setId(providerId);
+        return this.manageCrudApiRequest(AuthProviderAPI.DeleteAuthProvider, obj);
     }
 }

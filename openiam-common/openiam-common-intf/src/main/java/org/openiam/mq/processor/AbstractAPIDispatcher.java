@@ -2,22 +2,17 @@ package org.openiam.mq.processor;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.base.request.IdmAuditLogRequest;
-import org.openiam.base.response.MenuSaveResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.concurrent.AbstractBaseRunnableBackgroundTask;
 import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.concurrent.IBaseRunnableBackgroundTask;
-import org.openiam.exception.AuthorizationMenuException;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.FieldMappingDataServiceException;
 import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMAPICommon;
-import org.openiam.mq.constants.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.dto.MQResponse;
 import org.openiam.mq.gateway.RequestServiceGateway;
@@ -94,7 +89,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
 
             ResponseBody apiResponse = this.getResponseInstance();
 
-            byte[] correlationId = apiRequest.getCorrelationId();
+//            byte[] correlationId = apiRequest.getCorrelationId();
 
             MQResponse<ResponseBody> response = new MQResponse<ResponseBody>();
             long startTime = System.currentTimeMillis();
@@ -137,7 +132,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
                 long totalTime = System.currentTimeMillis() - startTime;
                 log.debug("processing {} API Request {} - finished", apiRequest.getRequestApi().name(), apiRequest);
                 log.debug("Processing {} API ends. Total time: {}", apiRequest.getRequestApi().name(), totalTime / 1000.0f);
-                this.sendResponse(apiRequest.getReplyTo(), response, correlationId);
+//                this.sendResponse(apiRequest.getReplyTo(), response, correlationId);
                 // save audit log and remove threadlocal instance
                 this.submitAuditLog();
             }
@@ -157,7 +152,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
 
     protected void sendResponse(String getReplyTo, MQResponse<ResponseBody> response, byte[] correlationId) {
         if (StringUtils.isNotBlank(getReplyTo)) {
-            response.setCorrelationId(correlationId);
+//            response.setCorrelationId(correlationId);
             responseServiceGateway.send(getReplyTo, response, correlationId);
         }
     }

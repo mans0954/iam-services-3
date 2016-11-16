@@ -1,7 +1,6 @@
 package org.openiam.mq.utils;
 
-import org.openiam.mq.constants.MqQueue;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.MqQueue;
 import org.openiam.mq.listener.AbstractRabbitMQListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,32 +51,32 @@ public class RabbitMQAdminUtils {
         AbstractExchange exchange;
 
         for (MqQueue queue : queues) {
-            if (queue.getTempQueue()) {
-                rabbitQueue = amqpAdmin.declareQueue();
-                queue.setName(rabbitQueue.getName());
-            } else {
-                rabbitQueue = new Queue(queue.getName(), false, false, false, null);
-            }
+//            if (queue.getTempQueue()) {
+//                rabbitQueue = amqpAdmin.declareQueue();
+//                queue.setName(rabbitQueue.getName());
+//            } else {
+//                rabbitQueue = new Queue(queue.getName(), false, false, false, null);
+//            }
 
             rabbitQueue = new Queue(queue.getName(), false, false, false, null);
             amqpAdmin.declareQueue(rabbitQueue);
             amqpAdmin.purgeQueue(queue.getName(), false);
             switch (queue.getExchange().getType()) {
-                case DIRECT:
+                case ExchangeTypes.DIRECT:
 
                     exchange = new DirectExchange(queue.getExchange().name());
                     amqpAdmin.declareExchange(exchange);
                     amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue)
                             .to((DirectExchange) exchange).with(queue.getRoutingKey()));
                     break;
-                case FANOUT:
+                case ExchangeTypes.FANOUT:
                     exchange = new FanoutExchange(queue.getExchange().name());
                     amqpAdmin.declareExchange(exchange);
                     amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue).to(
                             (FanoutExchange) exchange));
                     break;
-                case HEADERS:
-                case TOPIC:
+                case ExchangeTypes.HEADERS:
+                case ExchangeTypes.TOPIC:
                     exchange = new TopicExchange(queue.getExchange().name());
                     amqpAdmin.declareExchange(exchange);
                     amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue)
