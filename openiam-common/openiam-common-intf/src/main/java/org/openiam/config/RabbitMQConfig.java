@@ -62,12 +62,12 @@ public class RabbitMQConfig {
             protected Logger log = LoggerFactory.getLogger(this.getClass());
             @Override
             public void onCreate(Channel channel, boolean transactional) {
-                log.debug("New rabbitmq channel is created : {}, transactional: {}",
+                log.trace("New rabbitmq channel is created : {}, transactional: {}",
                         channel.toString(), transactional);
                 channel.addShutdownListener(new ShutdownListener() {
                     @Override
                     public void shutdownCompleted(ShutdownSignalException cause) {
-                        log.debug("Rabbitmq channel is closed. Cause: {}", cause.getMessage());
+                        log.trace("Rabbitmq channel is closed. Cause: {}", cause.getMessage());
                     }
                 });
             }

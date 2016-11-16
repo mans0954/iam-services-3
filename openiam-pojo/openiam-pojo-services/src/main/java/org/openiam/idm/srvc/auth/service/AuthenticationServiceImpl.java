@@ -447,6 +447,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean, int from, int size) {
         return authStateDao.getByExample(searchBean, from, size);
     }
