@@ -242,6 +242,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		Assert.assertTrue(response.isSuccess());
 	}
 	
+	protected void assertFailure(final Response response) {
+		Assert.assertFalse(response.isSuccess());
+	}
+	
 	protected void sleep(final long ms) {
 		try {
 			Thread.sleep(ms);

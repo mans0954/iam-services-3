@@ -66,6 +66,7 @@
 		<classes>
 			<class name="org.openiam.service.integration.login.LoginServiceTest" />
 			<class name="org.openiam.service.integration.user.UserServiceTest" />
+			<class name="org.openiam.service.integration.password.PasswordServiceTest" />
 <!--
 			<class name="org.openiam.service.integration.provisioning.UserManagmentServiceTest" />
 -->
