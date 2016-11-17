@@ -12,7 +12,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.FieldMappingDataServiceException;
 import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.api.OpenIAMAPI;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.dto.MQResponse;
 import org.openiam.mq.gateway.RequestServiceGateway;

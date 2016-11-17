@@ -4,7 +4,7 @@ import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.response.IntResponse;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.mq.constants.OrganizationTypeAPI;
+import org.openiam.mq.constants.api.OrganizationTypeAPI;
 import org.springframework.stereotype.Component;
 
 /**

@@ -1,8 +1,7 @@
 package org.openiam.mq.dto;
 
 import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.util.OpenIAMUtils;
+import org.openiam.mq.constants.api.OpenIAMAPI;
 
 /**
  * Created by alexander on 06/07/16.

@@ -18,7 +18,8 @@ import java.io.Serializable;
         "requestorLogin",
         "requestClientIP",
         "requestorSessionID",
-        "testRequest"
+        "testRequest",
+        "isAsych"
 })
 public abstract class BaseServiceRequest implements Serializable{
     private static final long serialVersionUID = 1L;
@@ -28,6 +29,7 @@ public abstract class BaseServiceRequest implements Serializable{
     protected String requestorLogin;
     protected String requestClientIP;
     private Language language;
+    private boolean isAsych;
     /*
      * if true, means that the request is called as a 'test' - not as a real-world call
      * the service code should (or should not) perform an action based on this flag
@@ -89,6 +91,14 @@ public abstract class BaseServiceRequest implements Serializable{
 
     public void setTestRequest(boolean testRequest) {
         this.testRequest = testRequest;
+    }
+
+    public boolean isAsych() {
+        return isAsych;
+    }
+
+    public void setAsych(boolean asych) {
+        isAsych = asych;
     }
 
     @Override

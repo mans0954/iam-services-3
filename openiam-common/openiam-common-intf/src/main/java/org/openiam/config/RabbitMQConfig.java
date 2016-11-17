@@ -3,9 +3,14 @@ package org.openiam.config;
 import com.rabbitmq.client.Channel;
 import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.RabbitMQVHosts;
+import org.openiam.mq.constants.queue.activiti.ActivitiServiceQueue;
 import org.openiam.mq.constants.queue.am.*;
 import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.audit.AuditLogQueue;
+import org.openiam.mq.constants.queue.common.BatchTaskQueue;
 import org.openiam.mq.constants.queue.common.LanguageServiceQueue;
+import org.openiam.mq.constants.queue.common.MailQueue;
+import org.openiam.mq.constants.queue.common.PolicyQueue;
 import org.openiam.mq.gateway.RequestServiceGateway;
 import org.openiam.mq.gateway.ResponseServiceGateway;
 import org.openiam.mq.gateway.impl.RequestServiceGatewayImpl;
@@ -142,6 +147,14 @@ public class RabbitMQConfig {
         return connectionFactory;
     }
 
+    @Bean(name = "activitiRabbitListenerContainerFactory")
+    public SimpleRabbitListenerContainerFactory activitiRabbitListenerContainerFactory() {
+        return createRabbitListenerContainerFactory(activitiCF());
+    }
+    @Bean(name = "auditRabbitListenerContainerFactory")
+    public SimpleRabbitListenerContainerFactory auditRabbitListenerContainerFactory() {
+        return createRabbitListenerContainerFactory(auditCF());
+    }
     @Bean(name = "amRabbitListenerContainerFactory")
     public SimpleRabbitListenerContainerFactory amRabbitListenerContainerFactory() {
         return createRabbitListenerContainerFactory(amCF());
@@ -182,17 +195,19 @@ public class RabbitMQConfig {
 
         template.setReplyTimeout(replyTimeout);
 
-//        RabbitTemplate template = new CustomRabbitTemplate(connectionFactory());
-//        template.setReplyTimeout(replyTimeout);
-//        template.setMessagePropertiesConverter(messagePropertiesConverter());
-        // template.setChannelTransacted(erpProperties.getChannelTransacted());
         return template;
     }
-//    @Bean
-//    public MessagePropertiesConverter messagePropertiesConverter() {
-//        return new DefaultMessagePropertiesConverter();
-//    }
 
+    @Bean
+    public AmqpAdmin activitiAmqpAdmin() {
+        RabbitAdmin amqpAdmin = new RabbitAdmin(activitiCF());
+        return amqpAdmin;
+    }
+    @Bean
+    public AmqpAdmin auditAmqpAdmin() {
+        RabbitAdmin amqpAdmin = new RabbitAdmin(auditCF());
+        return amqpAdmin;
+    }
     @Bean
     public AmqpAdmin amAmqpAdmin() {
         RabbitAdmin amqpAdmin = new RabbitAdmin(amCF());
@@ -204,77 +219,27 @@ public class RabbitMQConfig {
         return amqpAdmin;
     }
 
-//    public void bindQueues(RabbitAdmin amqpAdmin, MqQueue... queues) {
-//        Queue rabbitQueue;
-//        AbstractExchange exchange;
-//
-//        for (MqQueue queue : queues) {
-//
-//            SimpleResourceHolder.bind(amqpAdmin.getRabbitTemplate().getConnectionFactory(), queue.getVHost());
-//
-//            if (queue.getExchange().getType().equals(ExchangeTypes.FANOUT)) {
-//                rabbitQueue = amqpAdmin.declareQueue();
-//                queue.setName(rabbitQueue.getName());
-//            } else {
-//                rabbitQueue = new Queue(queue.getName(), false, false, false, null);
-//            }
-//
-////            rabbitQueue = new Queue(queue.getName(), false, false, false, null);
-//            amqpAdmin.declareQueue(rabbitQueue);
-//            amqpAdmin.purgeQueue(queue.getName(), false);
-//            switch (queue.getExchange().getType()) {
-//                case ExchangeTypes.DIRECT:
-//
-//                    exchange = new DirectExchange(queue.getExchange().name());
-//                    amqpAdmin.declareExchange(exchange);
-//                    amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue)
-//                            .to((DirectExchange) exchange).with(queue.getRoutingKey()));
-//                    break;
-//                case ExchangeTypes.FANOUT:
-//                    exchange = new FanoutExchange(queue.getExchange().name());
-//                    amqpAdmin.declareExchange(exchange);
-//                    amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue).to(
-//                            (FanoutExchange) exchange));
-//                    break;
-//                case ExchangeTypes.HEADERS:
-//                case ExchangeTypes.TOPIC:
-//                    exchange = new TopicExchange(queue.getExchange().name());
-//                    amqpAdmin.declareExchange(exchange);
-//                    amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue)
-//                            .to((TopicExchange) exchange).with(queue.getRoutingKey()));
-//                    break;
-//            }
-//
-//            SimpleResourceHolder.unbind(amqpAdmin.getRabbitTemplate().getConnectionFactory());
-//        }
-//    }
-
-//    @Bean
-//    public RabbitMQAdminUtils rabbitMQAdminUtils() throws IllegalAccessException {
-//        RabbitMQAdminUtils adminUtils = new RabbitMQAdminUtils();
-//        adminUtils.setConcurrentConsumer(concurrentConsumers);
-//        adminUtils.setAmqpAdmin(amqpAdmin());
-//        adminUtils.setEncoding(encoding);
-//        return adminUtils;
-//    }
 
     @Bean(name = "rabbitRequestServiceGateway")
     public RequestServiceGateway requestServiceGateway() {
         RequestServiceGatewayImpl gateway = new RequestServiceGatewayImpl();
         gateway.setConnectionFactory(connectionFactory());
         gateway.setRabbitOperations(rabbitTemplate());
-//        gateway.setRabbitMQAdminUtils(rabbitMQAdminUtils());
-//        gateway.setReplyTimeout(replyTimeout);
         return gateway;
     }
-
-
-    @Bean(name = "rabbitResponseServiceGateway")
-    public ResponseServiceGateway responseServiceGateway() {
-        ResponseServiceGatewayImpl responseServiceGateway = new ResponseServiceGatewayImpl();
-        responseServiceGateway.setRabbitTemplate(rabbitTemplate());
-//        responseServiceGateway.setRabbitMQAdminUtils(rabbitMQAdminUtils());
-        return responseServiceGateway;
+    // ************** Activiti QUEUEs
+    @Bean
+    public ActivitiServiceQueue ActivitiServiceQueue() {
+        ActivitiServiceQueue queue =  new ActivitiServiceQueue();
+        bindQueue(activitiAmqpAdmin(), queue);
+        return queue;
+    }
+    // ************** Audit QUEUEs
+    @Bean
+    public AuditLogQueue AuditLogQueue() {
+        AuditLogQueue queue =  new AuditLogQueue();
+        bindQueue(activitiAmqpAdmin(), queue);
+        return queue;
     }
     // ************** AM QUEUEs
     @Bean
@@ -373,6 +338,17 @@ public class RabbitMQConfig {
         bindQueue(amAmqpAdmin(), queue);
         return queue;
     }
+    @Bean
+    public OrganizationTypeQueue OrganizationTypeQueue(){
+        OrganizationTypeQueue queue =  new OrganizationTypeQueue();
+        bindQueue(amAmqpAdmin(), queue);
+        return queue;
+    }
+    public RoleQueue RoleQueue(){
+        RoleQueue queue =  new RoleQueue();
+        bindQueue(amAmqpAdmin(), queue);
+        return queue;
+    }
 
    // ************** COMMON QUEUEs
     @Bean
@@ -381,6 +357,25 @@ public class RabbitMQConfig {
         bindQueue(commonAmqpAdmin(), queue);
         return queue;
     }
+    @Bean
+    public BatchTaskQueue BatchTaskQueue() {
+        BatchTaskQueue queue =  new BatchTaskQueue();
+        bindQueue(commonAmqpAdmin(), queue);
+        return queue;
+    }
+    @Bean
+    public MailQueue MailQueue() {
+        MailQueue queue =  new MailQueue();
+        bindQueue(commonAmqpAdmin(), queue);
+        return queue;
+    }
+    @Bean
+    public PolicyQueue PolicyQueue() {
+        PolicyQueue queue =  new PolicyQueue();
+        bindQueue(commonAmqpAdmin(), queue);
+        return queue;
+    }
+
 
 
     public void bindQueue(AmqpAdmin amqpAdmin, MqQueue  queue) {

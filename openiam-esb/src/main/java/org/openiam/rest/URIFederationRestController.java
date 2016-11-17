@@ -9,7 +9,7 @@ import org.openiam.base.request.URIFederationServiceRequest;
 import org.openiam.base.request.model.CertificateLoginServiceRequest;
 import org.openiam.base.response.URIFederationResponse;
 import org.openiam.base.response.LoginResponse;
-import org.openiam.mq.constants.URIFederationAPI;
+import org.openiam.mq.constants.api.URIFederationAPI;
 import org.openiam.mq.constants.queue.am.URIFederationQueue;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.srvc.am.AbstractURIFederationAPIService;

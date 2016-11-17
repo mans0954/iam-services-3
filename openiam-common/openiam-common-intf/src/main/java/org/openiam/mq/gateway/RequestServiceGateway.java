@@ -2,10 +2,8 @@ package org.openiam.mq.gateway;
 
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.ws.Response;
-import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.api.OpenIAMAPI;
 import org.openiam.mq.constants.queue.MqQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.dto.MQResponse;
 
 /**
  * Created by alexander on 07/07/16.

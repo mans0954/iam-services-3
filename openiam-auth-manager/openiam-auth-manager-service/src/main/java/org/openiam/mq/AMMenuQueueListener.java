@@ -10,7 +10,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.AuthorizationMenuException;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.mq.constants.AMMenuAPI;
+import org.openiam.mq.constants.api.AMMenuAPI;
 import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.queue.am.AMMenuQueue;
 import org.openiam.mq.listener.AbstractListener;

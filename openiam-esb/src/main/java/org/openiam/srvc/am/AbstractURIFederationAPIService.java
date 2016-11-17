@@ -3,11 +3,9 @@ package org.openiam.srvc.am;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.request.URIFederationServiceRequest;
 import org.openiam.base.response.URIFederationResponse;
-import org.openiam.mq.constants.queue.am.AMQueue;
-import org.openiam.mq.constants.URIFederationAPI;
+import org.openiam.mq.constants.api.URIFederationAPI;
 import org.openiam.mq.constants.queue.am.URIFederationQueue;
 import org.openiam.srvc.AbstractApiService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 
 import javax.annotation.PostConstruct;

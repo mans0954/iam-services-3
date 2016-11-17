@@ -4,7 +4,7 @@ import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.base.response.StringResponse;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
-import org.openiam.mq.constants.OrganizationTypeAPI;
+import org.openiam.mq.constants.api.OrganizationTypeAPI;
 import org.springframework.stereotype.Component;
 
 /**

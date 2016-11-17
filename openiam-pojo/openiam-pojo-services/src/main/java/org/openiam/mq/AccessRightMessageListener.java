@@ -11,7 +11,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.access.service.AccessRightService;
-import org.openiam.mq.constants.AccessRightAPI;
+import org.openiam.mq.constants.api.AccessRightAPI;
 import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.queue.am.AccessRightQueue;
 import org.openiam.mq.listener.AbstractListener;

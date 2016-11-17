@@ -17,7 +17,14 @@ public enum RabbitMqExchange {
     AM_EXCHANGE,
     REFRESH_OAUTH_CACHE_EXCHANGE(ExchangeTypes.FANOUT),
     URI_FEDERATION_CACHE_EXCHANGE(ExchangeTypes.FANOUT),
-    AM_CACHE_EXCHANGE(ExchangeTypes.FANOUT);
+    AM_CACHE_EXCHANGE(ExchangeTypes.FANOUT),
+
+    /*Exchanges for ACTIVITI vhost*/
+    ACTIVITI_EXCHANGE,
+
+    /*Exchanges for AUDIT vhost*/
+    AUDIT_EXCHANGE;
+
 
     private final String type;
 

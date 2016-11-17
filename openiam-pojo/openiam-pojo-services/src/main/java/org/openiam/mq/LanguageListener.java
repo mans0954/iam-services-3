@@ -1,8 +1,8 @@
 package org.openiam.mq;
 
 import org.openiam.base.request.*;
-import org.openiam.base.response.CountResponse;
 import org.openiam.base.response.IdServiceResponse;
+import org.openiam.base.response.IntResponse;
 import org.openiam.base.response.LanguageListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -10,14 +10,11 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDataService;
-import org.openiam.mq.constants.MQConstant;
-import org.openiam.mq.constants.OpenIAMAPICommon;
+import org.openiam.mq.constants.api.OpenIAMAPICommon;
 import org.openiam.mq.constants.queue.common.LanguageServiceQueue;
 import org.openiam.mq.listener.AbstractListener;
-import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 /**
@@ -53,8 +50,8 @@ public class LanguageListener extends AbstractListener<OpenIAMAPICommon> {
                         ((LanguageListResponse)response).setLanguageList(languageDataService.findBeans(((BaseSearchServiceRequest<LanguageSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize(), request.getLanguage()));
                         return response;
                     case CountLanguages:
-                        response = new CountResponse();
-                        ((CountResponse)response).setRowCount(languageDataService.count(((BaseSearchServiceRequest<LanguageSearchBean>)request).getSearchBean()));
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(languageDataService.count(((BaseSearchServiceRequest<LanguageSearchBean>)request).getSearchBean()));
                         return response;
                     default:
                         throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());

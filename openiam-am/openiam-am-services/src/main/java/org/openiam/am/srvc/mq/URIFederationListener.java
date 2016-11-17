@@ -10,7 +10,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.mq.constants.MQConstant;
-import org.openiam.mq.constants.URIFederationAPI;
+import org.openiam.mq.constants.api.URIFederationAPI;
 import org.openiam.mq.constants.queue.am.URIFederationQueue;
 import org.openiam.mq.listener.AbstractListener;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;

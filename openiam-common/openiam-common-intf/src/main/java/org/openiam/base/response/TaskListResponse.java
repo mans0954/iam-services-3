@@ -12,24 +12,13 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "TaskListResponse", propOrder = {
-        "taskList"
 })
-public class TaskListResponse extends Response {
-    private List<TaskWrapper> taskList;
-
-    public List<TaskWrapper> getTaskList() {
-        return taskList;
-    }
-
-    public void setTaskList(List<TaskWrapper> taskList) {
-        this.taskList = taskList;
-    }
+public class TaskListResponse extends BaseListResponse<TaskWrapper> {
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("TaskListResponse{");
         sb.append(super.toString());
-        sb.append(", taskList=").append(taskList);
         sb.append('}');
         return sb.toString();
     }

@@ -4,7 +4,7 @@ import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.response.ManagedSysListResponse;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.mq.constants.ManagedSystemAPI;
+import org.openiam.mq.constants.api.ManagedSystemAPI;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

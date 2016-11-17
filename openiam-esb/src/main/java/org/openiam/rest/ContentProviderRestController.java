@@ -2,7 +2,7 @@ package org.openiam.rest;
 
 import org.openiam.base.request.EmptyServiceRequest;
 import org.openiam.hazelcast.HazelcastConfiguration;
-import org.openiam.mq.constants.URIFederationAPI;
+import org.openiam.mq.constants.api.URIFederationAPI;
 import org.openiam.mq.constants.queue.am.RefreshUriFederationCache;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;

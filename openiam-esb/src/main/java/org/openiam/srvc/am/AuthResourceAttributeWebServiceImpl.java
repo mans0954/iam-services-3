@@ -8,7 +8,7 @@ import org.openiam.base.response.AuthResourceAMAttributeListResponse;
 import org.openiam.base.response.AuthResourceAttributeMapResponse;
 import org.openiam.base.response.SSOAttributeListResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.mq.constants.AuthResourceAttributeAPI;
+import org.openiam.mq.constants.api.AuthResourceAttributeAPI;
 import org.openiam.mq.constants.queue.am.AuthResourceAttributeQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;

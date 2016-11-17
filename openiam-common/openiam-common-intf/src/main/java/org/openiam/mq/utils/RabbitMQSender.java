@@ -3,7 +3,7 @@ package org.openiam.mq.utils;
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.api.OpenIAMAPI;
 import org.openiam.mq.constants.queue.MqQueue;
 import org.openiam.mq.gateway.RequestServiceGateway;
 import org.slf4j.Logger;

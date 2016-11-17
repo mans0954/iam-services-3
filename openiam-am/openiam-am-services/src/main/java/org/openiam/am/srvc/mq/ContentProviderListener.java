@@ -12,7 +12,7 @@ import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.mq.constants.ContentProviderAPI;
+import org.openiam.mq.constants.api.ContentProviderAPI;
 import org.openiam.mq.constants.queue.am.ContentProviderQueue;
 import org.openiam.mq.listener.AbstractListener;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

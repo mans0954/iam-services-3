@@ -2,7 +2,7 @@ package org.openiam.mq;
 
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.idm.srvc.mngsys.service.dispatcher.GetAllManagedSysDispatcher;
-import org.openiam.mq.constants.ManagedSystemAPI;
+import org.openiam.mq.constants.api.ManagedSystemAPI;
 import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;

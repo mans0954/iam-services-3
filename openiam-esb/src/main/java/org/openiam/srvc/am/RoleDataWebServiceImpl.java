@@ -29,9 +29,10 @@ import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
-import org.openiam.mq.constants.queue.am.AMQueue;
-import org.openiam.mq.constants.RoleAPI;
+import org.openiam.mq.constants.api.RoleAPI;
+import org.openiam.mq.constants.queue.am.RoleQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
@@ -49,22 +50,21 @@ import java.util.Set;
 @Service("roleWS")
 public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDataWebService {
 
-    public RoleDataWebServiceImpl() {
-        super(AMQueue.RoleQueue);
+    @Autowired
+    public RoleDataWebServiceImpl(RoleQueue queue) {
+        super(queue);
     }
 
     @Override
     public Response validateEdit(Role role) {
-        RoleRequest request = new RoleRequest();
-        request.setRole(role);
-        return this.manageApiRequest(RoleAPI.ValidateEdit, request, BooleanResponse.class).convertToBase();
+        return this.manageCrudApiRequest(RoleAPI.ValidateEdit, role);
     }
 
     @Override
     public Response validateDelete(String roleId) {
-        IdServiceRequest request = new IdServiceRequest();
-        request.setId(roleId);
-        return this.manageApiRequest(RoleAPI.ValidateDelete, request, BooleanResponse.class).convertToBase();
+        Role obj = new Role();
+        obj.setId(roleId);
+        return this.manageCrudApiRequest(RoleAPI.ValidateDelete, obj);
     }
 
     @Override
@@ -73,28 +73,28 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
         request.setId(roleId);
         request.setLanguage(language);
         request.setRequesterId(requesterId);
-        return this.manageApiRequest(RoleAPI.GetRoleLocalized, request, RoleGetResponse.class).getRole();
+        return this.getValue(RoleAPI.GetRoleLocalized, request, RoleResponse.class);
     }
 
     @Override
     public List<RoleAttribute> getRoleAttributes(String roleId) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(roleId);
-        return this.manageApiRequest(RoleAPI.GetRoleAttributes, request, RoleAttributeGetResponse.class).getRoleAttributes();
+        return this.getValueList(RoleAPI.GetRoleAttributes, request, RoleAttributeListResponse.class);
     }
 
     @Override
     public Response saveRole(Role role, String requesterId) {
-        RoleRequest request = new RoleRequest();
-        request.setRole(role);
+        BaseCrudServiceRequest<Role> request = new BaseCrudServiceRequest<>(role);
         request.setRequesterId(requesterId);
-        return this.manageApiRequest(RoleAPI.SaveRole, request, Response.class);
+        return this.manageCrudApiRequest(RoleAPI.SaveRole, request);
     }
 
     @Override
     public Response removeRole(String roleId, String requesterId) {
-        IdServiceRequest request = new IdServiceRequest();
-        request.setId(roleId);
+        Role obj = new Role();
+        obj.setId(roleId);
+        BaseCrudServiceRequest<Role> request = new BaseCrudServiceRequest<>(obj);
         request.setRequesterId(requesterId);
         return this.manageApiRequest(RoleAPI.RemoveRole, request, Response.class);
     }
@@ -157,15 +157,14 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public List<Role> findBeans(RoleSearchBean searchBean, String requesterId, int from, int size) {
-        return this.manageApiRequest(RoleAPI.FindBeans, new BaseSearchServiceRequest<>(searchBean, from, size),
-                RoleFindBeansResponse.class).getRoles();
+        return this.getValueList(RoleAPI.FindBeans, new BaseSearchServiceRequest<>(searchBean, from, size),
+                RoleListResponse.class);
     }
 
     @Override
     public int countBeans(RoleSearchBean searchBean, String requesterId) {
         BaseSearchServiceRequest<RoleSearchBean> request = new BaseSearchServiceRequest<>(searchBean);
-        CountResponse response = this.manageApiRequest(RoleAPI.CountBeans, request, CountResponse.class);
-        return response.getRowCount();
+        return this.getValue(RoleAPI.CountBeans, request, IntResponse.class);
     }
 
     @Override
@@ -175,7 +174,7 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
         request.setRequesterId(requesterId);
         request.setFrom(from);
         request.setSize(size);
-        return this.manageApiRequest(RoleAPI.GetParentRoles, request, RoleFindBeansResponse.class).getRoles();
+        return this.getValueList(RoleAPI.GetParentRoles, request, RoleListResponse.class);
     }
 
     @Override

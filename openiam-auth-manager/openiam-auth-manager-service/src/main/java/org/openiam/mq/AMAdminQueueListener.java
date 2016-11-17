@@ -7,7 +7,7 @@ import org.openiam.base.response.UserEntitlementsMatrixResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.mq.constants.AMAdminAPI;
+import org.openiam.mq.constants.api.AMAdminAPI;
 import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.queue.am.AMAdminQueue;
 import org.openiam.mq.listener.AbstractListener;

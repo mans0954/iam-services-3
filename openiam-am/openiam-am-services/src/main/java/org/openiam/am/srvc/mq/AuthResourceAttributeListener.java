@@ -7,7 +7,7 @@ import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.mq.constants.AuthResourceAttributeAPI;
+import org.openiam.mq.constants.api.AuthResourceAttributeAPI;
 import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.queue.am.AuthResourceAttributeQueue;
 import org.openiam.mq.listener.AbstractListener;

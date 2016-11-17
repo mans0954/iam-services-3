@@ -11,7 +11,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.mq.constants.AuthProviderAPI;
+import org.openiam.mq.constants.api.AuthProviderAPI;
 import org.openiam.mq.constants.queue.am.AuthProviderQueue;
 import org.openiam.mq.listener.AbstractListener;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

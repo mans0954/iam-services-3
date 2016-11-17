@@ -1,7 +1,7 @@
 package org.openiam.mq.processor;
 
 import org.openiam.concurrent.AbstractBaseRunnableBackgroundTask;
-import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.api.OpenIAMAPI;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;
 import org.slf4j.Logger;

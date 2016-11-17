@@ -3,7 +3,6 @@ package org.openiam.mq.listener;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.request.*;
-import org.openiam.base.response.URIFederationResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -13,23 +12,15 @@ import org.openiam.exception.FieldMappingDataServiceException;
 import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.mq.constants.*;
+import org.openiam.mq.constants.api.OpenIAMAPI;
 import org.openiam.mq.constants.queue.MqQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.dto.MQResponse;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.gateway.RequestServiceGateway;
-import org.openiam.mq.gateway.impl.RequestServiceGatewayImpl;
 import org.openiam.util.AuditLogHelper;
-import org.openiam.util.OpenIAMUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
-import org.springframework.amqp.rabbit.core.ChannelAwareMessageListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Created by alexander on 27/07/16.

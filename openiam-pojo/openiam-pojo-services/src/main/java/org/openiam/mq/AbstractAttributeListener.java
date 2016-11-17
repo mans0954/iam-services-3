@@ -1,8 +1,7 @@
 package org.openiam.mq;
 
-import org.openiam.mq.constants.OpenIAMAPICommon;
+import org.openiam.mq.constants.api.OpenIAMAPICommon;
 import org.openiam.mq.constants.queue.MqQueue;
-import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.exception.RejectMessageException;
 import org.openiam.mq.listener.AbstractRabbitMQListener;

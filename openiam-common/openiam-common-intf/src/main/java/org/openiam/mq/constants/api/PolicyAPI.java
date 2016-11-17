@@ -1,0 +1,16 @@
+package org.openiam.mq.constants.api;
+
+/**
+ * @author zaporozhec
+ */
+public enum PolicyAPI implements OpenIAMAPI {
+    FindBeans,
+    GetPolicy,
+    SavePolicy,
+    DeletePolicy,
+    GetAllPolicyAttributes,
+    FindITPolicy,
+    ResetITPolicy,
+    SaveOrUpdateITPolicy,
+    Count;
+}

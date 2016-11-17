@@ -8,7 +8,7 @@ import org.openiam.mq.constants.queue.MqQueue;
 /**
  * Created by alexander on 09/11/16.
  */
-public class CommonQueue extends MqQueue {
+public abstract class CommonQueue extends MqQueue {
 
     public CommonQueue(String name) {
         super(RabbitMqExchange.COMMON_EXCHANGE, name, RabbitMQVHosts.COMMON_HOST);

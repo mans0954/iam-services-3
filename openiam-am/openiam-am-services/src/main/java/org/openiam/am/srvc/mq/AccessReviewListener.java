@@ -6,7 +6,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.model.AccessViewResponse;
-import org.openiam.mq.constants.AccessReviewAPI;
+import org.openiam.mq.constants.api.AccessReviewAPI;
 import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.queue.am.AccessReviewQueue;
 import org.openiam.mq.listener.AbstractListener;

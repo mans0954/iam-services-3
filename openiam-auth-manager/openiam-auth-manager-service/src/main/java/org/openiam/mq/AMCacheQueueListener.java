@@ -6,7 +6,7 @@ import org.openiam.base.request.EmptyServiceRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.mq.constants.AMCacheAPI;
+import org.openiam.mq.constants.api.AMCacheAPI;
 import org.openiam.mq.constants.queue.am.AMCacheQueue;
 import org.openiam.mq.listener.AbstractListener;
 import org.openiam.thread.Sweepable;

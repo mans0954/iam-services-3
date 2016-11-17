@@ -8,12 +8,12 @@ import org.openiam.base.response.OrganizationTypeListResponse;
 import org.openiam.base.response.OrganizationTypeResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
-import org.openiam.mq.constants.queue.am.AMQueue;
-import org.openiam.mq.constants.OrganizationTypeAPI;
+import org.openiam.mq.constants.api.OrganizationTypeAPI;
+import org.openiam.mq.constants.queue.am.OrganizationTypeQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
@@ -23,9 +23,9 @@ import java.util.List;
 @Service("organizationTypeDataService")
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationTypeDataService")
 public class OrganizationTypeDataServiceImpl extends AbstractApiService implements OrganizationTypeDataService {
-	
-	public OrganizationTypeDataServiceImpl() {
-		super(AMQueue.OrganizationTypeQueue);
+	@Autowired
+	public OrganizationTypeDataServiceImpl(OrganizationTypeQueue queue) {
+		super(queue);
 	}
 
 	@Override

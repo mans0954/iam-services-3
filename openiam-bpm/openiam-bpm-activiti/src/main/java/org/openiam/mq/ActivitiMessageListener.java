@@ -1,116 +1,205 @@
 package org.openiam.mq;
 
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.bpm.activiti.dispatcher.*;
-import org.openiam.mq.constants.ActivitiAPI;
-import org.openiam.mq.constants.queue.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.listener.AbstractRabbitMQListener;
+import org.openiam.base.request.*;
+import org.openiam.base.response.*;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.bpm.activiti.ActivitiDataService;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
+import org.openiam.mq.constants.MQConstant;
+import org.openiam.mq.constants.api.ActivitiAPI;
+import org.openiam.mq.constants.queue.activiti.ActivitiServiceQueue;
+import org.openiam.mq.listener.AbstractListener;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by alexander on 11/08/16.
  */
 @Component
-public class ActivitiMessageListener extends AbstractRabbitMQListener<ActivitiAPI> {
+@RabbitListener(id="activitiMessageListener",
+        queues = "#{ActivitiServiceQueue.name}",
+        containerFactory = "activitiRabbitListenerContainerFactory")
+public class ActivitiMessageListener extends AbstractListener<ActivitiAPI> {
     @Autowired
-    private InitiateUserProfileRequestDispatcher initiateUserProfileRequestDispatcher;
-    @Autowired
-    private ClaimRequestDispatcher claimRequestDispatcher;
-    @Autowired
-    private InitiateWorkflowDispatcher initiateWorkflowDispatcher;
-    @Autowired
-    private ProcessInstanceIdByExecutionIdDispatcher processInstanceIdByExecutionIdDispatcher;
-    @Autowired
-    private MakeDecisionDispatcher makeDecisionDispatcher;
-    @Autowired
-    private GetTaskDispatcher getTaskDispatcher;
-    @Autowired
-    private TaskFromHistoryDispatcher taskFromHistoryDispatcher;
-    @Autowired
-    private NumTaskWithFilterDispatcher numTaskWithFilterDispatcher;
-    @Autowired
-    private GetTasksWithFilterDispatcher getTasksWithFilterDispatcher;
-    @Autowired
-    private HistoryForInstanceDispatcher historyForInstanceDispatcher;
-    @Autowired
-    private GetHistoryDispatcher getHistoryDispatcher;
-    @Autowired
-    private CountHistoryDispatcher countHistoryDispatcher;
-    @Autowired
-    private DeleteUnclaimTaskDispatcher deleteUnclaimTaskDispatcher;
-    @Autowired
-    private GetTasksForUserDispatcher getTasksForUserDispatcher;
-    @Autowired
-    private FindTasksDispatcher findTasksDispatcher;
-    @Autowired
-    private CountTasksDispatcher countTasksDispatcher;
+    private ActivitiDataService activitiDataService;
 
-    public ActivitiMessageListener() {
-        super(OpenIAMQueue.ActivitiQueue);
+    @Autowired
+    public ActivitiMessageListener(ActivitiServiceQueue queue) {
+        super(queue);
     }
 
-    @Override
-    protected void doOnMessage(MQRequest<BaseServiceRequest, ActivitiAPI> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        ActivitiAPI apiName = message.getRequestApi();
-        switch (apiName){
-            case InitiateNewHireRequest:
-            case InitiateEditUserWorkflow:
-                addTask(initiateUserProfileRequestDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case ClaimRequest:
-                addTask(claimRequestDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case InitiateWorkflow:
-                addTask(initiateWorkflowDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case ProcessInstanceIdByExecutionId:
-                addTask(processInstanceIdByExecutionIdDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case MakeDecision:
-                addTask(makeDecisionDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetTask:
-                addTask(getTaskDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case TaskFromHistory:
-                addTask(taskFromHistoryDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case NumOfAssignedTasksWithFilter:
-            case NumOfCandidateTasksWithFilter:
-                addTask(numTaskWithFilterDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case TasksForCandidateUserWithFilter:
-            case TasksForAssignedUserWithFilter:
-                addTask(getTasksWithFilterDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case HistoryForInstance:
-                addTask(historyForInstanceDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetHistory:
-                addTask(getHistoryDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case Count:
-                addTask(countHistoryDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case DeleteTask:
-            case UnclaimTask:
-            case DeleteTasksForUser:
-                addTask(deleteUnclaimTaskDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetTasksForUser:
-                addTask(getTasksForUserDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case FindTasks:
-                addTask(findTasksDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case CountTasks:
-                addTask(countTasksDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            default:
-                break;
-        }
+    protected RequestProcessor<ActivitiAPI, IdServiceRequest> getGetRequestProcessor(){
+        return new RequestProcessor<ActivitiAPI, IdServiceRequest>(){
+            @Override
+            public Response doProcess(ActivitiAPI api, IdServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case ProcessInstanceIdByExecutionId:
+                        response = new StringResponse();
+                        ((StringResponse)response).setValue(activitiDataService.getProcessInstanceIdByExecutionId(request.getId()));
+                        break;
+                    case GetTask:
+                        response = new TaskWrapperResponse();
+                        ((TaskWrapperResponse)response).setValue(activitiDataService.getTask(request.getId()));
+                        break;
+                    case HistoryForInstance:
+                        response = new TaskHistoryListResponse();
+                        ((TaskHistoryListResponse)response).setList(activitiDataService.getHistoryForInstance(request.getId()));
+                        break;
+                    case GetApproverUserIds:
+                        response = new StringListResponse();
+                        ((StringListResponse)response).setList(activitiDataService.getApproverUserIds(((ApproverUserRequest)request).getAssociationIds(), request.getId()));
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
+    }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) ActivitiAPI api, UserProfileServiceRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<ActivitiAPI, UserProfileServiceRequest>(){
+            @Override
+            public Response doProcess(ActivitiAPI api, UserProfileServiceRequest request) throws BasicDataServiceException {
+                switch (api){
+                    case InitiateNewHireRequest:
+                        return activitiDataService.initiateNewHireRequest(((NewUserProfileRequestModel) request.getModel()));
+                    case InitiateEditUserWorkflow:
+                        return activitiDataService.initiateEditUserWorkflow(request.getModel());
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+            }
+        });
+    }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) ActivitiAPI api, ActivitiClaimRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<ActivitiAPI, ActivitiClaimRequest>(){
+            @Override
+            public Response doProcess(ActivitiAPI api, ActivitiClaimRequest request) throws BasicDataServiceException {
+                activitiDataService.claimRequest(request);
+                return new Response();
+            }
+        });
+    }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) ActivitiAPI api, GenericWorkflowRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<ActivitiAPI, GenericWorkflowRequest>(){
+            @Override
+            public Response doProcess(ActivitiAPI api, GenericWorkflowRequest request) throws BasicDataServiceException {
+                return activitiDataService.initiateWorkflow(request);
+            }
+        });
+    }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) ActivitiAPI api, ActivitiRequestDecision request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<ActivitiAPI, ActivitiRequestDecision>(){
+            @Override
+            public Response doProcess(ActivitiAPI api, ActivitiRequestDecision request) throws BasicDataServiceException {
+                activitiDataService.makeDecision(request);
+                return new Response(ResponseStatus.SUCCESS);
+            }
+        });
+    }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) ActivitiAPI api, ActivitiFilterRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<ActivitiAPI, ActivitiFilterRequest>(){
+            @Override
+            public Response doProcess(ActivitiAPI api, ActivitiFilterRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case TaskFromHistory:
+                        response = new TaskWrapperResponse();
+                        ((TaskWrapperResponse)response).setValue(activitiDataService.getTaskFromHistory(request.getExecutionId(), request.getTaskId()));
+                        break;
+                    case NumOfAssignedTasksWithFilter:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(activitiDataService.getNumOfAssignedTasksWithFilter(request.getUserId(),request.getDescription(),request.getRequesterId(),request.getFromDate(), request.getToDate()));
+                        break;
+                    case NumOfCandidateTasksWithFilter:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(activitiDataService.getNumOfCandidateTasksWithFilter(request.getUserId(),request.getDescription(),request.getFromDate(), request.getToDate()));
+                        break;
+                    case TasksForCandidateUserWithFilter:
+                        response = new TaskListWrapperResponse();
+                        ((TaskListWrapperResponse)response).setValue(activitiDataService.getTasksForCandidateUserWithFilter(request.getUserId(),request.getFrom(),request.getSize(),request.getDescription(),request.getFromDate(), request.getToDate()));
+                        break;
+                    case TasksForAssignedUserWithFilter:
+                        response = new TaskListWrapperResponse();
+                        ((TaskListWrapperResponse)response).setValue(activitiDataService.getTasksForAssignedUserWithFilter(request.getUserId(),request.getFrom(),request.getSize(),request.getDescription(),request.getRequesterId(),request.getFromDate(), request.getToDate()));
+                        break;
+                    case DeleteTask:
+                        response=new Response();
+                        activitiDataService.deleteTask(request.getTaskId(), request.getUserId());
+                        break;
+                    case UnclaimTask:
+                        response=new Response();
+                        activitiDataService.unclaimTask(request.getTaskId(), request.getUserId());
+                        break;
+                    case DeleteTasksForUser:
+                        response=new Response();
+                        activitiDataService.deleteTasksForUser(request.getUserId());
+                        break;
+                    case GetTasksForUser:
+                        response = new TaskListWrapperResponse();
+                        ((TaskListWrapperResponse)response).setValue(activitiDataService.getTasksForUser(request.getUserId(), request.getFrom(), request.getSize()));
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        });
+    }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) ActivitiAPI api, HistorySearchRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<ActivitiAPI, HistorySearchRequest>(){
+            @Override
+            public Response doProcess(ActivitiAPI api, HistorySearchRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case GetHistory:
+                        response = new TaskListResponse();
+                        ((TaskListResponse)response).setList(activitiDataService.getHistory(request.getSearchBean(), request.getFrom(), request.getSize()));
+                        break;
+                    case Count:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(activitiDataService.count(request.getSearchBean()));
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        });
+    }
+
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) ActivitiAPI api, TaskSearchRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<ActivitiAPI, TaskSearchRequest>(){
+            @Override
+            public Response doProcess(ActivitiAPI api, TaskSearchRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case FindTasks:
+                        response = new TaskListResponse();
+                        ((TaskListResponse)response).setList(activitiDataService.findTasks(request.getSearchBean(), request.getFrom(), request.getSize()));
+                        break;
+                    case CountTasks:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(activitiDataService.countTasks(request.getSearchBean()));
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        });
     }
 }

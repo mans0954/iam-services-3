@@ -1,13 +1,10 @@
 package org.openiam.am.srvc.mq;
 
 import org.openiam.am.srvc.service.AuthProviderService;
-import org.openiam.base.request.BaseCrudServiceRequest;
-import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.request.EmptyServiceRequest;
-import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.mq.constants.OAuthAPI;
+import org.openiam.mq.constants.api.OAuthAPI;
 import org.openiam.mq.constants.queue.am.RefreshOAuthCache;
 import org.openiam.mq.listener.AbstractListener;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

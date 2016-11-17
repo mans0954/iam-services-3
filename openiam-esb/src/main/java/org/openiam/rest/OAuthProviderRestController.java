@@ -1,9 +1,7 @@
 package org.openiam.rest;
 
-import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.request.EmptyServiceRequest;
-import org.openiam.mq.constants.OAuthAPI;
-import org.openiam.mq.constants.queue.am.AMQueue;
+import org.openiam.mq.constants.api.OAuthAPI;
 import org.openiam.mq.constants.queue.am.RefreshOAuthCache;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;

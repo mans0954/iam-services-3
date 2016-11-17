@@ -7,7 +7,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.service.AuthenticationModule;
-import org.openiam.mq.constants.AuthenticationAPI;
+import org.openiam.mq.constants.api.AuthenticationAPI;
 import org.openiam.mq.constants.queue.am.AuthenticationQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;

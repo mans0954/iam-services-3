@@ -1,20 +1,11 @@
 package org.openiam.provision.service;
 
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
-import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMAPICommon;
+import org.openiam.mq.constants.api.OpenIAMAPICommon;
 import org.openiam.mq.processor.AbstractAPIDispatcher;
-import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

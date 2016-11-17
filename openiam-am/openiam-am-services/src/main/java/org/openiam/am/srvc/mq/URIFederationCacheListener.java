@@ -4,7 +4,7 @@ import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.base.request.*;
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.mq.constants.URIFederationAPI;
+import org.openiam.mq.constants.api.URIFederationAPI;
 import org.openiam.mq.constants.queue.am.RefreshUriFederationCache;
 import org.openiam.mq.listener.AbstractListener;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

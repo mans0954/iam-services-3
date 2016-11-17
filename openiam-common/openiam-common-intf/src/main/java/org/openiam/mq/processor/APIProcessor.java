@@ -2,7 +2,7 @@ package org.openiam.mq.processor;
 
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.ws.Response;
-import org.openiam.mq.constants.OpenIAMAPI;
+import org.openiam.mq.constants.api.OpenIAMAPI;
 import org.openiam.mq.dto.MQRequest;
 
 /**

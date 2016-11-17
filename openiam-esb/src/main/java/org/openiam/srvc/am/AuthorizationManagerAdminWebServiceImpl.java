@@ -11,7 +11,7 @@ import org.openiam.base.response.EntityOwnerResponse;
 import org.openiam.base.response.SetStringResponse;
 import org.openiam.base.response.UserEntitlementsMatrixResponse;
 import org.openiam.model.UserEntitlementsMatrix;
-import org.openiam.mq.constants.AMAdminAPI;
+import org.openiam.mq.constants.api.AMAdminAPI;
 import org.openiam.mq.constants.queue.am.AMAdminQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;

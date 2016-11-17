@@ -3,7 +3,7 @@ package org.openiam.idm.srvc.org.service.dispatcher;
 import org.openiam.base.request.MembershipRequest;
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.mq.constants.OrganizationTypeAPI;
+import org.openiam.mq.constants.api.OrganizationTypeAPI;
 import org.springframework.stereotype.Component;
 
 /**

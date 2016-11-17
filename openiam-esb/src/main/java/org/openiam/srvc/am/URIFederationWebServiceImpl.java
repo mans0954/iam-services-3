@@ -6,7 +6,7 @@ import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.response.ContentProviderResponse;
 import org.openiam.base.response.URIFederationResponse;
 import org.openiam.base.response.URIPatternResponse;
-import org.openiam.mq.constants.URIFederationAPI;
+import org.openiam.mq.constants.api.URIFederationAPI;
 import org.openiam.mq.constants.queue.am.URIFederationQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
 package org.openiam.rest;
 
 import org.openiam.base.request.EmptyServiceRequest;
-import org.openiam.mq.constants.AMCacheAPI;
+import org.openiam.mq.constants.api.AMCacheAPI;
 import org.openiam.mq.constants.queue.am.AMCacheQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,9 +2,8 @@ package org.openiam.provision.service;
 
 import java.util.List;
 
-import org.openiam.mq.constants.OpenIAMAPICommon;
+import org.openiam.mq.constants.api.OpenIAMAPICommon;
 import org.openiam.mq.constants.queue.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
 import org.openiam.mq.gateway.RequestServiceGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

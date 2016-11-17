@@ -8,7 +8,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
-import org.openiam.mq.constants.AuthenticationAPI;
+import org.openiam.mq.constants.api.AuthenticationAPI;
 import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.queue.am.AuthenticationQueue;
 import org.openiam.mq.listener.AbstractListener;

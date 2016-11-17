@@ -1,149 +1,185 @@
 package org.openiam.mq;
 
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.idm.srvc.role.service.dispatcher.*;
-import org.openiam.mq.constants.queue.am.AMQueue;
-import org.openiam.mq.constants.RoleAPI;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.listener.AbstractRabbitMQListener;
+import org.openiam.base.TreeObjectId;
+import org.openiam.base.request.*;
+import org.openiam.base.response.*;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.mq.constants.MQConstant;
+import org.openiam.mq.constants.api.RoleAPI;
+import org.openiam.mq.constants.queue.am.RoleQueue;
+import org.openiam.mq.listener.AbstractListener;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * Created by alexander on 11/08/16.
  */
 @Component
-public class RoleListener extends AbstractRabbitMQListener<RoleAPI> {
+@RabbitListener(id="roleListener",
+        queues = "#{RoleQueue.name}",
+        containerFactory = "amRabbitListenerContainerFactory")
+public class RoleListener extends AbstractListener<RoleAPI> {
     @Autowired
-    private RoleFindBeansDispatcher roleFindBeansDispatcher;
+    protected RoleDataService roleDataService;
 
     @Autowired
-    private RoleValidateEditDispatcher roleValidateEditDispatcher;
-
-    @Autowired
-    private RoleValidateDeleteDispatcher roleValidateDeleteDispatcher;
-
-    @Autowired
-    private RoleGetRoleLocalizedDispatcher roleGetRoleLocalizedDispatcher;
-
-    @Autowired
-    private RoleGetAttributesDispatcher roleGetAttributesDispatcher;
-
-    @Autowired
-    private RoleCountBeansDispatcher roleCountBeansDispatcher;
-
-    @Autowired
-    private RoleAddGroupToRoleDispatcher roleAddGroupToRoleDispatcher;
-
-    @Autowired
-    private RoleSaveRoleDispatcher roleSaveRoleDispatcher;
-
-    @Autowired
-    private RoleRemoveRoleDispatcher roleRemoveRoleDispatcher;
-
-    @Autowired
-    private RoleValidateGroupToRoleDispatcher roleValidateGroupToRoleDispatcher;
-
-    @Autowired
-    private RoleRemoveGroupFromRoleDispatcher roleRemoveGroupFromRoleDispatcher;
-
-    @Autowired
-    private RoleAddUserToRoleDispatcher addUserToRoleDispatcher;
-
-    @Autowired
-    private RoleRemoveUserFromRoleDispatcher roleRemoveUserFromRoleDispatcher;
-
-    @Autowired
-    private RoleGetParentsDispatcher roleGetParentsDispatcher;
-    @Autowired
-    private RoleAddChildRoleDispatcher roleAddChildRoleDispatcher;
-    @Autowired
-    private RoleCanAddChildRoleDispatcher roleCanAddChildRoleDispatcher;
-    @Autowired
-    private RoleRemoveChildRoleDispatcher removeChildRoleDispatcher;
-
-    @Autowired
-    private RoleCanAddUserToRoleDispatcher roleCanAddUserToRoleDispatcher;
-    @Autowired
-    private RoleCanRemoveUserFromRoleDispatcher roleCanRemoveUserFromRoleDispatcher;
-    @Autowired
-    private RoleGetTreeObjectIdsDispatcher roleGetTreeObjectIdsDispatcher;
-    @Autowired
-    private RoleHasChildEntitiesDispatcher roleHasChildEntitiesDispatcher;
-
-    public RoleListener() {
-        super(AMQueue.RoleQueue);
+    public RoleListener(RoleQueue queue) {
+        super(queue);
     }
 
-    @Override
-    protected void doOnMessage(MQRequest<BaseServiceRequest, RoleAPI> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        RoleAPI apiName = message.getRequestApi();
-        switch (apiName) {
-            case FindBeans:
-                addTask(roleFindBeansDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case ValidateEdit:
-                addTask(roleValidateEditDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case ValidateDelete:
-                addTask(roleValidateDeleteDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetRoleLocalized:
-                addTask(roleGetRoleLocalizedDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetRoleAttributes:
-                addTask(roleGetAttributesDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case CountBeans:
-                addTask(roleCountBeansDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case AddGroupToRole:
-                addTask(roleAddGroupToRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case SaveRole:
-                addTask(roleSaveRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case RemoveRole:
-                addTask(roleRemoveRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case ValidateGroup2RoleAddition:
-                addTask(roleValidateGroupToRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case RemoveGroupFromRole:
-                addTask(roleRemoveGroupFromRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case AddUserToRole:
-                addTask(addUserToRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case RemoveUserFromRole:
-                addTask(roleRemoveUserFromRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetParentRoles:
-                addTask(roleGetParentsDispatcher, correlationId, message, apiName, isAsync);
-            case AddChildRole:
-                addTask(roleAddChildRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case CanAddChildRole:
-                addTask(roleCanAddChildRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case RemoveChildRole:
-                addTask(removeChildRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case CanAddUserToRole:
-                addTask(roleCanAddUserToRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case CanRemoveUserFromRole:
-                addTask(roleCanRemoveUserFromRoleDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetRolesWithSubRolesIds:
-                addTask(roleGetTreeObjectIdsDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case HasChildEntities:
-                addTask(roleHasChildEntitiesDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            default:
-                throw new RejectMessageException();
-        }
+
+    protected RequestProcessor<RoleAPI, EmptyServiceRequest> getEmptyRequestProcessor(){
+        return null;
+    }
+    protected RequestProcessor<RoleAPI, BaseSearchServiceRequest> getSearchRequestProcessor(){
+        return new RequestProcessor<RoleAPI, BaseSearchServiceRequest>(){
+            @Override
+            public Response doProcess(RoleAPI api, BaseSearchServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case FindBeans:
+                        response = new RoleListResponse();
+                        ((RoleListResponse)response).setList(roleDataService.findBeansDto(((BaseSearchServiceRequest<RoleSearchBean>)request).getSearchBean(), request.getRequesterId(), request.getFrom(), request.getSize()));
+                        break;
+                    case CountBeans:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(roleDataService.countBeans(((BaseSearchServiceRequest<RoleSearchBean>)request).getSearchBean(), request.getRequesterId()));
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
+    }
+    protected RequestProcessor<RoleAPI, IdServiceRequest> getGetRequestProcessor(){
+        return new RequestProcessor<RoleAPI, IdServiceRequest>(){
+            @Override
+            public Response doProcess(RoleAPI api, IdServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case GetRoleLocalized:
+                        response = new RoleResponse();
+                        ((RoleResponse)response).setValue(roleDataService.getRoleDtoLocalized(request.getId(), request.getRequesterId(), request.getLanguage()));
+                        break;
+                    case GetRoleAttributes:
+                        response = new RoleAttributeListResponse();
+                        ((RoleAttributeListResponse)response).setList(roleDataService.getRoleAttributes(request.getId()));
+                        break;
+                    case GetParentRoles:
+                        response = new RoleListResponse();
+                        ((RoleListResponse)response).setList(roleDataService.getParentRolesDto(request.getId(), request.getRequesterId(), ((GetParentsRequest)request).getFrom(), ((GetParentsRequest)request).getSize()));
+                        break;
+                    case HasChildEntities:
+                        response = new BooleanResponse();
+                        ((BooleanResponse)response).setValue(roleDataService.hasChildEntities(request.getId()));
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
+    }
+    protected RequestProcessor<RoleAPI, BaseCrudServiceRequest> getCrudRequestProcessor(){
+        return new RequestProcessor<RoleAPI, BaseCrudServiceRequest>(){
+            @Override
+            public Response doProcess(RoleAPI api, BaseCrudServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case ValidateEdit:
+                        response = new BooleanResponse();
+                        ((BooleanResponse)response).setValue(roleDataService.validateEdit(((BaseCrudServiceRequest<Role>)request).getObject()));
+                        break;
+                    case ValidateDelete:
+                        response = new BooleanResponse();
+                        ((BooleanResponse)response).setValue(roleDataService.validateDelete(request.getObject().getId()));
+                        break;
+                    case SaveRole:
+                        response = new StringResponse();
+                        ((StringResponse)response).setValue(roleDataService.saveRole(((BaseCrudServiceRequest<Role>)request).getObject(), request.getRequesterId()));
+                        break;
+                    case RemoveRole:
+                        response = new Response();
+                        roleDataService.removeRole(request.getObject().getId(), request.getRequesterId());
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
+    }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) RoleAPI api, IdsServiceRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<RoleAPI, IdsServiceRequest>(){
+            @Override
+            public Response doProcess(RoleAPI api, IdsServiceRequest request) throws BasicDataServiceException {
+                TreeObjectIdListServiceResponse response = new TreeObjectIdListServiceResponse();
+                List<TreeObjectId> result = roleDataService.getRolesWithSubRolesIds(request.getIds(), request.getRequesterId());
+                response.setTreeObjectIds(result);
+                return response;
+            }
+        });
+    }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) RoleAPI api, MembershipRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<RoleAPI, MembershipRequest>(){
+            @Override
+            public Response doProcess(RoleAPI api, MembershipRequest request) throws BasicDataServiceException {
+                BooleanResponse response = new BooleanResponse();
+                switch (api){
+                    case AddGroupToRole:
+                        roleDataService.addGroupToRole(request.getObjectId(), request.getLinkedObjectId(), request.getRequesterId(), request.getRightIds(),
+                                request.getStartDate(), request.getEndDate());
+                        break;
+                    case ValidateGroup2RoleAddition:
+                        roleDataService.validateGroup2RoleAddition(request.getObjectId(), request.getLinkedObjectId());
+                        break;
+                    case RemoveGroupFromRole:
+                        roleDataService.removeGroupFromRole(request.getObjectId(), request.getLinkedObjectId(),request.getRequesterId());
+                        break;
+                    case AddUserToRole:
+                        roleDataService.addUserToRole(request.getObjectId(), request.getLinkedObjectId(), request.getRequesterId(),
+                                                        request.getRightIds(), request.getStartDate(), request.getEndDate());
+                        break;
+                    case RemoveUserFromRole:
+                        roleDataService.removeUserFromRole(request.getObjectId(), request.getLinkedObjectId(),
+                                request.getRequesterId());
+                        break;
+                    case AddChildRole:
+                        roleDataService.addChildRole(request.getObjectId(), request.getLinkedObjectId(), request.getRequesterId(), request.getRightIds(),
+                                                     request.getStartDate(), request.getEndDate());
+                        break;
+                    case CanAddChildRole:
+                        roleDataService.validateRole2RoleAddition(request.getObjectId(), request.getLinkedObjectId(), request.getRightIds(),
+                                request.getStartDate(), request.getEndDate());
+                        break;
+                    case RemoveChildRole:
+                        roleDataService.removeChildRole(request.getObjectId(), request.getLinkedObjectId());
+                        break;
+                    case CanAddUserToRole:
+                        roleDataService.canAddUserToRole(request.getLinkedObjectId(), request.getObjectId());
+                        break;
+                    case CanRemoveUserFromRole:
+                        roleDataService.canRemoveUserFromRole(request.getLinkedObjectId(), request.getObjectId());
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                response.setValue(Boolean.TRUE);
+                return response;
+            }
+        });
     }
 }

@@ -32,7 +32,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.mq.constants.*;
+import org.openiam.mq.constants.api.OpenIAMAPICommon;
 import org.openiam.mq.constants.queue.MqQueue;
 import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.dto.MQRequest;
