@@ -1,15 +1,18 @@
 package org.openiam.elasticsearch.dao.impl;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.common.lang3.StringUtils;
+import org.openiam.base.Tuple;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.elasticsearch.dao.GroupElasticSearchRepositoryCustom;
+import org.openiam.elasticsearch.model.GroupDoc;
 import org.openiam.idm.searchbeans.GroupSearchBean;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.stereotype.Repository;
 
-@Repository("gropuElasticSearchRepositoryImpl")
-public class GroupElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<GroupEntity, String, GroupSearchBean> implements GroupElasticSearchRepositoryCustom {
+@Repository("groupElasticSearchRepositoryImpl")
+public class GroupElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<GroupDoc, String, GroupSearchBean> implements GroupElasticSearchRepositoryCustom {
 
 	@Override
 	protected CriteriaQuery getCriteria(GroupSearchBean searchBean) {
@@ -25,21 +28,45 @@ public class GroupElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 				}
 			}
 			
-			Criteria criteria = exactCriteria("managedSystem", searchBean.getManagedSysId());
-			if(criteria != null) {
-				query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+			if(StringUtils.isNotBlank(searchBean.getType())) {
+				final Criteria criteria = eq("metadataTypeId", searchBean.getType());
+				if(criteria != null) {
+					query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+				}
+			}
+			
+			if(StringUtils.isNotBlank(searchBean.getManagedSysId())) {
+				final Criteria criteria = eq("managedSysId", searchBean.getManagedSysId());
+				if(criteria != null) {
+					query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+				}
+			}
+			
+			if(CollectionUtils.isNotEmpty(searchBean.getAttributes())) {
+				Criteria subcriteria = null;
+				for(final Tuple<String, String> tuple : searchBean.getAttributes()) {
+					final String key = tuple.getKey();
+					final String value = tuple.getValue();
+					if(StringUtils.isNotBlank(key) && StringUtils.isNotBlank(value)) {
+						final Criteria criteria = eq(new StringBuilder("attributes.").append(key).toString(), value);
+						subcriteria = (subcriteria != null) ? subcriteria.or(criteria) : criteria;
+					}
+				}
+				if(subcriteria != null) {
+					query = (query != null) ? query.addCriteria(subcriteria) : new CriteriaQuery(subcriteria);
+				}
 			}
 		}
 		return query;
 	}
 
 	@Override
-	public Class<GroupEntity> getDocumentClass() {
-		return GroupEntity.class;
+	public Class<GroupDoc> getDocumentClass() {
+		return GroupDoc.class;
 	}
 
 	@Override
-	public void prepare(GroupEntity entity) {
+	public void prepare(GroupDoc entity) {
 		// TODO Auto-generated method stub
 		
 	}
