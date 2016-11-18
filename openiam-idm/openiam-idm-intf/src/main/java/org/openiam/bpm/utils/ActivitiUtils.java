@@ -121,6 +121,10 @@ public class ActivitiUtils {
                     if(customVariables.containsKey(ActivitiConstants.EMPLOYEE_ID.getName())) {
                         wrapper.setEmployeeId((String)customVariables.get(ActivitiConstants.EMPLOYEE_ID.getName()));
                     }
+                    
+                    if(customVariables.containsKey(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName())) {
+                    	wrapper.setResourceId((String)customVariables.get(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName()));
+                    }
 
                     if(customVariables.containsKey(ActivitiConstants.ATTESTATION_URL.getName())) {
                         String customObjectURI = (String)customVariables.get(ActivitiConstants.ATTESTATION_URL.getName());

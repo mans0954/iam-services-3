@@ -26,7 +26,6 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import org.openiam.base.domain.AbstractEntitlementPolicyEntity;
-import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.elasticsearch.annotation.DocumentRepresentation;
 import org.openiam.elasticsearch.converter.OrganizationDocumentToEntityConverter;

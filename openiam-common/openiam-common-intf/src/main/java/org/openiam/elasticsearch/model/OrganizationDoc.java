@@ -1,9 +1,6 @@
 package org.openiam.elasticsearch.model;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.openiam.elasticsearch.annotation.EntityRepresentation;
 import org.openiam.elasticsearch.constants.ESIndexName;

@@ -1,7 +1,9 @@
 package org.openiam.elasticsearch.dao.impl;
 
+import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.elasticsearch.dao.RoleElasticSearchRepositoryCustom;
+import org.openiam.elasticsearch.model.RoleDoc;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.springframework.data.elasticsearch.core.query.Criteria;
@@ -9,7 +11,7 @@ import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class RoleElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<RoleEntity, String, RoleSearchBean> implements RoleElasticSearchRepositoryCustom {
+public class RoleElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<RoleDoc, String, RoleSearchBean> implements RoleElasticSearchRepositoryCustom {
 
 	@Override
 	protected CriteriaQuery getCriteria(RoleSearchBean searchBean) {
@@ -25,21 +27,30 @@ public class RoleElasticSearchRepositoryImpl extends AbstractElasticSearchReposi
 				}
 			}
 			
-			Criteria criteria = exactCriteria("managedSystem", searchBean.getManagedSysId());
-			if(criteria != null) {
-				query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+			if(StringUtils.isNotBlank(searchBean.getType())) {
+				final Criteria criteria = eq("metadataTypeId", searchBean.getType());
+				if(criteria != null) {
+					query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+				}
+			}
+			
+			if(StringUtils.isNotBlank(searchBean.getManagedSysId())) {
+				final Criteria criteria = eq("managedSysId", searchBean.getManagedSysId());
+				if(criteria != null) {
+					query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+				}
 			}
 		}
 		return query;
 	}
 
 	@Override
-	public Class<RoleEntity> getDocumentClass() {
-		return RoleEntity.class;
+	public Class<RoleDoc> getDocumentClass() {
+		return RoleDoc.class;
 	}
 
 	@Override
-	public void prepare(RoleEntity entity) {
+	public void prepare(RoleDoc entity) {
 		// TODO Auto-generated method stub
 		
 	}

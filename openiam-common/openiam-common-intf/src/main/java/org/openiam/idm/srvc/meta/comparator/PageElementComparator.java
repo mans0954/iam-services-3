@@ -1,11 +1,12 @@
 package org.openiam.idm.srvc.meta.comparator;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.openiam.idm.srvc.meta.dto.PageElement;
 
 
-public class PageElementComparator implements Comparator<PageElement> {
+public class PageElementComparator implements Comparator<PageElement>, Serializable {
 	
 	public static final Comparator<PageElement> INSTANCE = new PageElementComparator();
 

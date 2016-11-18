@@ -17,7 +17,9 @@ import org.openiam.cache.CacheKeyEviction;
 import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
+import org.openiam.elasticsearch.converter.RoleDocumentToEntityConverter;
 import org.openiam.elasticsearch.dao.RoleElasticSearchRepository;
+import org.openiam.elasticsearch.model.RoleDoc;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
@@ -38,6 +40,7 @@ import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
@@ -49,6 +52,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.internationalization.InternationalizationProvider;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
 import org.openiam.util.AuditLogHelper;
@@ -122,11 +126,17 @@ public class RoleDataServiceImpl implements RoleDataService {
     
     @Autowired
     private PolicyDAO policyDAO;
+    
+    @Autowired
+    private RoleDocumentToEntityConverter roleDocConverter;
 
     private ApplicationContext ac;
 
     @Autowired
     protected AccessRightProcessor accessRightProcessor;
+    
+	@Autowired
+	private InternationalizationProvider internationalizationProvider;
     
     @Autowired
     private RoleElasticSearchRepository roleElasticSearchRepository;
@@ -511,11 +521,15 @@ public class RoleDataServiceImpl implements RoleDataService {
             return new ArrayList<RoleEntity>(0);
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	List<RoleDoc> docs = null;
         	if(roleElasticSearchRepository.isValidSearchBean(searchBean)) {
-        		return roleElasticSearchRepository.findBeans(searchBean, from, size);
+        		docs = roleElasticSearchRepository.findBeans(searchBean, from, size);
         	} else {
-        		return roleElasticSearchRepository.findAll(roleElasticSearchRepository.getPageable(searchBean, from, size)).getContent();
+        		docs = roleElasticSearchRepository.findAll(roleElasticSearchRepository.getPageable(searchBean, from, size)).getContent();
         	}
+        	final List<RoleEntity> entities = roleDocConverter.convertToEntityList(docs);
+        	internationalizationProvider.doDatabaseGet(entities);
+        	return entities;
         } else {
         	return roleDao.getByExample(searchBean, from, size);
         }
@@ -540,7 +554,11 @@ public class RoleDataServiceImpl implements RoleDataService {
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
             return 0;
         }
-        return roleDao.count(searchBean);
+        if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	return roleElasticSearchRepository.count(searchBean);
+        } else {
+        	return roleDao.count(searchBean);
+        }
     }
 
     @Override

@@ -424,8 +424,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
             return 0;
         }
-
-        return orgDao.count(searchBean);
+        if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	return organizationElasticSearchRepository.count(searchBean);
+        } else {
+        	return orgDao.count(searchBean);
+        }
     }
 
 /*    @Override

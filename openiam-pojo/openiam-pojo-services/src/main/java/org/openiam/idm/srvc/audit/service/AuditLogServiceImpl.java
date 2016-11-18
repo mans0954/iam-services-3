@@ -22,6 +22,7 @@ import org.openiam.elasticsearch.dao.OrganizationElasticSearchRepository;
 import org.openiam.elasticsearch.dao.ResourceElasticSearchRepository;
 import org.openiam.elasticsearch.dao.RoleElasticSearchRepository;
 import org.openiam.elasticsearch.model.OrganizationDoc;
+import org.openiam.elasticsearch.model.RoleDoc;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
@@ -119,7 +120,7 @@ public class AuditLogServiceImpl implements AuditLogService {
                             	target.setObjectPrincipal(loginEntity.getLogin());
                             }
                         } else if(AuditTarget.ROLE.value().equals(target.getTargetType())) {
-                        	final RoleEntity role = roleDAO.findOne(target.getTargetId());
+                        	final RoleDoc role = roleDAO.findOne(target.getTargetId());
                         	if(role != null) {
                         		target.setObjectPrincipal(role.getName());
                         	}
