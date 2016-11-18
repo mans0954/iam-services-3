@@ -59,9 +59,9 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
 
     @Override
     public void pushToQueue(MQRequest<RequestBody, API> apiRequest) {
-        log.debug("adding API Request {} to queue - starting", apiRequest);
+        log.trace("adding API Request {} to queue - starting", apiRequest);
         requestQueue.add(apiRequest);
-        log.debug("adding API Request {} to queue - finished", apiRequest);
+        log.trace("adding API Request {} to queue - finished", apiRequest);
     }
     @Override
     public MQRequest<RequestBody, API> pullFromQueue() throws InterruptedException {
@@ -98,7 +98,7 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
 
             MQResponse<ResponseBody> response = new MQResponse<ResponseBody>();
             long startTime = System.currentTimeMillis();
-            log.debug("processing {} API Request {} - starting", apiRequest.getRequestApi().name(), apiRequest);
+            log.trace("processing {} API Request {} - starting", apiRequest.getRequestApi().name(), apiRequest);
             try {
                 apiResponse = processingApiRequest(apiRequest.getRequestApi(), apiRequest.getRequestBody());
                 apiResponse.succeed();
@@ -135,8 +135,8 @@ public abstract class AbstractAPIDispatcher<RequestBody extends BaseServiceReque
             } finally {
                 response.setResponseBody(apiResponse);
                 long totalTime = System.currentTimeMillis() - startTime;
-                log.debug("processing {} API Request {} - finished", apiRequest.getRequestApi().name(), apiRequest);
-                log.debug("Processing {} API ends. Total time: {}", apiRequest.getRequestApi().name(), totalTime / 1000.0f);
+                log.trace("processing {} API Request {} - finished", apiRequest.getRequestApi().name(), apiRequest);
+                log.trace("Processing {} API ends. Total time: {}", apiRequest.getRequestApi().name(), totalTime / 1000.0f);
                 this.sendResponse(apiRequest.getReplyTo(), response, correlationId);
                 // save audit log and remove threadlocal instance
                 this.submitAuditLog();

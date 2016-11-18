@@ -31,13 +31,13 @@ public abstract class AbstractRabbitMQListener< API extends OpenIAMAPI> extends 
     @Override
     public void onMessage(Message message, Channel channel) throws Exception {
         try {
-            log.debug("{} caught message", this.getClass().getSimpleName());
-            log.debug("Message : {}", message);
-            log.debug("Channel : {}", channel);
+            log.trace("{} caught message", this.getClass().getSimpleName());
+            log.trace("Message : {}", message);
+            log.trace("Channel : {}", channel);
             MQRequest<BaseServiceRequest, API> request = (MQRequest<BaseServiceRequest, API>) ((RequestServiceGatewayImpl)requestServiceGateway).getRabbitTemplate().getMessageConverter().fromMessage(message);
 
             byte[] correlationId = message.getMessageProperties().getCorrelationId();
-            log.info("Caught request in listener: {} correlationId: {}", request, OpenIAMUtils.byteArrayToString(correlationId));
+            log.trace("Caught request in listener: {} correlationId: {}", request, OpenIAMUtils.byteArrayToString(correlationId));
             boolean isAsync = StringUtils.isBlank(request.getReplyTo());
             doOnMessage(request, correlationId,isAsync);
 

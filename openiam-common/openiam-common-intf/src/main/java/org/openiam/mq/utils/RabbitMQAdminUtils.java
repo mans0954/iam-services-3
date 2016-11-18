@@ -89,7 +89,7 @@ public class RabbitMQAdminUtils {
     public String getReplyQuequeName(String baseQueue){
         String queueName = baseQueue+".callback." + UUID.randomUUID().toString();
         amqpAdmin.declareQueue(new Queue(queueName, false, true, true, null));
-        log.info("Callback queue " + queueName + " is created for base queue " + baseQueue);
+        log.trace("Callback queue " + queueName + " is created for base queue " + baseQueue);
         return queueName;
     }
     @SuppressWarnings("rawtypes")
