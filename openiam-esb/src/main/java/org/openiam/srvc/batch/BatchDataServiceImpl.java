@@ -34,7 +34,6 @@ import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.batch.dto.BatchTaskSchedule;
 import org.openiam.mq.constants.api.BatchTaskAPI;
-import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.constants.queue.common.BatchTaskQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;

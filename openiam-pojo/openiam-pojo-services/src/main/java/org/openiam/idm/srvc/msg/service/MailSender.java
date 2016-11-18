@@ -3,9 +3,7 @@ package org.openiam.idm.srvc.msg.service;
 import javax.annotation.PostConstruct;
 
 import org.openiam.mq.constants.api.OpenIAMAPICommon;
-import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.constants.queue.common.MailQueue;
-import org.openiam.mq.gateway.RequestServiceGateway;
 import org.openiam.mq.utils.RabbitMQSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

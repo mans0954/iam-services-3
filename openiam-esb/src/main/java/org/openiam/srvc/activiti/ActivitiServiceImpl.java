@@ -13,7 +13,6 @@ import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.mq.constants.api.ActivitiAPI;
-import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.constants.queue.activiti.ActivitiServiceQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;

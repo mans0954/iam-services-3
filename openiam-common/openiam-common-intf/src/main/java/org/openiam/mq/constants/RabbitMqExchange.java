@@ -7,12 +7,8 @@ import org.springframework.amqp.core.ExchangeTypes;
  * 
  */
 public enum RabbitMqExchange {
+    /*Exchanges for COMMON vhost*/
     COMMON_EXCHANGE,
-    METADATA_ELEMENT_EXCHANGE,
-
-    CHECK_LISTENER_EXCHANGE(ExchangeTypes.FANOUT),
-
-
     /*Exchanges for AM vhost*/
     AM_EXCHANGE,
     REFRESH_OAUTH_CACHE_EXCHANGE(ExchangeTypes.FANOUT),
@@ -23,7 +19,15 @@ public enum RabbitMqExchange {
     ACTIVITI_EXCHANGE,
 
     /*Exchanges for AUDIT vhost*/
-    AUDIT_EXCHANGE;
+    AUDIT_EXCHANGE,
+    /*Exchanges for IDM vhost*/
+    IDM_EXCHANGE,
+
+    /*Exchanges for CONNECTOR vhost*/
+    CONNECTOR_EXCHANGE,
+    /*Exchanges for USER vhost*/
+    USER_EXCHANGE
+    ;
 
 
     private final String type;

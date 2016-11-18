@@ -6,7 +6,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.util.CustomJacksonMapper;
-import org.openiam.mq.processor.BaseBackgroundProcessorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -66,11 +65,6 @@ public class BaseConfiguration implements SchedulingConfigurer {
 	@Bean(name = "workerTaskExecutor")
 	public ThreadPoolTaskExecutor workerTaskExecutor() {
 		return createTaskExecutor(20, 50, 100, "WorkerTaskExecutor-");
-	}
-
-	@Bean
-	public BaseBackgroundProcessorService baseBackgroundProcessorService(){
-		return new BaseBackgroundProcessorService(taskExecutor(), workerTaskExecutor());
 	}
 
 	private ThreadPoolTaskExecutor createTaskExecutor(int corePoolSize, int maxPoolSize, int queueCapacity, String prefix){

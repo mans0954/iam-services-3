@@ -25,9 +25,9 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
 import org.openiam.mq.constants.api.ActivitiAPI;
-import org.openiam.mq.constants.api.ManagedSystemAPI;
-import org.openiam.mq.constants.queue.OpenIAMQueue;
+import org.openiam.mq.constants.api.idm.ManagedSystemAPI;
 import org.openiam.mq.constants.queue.activiti.ActivitiServiceQueue;
+import org.openiam.mq.constants.queue.idm.ManagedSysQueue;
 import org.openiam.mq.utils.RabbitMQSender;
 import org.openiam.base.response.TaskWrapper;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
@@ -67,6 +67,8 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     protected RabbitMQSender rabbitMQSender;
     @Autowired
     private ActivitiServiceQueue activitiServiceQueue;
+    @Autowired
+    private ManagedSysQueue managedSysQueue;
 
     private Boolean isExcludeMenus() {
         return propertyValueSweeper.getBoolean("org.openiam.attestation.exclude.menus");
@@ -191,10 +193,10 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         Map<String, ManagedSysDto> managedSysMap = new HashMap<>();
 //        ManagedSysSearchBean searchBean = new ManagedSysSearchBean();
 
-        ManagedSysListResponse response = rabbitMQSender.sendAndReceive(OpenIAMQueue.ManagedSysQueue, ManagedSystemAPI.GetAllManagedSys, new EmptyServiceRequest(), ManagedSysListResponse.class);
+        ManagedSysListResponse response = rabbitMQSender.sendAndReceive(managedSysQueue, ManagedSystemAPI.GetAllManagedSys, new EmptyServiceRequest(), ManagedSysListResponse.class);
         List<ManagedSysDto> results = null;
         if(response.isSuccess()){
-            results = response.getManagedSysList();
+            results = response.getList();
         }
         if (CollectionUtils.isNotEmpty(results)) {
             for(ManagedSysDto mngsys : results){

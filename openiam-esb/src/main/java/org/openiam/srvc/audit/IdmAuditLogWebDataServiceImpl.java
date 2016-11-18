@@ -38,7 +38,6 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.mq.constants.api.AuditLogAPI;
-import org.openiam.mq.constants.queue.OpenIAMQueue;
 import org.openiam.mq.constants.queue.audit.AuditLogQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.util.AuditLogHelper;

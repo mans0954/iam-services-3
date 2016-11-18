@@ -8,7 +8,6 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
 import org.openiam.idm.srvc.org.service.OrganizationTypeService;
-import org.openiam.idm.srvc.org.service.dispatcher.*;
 import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.api.OrganizationTypeAPI;
 import org.openiam.mq.constants.queue.am.OrganizationTypeQueue;
@@ -27,18 +26,6 @@ import org.springframework.stereotype.Component;
         queues = "#{OrganizationTypeQueue.name}",
         containerFactory = "amRabbitListenerContainerFactory")
 public class OrganizationTypeListener extends AbstractListener<OrganizationTypeAPI> {
-    @Autowired
-    private FindOrganizationTypeDispatcher findOrganizationTypeDispatcher;
-    @Autowired
-    private OrgTypeCountDispatcher orgTypeCountDispatcher;
-    @Autowired
-    private OrgTypeGetByIdDispatcher orgTypeGetByIdDispatcher;
-    @Autowired
-    private OrgTypeSaveDispatcher orgTypeSaveDispatcher;
-    @Autowired
-    private OrgTypeDeleteDispatcher orgTypeDeleteDispatcher;
-    @Autowired
-    private OrgTypeMembershipDispatcher orgTypeMembershipDispatcher;
 
     @Autowired
     protected OrganizationTypeService organizationTypeService;

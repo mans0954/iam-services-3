@@ -10,4 +10,5 @@ public class RabbitMQVHosts {
     public static final String COMMON_HOST="openiam_common";
     public static final String CONNECTOR_HOST="openiam_connector";
     public static final String ACTIVITI_HOST="openiam_activiti";
+    public static final String USER_HOST="openiam_user";
 }

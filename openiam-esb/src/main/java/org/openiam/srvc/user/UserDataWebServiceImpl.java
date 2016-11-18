@@ -73,7 +73,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.base.response.UserResponse;
-import org.openiam.mq.constants.queue.OpenIAMQueue;
+import org.openiam.mq.constants.queue.user.UserServiceQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.common.MailService;
 import org.openiam.util.AuditLogHelper;
@@ -140,9 +140,9 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
 
     @Autowired
     private AccessRightProcessor accessRightProcessor;
-
-    public UserDataWebServiceImpl() {
-        super(OpenIAMQueue.UserQueue);
+    @Autowired
+    public UserDataWebServiceImpl(UserServiceQueue queue) {
+        super(queue);
     }
 
     @Override

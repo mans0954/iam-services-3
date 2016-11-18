@@ -50,7 +50,7 @@ import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.util.SSLCert;
-import org.openiam.mq.constants.queue.OpenIAMQueue;
+import org.openiam.mq.constants.queue.idm.ManagedSysQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.util.AuditLogHelper;
 import org.openiam.util.encrypt.Cryptor;
@@ -123,8 +123,9 @@ public class ManagedSystemWebServiceImpl extends AbstractApiService implements M
 
     boolean encrypt = true; // default encryption setting
 
-    public ManagedSystemWebServiceImpl() {
-        super(OpenIAMQueue.ManagedSysQueue);
+    @Autowired
+    public ManagedSystemWebServiceImpl(ManagedSysQueue queue) {
+        super(queue);
     }
 
     @Override
