@@ -25,12 +25,11 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
-import org.openiam.base.domain.AbstractMetdataTypeEntity;
+import org.openiam.base.domain.AbstractEntitlementPolicyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
-import org.openiam.elasticsearch.bridge.OrganizationTypeBridge;
-import org.openiam.elasticsearch.constants.ESIndexName;
-import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.annotation.DocumentRepresentation;
+import org.openiam.elasticsearch.converter.OrganizationDocumentToEntityConverter;
+import org.openiam.elasticsearch.model.OrganizationDoc;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
@@ -41,10 +40,6 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldIndex;
-import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Entity
 @Table(name = "COMPANY")
@@ -52,8 +47,9 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @DozerDTOCorrespondence(Organization.class)
 @AttributeOverride(name = "id", column = @Column(name = "COMPANY_ID"))
 @Internationalized
-@Document(indexName = ESIndexName.ORGANIZATION, type= ESIndexType.ORGANIZATION)
-public class OrganizationEntity extends AbstractMetdataTypeEntity {
+@DocumentRepresentation(value=OrganizationDoc.class, converter=OrganizationDocumentToEntityConverter.class)
+//@Document(indexName = ESIndexName.ORGANIZATION, type= ESIndexType.ORGANIZATION)
+public class OrganizationEntity extends AbstractEntitlementPolicyEntity {
     
     @Column(name="ALIAS", length=100)
     @Size(max = 100, message = "organization.alias.too.long")
@@ -89,7 +85,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Column(name="LST_UPDATED_BY", length=32)
     private String lstUpdatedBy;
 
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    //@Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     @Column(name="COMPANY_NAME", length=200)
     @Size(max = 200, message = "organization.name.too.long")
     private String name;
@@ -104,8 +100,8 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @JoinColumn(name = "ORG_TYPE_ID", referencedColumnName = "ORG_TYPE_ID", insertable = true, updatable = true)
     @Internationalized
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @ElasticsearchFieldBridge(impl = OrganizationTypeBridge.class)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    //@ElasticsearchFieldBridge(impl = OrganizationTypeBridge.class)
+    //@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private OrganizationTypeEntity organizationType;
 
     @Column(name="ABBREVIATION", length=20)
@@ -156,7 +152,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 
     public OrganizationEntity() {
     }
-
+    
 	public String getAlias() {
         return alias;
     }

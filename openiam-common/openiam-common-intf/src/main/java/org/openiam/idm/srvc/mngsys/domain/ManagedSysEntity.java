@@ -12,6 +12,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
@@ -125,6 +126,9 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<AuthProviderEntity> authProviders;
 
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "POLICY_ID", referencedColumnName = "POLICY_ID", insertable = true, updatable = true)
+    private PolicyEntity policy;
     
     /*public List<ManagedSysRuleEntity> getRules() {
         return rules;
@@ -430,8 +434,18 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     public void setMngSysPolicies(Set<MngSysPolicyEntity> mngSysPolicies) {
         this.mngSysPolicies = mngSysPolicies;
     }
+    
+    
 
-    @Override
+    public PolicyEntity getPolicy() {
+		return policy;
+	}
+
+	public void setPolicy(PolicyEntity policy) {
+		this.policy = policy;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
@@ -498,6 +512,7 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 		result = prime * result
 				+ ((updateSecondary == null) ? 0 : updateSecondary.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result + ((policy == null) ? 0 : policy.hashCode());
 		return result;
 	}
 
@@ -652,6 +667,12 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 			if (other.userId != null)
 				return false;
 		} else if (!userId.equals(other.userId))
+			return false;
+		
+		if (policy == null) {
+			if (other.policy != null)
+				return false;
+		} else if (!policy.equals(other.policy))
 			return false;
 		return true;
 	}

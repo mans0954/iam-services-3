@@ -225,7 +225,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
         return retVal;
     }
-
+    
     /**
      * Sets the password for a sourceLogin. The password needs to be encrypted externally. this allow for flexiblity in
      * supporting alternate approaches to encryption.
@@ -236,24 +236,22 @@ public class LoginDataServiceImpl implements LoginDataService {
      * @return
      */
     @Override
-    @Deprecated
     @Transactional
-    public boolean setPassword(String login, String sysId,
-                               String password, boolean preventChangeCountIncrement) {
-        return setPasswordUsingContentProvider(login, sysId, password, preventChangeCountIncrement, null);
-    }
-    
-
-    public boolean setPasswordUsingContentProvider(String login, String sysId,
-                                                   String password, boolean preventChangeCountIncrement, final String contentProviderId) {
+    public boolean setPassword(final String login, 
+    						   final String managedSysId,
+    						   final String password, 
+    						   final boolean preventChangeCountIncrement, 
+    						   final String contentProviderId) {
     	final Calendar cal = Calendar.getInstance();
     	final Calendar expCal = Calendar.getInstance();
-    	final LoginEntity lg = getLoginByManagedSys(login, sysId);
+    	final LoginEntity lg = getLoginByManagedSys(login, managedSysId);
         
         final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
     	searchBean.setUserId(lg.getUserId());
     	searchBean.setContentProviderId(contentProviderId);
-        final Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+    	searchBean.setPrincipal(login);
+    	searchBean.setManagedSysId(managedSysId);
+        final Policy plcy = passwordPolicyProvider.getPasswordPolicy(searchBean);
         final String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXPIRATION");
         //String changePswdOnReset = getPolicyAttribute( plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
         final String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXP_GRACE");
@@ -315,7 +313,9 @@ public class LoginDataServiceImpl implements LoginDataService {
         final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
         searchBean.setUserId(lg.getUserId());
         searchBean.setContentProviderId(contentProviderId);
-        final Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+        searchBean.setPrincipal(login);
+        searchBean.setManagedSysId(managedSysId);
+        final Policy plcy = passwordPolicyProvider.getPasswordPolicy(searchBean);
 
         String changePswdOnReset = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "CHNG_PSWD_ON_RESET");

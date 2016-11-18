@@ -39,17 +39,17 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 	protected Set<String> validSortFields = null; 
 	
 	protected AbstractElasticSearchRepository() {
-		document = getEntityClass().getAnnotation(Document.class);
+		document = getDocumentClass().getAnnotation(Document.class);
 		if(document == null) {
-			throw new RuntimeException(String.format("No %s Annotation for %s", Document.class, getEntityClass()));
+			throw new RuntimeException(String.format("No %s Annotation for %s", Document.class, getDocumentClass()));
 		}
-		validSortFields = Collections.unmodifiableSet(getFieldsWithFieldAnnotation(getEntityClass()).stream().map(e -> e.getName()).collect(Collectors.toSet()));
+		validSortFields = Collections.unmodifiableSet(getFieldsWithFieldAnnotation(getDocumentClass()).stream().map(e -> e.getName()).collect(Collectors.toSet()));
 	}
 	
 	private Set<Field> getFieldsWithFieldAnnotation(final Class<?> clazz) {
 		final Set<Field> retval = new HashSet<Field>();
 		if(clazz.getDeclaredFields() != null) {
-			for(final Field field : getEntityClass().getDeclaredFields()) {
+			for(final Field field : getDocumentClass().getDeclaredFields()) {
 				if(field != null) {
 					if(field.isAnnotationPresent(org.springframework.data.elasticsearch.annotations.Field.class)) {
 						retval.add(field);
@@ -224,7 +224,7 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 			criteria.addTypes(document.type());
 			criteria.addFields("id");
 			criteria.setPageable(pageable);
-			retval = elasticSearchTemplate.queryForList(criteria, getEntityClass()).stream().map(e -> e.getId()).collect(Collectors.toList());
+			retval = elasticSearchTemplate.queryForList(criteria, getDocumentClass()).stream().map(e -> e.getId()).collect(Collectors.toList());
 		}
 		return retval;
 	}
@@ -238,7 +238,7 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 			criteria.addIndices(document.indexName());
 			criteria.addTypes(document.type());
 			criteria.setPageable(pageable);
-			retval = elasticSearchTemplate.queryForList(criteria, getEntityClass()).stream().collect(Collectors.toList());
+			retval = elasticSearchTemplate.queryForList(criteria, getDocumentClass()).stream().collect(Collectors.toList());
 		}
 		return retval;
 	}
@@ -255,7 +255,7 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 			criteria.addIndices(document.indexName());
 			criteria.addTypes(document.type());
 			criteria.setPageable(pageable);
-			retval = elasticSearchTemplate.queryForList(criteria, getEntityClass()).stream().collect(Collectors.toList());
+			retval = elasticSearchTemplate.queryForList(criteria, getDocumentClass()).stream().collect(Collectors.toList());
 		}
 		return retval;
 	}

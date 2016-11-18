@@ -166,7 +166,7 @@ public class UserElasticSearchRepositoryImpl extends AbstractElasticSearchReposi
 	}
 
 	@Override
-	public Class<UserEntity> getEntityClass() {
+	public Class<UserEntity> getDocumentClass() {
 		return UserEntity.class;
 	}
 

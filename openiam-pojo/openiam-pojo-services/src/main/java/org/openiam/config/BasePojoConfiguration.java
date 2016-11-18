@@ -5,7 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dozer.DozerBeanMapper;
+import org.elasticsearch.common.lang3.StringUtils;
+import org.openiam.idm.srvc.pswd.service.DefaultPasswordPolicyResolver;
+import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -20,6 +26,8 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 @Configuration
 @Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class, RabbitMQConfig.class})
 public class BasePojoConfiguration {
+	
+	 private static final Log log = LogFactory.getLog(BasePojoConfiguration.class);
 	
 	@Value("${mail.host}")
 	private String mailHost;
@@ -38,6 +46,12 @@ public class BasePojoConfiguration {
 	
 	@Value("${mail.smtp.starttls.enable}")
 	private String startTlsEnabled;
+	
+	@Value("${org.openiam.password.policy.resolver.script}")
+	private String passwordPolicyResolverScript;
+	
+	@Autowired
+	private ScriptIntegration scriptEngine;
 
 	@Bean(name="emailSender")
 	public JavaMailSenderImpl emailSender() {
@@ -75,5 +89,21 @@ public class BasePojoConfiguration {
 		final List<String> mappingFiles = new ArrayList<String>(Arrays.asList(mappingFile));
 		final DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
 		return mapper;
+	}
+	
+	@Bean
+	public DefaultPasswordPolicyResolver policyResolver() {
+		DefaultPasswordPolicyResolver retval = null;
+		if(StringUtils.isNotBlank(passwordPolicyResolverScript)) {
+			try {
+				retval = (DefaultPasswordPolicyResolver)scriptEngine.instantiateClass(null, passwordPolicyResolverScript);
+			} catch(Throwable e) {
+				log.info("can't create custom policy resolver", e);
+			}
+		}
+		if(retval == null) {
+			retval = new DefaultPasswordPolicyResolver();
+		}
+		return retval;
 	}
 }

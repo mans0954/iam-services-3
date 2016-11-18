@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlType;
         "principal",
         "password",
         "managedSysId",
+        "contentProviderId",
         "requestBy",
         "srcApplicationId",
         "skipPasswordFrequencyCheck"
@@ -44,6 +45,7 @@ public class Password {
     protected String principal;
     protected String password;
     protected String managedSysId;
+    private String contentProviderId;
     protected String requestBy;
     protected String srcApplicationId;
     private boolean skipPasswordFrequencyCheck;
@@ -114,6 +116,14 @@ public class Password {
 
 	public void setSkipPasswordFrequencyCheck(boolean skipPasswordFrequencyCheck) {
 		this.skipPasswordFrequencyCheck = skipPasswordFrequencyCheck;
+	}
+
+	public String getContentProviderId() {
+		return contentProviderId;
+	}
+
+	public void setContentProviderId(String contentProviderId) {
+		this.contentProviderId = contentProviderId;
 	}
 
     

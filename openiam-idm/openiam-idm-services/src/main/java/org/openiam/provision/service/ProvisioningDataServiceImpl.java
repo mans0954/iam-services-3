@@ -265,7 +265,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     idmAuditLog = auditLogHelper.save(idmAuditLog);
 
 
-                    ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
+                    ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog, null);
 
                     auditLogHelper.enqueue(idmAuditLog);
                     //idmAuditLog = auditLogService.save(idmAuditLog);
@@ -309,7 +309,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     	parameterIndex=0
     )
     private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLogEntity auditLog) {
-        return modifyUser(pUser, auditLog, null);
+        return modifyUser(pUser, auditLog, null, null);
     }
 
     @CacheKeyEviction(
@@ -319,7 +319,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     	},
     	parameterIndex=0
     )
-    private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLogEntity auditLog, final AuditAction auditAction) {
+    private ProvisionUserResponse modifyUser(final ProvisionUser pUser, 
+    										 final IdmAuditLogEntity auditLog, 
+    										 final AuditAction auditAction,
+    										 final String contentProviderId) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
 
@@ -344,7 +347,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 //                        auditLogService.save(auditLog);
                     }
                     //idmAuditLog = auditLogService.save(idmAuditLog);
-                    ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
+                    ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog, contentProviderId);
                     auditLogHelper.save(idmAuditLog);
                     //idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
@@ -960,8 +963,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     }
 
 
-    private ProvisionUserResponse addModifyUser(ProvisionUser pUser, boolean isAdd,
-                                                List<ProvisionDataContainer> dataList, final IdmAuditLogEntity auditLog) {
+    private ProvisionUserResponse addModifyUser(final ProvisionUser pUser, 
+    											final boolean isAdd,
+    											final List<ProvisionDataContainer> dataList, 
+                                                final IdmAuditLogEntity auditLog,
+                                                final String contentProviderId) {
 
         if (isAdd) {
         	if(log.isDebugEnabled()) {
@@ -1104,7 +1110,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             }
             // if the password of the primaryIdentity is custom validate it
             if (customPassword) {
-                resp = validatePassword(primaryLogin, pUser, requestId);
+                resp = validatePassword(primaryLogin, pUser, contentProviderId, requestId);
                 if (resp.isFailure()) {
                     return resp;
                 }
@@ -1990,6 +1996,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             pswd.setManagedSysId(identity.getManagedSysId());
             pswd.setPrincipal(identity.getLogin());
             pswd.setPassword(passwordSync.getPassword());
+            pswd.setContentProviderId(passwordSync.getContentProviderId());
 
             if (!passwordSync.getResyncMode()) {
                     response = passwordManager.isPasswordValid(pswd);
@@ -2038,7 +2045,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                     Integer pwdChangeCount = lg.getPasswordChangeCount();
                     if (pwdChangeCount != null) {
-                        Policy policy = passwordPolicyProvider.getPasswordPolicyByUser(new PasswordPolicyAssocSearchBean(lg.getUserId(), managedSysId));
+                    	final PasswordPolicyAssocSearchBean sb = new PasswordPolicyAssocSearchBean();
+                    	sb.setUserId(lg.getUserId());
+                    	sb.setContentProviderId(passwordSync.getContentProviderId());
+                    	sb.setManagedSysId(managedSysId);
+                    	sb.setPrincipal(lg.getLogin());
+                        Policy policy = passwordPolicyProvider.getPasswordPolicy(sb);
                         String pwdChangeAllowed = getPolicyAttribute(policy.getPolicyAttributes(), "PASSWORD_CHANGE_ALLOWED");
 
                         if (pwdChangeAllowed != null && pwdChangeCount >= Integer.valueOf(pwdChangeAllowed)) {
@@ -2056,7 +2068,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     //
 
                     final boolean retval = loginManager.setPassword(lg.getLogin(), managedSysId,
-                            encPassword, passwordSync.isPreventChangeCountIncrement());
+                            encPassword, passwordSync.isPreventChangeCountIncrement(), passwordSync.getContentProviderId());
 
                     if (retval) {
                     	if(log.isDebugEnabled()) {
@@ -2119,7 +2131,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                             // update the password in openiam
                             loginManager.setPassword(lg.getLogin(), lg.getManagedSysId(), encPassword,
-                                    passwordSync.isPreventChangeCountIncrement());
+                                    passwordSync.isPreventChangeCountIncrement(), passwordSync.getContentProviderId());
 
                             ManagedSystemObjectMatchEntity matchObj = null;
                             final List<ManagedSystemObjectMatchEntity> matchList = managedSystemService
@@ -2495,7 +2507,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Updating password for " + targetLoginEntity.getLogin());
 
                     boolean retval = loginManager.setPassword(targetLoginEntity.getLogin(), targetLoginEntity.getManagedSysId(), encPassword,
-                            passwordSync.isPreventChangeCountIncrement());
+                            passwordSync.isPreventChangeCountIncrement(), passwordSync.getContentProviderId());
                     if (retval) {
                         auditLog.succeed();
                         if(log.isDebugEnabled()) {
@@ -2534,7 +2546,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     }
                     // update the password in openiam
                     loginManager.setPassword(targetLoginEntity.getLogin(), targetLoginEntity.getManagedSysId(), encPassword,
-                            passwordSync.isPreventChangeCountIncrement());
+                            passwordSync.isPreventChangeCountIncrement(), passwordSync.getContentProviderId());
 
                     // update the target system
 
@@ -2638,7 +2650,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                     switch (ob.getOperation()) {
                                         case ACTIVATE_USER:
                                             pUser.setStatus(UserStatusEnum.ACTIVE);
-                                            res = modifyUser(pUser, idmAuditLog, AuditAction.USER_ACTIVE);
+                                            res = modifyUser(pUser, idmAuditLog, AuditAction.USER_ACTIVE, bulkRequest.getContentProviderId());
                                             break;
                                         case DEACTIVATE_USER:
                                             res = deleteByUserWithSkipManagedSysList(
@@ -2837,7 +2849,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                     break;
                             }
                             if (auditAction != null) {
-                                res = modifyUser(pUser, idmAuditLog, auditAction);
+                                res = modifyUser(pUser, idmAuditLog, auditAction, bulkRequest.getContentProviderId());
                                 if (res.isFailure()) {
                                     failedUserIds.add(userId);
                                 }

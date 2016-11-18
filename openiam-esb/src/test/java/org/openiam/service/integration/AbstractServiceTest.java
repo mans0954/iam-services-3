@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.junit.runner.RunWith;
@@ -29,6 +30,7 @@ import org.openiam.srvc.am.AuthProviderWebService;
 import org.openiam.srvc.am.ContentProviderWebService;
 import org.openiam.srvc.am.AuthenticationService;
 import org.openiam.srvc.common.LanguageWebService;
+import org.openiam.srvc.common.PolicyDataService;
 import org.openiam.srvc.am.AuthorizationManagerWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -36,6 +38,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.http.client.OpenIAMHttpClient;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.srvc.am.AccessRightDataService;
@@ -57,6 +60,8 @@ import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.srvc.idm.ManagedSystemWebService;
 import org.openiam.srvc.idm.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.dto.PolicyConstants;
 import org.openiam.srvc.am.OrganizationDataService;
 import org.openiam.srvc.am.OrganizationTypeDataService;
 import org.openiam.srvc.common.PropertyValueWebService;
@@ -84,6 +89,16 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 
 	protected ContentProvider cp = null;
 	protected User user = null;
+	
+    @Autowired
+    @Qualifier("policyServiceClient")
+    protected PolicyDataService policyServiceClient;
+    
+    protected Policy getPasswordPolicy() {
+    	final PolicySearchBean sb = new PolicySearchBean();
+    	sb.setPolicyDefId(PolicyConstants.PASSWORD_POLICY);
+    	return policyServiceClient.findBeans(sb, 0, 10).get(0);
+    }
 	
 	@Autowired
 	@Qualifier("languageServiceClient")
@@ -225,6 +240,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	
 	protected void assertSuccess(final Response response) {
 		Assert.assertTrue(response.isSuccess());
+	}
+	
+	protected void assertFailure(final Response response) {
+		Assert.assertFalse(response.isSuccess());
 	}
 	
 	protected void sleep(final long ms) {
@@ -447,9 +466,11 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected Organization createOrganization() {
+		final List<MetadataType> types = metadataServiceClient.findTypeBeans(null, 0, 10, getDefaultLanguage());
 		Organization organization = new Organization();
 		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, null).get(0).getId());
 		organization.setName(getRandomName());
+		organization.setMdTypeId(types.get(RandomUtils.nextInt(0, types.size())).getId());
 		Response wsResponse = organizationServiceClient.saveOrganization(organization, null);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", organization, wsResponse));
 		organization = organizationServiceClient.getOrganizationLocalized((String)wsResponse.getResponseValue(), null, getDefaultLanguage());

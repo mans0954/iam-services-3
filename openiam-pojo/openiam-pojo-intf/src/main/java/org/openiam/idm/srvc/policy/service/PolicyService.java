@@ -11,7 +11,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 
 public interface PolicyService {
 
-    Policy getPolicy(final String policyId) throws BasicDataServiceException;
+    Policy getPolicy(final String policyId);
 
 
     int count(PolicySearchBean searchBean);

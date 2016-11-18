@@ -81,10 +81,7 @@ public class PolicyServiceImpl implements PolicyService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "policies", key = "{#policyId}")
-    public Policy getPolicy(String policyId) throws BasicDataServiceException {
-        if (policyId == null) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Policy Id is NULL");
-        }
+    public Policy getPolicy(String policyId) {
         PolicyEntity policyEntity = policyDao.findById(policyId);
         return policyDozerConverter.convertToDTO(policyEntity, true);
     }
@@ -224,6 +221,13 @@ public class PolicyServiceImpl implements PolicyService {
             if (StringUtils.isBlank(policy.getName())) {
                 throw new BasicDataServiceException(
                         ResponseCode.POLICY_NAME_NOT_SET);
+            }
+            
+            if(StringUtils.equalsIgnoreCase(policy.getPolicyDefId(), PolicyConstants.PASSWORD_POLICY)) {
+            	if(policy.getPriority() == null) {
+            		throw new BasicDataServiceException(
+                            ResponseCode.PRIORITY_REQUIRED);
+            	}
             }
 
             final PolicySearchBean sb = new PolicySearchBean();

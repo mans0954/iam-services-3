@@ -1,8 +1,8 @@
 package org.openiam.elasticsearch.dao;
 
+import org.openiam.elasticsearch.model.RoleDoc;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 
-public interface RoleElasticSearchRepositoryCustom extends AbstractCustomElasticSearchRepository<RoleEntity, RoleSearchBean, String> {
+public interface RoleElasticSearchRepositoryCustom extends AbstractCustomElasticSearchRepository<RoleDoc, RoleSearchBean, String> {
 
 }

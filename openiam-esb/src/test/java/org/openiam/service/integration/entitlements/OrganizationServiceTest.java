@@ -4,20 +4,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.elasticsearch.common.lang3.StringUtils;
-import org.junit.Assert;
-import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+import org.openiam.service.integration.AbstractAttributeServiceTest;
 import org.openiam.srvc.am.OrganizationDataService;
 import org.openiam.srvc.am.OrganizationTypeDataService;
-import org.openiam.service.integration.AbstractAttributeServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.annotations.Test;
@@ -62,6 +57,7 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 	protected Organization newInstance() {
 		final Organization organization = new Organization();
 		organization.setOrganizationTypeId(organizationTypeClient.findBeans(new OrganizationTypeSearchBean(), 0, 1, null).get(0).getId());
+		organization.setPolicyId(getPasswordPolicy().getId());
 		return organization;
 	}
 
@@ -90,26 +86,6 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 			int size) {
 		searchBean.setLanguage(getDefaultLanguage());
 		return organizationServiceClient.findBeans(searchBean, null, from, size);
-	}
-	
-	@Test
-	public void testInternationalizationOfOrganizationTypeWhenUsingElasticSearch() {
-		final OrganizationSearchBean sb = new OrganizationSearchBean();
-		sb.setLanguage(getDefaultLanguage());
-		sb.setUseElasticSearch(true);
-		List<Organization> retval = organizationServiceClient.findBeans(sb, getRequestorId(), 0, 3);
-		assertOrganizationTypePresent(retval);
-		
-		sb.setNameToken(new SearchParam("a", MatchType.CONTAINS));
-		retval = organizationServiceClient.findBeans(sb, getRequestorId(), 0, 3);
-		assertOrganizationTypePresent(retval);
-	}
-	
-	private void assertOrganizationTypePresent(final List<Organization> retval) {
-		Assert.assertTrue(CollectionUtils.isNotEmpty(retval));
-		retval.forEach(e -> {
-			Assert.assertTrue(StringUtils.isNotBlank(e.getOrganizationTypeName()));
-		});
 	}
 
 	@Test
@@ -157,15 +133,6 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 		assertSuccess(response);
 		response = organizationServiceClient.saveOrganization(r2, getRequestorId());
 		assertSuccess(response);
-	}
-	
-	private OrganizationSearchBean getCacheableSearchBean(final Organization organization) {
-		final OrganizationSearchBean sb = new OrganizationSearchBean();
-		sb.setFindInCache(true);
-		sb.setDeepCopy(true);
-		sb.setNameToken(new SearchParam(organization.getName(), MatchType.EXACT));
-		sb.setOrganizationTypeId(organization.getOrganizationTypeId());
-		return sb;
 	}
 
 }

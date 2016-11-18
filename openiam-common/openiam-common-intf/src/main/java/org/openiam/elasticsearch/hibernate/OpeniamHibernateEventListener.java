@@ -18,6 +18,8 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
 import org.openiam.elasticsearch.service.ElasticsearchReindexService;
+import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -74,15 +76,28 @@ public class OpeniamHibernateEventListener implements InitializingBean,
             if(isEntityMapped(clazz) && (entity instanceof KeyEntity)){
                 log.info(String.format("==== Hibernate Event: %s for Entity: %s =====",  eventType.eventName(), entity.getClass().getSimpleName()));
                 ElasticsearchReindexRequest request = null;
-                if(EventType.POST_COMMIT_INSERT.equals(eventType)
-                        || EventType.POST_COMMIT_UPDATE.equals(eventType)){
-                    request = ElasticsearchReindexRequest.getUpdateReindexRequest(entity.getClass());
-                } else if(EventType.POST_COMMIT_DELETE.equals(eventType)){
-                    request = ElasticsearchReindexRequest.getDeleteReindexRequest(entity.getClass());
+                
+                if(entity instanceof OrgToOrgMembershipXrefEntity) {
+                	/* OrganiztionDoc contains references to parents, so have to re-index the child */
+                	final OrgToOrgMembershipXrefEntity xref = (OrgToOrgMembershipXrefEntity)entity;
+                	if(xref.getMemberEntity() != null) {
+                        if(EventType.POST_COMMIT_INSERT.equals(eventType) || EventType.POST_COMMIT_UPDATE.equals(eventType)){
+                            request = ElasticsearchReindexRequest.getUpdateReindexRequest(OrganizationEntity.class);
+                        } else if(EventType.POST_COMMIT_DELETE.equals(eventType)){
+                            request = ElasticsearchReindexRequest.getDeleteReindexRequest(OrganizationEntity.class);
+                        }
+                		request.addEntityId(xref.getMemberEntity().getId());
+                	}
+                } else {
+                    if(EventType.POST_COMMIT_INSERT.equals(eventType) || EventType.POST_COMMIT_UPDATE.equals(eventType)){
+                        request = ElasticsearchReindexRequest.getUpdateReindexRequest(entity.getClass());
+                    } else if(EventType.POST_COMMIT_DELETE.equals(eventType)){
+                        request = ElasticsearchReindexRequest.getDeleteReindexRequest(entity.getClass());
+                    }
+                	request.addEntityId(((KeyEntity)entity).getId());
                 }
-
+                
                 if(request!=null){
-                    request.addEntityId(((KeyEntity)entity).getId());
                     elasticsearchReindexService.reindex(request);
                 }
             }

@@ -29,7 +29,7 @@ import org.openiam.am.srvc.dto.jdbc.xref.OrgRoleXref;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationOrganization", propOrder = {
 })
-public class AuthorizationOrganization extends AbstractAuthorizationEntity  {
+public class AuthorizationOrganization extends AbstractAuthorizationPolicyEntity  {
 	
 	private static final Log log = LogFactory.getLog(AuthorizationOrganization.class);
 

@@ -13,6 +13,6 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
  */
 public interface PasswordPolicyProvider {
 	
-	Policy getPasswordPolicyByUser(final PasswordPolicyAssocSearchBean searchBean);
+	Policy getPasswordPolicy(final PasswordPolicyAssocSearchBean searchBean);
     Policy getGlobalPasswordPolicy();
 }

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 public interface EmailElasticSearchRepository extends OpeniamElasticSearchRepository<EmailAddressEntity, String>, EmailElasticSearchRepositoryCustom {
 
 	@Override
-	public default Class<EmailAddressEntity> getEntityClass() {
+	public default Class<EmailAddressEntity> getDocumentClass() {
 		return EmailAddressEntity.class;
 	}
 }

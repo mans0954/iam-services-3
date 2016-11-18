@@ -28,7 +28,9 @@ import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
+import org.openiam.elasticsearch.converter.OrganizationDocumentToEntityConverter;
 import org.openiam.elasticsearch.dao.OrganizationElasticSearchRepository;
+import org.openiam.elasticsearch.model.OrganizationDoc;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
@@ -54,6 +56,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -66,6 +69,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.internationalization.InternationalizationProvider;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
@@ -142,6 +146,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     @Autowired
     private RoleDAO roleDAO;
+    
+    @Autowired
+    private PolicyDAO policyDAO;
+    
+    @Autowired
+	private InternationalizationProvider internationalizationProvider;
+    
+	@Autowired
+	private OrganizationDocumentToEntityConverter organizationDocConverter;
     
     @Autowired
     private OrganizationElasticSearchRepository organizationElasticSearchRepository;
@@ -322,11 +335,16 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         	}
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	/* aop translation won't handle this, since the return type is not a KeyEntity */
+        	List<OrganizationDoc> docs = null;
         	if(organizationElasticSearchRepository.isValidSearchBean(searchBean)) {
-        		return organizationElasticSearchRepository.findBeans(searchBean, from, size);
+        		docs = organizationElasticSearchRepository.findBeans(searchBean, from, size);
         	} else {
-        		return organizationElasticSearchRepository.findAll(organizationElasticSearchRepository.getPageable(searchBean, from, size)).getContent();
+        		docs = organizationElasticSearchRepository.findAll(organizationElasticSearchRepository.getPageable(searchBean, from, size)).getContent();
         	}
+        	final List<OrganizationEntity> entities = organizationDocConverter.convertToEntityList(docs);
+        	internationalizationProvider.doDatabaseGet(entities);
+        	return entities;
         } else {
         	return orgDao.getByExample(searchBean, from, size);
         }
@@ -406,8 +424,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
             return 0;
         }
-
-        return orgDao.count(searchBean);
+        if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	return organizationElasticSearchRepository.count(searchBean);
+        } else {
+        	return orgDao.count(searchBean);
+        }
     }
 
 /*    @Override
@@ -512,6 +533,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 if (StringUtils.isNotBlank(newEntity.getOrganizationType().getId())) {
                     curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
                 }
+                if(curEntity.getPolicy() != null && StringUtils.isNotBlank(curEntity.getPolicy().getId())) {
+                	curEntity.setPolicy(policyDAO.findById(curEntity.getPolicy().getId()));
+                } else {
+                	curEntity.setPolicy(null);
+                }
                 if (StringUtils.isNotBlank(newEntity.getType().getId())) {
                     curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
                 }
@@ -521,6 +547,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 curEntity = orgDao.findById(organization.getId());
                 mergeOrgProperties(curEntity, newEntity);
                 mergeAttributes(curEntity, newEntity);
+                if(newEntity.getPolicy() != null && StringUtils.isNotBlank(newEntity.getPolicy().getId())) {
+                	curEntity.setPolicy(policyDAO.findById(newEntity.getPolicy().getId()));
+                } else {
+                	curEntity.setPolicy(null);
+                }
                 /*
                 newEntity.setResources(dbEntity.getResources());
                 newEntity.setUsers(dbEntity.getUsers());
@@ -875,7 +906,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         BeanUtils.copyProperties(newEntity, curEntity,
                 new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
-                "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy", "resources", "roles"});
+                "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy", "resources", "roles", "policy"});
     }
 
     private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {

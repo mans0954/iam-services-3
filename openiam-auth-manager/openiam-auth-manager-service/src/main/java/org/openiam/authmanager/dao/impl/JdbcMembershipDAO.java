@@ -46,7 +46,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
     private static final String GET_MEMBERSHIP_ALL = "SELECT %s AS MEMBER_ENTITY_ID, %s AS ENTITY_ID, MEMBERSHIP_ID AS MEMBERSHIP_ID, START_DATE AS START_DATE, END_DATE AS END_DATE FROM %s.%s";
     private static final String GET_MEMBERSHIP_RANGE = "SELECT %s AS MEMBER_ENTITY_ID, %s AS ENTITY_ID, MEMBERSHIP_ID AS MEMBERSHIP_ID, START_DATE AS START_DATE, END_DATE AS END_DATE FROM %s.%s WHERE " + DATE_CONDITION;
     private static final String GET_RIGHTS = "SELECT MEMBERSHIP_ID AS MEMBERSHIP_ID, ACCESS_RIGHT_ID AS ACCESS_RIGHT_ID FROM %s.%s";
-    private static final String GET_ENTITY = "SELECT %S AS ID, %s AS NAME, %s AS DESCRIPTION, %s AS STATUS, %s AS MANAGED_SYS_ID, %s AS TYPE_ID  FROM %s.%s";
+    private static final String GET_ENTITY = "SELECT %S AS ID, %s AS NAME, %s AS DESCRIPTION, %s AS STATUS, %s AS MANAGED_SYS_ID, %s AS TYPE_ID, POLICY_ID AS POLICY_ID  FROM %s.%s";
 
     private static String getDateCondition(final String prefix) {
         return String.format(DATE_CONDITION_PREFIXED, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix);
@@ -134,7 +134,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
     private String GET_RESOURCES = "SELECT RESOURCE_ID AS ID, NAME AS NAME, DESCRIPTION AS DESCRIPTION, RESOURCE_TYPE_ID AS RESOURCE_TYPE_ID, RISK AS RISK, COORELATED_NAME AS COORELATED_NAME, IS_PUBLIC AS IS_PUBLIC, TYPE_ID AS TYPE_ID FROM %s.RES";
     private String GET_GROUPS;
     private String GET_ROLES;
-    private String GET_ORGS = "SELECT COMPANY_ID AS ID, COMPANY_NAME AS NAME, DESCRIPTION AS DESCRIPTION, STATUS AS STATUS FROM %s.COMPANY";
+    private String GET_ORGS = "SELECT COMPANY_ID AS ID, COMPANY_NAME AS NAME, DESCRIPTION AS DESCRIPTION, STATUS AS STATUS, POLICY_ID AS POLICY_ID FROM %s.COMPANY";
 
     private String USER_ROLE_XREFS_ALL;
     private String USER_GRP_XREFS_ALL;
@@ -530,6 +530,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
             dto.setStatus(rs.getString("STATUS"));
             dto.setManagedSysId(rs.getString("MANAGED_SYS_ID"));
             dto.setTypeId(rs.getString("TYPE_ID"));
+            dto.setPasswordPolicyId(rs.getString("POLICY_ID"));
             return dto;
         }
     }
@@ -610,6 +611,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
             dto.setStatus(rs.getString("STATUS"));
             dto.setManagedSysId(rs.getString("MANAGED_SYS_ID"));
             dto.setTypeId(rs.getString("TYPE_ID"));
+            dto.setPasswordPolicyId(rs.getString("POLICY_ID"));
             return dto;
         }
 
@@ -625,6 +627,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
             dto.setId(rs.getString("ID"));
             dto.setName(rs.getString("NAME"));
             dto.setStatus(rs.getString("STATUS"));
+            dto.setPasswordPolicyId(rs.getString("POLICY_ID"));
             return dto;
         }
 

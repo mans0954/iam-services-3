@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
@@ -14,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
         "editable",
         "displayOrder"
 })
-public class TemplateUIField {
+public class TemplateUIField implements Serializable {
 	
 	@XmlTransient
 	private static final Integer DEFAULT_DISPLAY_ORDER = Integer.valueOf(0); 

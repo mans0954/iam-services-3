@@ -69,7 +69,7 @@ public class LoginElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 	}
 
 	@Override
-	public Class<LoginEntity> getEntityClass() {
+	public Class<LoginEntity> getDocumentClass() {
 		return LoginEntity.class;
 	}
 

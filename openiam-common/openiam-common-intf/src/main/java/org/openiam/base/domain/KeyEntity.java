@@ -2,12 +2,14 @@ package org.openiam.base.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.BaseIdentity;
+import org.openiam.elasticsearch.hibernate.OpeniamHibernateEventRegister;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldIndex;
 import org.springframework.data.elasticsearch.annotations.FieldType;

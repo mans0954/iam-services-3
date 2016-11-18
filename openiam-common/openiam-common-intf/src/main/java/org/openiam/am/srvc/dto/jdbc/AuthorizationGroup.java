@@ -25,7 +25,7 @@ import org.openiam.am.srvc.dto.jdbc.xref.ResourceGroupXref;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationGroup", propOrder = {
 })
-public class AuthorizationGroup extends AbstractAuthorizationEntity {
+public class AuthorizationGroup extends AbstractAuthorizationPolicyEntity {
 
     private static final Log log = LogFactory.getLog(AuthorizationGroup.class);
 

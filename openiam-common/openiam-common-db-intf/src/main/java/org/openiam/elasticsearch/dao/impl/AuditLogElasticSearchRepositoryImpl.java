@@ -127,7 +127,7 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
 	}
 
 	@Override
-	public Class<IdmAuditLogEntity> getEntityClass() {
+	public Class<IdmAuditLogEntity> getDocumentClass() {
 		return IdmAuditLogEntity.class;
 	}
 
@@ -149,7 +149,7 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
 		Page<IdmAuditLogEntity> retval = null;
 		if(criteria != null) {
 			criteria.setPageable(pageable);
-			retval = elasticSearchTemplate.queryForPage(criteria, getEntityClass());
+			retval = elasticSearchTemplate.queryForPage(criteria, getDocumentClass());
 		} else {
 			retval = new PageImpl<IdmAuditLogEntity>(Collections.EMPTY_LIST);
 		}

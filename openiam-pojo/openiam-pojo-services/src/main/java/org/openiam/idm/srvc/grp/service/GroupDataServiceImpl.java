@@ -63,6 +63,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
+import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -167,6 +168,9 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     @Autowired
     private ApproverAssociationDAO approverAssociationDao;
     private ApplicationContext ac;
+    
+    @Autowired
+    private PolicyDAO policyDAO;
 
     public void setApplicationContext(final ApplicationContext ac) throws BeansException {
         this.ac = ac;
@@ -677,6 +681,12 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
             } else {
                 group.setManagedSystem(null);
+            }
+            
+            if(group.getPolicy() != null && StringUtils.isNotBlank(group.getPolicy().getId())) {
+            	group.setPolicy(policyDAO.findById(group.getPolicy().getId()));
+            } else {
+            	group.setPolicy(null);
             }
 
             if(CollectionUtils.isNotEmpty(group.getOrganizations())) {

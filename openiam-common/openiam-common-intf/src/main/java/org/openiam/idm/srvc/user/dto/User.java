@@ -891,7 +891,9 @@ public class User extends AbstractMetadataTypeDTO {
             
             UserToRoleMembershipXref theXref = null;
 			for(final UserToRoleMembershipXref xref : this.roles) {
-				if(xref.getMemberEntityId().equals(getId()) && xref.getEntityId().equals(role.getId())) {
+				//assume xref.getMemberEntityId is equal to the ID of this user.
+				//there are cases when this is passed as null, and we still need it to do the job
+				if(/*xref.getMemberEntityId().equals(getId()) &&*/ xref.getEntityId().equals(role.getId())) {
 					theXref = xref;
 					break;
 				}

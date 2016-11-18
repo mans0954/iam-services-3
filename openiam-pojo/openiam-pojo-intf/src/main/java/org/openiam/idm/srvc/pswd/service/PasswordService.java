@@ -77,15 +77,6 @@ public interface PasswordService {
      */
     PasswordValidationResponse isPasswordValidForUserAndPolicy(Password pswd, UserEntity user, LoginEntity lg, Policy policy) throws ObjectNotFoundException;
 
-    /**
-     * Determines if the user is allowed to change their password based on the policy and the number of times that password
-     * has already been changed.
-     *
-     * @param principal
-     * @param managedSysId
-     * @return
-     */
-    boolean isPasswordChangeAllowed(String principal, String managedSysId);
 
     /**
      * Number of days in which the password will expire for this user
@@ -104,25 +95,6 @@ public interface PasswordService {
      * @return
      */
     int passwordChangeCount(String principal, String managedSysId);
-
-    /**
-     * use getPasswordPolicyUsingContentProvider(final String principal, final String managedSysId, final String contentProviderId);
-     * @param principal
-     * @param managedSysId
-     * @return
-     */
-    @Deprecated
-    Policy getPasswordPolicy(String principal, String managedSysId);
-
-    /**
-     * Returns the password policy for this user based on their identity
-     *
-     * @param principal
-     * @param managedSysId
-     * @param contentProviderId
-     * @return
-     */
-    Policy getPasswordPolicyUsingContentProvider(final String principal, final String managedSysId, final String contentProviderId);
 
     /**
      * Returns the global password policy
@@ -145,7 +117,7 @@ public interface PasswordService {
      * @param passwordPolicyAssocSearchBean
      * @return
      */
-    Policy getPasswordPolicyForUser(final PasswordPolicyAssocSearchBean passwordPolicyAssocSearchBean);
+    Policy getPasswordPolicy(final PasswordPolicyAssocSearchBean passwordPolicyAssocSearchBean);
 
     /**
      * Checks to see if a password exists in the history log based on the policy
@@ -175,8 +147,6 @@ public interface PasswordService {
 
 
     Set<PasswordHistory> getPasswordHistory(String id, Integer from, Integer count);
-
-    Policy getPasswordPolicy(LoginEntity lg);
 
     String getPasswordResetToken(PasswordResetTokenRequest request);
 }

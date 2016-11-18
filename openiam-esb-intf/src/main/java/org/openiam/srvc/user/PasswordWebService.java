@@ -25,6 +25,7 @@ import org.openiam.base.request.PasswordResetTokenRequest;
 import org.openiam.base.response.PasswordResetTokenResponse;
 import org.openiam.base.response.PasswordValidationResponse;
 import org.openiam.base.response.ValidatePasswordResetTokenResponse;
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
 
@@ -71,7 +72,7 @@ public interface PasswordWebService {
             @WebParam(name = "token", targetNamespace = "") String token);
 
     @WebMethod
-    Policy getPasswordPolicy(String principal, String msysId);
+    Policy getPasswordPolicy(@WebParam(name = "searchBean", targetNamespace = "") PasswordPolicyAssocSearchBean searchBean);
     
     @WebMethod
     public String getPasswordResetToken(PasswordResetTokenRequest request);

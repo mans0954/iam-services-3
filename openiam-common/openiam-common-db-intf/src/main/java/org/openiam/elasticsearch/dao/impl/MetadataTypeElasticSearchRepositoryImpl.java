@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 public class MetadataTypeElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<MetadataTypeEntity, String, MetadataTypeSearchBean> implements MetadataTypeElasticSearchRepositoryCustom {
 
 	@Override
-	public Class<MetadataTypeEntity> getEntityClass() {
+	public Class<MetadataTypeEntity> getDocumentClass() {
 		return MetadataTypeEntity.class;
 	}
 
