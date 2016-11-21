@@ -5,29 +5,34 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import javax.persistence.*;
+import javax.persistence.AttributeOverride;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
 import org.openiam.base.domain.AbstractEntitlementPolicyEntity;
-import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.DocumentRepresentation;
 import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
 import org.openiam.elasticsearch.bridge.ManagedSysBridge;
-import org.openiam.elasticsearch.constants.ESIndexName;
-import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.converter.GroupDocumentToEntityConverter;
+import org.openiam.elasticsearch.model.GroupDoc;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -35,19 +40,11 @@ import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
-import org.openiam.idm.srvc.org.domain.ResourceToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RoleToGroupMembershipXrefEntity;
-import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
-import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
-import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldIndex;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -58,12 +55,11 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @AttributeOverride(name = "id", column = @Column(name = "GRP_ID"))
 @DozerDTOCorrespondence(Group.class)
 @Internationalized
-@Document(indexName = ESIndexName.GROUP, type= ESIndexType.GROUP)
+@DocumentRepresentation(value=GroupDoc.class, converter=GroupDocumentToEntityConverter.class)
 public class GroupEntity extends AbstractEntitlementPolicyEntity {
 
     @Column(name = "GRP_NAME", length = 255)
     @Size(max = 255, message = "group.name.too.long")
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     private String name;
 
     @Column(name = "CREATE_DATE", length = 19)
@@ -74,8 +70,6 @@ public class GroupEntity extends AbstractEntitlementPolicyEntity {
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
-    @ElasticsearchFieldBridge(impl = ManagedSysBridge.class)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private ManagedSysEntity managedSystem;
     
     @Column(name = "GROUP_DESC", length = 512)

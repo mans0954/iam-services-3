@@ -26,7 +26,10 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.LanguageDozerConverter;
+import org.openiam.elasticsearch.converter.GroupDocumentToEntityConverter;
+import org.openiam.elasticsearch.converter.RoleDocumentToEntityConverter;
 import org.openiam.elasticsearch.dao.GroupElasticSearchRepository;
+import org.openiam.elasticsearch.model.GroupDoc;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
@@ -73,6 +76,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.internationalization.InternationalizationProvider;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
 import org.openiam.util.AuditLogHelper;
@@ -165,8 +169,16 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
     @Autowired
     private MetadataElementTemplateService pageTemplateService;
+    
     @Autowired
     private ApproverAssociationDAO approverAssociationDao;
+    
+    @Autowired
+	private InternationalizationProvider internationalizationProvider;
+    
+    @Autowired
+    private GroupDocumentToEntityConverter groupDocConverter;
+    
     private ApplicationContext ac;
     
     @Autowired
@@ -341,11 +353,15 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             return new ArrayList<GroupEntity>(0);
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	List<GroupDoc> docs = null;
         	if(groupElasticSearchRepo.isValidSearchBean(searchBean)) {
-        		return groupElasticSearchRepo.findBeans(searchBean, from, size);
+        		docs = groupElasticSearchRepo.findBeans(searchBean, from, size);
         	} else {
-        		return groupElasticSearchRepo.findAll(groupElasticSearchRepo.getPageable(searchBean, from, size)).getContent();
+        		docs = groupElasticSearchRepo.findAll(groupElasticSearchRepo.getPageable(searchBean, from, size)).getContent();
         	}
+        	final List<GroupEntity> entities = groupDocConverter.convertToEntityList(docs);
+        	internationalizationProvider.doDatabaseGet(entities);
+        	return entities;
         } else {
         	return groupDao.getByExample(searchBean, from, size);
         }
@@ -507,7 +523,11 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
             return 0;
         }
-        return groupDao.count(searchBean);
+        if(searchBean != null && searchBean.isUseElasticSearch()) {
+        	return groupElasticSearchRepo.count(searchBean);
+        } else {
+        	return groupDao.count(searchBean);
+        }
     }
 
     @Override

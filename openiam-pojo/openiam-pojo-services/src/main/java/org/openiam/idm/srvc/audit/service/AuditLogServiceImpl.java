@@ -20,6 +20,7 @@ import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
 import org.openiam.elasticsearch.dao.OrganizationElasticSearchRepository;
 import org.openiam.elasticsearch.dao.ResourceElasticSearchRepository;
 import org.openiam.elasticsearch.dao.RoleElasticSearchRepository;
+import org.openiam.elasticsearch.model.GroupDoc;
 import org.openiam.elasticsearch.model.OrganizationDoc;
 import org.openiam.elasticsearch.model.RoleDoc;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
@@ -119,7 +120,7 @@ public class AuditLogServiceImpl implements AuditLogService {
                         		target.setObjectPrincipal(role.getName());
                         	}
                         } else if(AuditTarget.GROUP.value().equals(target.getTargetType())) {
-                        	final GroupEntity role = groupDAO.findOne(target.getTargetId());
+                        	final GroupDoc role = groupDAO.findOne(target.getTargetId());
                         	if(role != null) {
                         		target.setObjectPrincipal(role.getName());
                         	}
