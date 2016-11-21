@@ -6,14 +6,12 @@ import java.util.List;
 
 import javax.jws.WebService;
 
-import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.request.IdsServiceRequest;
 import org.openiam.base.response.AccessRightListResponse;
 import org.openiam.base.response.AccessRightResponse;
 import org.openiam.base.response.IntResponse;
-import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
@@ -35,10 +33,8 @@ public class AccessRightDataServiceImpl extends AbstractApiService implements Ac
 	}
 
 	@Override
-	public StringResponse save(final AccessRight dto) {
-		final BaseCrudServiceRequest<AccessRight> request = new BaseCrudServiceRequest<>(dto);
-		final StringResponse response= this.manageApiRequest(AccessRightAPI.Save, request, StringResponse.class);
-		return response;
+	public Response save(final AccessRight dto) {
+		return this.manageCrudApiRequest(AccessRightAPI.Save, dto);
 	}
 
 	@Override

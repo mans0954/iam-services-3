@@ -35,7 +35,7 @@ import java.util.List;
 @Component
 @RabbitListener(id="auditLogListener",
         queues = "#{AuditLogQueue.name}",
-        containerFactory = "activitiRabbitListenerContainerFactory")
+        containerFactory = "auditRabbitListenerContainerFactory")
 public class AuditLogListener extends AbstractListener<AuditLogAPI> {
     @Autowired
     private AuditLogService auditLogService;
@@ -59,7 +59,7 @@ public class AuditLogListener extends AbstractListener<AuditLogAPI> {
         return  this.processRequest(api, request, new RequestProcessor<AuditLogAPI, IdmAuditLogRequest>(){
             @Override
             public Response doProcess(AuditLogAPI api, IdmAuditLogRequest request) throws BasicDataServiceException {
-                AuditLogResponse response =  new AuditLogResponse();
+                AuditLogResponse response = new AuditLogResponse();
                 IdmAuditLogEntity event = process(request);
                 response.setEvent(event);
                 return response;

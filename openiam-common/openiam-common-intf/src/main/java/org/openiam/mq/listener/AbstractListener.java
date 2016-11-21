@@ -59,6 +59,7 @@ public abstract class AbstractListener<API extends OpenIAMAPI> {
             }
 
             apiResponse = processor.doProcess(api, request);
+
             apiResponse.succeed();
             auditEvent.succeed();
         } catch (PageTemplateException e) {
@@ -96,6 +97,11 @@ public abstract class AbstractListener<API extends OpenIAMAPI> {
                 processor.rollbackTaransaction();
             }
             this.submitAuditLog();
+
+            if(request.isAsych()){
+                // not necessary to return response
+                return null;
+            }
             return apiResponse;
         }
     }

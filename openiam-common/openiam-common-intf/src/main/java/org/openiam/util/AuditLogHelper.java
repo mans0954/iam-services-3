@@ -5,7 +5,7 @@ import org.openiam.base.response.AuditLogResponse;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.mq.constants.api.AuditLogAPI;
 import org.openiam.mq.constants.queue.audit.AuditLogQueue;
-import org.openiam.mq.gateway.RequestServiceGateway;
+import org.openiam.mq.utils.RabbitMQSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,14 +16,14 @@ import org.springframework.stereotype.Component;
 public class AuditLogHelper {
 
     @Autowired
-    private RequestServiceGateway requestServiceGateway;
+    private RabbitMQSender rabbitMQSender;
     @Autowired
     private AuditLogQueue queue;
 
     public IdmAuditLogEntity save(IdmAuditLogEntity event){
         IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
         wrapper.setLogEntity(event);
-        AuditLogResponse response = (AuditLogResponse)requestServiceGateway.sendAndReceive(queue, AuditLogAPI.AuditLogSave, wrapper);
+        AuditLogResponse response = rabbitMQSender.sendAndReceive(queue, AuditLogAPI.AuditLogSave, wrapper, AuditLogResponse.class);
         return response.getEvent();
     }
 
@@ -31,8 +31,7 @@ public class AuditLogHelper {
         if(event!=null){
             IdmAuditLogRequest wrapper = new IdmAuditLogRequest();
             wrapper.setLogEntity(event);
-            wrapper.setAsych(true);
-            requestServiceGateway.send(queue, AuditLogAPI.AuditLogSave, wrapper);
+            rabbitMQSender.send(queue, AuditLogAPI.AuditLogSave, wrapper);
         }
     }
 }
