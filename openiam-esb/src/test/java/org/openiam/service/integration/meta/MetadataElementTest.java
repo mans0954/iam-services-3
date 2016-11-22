@@ -51,7 +51,7 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 	@Override
 	protected MetadataElement get(String key) {
 		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
-		searchBean.setKey(key);
+		searchBean.addKey(key);
 		searchBean.setDeepCopy(true);
 		final List<MetadataElement> results = find(searchBean, 0, 1);
 		return (CollectionUtils.isNotEmpty(results)) ? results.get(0) : null;

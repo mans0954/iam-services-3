@@ -12,13 +12,10 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @EntityRepresentation(value=RoleEntity.class, converter=RoleDocumentToEntityConverter.class)
 @Document(indexName = ESIndexName.ROLE, type= ESIndexType.ROLE)
-public class RoleDoc extends AbstractMetdataTypeDoc {
+public class RoleDoc extends AbstractMetadataTypeDoc {
 
 	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
 	private String managedSysId;
-	
-	@Field(type = FieldType.String, index = FieldIndex.analyzed)
-	private String name;
 	
 	public RoleDoc(){}
 
@@ -30,21 +27,12 @@ public class RoleDoc extends AbstractMetdataTypeDoc {
 		this.managedSysId = managedSysId;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
 				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
@@ -62,13 +50,7 @@ public class RoleDoc extends AbstractMetdataTypeDoc {
 				return false;
 		} else if (!managedSysId.equals(other.managedSysId))
 			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		return true;
 	}
-	
-	
+
 }

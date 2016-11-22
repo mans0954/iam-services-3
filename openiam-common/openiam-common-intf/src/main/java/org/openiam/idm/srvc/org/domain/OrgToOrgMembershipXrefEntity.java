@@ -88,6 +88,18 @@ public class OrgToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<O
 	public OrganizationEntity getOrganization() {
 		return entity;
 	}
+	
+	@Override
+	@Transient
+	public Class<OrganizationEntity> getEntityClass() {
+		return OrganizationEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<OrganizationEntity> getMemberClass() {
+		return OrganizationEntity.class;
+	}
 
 	@Override
 	public int hashCode() {
@@ -125,5 +137,5 @@ public class OrgToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<O
 		} else if (!rights.equals(other.rights))
 			return false;
 		return true;
-	}    
+	}
 }

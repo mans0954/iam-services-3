@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -52,15 +53,14 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Entity
 @Table(name = "GRP")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@AttributeOverride(name = "id", column = @Column(name = "GRP_ID"))
 @DozerDTOCorrespondence(Group.class)
 @Internationalized
 @DocumentRepresentation(value=GroupDoc.class, converter=GroupDocumentToEntityConverter.class)
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "GRP_ID")),
+    @AttributeOverride(name = "name", column = @Column(name = "GRP_NAME", length = 255))
+})
 public class GroupEntity extends AbstractEntitlementPolicyEntity {
-
-    @Column(name = "GRP_NAME", length = 255)
-    @Size(max = 255, message = "group.name.too.long")
-    private String name;
 
     @Column(name = "CREATE_DATE", length = 19)
     private Date createDate;
@@ -150,12 +150,10 @@ public class GroupEntity extends AbstractEntitlementPolicyEntity {
     @Fetch(FetchMode.SUBSELECT)
 	private Set<GroupToResourceMembershipXrefEntity> resources;
 
+	@Override
+	@Size(max = 255, message = "group.name.too.long")
     public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        return super.getName();
     }
 
     public Date getCreateDate() {
@@ -575,7 +573,6 @@ public class GroupEntity extends AbstractEntitlementPolicyEntity {
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (managedSystem != null ? !managedSystem.equals(that.managedSystem) : that.managedSystem != null)
             return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (status != null ? !status.equals(that.status) : that.status != null) return false;
 
         if (classification != null ? !classification.equals(that.classification) : that.classification != null) return false;
@@ -587,7 +584,6 @@ public class GroupEntity extends AbstractEntitlementPolicyEntity {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (managedSystem != null ? managedSystem.hashCode() : 0);

@@ -27,8 +27,8 @@ public class RoleElasticSearchRepositoryImpl extends AbstractElasticSearchReposi
 				}
 			}
 			
-			if(StringUtils.isNotBlank(searchBean.getType())) {
-				final Criteria criteria = eq("metadataTypeId", searchBean.getType());
+			if(StringUtils.isNotBlank(searchBean.getMetadataType())) {
+				final Criteria criteria = eq("metadataTypeId", searchBean.getMetadataType());
 				if(criteria != null) {
 					query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
 				}

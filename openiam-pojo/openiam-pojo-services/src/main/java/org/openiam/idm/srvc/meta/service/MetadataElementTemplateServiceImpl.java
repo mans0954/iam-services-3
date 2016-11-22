@@ -132,8 +132,8 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	@Transactional(readOnly=true)
 	public List<MetadataElementPageTemplateEntity> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size) {
 		List<MetadataElementPageTemplateEntity> retVal = null;
-		if(searchBean.hasMultipleKeys()) {
-			retVal = pageTemplateDAO.findByIds(searchBean.getKeys());
+		if(CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+			retVal = pageTemplateDAO.findByIds(searchBean.getKeySet());
 		} else {
 			retVal = pageTemplateDAO.getByExample(searchBean, from, size);
 		}
@@ -144,8 +144,8 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	@Transactional(readOnly=true)
 	public int count(final MetadataElementPageTemplateSearchBean searchBean) {
 		int count = 0;
-		if(searchBean.hasMultipleKeys()) {
-			count = pageTemplateDAO.findByIds(searchBean.getKeys()).size();
+		if(CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+			count = pageTemplateDAO.findByIds(searchBean.getKeySet()).size();
 		} else {
 			count = pageTemplateDAO.count(searchBean);
 		}

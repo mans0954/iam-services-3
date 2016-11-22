@@ -48,7 +48,7 @@ public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, M
 	@Override
 	protected MetadataType get(String key) {
 		final MetadataTypeSearchBean searchBean = newSearchBean();
-		searchBean.setKey(key);
+		searchBean.addKey(key);
 		searchBean.setDeepCopy(true);
 		final List<MetadataType> results = metadataServiceClient.findTypeBeans(searchBean, 0, 1, null);
 		return (CollectionUtils.isNotEmpty(results)) ? results.get(0) : null;

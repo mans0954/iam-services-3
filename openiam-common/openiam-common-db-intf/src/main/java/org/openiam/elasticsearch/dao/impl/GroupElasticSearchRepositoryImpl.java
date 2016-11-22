@@ -28,8 +28,8 @@ public class GroupElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 				}
 			}
 			
-			if(StringUtils.isNotBlank(searchBean.getType())) {
-				final Criteria criteria = eq("metadataTypeId", searchBean.getType());
+			if(StringUtils.isNotBlank(searchBean.getMetadataType())) {
+				final Criteria criteria = eq("metadataTypeId", searchBean.getMetadataType());
 				if(criteria != null) {
 					query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
 				}
@@ -43,15 +43,7 @@ public class GroupElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 			}
 			
 			if(CollectionUtils.isNotEmpty(searchBean.getAttributes())) {
-				Criteria subcriteria = null;
-				for(final Tuple<String, String> tuple : searchBean.getAttributes()) {
-					final String key = tuple.getKey();
-					final String value = tuple.getValue();
-					if(StringUtils.isNotBlank(key) && StringUtils.isNotBlank(value)) {
-						final Criteria criteria = eq(new StringBuilder("attributes.").append(key).toString(), value);
-						subcriteria = (subcriteria != null) ? subcriteria.or(criteria) : criteria;
-					}
-				}
+				Criteria subcriteria = getAttributeCriteria(searchBean.getAttributes());
 				if(subcriteria != null) {
 					query = (query != null) ? query.addCriteria(subcriteria) : new CriteriaQuery(subcriteria);
 				}

@@ -927,7 +927,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 if (!isFound) {
                     ResourceSearchBean rsb = new ResourceSearchBean();
                     rsb.setNameToken(new SearchParam(resource.getName(), MatchType.EXACT));
-                    List<Resource> dbResource = resourceDataService.findBeansLocalizedDto(rsb, -1, -1, null);
+                    List<Resource> dbResource = resourceDataService.findBeansDTO(rsb, -1, -1, null);
                     if (CollectionUtils.isNotEmpty(dbResource)) {
                         if (dbResource.size() > 1) {
                             warnings.append(this.getWarning("Not unique name. Skip it. Resource Name=" + resource.getName()));
@@ -1155,7 +1155,7 @@ public class SourceAdapterDispatcher implements Runnable {
     private User findByKey(UserSearchKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request) throws Exception {
         UserSearchBean searchBean = new UserSearchBean();
         if (UserSearchKeyEnum.USERID.equals(matchAttrName)) {
-            searchBean.setKey(matchAttrValue);
+            searchBean.addKey(matchAttrValue);
             searchBean.setUserId(matchAttrValue);
         } else if (UserSearchKeyEnum.PRINCIPAL.equals(matchAttrName)) {
             LoginSearchBean lsb = new LoginSearchBean();

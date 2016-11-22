@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.auth.login;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
@@ -44,8 +45,8 @@ public class IdentityDAOImpl extends BaseDaoImpl<IdentityEntity, String> impleme
         if(searchBean != null && searchBean instanceof IdentitySearchBean) {
             final IdentitySearchBean sb = (IdentitySearchBean)searchBean;
             
-            if(StringUtils.isNotBlank(sb.getKey())) {
-            	criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+            if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
             }
             
             if(StringUtils.isNotBlank(sb.getIdentity())) {

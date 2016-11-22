@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.continfo.service;
 
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,9 +39,9 @@ public class PhoneDAOImpl extends BaseDaoImpl<PhoneEntity, String> implements Ph
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof PhoneSearchBean) {
 			final PhoneSearchBean sb = (PhoneSearchBean)searchBean;
-			if (StringUtils.isNotBlank(sb.getKey())) {
-	            criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-	        } else {
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
 	            if (StringUtils.isNotBlank(sb.getParentId())) {
 	            	criteria.add(Restrictions.eq("parent.id", sb.getParentId()));
 	            }

@@ -100,7 +100,7 @@ public class IdentityQuestionServiceTest extends AbstractChallengeResponseServic
 
         final IdentityQuestionSearchBean searchBean = newSearchBean();
         searchBean.setDeepCopy(useDeepCopyOnFindBeans());
-        searchBean.setKey(instance.getId());
+        searchBean.addKey(instance.getId());
 
 /*
  confirm save on both nodes

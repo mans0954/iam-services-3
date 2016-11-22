@@ -17,6 +17,9 @@ public class DelegationFilterHelper {
 
     private static final String DLG_FLT_SEPARATOR=",";
 
+    public static  boolean isAllowed(Collection<String> pks,  Set<String> filterData){
+    	return filterData==null || filterData.isEmpty() || filterData.containsAll(pks);
+    }
 
     public static  boolean isAllowed(String pk,  Set<String> filterData){
         return filterData==null || filterData.isEmpty() || filterData.contains(pk);

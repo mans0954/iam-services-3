@@ -28,9 +28,9 @@ public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElem
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof MetadataElementPageTemplateSearchBean) {
 			final MetadataElementPageTemplateSearchBean sb = (MetadataElementPageTemplateSearchBean)searchBean;
-			if(StringUtils.isNotBlank(sb.getKey())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-			} else {
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
 				final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
                 if(nameCriterion != null) {
                 	criteria.add(nameCriterion);

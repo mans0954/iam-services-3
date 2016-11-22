@@ -147,8 +147,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         final boolean caseInsensitive = sysConfiguration.isCaseInSensitiveDatabase();
 
         final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(searchBean.getKey())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), searchBean.getKey()));
+        if(CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+            criteria.add(Restrictions.in(getPKfieldName(), searchBean.getKeySet()));
         } else {
             if (searchBean.getShowInSearch() != null) {
                 criteria.add(Restrictions.eq("showInSearch", searchBean.getShowInSearch()));

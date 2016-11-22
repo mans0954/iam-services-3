@@ -225,11 +225,11 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     @Transactional(readOnly=true)
     public List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size) {
         List<IdentityQuestionEntity> resultList = null;
-        if (searchBean != null && searchBean.getKey() != null) {
-            final IdentityQuestionEntity entity = questionDAO.findById(searchBean.getKey());
-            if (entity != null) {
+        if (searchBean != null && CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+            final List<IdentityQuestionEntity> entityList = questionDAO.findByIds(searchBean.getKeySet());
+            if (CollectionUtils.isNotEmpty(entityList)) {
                 resultList = new LinkedList<IdentityQuestionEntity>();
-                resultList.add(entity);
+                resultList.addAll(entityList);
             }
         } else {
             resultList = questionDAO.getByExample(searchBean, from, size);
@@ -250,11 +250,11 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
             throws Exception {
         List<UserIdentityAnswerEntity> resultList = null;
         if(searchBean != null) {
-	        if (searchBean.getKey() != null) {
-	            final UserIdentityAnswerEntity entity = answerDAO.findById(searchBean.getKey());
-	            if (entity != null) {
+	        if (CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+	            final List<UserIdentityAnswerEntity> entityList = answerDAO.findByIds(searchBean.getKeySet());
+	            if (CollectionUtils.isNotEmpty(entityList)) {
 	                resultList = new LinkedList<UserIdentityAnswerEntity>();
-	                resultList.add(entity);
+	                resultList.addAll(entityList);
 	            }
 	        } else {
 	        	if(Boolean.TRUE.equals(searchBean.getIsEncrypted()) && StringUtils.isNotBlank(searchBean.getQuestionText()) && StringUtils.isNotBlank(searchBean.getUserId())) {

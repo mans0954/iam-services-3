@@ -41,7 +41,7 @@ public class ResourceTypeServiceTest extends AbstractKeyServiceTest<ResourceType
 	@Override
 	protected ResourceType get(String key) {
 		final ResourceTypeSearchBean searchBean = newSearchBean();
-		searchBean.setKey(key);
+		searchBean.addKey(key);
 		final List<ResourceType> types = find(searchBean, 0, 1);
 		return (CollectionUtils.isNotEmpty(types)) ? types.get(0) : null;
 	}

@@ -13,43 +13,14 @@ import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataElementPageTemplateSearchBean", propOrder = {
-		"keySet",
 		"patternIds",
 		"resourceId"
 })
 public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearchBean<MetadataElementPageTemplate, String> {
 
 	private Set<String> patternIds;
-	private Set<String> keySet;
 	private String resourceId;
 
-	@Override
-	public void setKey(final String key) {
-		if(keySet == null) {
-			keySet = new HashSet<String>();
-		}
-		keySet.add(key);
-	}
-
-	public Set<String> getKeys() {
-		return keySet;
-	}
-	
-	public void addKey(final String key) {
-		if(this.keySet == null) {
-			this.keySet = new HashSet<String>();
-		}
-		this.keySet.add(key);
-	}
-	
-	public boolean hasMultipleKeys() {
-		return (keySet != null && keySet.size() > 1);
-	}
-	
-	public void setKeys(final Set<String> keySet) {
-		this.keySet = keySet;
-	}
-	
 	public void addPatternId(final String patternId) {
 		if(patternId != null) {
 			if(this.patternIds == null) {
@@ -67,11 +38,6 @@ public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearch
 		this.patternIds = patternIds;
 	}
 
-	@Override
-	public String getKey() {
-		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
-	}
-
 	public String getResourceId() {
 		return resourceId;
 	}
@@ -84,7 +50,6 @@ public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearch
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
 		result = prime * result
 				+ ((patternIds == null) ? 0 : patternIds.hashCode());
 		result = prime * result
@@ -101,11 +66,6 @@ public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearch
 		if (getClass() != obj.getClass())
 			return false;
 		MetadataElementPageTemplateSearchBean other = (MetadataElementPageTemplateSearchBean) obj;
-		if (keySet == null) {
-			if (other.keySet != null)
-				return false;
-		} else if (!keySet.equals(other.keySet))
-			return false;
 		if (patternIds == null) {
 			if (other.patternIds != null)
 				return false;

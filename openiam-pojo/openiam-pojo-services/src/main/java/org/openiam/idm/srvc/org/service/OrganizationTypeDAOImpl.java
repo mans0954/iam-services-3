@@ -29,8 +29,6 @@ public class OrganizationTypeDAOImpl extends OrderDaoImpl<OrganizationTypeEntity
 			 final OrganizationTypeSearchBean sb = (OrganizationTypeSearchBean)searchBean;
 			 if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
 				 criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
-			 } else if(StringUtils.isNotBlank(sb.getKey())) {
-				 criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
 			 } else {
 				 
 				 final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());

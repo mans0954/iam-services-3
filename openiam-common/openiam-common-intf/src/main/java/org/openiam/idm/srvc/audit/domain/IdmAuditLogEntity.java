@@ -34,7 +34,7 @@ import org.openiam.base.domain.KeyEntity;
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.NestedFieldType;
+import org.openiam.elasticsearch.annotation.NestedCollectionType;
 import org.openiam.elasticsearch.annotation.SimpleElasticSearchJSONMapping;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
@@ -144,7 +144,7 @@ public class IdmAuditLogEntity extends KeyEntity {
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
     @Field(type = FieldType.Nested, index = FieldIndex.not_analyzed, store= true, includeInParent=true)
-    @NestedFieldType(AuditLogTargetEntity.class)
+    @NestedCollectionType(AuditLogTargetEntity.class)
     private Set<AuditLogTargetEntity> targets = new LinkedHashSet<AuditLogTargetEntity>();
     
     /*
@@ -176,7 +176,7 @@ public class IdmAuditLogEntity extends KeyEntity {
             inverseJoinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")})
     @Fetch(FetchMode.SUBSELECT)
     //@Field(type = FieldType.Nested, index = FieldIndex.not_analyzed, store= true)
-    @NestedFieldType(IdmAuditLogEntity.class)
+    @NestedCollectionType(IdmAuditLogEntity.class)
     private Set<IdmAuditLogEntity> childLogs = new HashSet<IdmAuditLogEntity>();
     
     public void addChild(final IdmAuditLogEntity entity) {

@@ -70,79 +70,78 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         if(searchBean != null && searchBean instanceof RoleSearchBean) {
             final RoleSearchBean roleSearchBean = (RoleSearchBean)searchBean;
 
-            if(roleSearchBean.hasMultipleKeys()) {
-                criteria.add(Restrictions.in(getPKfieldName(), roleSearchBean.getKeys()));
-            }else if(StringUtils.isNotBlank(roleSearchBean.getKey())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), roleSearchBean.getKey()));
-            }
-
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getAttributes())) {
-                for(final Tuple<String, String> attribute : roleSearchBean.getAttributes()) {
-                    DetachedCriteria crit = DetachedCriteria.forClass(RoleAttributeEntity.class);
-                    if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
-                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()),
-                                Restrictions.eq("value", attribute.getValue())));
-                    } else if(StringUtils.isNotBlank(attribute.getKey())) {
-                        crit.add(Restrictions.eq("name", attribute.getKey()));
-                    } else if(StringUtils.isNotBlank(attribute.getValue())) {
-                        crit.add(Restrictions.eq("value", attribute.getValue()));
-                    }
-                    crit.setProjection(Projections.property("role.id"));
-                    criteria.add(Subqueries.propertyIn("id", crit));
-                }
-            }
-            
-            Criterion c = getStringCriterion("name", roleSearchBean.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
-            if(c != null) {
-                criteria.add(c);
-            }
-
-            if(StringUtils.isNotBlank(roleSearchBean.getManagedSysId())){
-                criteria.add(Restrictions.eq("managedSystem.id", roleSearchBean.getManagedSysId()));
-            }
-            c = getStringCriterion("description", roleSearchBean.getDescription(), false);
-            if(c != null) {
-                criteria.add(c);
-            }
-
-            if(StringUtils.isNotBlank(roleSearchBean.getType())){
-                criteria.add(Restrictions.eq("type.id", roleSearchBean.getType()));
-            }
-
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getGroupIdSet())) {
-                criteria.createAlias("groups", "groupXrefs")
-                        .createAlias("groupXrefs.memberEntity", "group").add(
-                        Restrictions.in("group.id", roleSearchBean.getGroupIdSet()));
-            }
-
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())) {
-                criteria.createAlias("resources", "resourceXrefs")
-                        .createAlias("resourceXrefs.memberEntity", "resource").add(
-                        Restrictions.in("resource.id", roleSearchBean.getResourceIdSet()));
-            }
-
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getChildIdSet())) {
-                criteria.createAlias("childRoles", "childXrefs")
-                        .createAlias("childXrefs.memberEntity", "child").add(
-                        Restrictions.in("child.id", roleSearchBean.getChildIdSet()));
-            }
-
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getParentIdSet())) {
-                criteria.createAlias("parentRoles", "parentXrefs")
-                        .createAlias("parentXrefs.entity", "parent").add(
-                        Restrictions.in("parent.id", roleSearchBean.getParentIdSet()));
-            }
-
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getOrganizationIdSet())){
-                criteria.createAlias("organizations", "organizationXrefs")
-                        .createAlias("organizationXrefs.entity", "organization").add(
-                        Restrictions.in("organization.id", roleSearchBean.getOrganizationIdSet()));
-            }
-
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getUserIdSet())){
-                criteria.createAlias("users", "userXrefs")
-                        .createAlias("userXrefs.memberEntity", "user").add(
-                        Restrictions.in("user.id", roleSearchBean.getUserIdSet()));
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), roleSearchBean.getKeySet()));
+            } else {
+	
+	            if(CollectionUtils.isNotEmpty(roleSearchBean.getAttributes())) {
+	                for(final Tuple<String, String> attribute : roleSearchBean.getAttributes()) {
+	                    DetachedCriteria crit = DetachedCriteria.forClass(RoleAttributeEntity.class);
+	                    if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
+	                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()),
+	                                Restrictions.eq("value", attribute.getValue())));
+	                    } else if(StringUtils.isNotBlank(attribute.getKey())) {
+	                        crit.add(Restrictions.eq("name", attribute.getKey()));
+	                    } else if(StringUtils.isNotBlank(attribute.getValue())) {
+	                        crit.add(Restrictions.eq("value", attribute.getValue()));
+	                    }
+	                    crit.setProjection(Projections.property("role.id"));
+	                    criteria.add(Subqueries.propertyIn("id", crit));
+	                }
+	            }
+	            
+	            Criterion c = getStringCriterion("name", roleSearchBean.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+	            if(c != null) {
+	                criteria.add(c);
+	            }
+	
+	            if(StringUtils.isNotBlank(roleSearchBean.getManagedSysId())){
+	                criteria.add(Restrictions.eq("managedSystem.id", roleSearchBean.getManagedSysId()));
+	            }
+	            c = getStringCriterion("description", roleSearchBean.getDescription(), false);
+	            if(c != null) {
+	                criteria.add(c);
+	            }
+	
+	            if(StringUtils.isNotBlank(roleSearchBean.getMetadataType())){
+	                criteria.add(Restrictions.eq("type.id", roleSearchBean.getMetadataType()));
+	            }
+	
+	            if(CollectionUtils.isNotEmpty(roleSearchBean.getGroupIdSet())) {
+	                criteria.createAlias("groups", "groupXrefs")
+	                        .createAlias("groupXrefs.memberEntity", "group").add(
+	                        Restrictions.in("group.id", roleSearchBean.getGroupIdSet()));
+	            }
+	
+	            if(CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())) {
+	                criteria.createAlias("resources", "resourceXrefs")
+	                        .createAlias("resourceXrefs.memberEntity", "resource").add(
+	                        Restrictions.in("resource.id", roleSearchBean.getResourceIdSet()));
+	            }
+	
+	            if(CollectionUtils.isNotEmpty(roleSearchBean.getChildIdSet())) {
+	                criteria.createAlias("childRoles", "childXrefs")
+	                        .createAlias("childXrefs.memberEntity", "child").add(
+	                        Restrictions.in("child.id", roleSearchBean.getChildIdSet()));
+	            }
+	
+	            if(CollectionUtils.isNotEmpty(roleSearchBean.getParentIdSet())) {
+	                criteria.createAlias("parentRoles", "parentXrefs")
+	                        .createAlias("parentXrefs.entity", "parent").add(
+	                        Restrictions.in("parent.id", roleSearchBean.getParentIdSet()));
+	            }
+	
+	            if(CollectionUtils.isNotEmpty(roleSearchBean.getOrganizationIdSet())){
+	                criteria.createAlias("organizations", "organizationXrefs")
+	                        .createAlias("organizationXrefs.entity", "organization").add(
+	                        Restrictions.in("organization.id", roleSearchBean.getOrganizationIdSet()));
+	            }
+	
+	            if(CollectionUtils.isNotEmpty(roleSearchBean.getUserIdSet())){
+	                criteria.createAlias("users", "userXrefs")
+	                        .createAlias("userXrefs.memberEntity", "user").add(
+	                        Restrictions.in("user.id", roleSearchBean.getUserIdSet()));
+	            }
             }
         }
         return criteria;

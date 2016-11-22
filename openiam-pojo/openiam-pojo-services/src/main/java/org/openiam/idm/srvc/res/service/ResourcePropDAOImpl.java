@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.res.service;
 
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.elasticsearch.common.lang3.StringUtils;
@@ -26,9 +27,9 @@ public class ResourcePropDAOImpl extends BaseDaoImpl<ResourcePropEntity, String>
 		final Criteria criteria = super.getCriteria();
 		if(searchBean != null && searchBean instanceof ResourcePropSearchBean) {
 			final ResourcePropSearchBean sb = (ResourcePropSearchBean)searchBean;
-			if(StringUtils.isNotBlank(sb.getKey())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-			} else {
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
 				final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
                 if(nameCriterion != null) {
                 	criteria.add(nameCriterion);

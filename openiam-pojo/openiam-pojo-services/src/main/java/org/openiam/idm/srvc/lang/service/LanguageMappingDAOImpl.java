@@ -26,9 +26,9 @@ public class LanguageMappingDAOImpl extends BaseDaoImpl<LanguageMappingEntity, S
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof LanguageMappingSearchBean) {
 			final LanguageMappingSearchBean sb = (LanguageMappingSearchBean)searchBean;
-			if(StringUtils.isNotBlank(sb.getKey())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-			} else {
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
 				if(StringUtils.isNotBlank(sb.getLanguageId())) {
 					criteria.add(Restrictions.eq("languageId", sb.getLanguageId()));
 				}

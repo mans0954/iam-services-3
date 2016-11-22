@@ -328,23 +328,28 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId, false);
         if(searchBean != null) {
-        	if (StringUtils.isBlank(searchBean.getKey())) {
-        		searchBean.setKeys(filter);
-        	} else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
+        	if (CollectionUtils.isEmpty(searchBean.getKeySet())) {
+        		searchBean.setKeySet(filter);
+        	} else if (!DelegationFilterHelper.isAllowed(searchBean.getKeySet(), filter)) {
         		return new ArrayList<OrganizationEntity>(0);
         	}
         }
-        if(searchBean != null && searchBean.isUseElasticSearch()) {
-        	/* aop translation won't handle this, since the return type is not a KeyEntity */
-        	List<OrganizationDoc> docs = null;
-        	if(organizationElasticSearchRepository.isValidSearchBean(searchBean)) {
-        		docs = organizationElasticSearchRepository.findBeans(searchBean, from, size);
+        if(searchBean != null) {
+        	if(CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+        		return orgDao.findByIds(searchBean.getKeySet());
+        	} else if(searchBean.isUseElasticSearch()) {
+	        	List<OrganizationDoc> docs = null;
+	        	if(organizationElasticSearchRepository.isValidSearchBean(searchBean)) {
+	        		docs = organizationElasticSearchRepository.findBeans(searchBean, from, size);
+	        	} else {
+	        		docs = organizationElasticSearchRepository.findAll(organizationElasticSearchRepository.getPageable(searchBean, from, size)).getContent();
+	        	}
+	        	final List<OrganizationEntity> entities = organizationDocConverter.convertToEntityList(docs);
+	        	internationalizationProvider.doDatabaseGet(entities);
+	        	return entities;
         	} else {
-        		docs = organizationElasticSearchRepository.findAll(organizationElasticSearchRepository.getPageable(searchBean, from, size)).getContent();
+        		return orgDao.getByExample(searchBean, from, size);
         	}
-        	final List<OrganizationEntity> entities = organizationDocConverter.convertToEntityList(docs);
-        	internationalizationProvider.doDatabaseGet(entities);
-        	return entities;
         } else {
         	return orgDao.getByExample(searchBean, from, size);
         }
@@ -419,9 +424,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public int count(final OrganizationSearchBean searchBean, String requesterId) {
         final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
         Set<String> filter = getDelegationFilter(requesterId, isUncoverParents);
-        if (StringUtils.isBlank(searchBean.getKey()))
-            searchBean.setKeys(filter);
-        else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
+        if (CollectionUtils.isEmpty(searchBean.getKeySet())) {
+            searchBean.setKeySet(filter);
+        } else if (!DelegationFilterHelper.isAllowed(searchBean.getKeySet(), filter)) {
             return 0;
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {

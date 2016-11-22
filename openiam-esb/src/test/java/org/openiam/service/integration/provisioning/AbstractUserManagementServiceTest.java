@@ -233,7 +233,7 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
     protected User get(String key) {
         User user =null;
         UserSearchBean userSearchBean = newSearchBean();
-        userSearchBean.setKey(key);
+        userSearchBean.addKey(key);
         userSearchBean.setDeepCopy(true);
         userSearchBean.setInitDefaulLogin(true);
         List<User> userList = this.find(userSearchBean, 0,1);

@@ -38,16 +38,8 @@ public interface ResourceService {
 	public List<Resource> findResourcesDtoByIds(Collection<String> resourceIdCollection, Language language);
 	public ResourceEntity findResourceByName(final String name);
 	public int count(final ResourceSearchBean searchBean);
-	//public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity lang);
-	//public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size);
-	public List<ResourceEntity> findBeansLocalized(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
-	public List<Resource> findBeansLocalizedDto(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
 	public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
-	/*	public int getNumOfChildResources(final String resourceId);
-	public List<ResourceEntity> getParentResources(final  String resourceId, final int from, final int size);
-	public List<Resource> getParentResourcesDto(String resourceId, int from, int size, Language lang);
-	public int getNumOfParentResources(final String resourceId);
-	public List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean);*/
+	public List<Resource> findBeansDTO(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
 	public List<Resource> getResourcesDtoForRole(String roleId, int from, int size, final ResourceSearchBean searchBean, Language language);
 
     /**

@@ -15,13 +15,15 @@ import java.util.Set;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.elasticsearch.common.netty.util.internal.ConcurrentHashMap;
 import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
-import org.openiam.elasticsearch.annotation.NestedFieldType;
+import org.openiam.elasticsearch.annotation.NestedCollectionType;
+import org.openiam.elasticsearch.annotation.NestedMapType;
 import org.openiam.elasticsearch.annotation.SimpleElasticSearchJSONMapping;
 import org.openiam.elasticsearch.bridge.ElasticsearchBrigde;
+import org.openiam.elasticsearch.converter.FieldMapper;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -30,7 +32,6 @@ import org.springframework.data.elasticsearch.core.EntityMapper;
 import org.springframework.util.ReflectionUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -41,9 +42,29 @@ public class AnnotationEntityMapper implements EntityMapper {
 	final ObjectMapper mapper = new CustomJacksonMapper();
 	
 	private Map<Class<?>, ElasticsearchBrigde> bridgeCache = new HashMap<Class<?>, ElasticsearchBrigde>();
+	private Map<Field, FieldMapper<?>> keyMappers = new ConcurrentHashMap<Field, FieldMapper<?>>();
+	private Map<Field, FieldMapper<?>> valueMappers = new ConcurrentHashMap<Field, FieldMapper<?>>();
 	
 	public AnnotationEntityMapper() {
 		
+	}
+	
+	private FieldMapper<?> getKeyMapper(final Field field, final NestedMapType type) throws InstantiationException, IllegalAccessException {
+		FieldMapper<?> mapper = keyMappers.get(field);
+		if(mapper == null) {
+			mapper = type.keyMapper().newInstance();
+			keyMappers.put(field, mapper);
+		}
+		return mapper;
+	}
+	
+	private FieldMapper<?> getValueMapper(final Field field, final NestedMapType type) throws InstantiationException, IllegalAccessException {
+		FieldMapper<?> mapper = valueMappers.get(field);
+		if(mapper == null) {
+			mapper = type.valueMapper().newInstance();
+			valueMappers.put(field, mapper);
+		}
+		return mapper;
 	}
 
 	@Override
@@ -70,13 +91,17 @@ public class AnnotationEntityMapper implements EntityMapper {
 			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
-			populateObject(valueMap, entity, clazz);
+			try {
+				populateObject(valueMap, entity, clazz);
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
 			retval = entity;
 		}
 		return retval;
 	}
 	
-	private void populateObject(final Map<String, Object> valueMap, final Object entity, final Class<?> clazz) throws JsonParseException, JsonMappingException, IOException {
+	private void populateObject(final Map<String, Object> valueMap, final Object entity, final Class<?> clazz) throws JsonParseException, JsonMappingException, IOException, InstantiationException, IllegalAccessException {
 		if(entity != null) {
 			final List<Field> fields = getDeclaredFields(clazz);
 			if(CollectionUtils.isNotEmpty(fields)) {
@@ -90,42 +115,55 @@ public class AnnotationEntityMapper implements EntityMapper {
 		}
 	}
 	
-	private Object getValue(final Field field, Object value) throws JsonParseException, JsonMappingException, IOException {
+	private Object getValue(final Field field, Object value) throws JsonParseException, JsonMappingException, IOException, InstantiationException, IllegalAccessException {
 		final org.springframework.data.elasticsearch.annotations.Field esField = 
 				field.getAnnotation(org.springframework.data.elasticsearch.annotations.Field.class);
 		final NestedField nestedField = field.getAnnotation(NestedField.class);
 		
 		if(esField != null && value != null) {
 			boolean isNestedField = (nestedField != null) || (FieldType.Nested.equals(esField.type()));
-			if(isNestedField) {
-				final NestedFieldType nestedFieldType = field.getAnnotation(NestedFieldType.class);
-				if(nestedFieldType == null) {
-					throw new RuntimeException(String.format("%s annotation not present on %s", NestedFieldType.class, field));
-				}
-				
+			if(isNestedField) {				
 				if(Collection.class.isAssignableFrom(field.getType())) {
+					final NestedCollectionType nestedFieldType = field.getAnnotation(NestedCollectionType.class);
+					if(nestedFieldType == null) {
+						throw new RuntimeException(String.format("%s annotation not present on %s", NestedCollectionType.class, field));
+					}
+					
 					if(!field.getType().isInterface()) {
 						throw new RuntimeException(String.format("Expected field %s to be an interface", field));
 					}
-				} else {
-					throw new RuntimeException(String.format("Nested field %s was not a Collection", field));
-				}
-				
-				Collection<Object> collection = null;
-				if(field.getType().equals(Set.class)) {
-					collection = new HashSet<Object>();
-				} else if(field.getType().equals(List.class)) {
-					collection = new LinkedList<Object>();
-				} else {
-					throw new RuntimeException(String.format("Unsupported type %s for field %s and value %s", field.getType(), field, value));
-				}
-				
-				if(value instanceof Collection) {
-					for(final Object o : (Collection)value) {
-						collection.add(mapper.convertValue(o, nestedFieldType.value()));
+					Collection<Object> collection = null;
+					if(field.getType().equals(Set.class)) {
+						collection = new HashSet<Object>();
+					} else if(field.getType().equals(List.class)) {
+						collection = new LinkedList<Object>();
+					} else {
+						throw new RuntimeException(String.format("Unsupported type %s for field %s and value %s", field.getType(), field, value));
 					}
+					
+					if(value instanceof Collection) {
+						for(final Object o : (Collection)value) {
+							collection.add(mapper.convertValue(o, nestedFieldType.value()));
+						}
+					}
+					value = collection;
+				} else if(Map.class.isAssignableFrom(field.getType())) {
+					final NestedMapType nestedFieldType = field.getAnnotation(NestedMapType.class);
+					if(nestedFieldType == null) {
+						throw new RuntimeException(String.format("%s annotation not present on %s", NestedMapType.class, field));
+					}
+					final Map map = new HashMap();
+					final FieldMapper<?> keyMapper = getKeyMapper(field, nestedFieldType);
+					final FieldMapper<?> valueMapper = getValueMapper(field, nestedFieldType);
+					for(Object mapKey : ((Map)value).keySet()) {
+						final Object transformedKey = keyMapper.map(mapKey);
+						final Object transformedValue = valueMapper.map(((Map)value).get(mapKey));
+						if(transformedKey != null && transformedValue != null) {
+							map.put(transformedKey, transformedValue);
+						}
+					}
+					value = map;
 				}
-				value = collection;
 			} else {
 				final ElasticsearchFieldBridge bridge = field.getAnnotation(ElasticsearchFieldBridge.class);
 				if(bridge != null) {

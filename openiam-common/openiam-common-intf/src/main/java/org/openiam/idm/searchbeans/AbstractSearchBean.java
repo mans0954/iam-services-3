@@ -1,21 +1,25 @@
 package org.openiam.idm.searchbeans;
 
-import org.apache.commons.lang.StringUtils;
-import org.openiam.base.ws.SortParam;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.SortParam;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractSearchBean", propOrder = {
-        "key",
+        "keySet",
         "deepCopy",
         "sortBy",
         "findInCache",
@@ -25,7 +29,8 @@ import java.util.List;
 public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType>, Serializable {
 
 	private boolean deepCopy = true;
-	private KeyType key;
+	private Set<KeyType> keySet;
+	//private KeyType key;
 	private boolean findInCache;
 	
 	/*
@@ -43,12 +48,28 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
     	return String.valueOf(this.hashCode());
     }
 	
-	public KeyType getKey() {
-		return key;
-	}
-	
+    @Deprecated
 	public void setKey(final KeyType key) {
-		this.key = key;
+		addKey(key);
+	}
+
+	public Set<KeyType> getKeySet() {
+		return keySet;
+	}
+
+	public void setKeySet(Collection<KeyType> keySet) {
+		if(CollectionUtils.isNotEmpty(keySet)) {
+			this.keySet = new HashSet<KeyType>(keySet);
+		}
+	}
+
+	public void addKey(final KeyType key) {
+		if(key != null) {
+			if(this.keySet == null) {
+				this.keySet = new HashSet<KeyType>();
+			}
+			this.keySet.add(key);
+		}
 	}
 
 	public boolean isDeepCopy() {
@@ -118,7 +139,7 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 		int result = 1;
 		result = prime * result + (deepCopy ? 1231 : 1237);
 		result = prime * result + (findInCache ? 1231 : 1237);
-		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
 		result = prime * result
 				+ ((languageId == null) ? 0 : languageId.hashCode());
 		result = prime * result + ((sortBy == null) ? 0 : sortBy.hashCode());
@@ -139,10 +160,10 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 			return false;
 		if (findInCache != other.findInCache)
 			return false;
-		if (key == null) {
-			if (other.key != null)
+		if (keySet == null) {
+			if (other.keySet != null)
 				return false;
-		} else if (!key.equals(other.key))
+		} else if (!keySet.equals(other.keySet))
 			return false;
 		if (languageId == null) {
 			if (other.languageId != null)
@@ -161,7 +182,7 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 
 	@Override
 	public String toString() {
-		return "AbstractSearchBean [deepCopy=" + deepCopy + ", key=" + key
+		return "AbstractSearchBean [deepCopy=" + deepCopy + ", keySet=" + keySet
 				+ ", findInCache=" + findInCache + ", useElasticSearch="
 				+ useElasticSearch + ", languageId=" + languageId + ", sortBy="
 				+ sortBy + "]";

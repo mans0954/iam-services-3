@@ -210,11 +210,11 @@ public class LoginDataServiceImpl implements LoginDataService {
     @Transactional(readOnly = true)
     public List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size) {
         List<LoginEntity> retVal = null;
-        if (StringUtils.isNotEmpty(searchBean.getKey())) {
-            final LoginEntity entity = loginDao.findById(searchBean.getKey());
-            if (entity != null) {
+        if (CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+            final List<LoginEntity> entityList = loginDao.findByIds(searchBean.getKeySet());
+            if (CollectionUtils.isNotEmpty(entityList)) {
                 retVal = new ArrayList<LoginEntity>();
-                retVal.add(entity);
+                retVal.addAll(entityList);
             }
         } else {
         	final List<String> ids = loginRepo.findIds(searchBean, from, size);

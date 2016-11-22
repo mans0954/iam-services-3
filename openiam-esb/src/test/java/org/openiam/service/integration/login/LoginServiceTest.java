@@ -111,7 +111,7 @@ public class LoginServiceTest extends AbstractKeyServiceTest<Login, LoginSearchB
 
 		final LoginSearchBean searchBean = newSearchBean();
 		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
-		searchBean.setKey(instance.getId());
+		searchBean.addKey(instance.getId());
 
 /*
  confirm save on both nodes

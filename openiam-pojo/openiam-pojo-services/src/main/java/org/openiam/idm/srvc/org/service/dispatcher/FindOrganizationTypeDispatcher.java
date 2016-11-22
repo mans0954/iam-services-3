@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.service.dispatcher;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.response.OrganizationTypeListResponse;
 import org.openiam.exception.BasicDataServiceException;
@@ -28,7 +29,8 @@ public class FindOrganizationTypeDispatcher extends AbstractOrganizationTypeDisp
                 response.setList(organizationTypeService.findAllowedChildrenByDelegationFilter(request.getRequesterId(), request.getLanguage()));
                 break;
             case GetAllowedParents:
-                response.setList(organizationTypeService.getAllowedParents(request.getSearchBean().getKey(), request.getRequesterId(), request.getLanguage()));
+            	final String id = (CollectionUtils.isNotEmpty((request.getSearchBean().getKeySet()))) ? request.getSearchBean().getKeySet().iterator().next() : null;
+                response.setList(organizationTypeService.getAllowedParents(id, request.getRequesterId(), request.getLanguage()));
                 break;
         }
         return response;

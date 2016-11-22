@@ -15,6 +15,8 @@ public abstract class AbstractMembershipXrefEntity<Parent extends KeyEntity, Chi
 	public abstract Set<AccessRightEntity> getRights();
 	public abstract Parent getEntity();
 	public abstract Child getMemberEntity();
+	public abstract Class<Parent> getEntityClass();
+	public abstract Class<Child> getMemberClass();
 	
 	@Column(name = "START_DATE", length = 19)
     private Date startDate;

@@ -352,7 +352,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		final Set<AuthProviderAttribute> attributes = new HashSet<AuthProviderAttribute>();
 		attributeValues.forEach((attributeId, value) -> {
 			final AuthAttributeSearchBean searchBean = new AuthAttributeSearchBean();
-			searchBean.setKey(attributeId);
+			searchBean.addKey(attributeId);
 			final List<AuthAttribute> authAttributeList = authProviderServiceClient.findAuthAttributeBeans(searchBean, 0, 1);
 			if(CollectionUtils.isNotEmpty(authAttributeList)) {
 				final AuthAttribute authAttribute = authAttributeList.get(0);

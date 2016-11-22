@@ -30,7 +30,10 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 //@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Document(indexName = ESIndexName.PHONE, type= ESIndexType.PHONE)
-@AttributeOverride(name = "id", column = @Column(name = "PHONE_ID"))
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "PHONE_ID")),
+    @AttributeOverride(name = "name", column = @Column(name="NAME", length=40))
+})
 @Internationalized
 public class PhoneEntity extends AbstractMetdataTypeEntity {
    
@@ -93,10 +96,6 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
     @Column(name="PHONE_NBR", length=50)
     @Size(max = 50, message = "validator.phone.number.toolong")
     private String phoneNbr;
-
-    @Column(name="NAME", length=40)
-    @Size(max = 50, message = "validator.phone.label.toolong")
-    private String name;
 
     /*
     @Column(name="PHONE_TYPE", length=20)
@@ -178,12 +177,10 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
         this.phoneNbr = phoneNbr;
     }
 
+    @Override
+    @Size(max = 50, message = "validator.phone.label.toolong")
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     /*
@@ -235,7 +232,6 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
 		result = prime * result + (isDefault ? 1231 : 1237);
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		result = prime * result
 				+ ((phoneExt == null) ? 0 : phoneExt.hashCode());
@@ -287,11 +283,6 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
 			if (other.lastUpdate != null)
 				return false;
 		} else if (!lastUpdate.equals(other.lastUpdate))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
 			return false;
 		if (parent == null) {
 			if (other.parent != null)

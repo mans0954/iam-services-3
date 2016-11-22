@@ -93,6 +93,18 @@ public class UserToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity
 	public RoleEntity getRole() {
 		return entity;
 	}
+	
+	@Override
+	@Transient
+	public Class<RoleEntity> getEntityClass() {
+		return RoleEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<UserEntity> getMemberClass() {
+		return UserEntity.class;
+	}	
 
 	@Override
 	public int hashCode() {
@@ -130,5 +142,5 @@ public class UserToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity
 		} else if (!rights.equals(other.rights))
 			return false;
 		return true;
-	}	
+	}
 }

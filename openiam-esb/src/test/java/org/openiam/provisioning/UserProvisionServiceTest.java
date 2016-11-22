@@ -188,7 +188,7 @@ public class UserProvisionServiceTest extends AbstractTestNGSpringContextTests {
 
     protected Language getDefaultLanguage() {
         final LanguageSearchBean searchBean = new LanguageSearchBean();
-        searchBean.setKey("1");
+        searchBean.addKey("1");
         return languageServiceClient.findBeans(searchBean, 0, 1, null).get(0);
     }
 

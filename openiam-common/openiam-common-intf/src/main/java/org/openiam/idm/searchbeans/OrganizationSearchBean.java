@@ -22,15 +22,10 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationSearchBean", propOrder = {
-        "keySet",
         "organizationTypeIdSet",
-//		"userId",
-//		"parentId",
-//		"childId",
         "validParentTypeId",
         "internalOrgId",
         "attributes",
-        "metadataType",
         "isSelectable",
         "abbreviation",
         "forCurrentUsersOnly",
@@ -39,11 +34,9 @@ import java.util.Set;
 })
 public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> {
     private static final long serialVersionUID = 1L;
-    private Set<String> keySet;
     private Set<String> organizationTypeIdSet;
     private String validParentTypeId;
     private String internalOrgId;
-    private String metadataType;
     private List<Tuple<String, String>> attributes;
     private Boolean isSelectable = null;
     private String abbreviation;
@@ -73,7 +66,7 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
 
     public void setOrganizationTypeIdSet(final List<String> organizationTypeIdSet) {
         if (organizationTypeIdSet != null) {
-            setKeys(new HashSet<String>(organizationTypeIdSet));
+        	setOrganizationTypeIdSet(new HashSet<String>(organizationTypeIdSet));
         }
     }
 
@@ -81,54 +74,12 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.organizationTypeIdSet = organizationTypeIdSet;
     }
 
-    @Override
-    public String getKey() {
-        return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
-    }
-
-    @Override
-    public void setKey(final String key) {
-        this.addKey(key);
-    }
-
-    public String getMetadataType() {
-        return metadataType;
-    }
-
-    public void setMetadataType(String metadataType) {
-        this.metadataType = metadataType;
-    }
-
-    public Set<String> getKeys() {
-        return keySet;
-    }
-
-    public void addKey(final String key) {
-        if (this.keySet == null) {
-            this.keySet = new HashSet<String>();
-        }
-        this.keySet.add(key);
-    }
-
-    public boolean hasMultipleKeys() {
-        return (keySet != null && keySet.size() > 1);
-    }
-
-    public void setKeys(final Collection<String> keySet) {
-        if (keySet != null) {
-            setKeys(new HashSet<String>(keySet));
-        }
-    }
     public Boolean getUncoverParents() {
         return uncoverParents;
     }
 
         public void setUncoverParents(Boolean uncoverParents) {
         this.uncoverParents = uncoverParents;
-    }
-
-    public void setKeys(final Set<String> keySet) {
-        this.keySet = keySet;
     }
 
     public Boolean getIsSelectable() {
@@ -212,9 +163,6 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
 				+ ((internalOrgId == null) ? 0 : internalOrgId.hashCode());
 		result = prime * result
 				+ ((isSelectable == null) ? 0 : isSelectable.hashCode());
-		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
-		result = prime * result
-				+ ((metadataType == null) ? 0 : metadataType.hashCode());
 		result = prime
 				* result
 				+ ((organizationTypeIdSet == null) ? 0 : organizationTypeIdSet
@@ -263,16 +211,6 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
 			if (other.isSelectable != null)
 				return false;
 		} else if (!isSelectable.equals(other.isSelectable))
-			return false;
-		if (keySet == null) {
-			if (other.keySet != null)
-				return false;
-		} else if (!keySet.equals(other.keySet))
-			return false;
-		if (metadataType == null) {
-			if (other.metadataType != null)
-				return false;
-		} else if (!metadataType.equals(other.metadataType))
 			return false;
 		if (organizationTypeIdSet == null) {
 			if (other.organizationTypeIdSet != null)

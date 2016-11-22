@@ -94,6 +94,18 @@ public class UserToOrganizationMembershipXrefEntity extends AbstractMembershipXr
 	public OrganizationEntity getOrganization() {
 		return entity;
 	}
+	
+	@Override
+	@Transient
+	public Class<OrganizationEntity> getEntityClass() {
+		return OrganizationEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<UserEntity> getMemberClass() {
+		return UserEntity.class;
+	}
 
 	@Override
 	public int hashCode() {

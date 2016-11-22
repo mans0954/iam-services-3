@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.res.service;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
@@ -33,8 +34,8 @@ public class ResourceTypeDAOImpl extends OrderDaoImpl<ResourceTypeEntity, String
             if(sb.getSupportsHierarchy() != null) {
             	criteria.add(Restrictions.eq("supportsHierarchy", sb.getSupportsHierarchy()));
             }
-            if (!StringUtils.isEmpty(sb.getKey())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+            if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
             }
             
             if (Boolean.FALSE.equals(sb.getSelectAll())) {

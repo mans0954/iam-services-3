@@ -37,7 +37,7 @@ public class UIThemeServiceTest extends AbstractKeyServiceTest<UITheme, UIThemeS
 
 		final UIThemeSearchBean searchBean = newSearchBean();
 		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
-		searchBean.setKey(instance.getId());
+		searchBean.addKey(instance.getId());
 
 /*
  confirm save on both nodes

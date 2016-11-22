@@ -138,7 +138,7 @@ Elastic search ??? not work
     protected User get(String key) {
         User user =null;
         UserSearchBean userSearchBean = new UserSearchBean();
-        userSearchBean.setKey(key);
+        userSearchBean.addKey(key);
         userSearchBean.setDeepCopy(true);
         userSearchBean.setInitDefaulLogin(true);
         List<User> userList = this.find(userSearchBean, 0,1);

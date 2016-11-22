@@ -314,7 +314,7 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
     private User findByKey(UserSearchKeyEnum matchAttrName, String matchAttrValue) throws Exception {
         UserSearchBean searchBean = new UserSearchBean();
         if (UserSearchKeyEnum.USERID.equals(matchAttrName)) {
-            searchBean.setKey(matchAttrValue);
+            searchBean.addKey(matchAttrValue);
             searchBean.setUserId(matchAttrValue);
         } else if (UserSearchKeyEnum.PRINCIPAL.equals(matchAttrName)) {
             LoginSearchBean lsb = new LoginSearchBean();

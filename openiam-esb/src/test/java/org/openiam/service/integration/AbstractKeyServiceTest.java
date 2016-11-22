@@ -71,7 +71,7 @@ public abstract class AbstractKeyServiceTest<T extends KeyDTO, S extends Abstrac
 		/* find */
 		final S searchBean = newSearchBean();
 		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
-		searchBean.setKey(instance.getId());
+		searchBean.addKey(instance.getId());
     	
     	/* confirm save on both nodes */
     	instance = assertClusteredSave(searchBean);

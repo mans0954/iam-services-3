@@ -4,7 +4,7 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldIndex;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-public abstract class AbstractMetdataTypeDoc extends AbstractKeyDoc {
+public abstract class AbstractMetadataTypeDoc extends AbstractKeyNameDoc {
 
 	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
 	private String metadataTypeId;
@@ -34,7 +34,7 @@ public abstract class AbstractMetdataTypeDoc extends AbstractKeyDoc {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AbstractMetdataTypeDoc other = (AbstractMetdataTypeDoc) obj;
+		AbstractMetadataTypeDoc other = (AbstractMetadataTypeDoc) obj;
 		if (metadataTypeId == null) {
 			if (other.metadataTypeId != null)
 				return false;
@@ -45,7 +45,7 @@ public abstract class AbstractMetdataTypeDoc extends AbstractKeyDoc {
 
 	@Override
 	public String toString() {
-		return "AbstractMetdataTypeDoc [metadataTypeId=" + metadataTypeId
+		return "AbstractMetadataTypeDoc [metadataTypeId=" + metadataTypeId
 				+ ", getId()=" + getId() + "]";
 	}
 	

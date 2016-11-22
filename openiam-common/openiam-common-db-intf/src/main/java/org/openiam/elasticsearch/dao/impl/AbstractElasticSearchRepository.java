@@ -17,6 +17,7 @@ import org.apache.commons.logging.LogFactory;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.OrderConstants;
+import org.openiam.base.Tuple;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SortParam;
 import org.openiam.elasticsearch.dao.AbstractCustomElasticSearchRepository;
@@ -100,8 +101,16 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 		return Criteria.where(term).lessThan(value.getTime());
 	}
 	
+	protected Criteria eq(String term, final boolean value) {
+		return Criteria.where(term).is(value);
+	}
+	
 	protected Criteria eq(String term, final String value) {
 		return getWhereCriteria(term, value, MatchType.EXACT);
+	}
+	
+	protected Criteria neq(String term, final String value) {
+		return getWhereCriteria(term, value, MatchType.EXACT).not();
 	}
 	
 	protected Criteria startsWith(final String term, final String value) {
@@ -208,6 +217,19 @@ implements AbstractCustomElasticSearchRepository<T, S, ID>{
 			}
 		}
 		return sortBy;
+	}
+	
+	protected Criteria getAttributeCriteria(List<Tuple<String, String>> attributes) {
+		Criteria subcriteria = null;
+		for(final Tuple<String, String> tuple : attributes) {
+			final String key = tuple.getKey();
+			final String value = tuple.getValue();
+			if(StringUtils.isNotBlank(key) && StringUtils.isNotBlank(value)) {
+				final Criteria criteria = eq(new StringBuilder("attributes.").append(key).toString(), value);
+				subcriteria = (subcriteria != null) ? subcriteria.or(criteria) : criteria;
+			}
+		}
+		return subcriteria;
 	}
 	
 	public Pageable getPageable(final S searchBean, final int from, final int size) {

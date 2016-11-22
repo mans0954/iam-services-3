@@ -20,7 +20,6 @@ import java.util.Set;
 	"attributeName",
 	"selfEditable",
 	"templateId",
-	"keySet",
 	"excludedGroupings",
 	"groupings",
 	"dataType",
@@ -30,7 +29,6 @@ public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<Metadat
 
 	private String resourceId;
 	private String dataType;
-	private Set<String> keySet;
 	private Set<String> typeIdSet;
 	private boolean auditable;
 	private boolean required;
@@ -85,33 +83,6 @@ public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<Metadat
 		this.templateId = templateId;
 	}
 	
-	@Override
-	public void setKey(final String key) {
-		if(keySet == null) {
-			keySet = new HashSet<String>();
-		}
-		keySet.add(key);
-	}
-
-	public Set<String> getKeys() {
-		return keySet;
-	}
-	
-	public void addKey(final String key) {
-		if(this.keySet == null) {
-			this.keySet = new HashSet<String>();
-		}
-		this.keySet.add(key);
-	}
-	
-	public boolean hasMultipleKeys() {
-		return (keySet != null && keySet.size() > 1);
-	}
-	
-	public void setKeys(final Set<String> keySet) {
-		this.keySet = keySet;
-	}
-	
 	public void addExcludedGrouping(final MetadataTypeGrouping grouping) {
 		if(grouping != null) {
 			if(this.excludedGroupings == null) {
@@ -144,10 +115,6 @@ public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<Metadat
         this.groupings = groupings;
     }
 
-    @Override
-	public String getKey() {
-		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
-	}
 	public String getDataType() {
 		return dataType;
 	}
@@ -175,7 +142,6 @@ public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<Metadat
 						.hashCode());
 		result = prime * result
 				+ ((groupings == null) ? 0 : groupings.hashCode());
-		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
 		result = prime * result + (required ? 1231 : 1237);
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
@@ -216,11 +182,6 @@ public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<Metadat
 			if (other.groupings != null)
 				return false;
 		} else if (!groupings.equals(other.groupings))
-			return false;
-		if (keySet == null) {
-			if (other.keySet != null)
-				return false;
-		} else if (!keySet.equals(other.keySet))
 			return false;
 		if (required != other.required)
 			return false;

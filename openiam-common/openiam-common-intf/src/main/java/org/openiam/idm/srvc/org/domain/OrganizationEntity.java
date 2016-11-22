@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -45,10 +46,12 @@ import org.openiam.internationalization.Internationalized;
 @Table(name = "COMPANY")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Organization.class)
-@AttributeOverride(name = "id", column = @Column(name = "COMPANY_ID"))
 @Internationalized
 @DocumentRepresentation(value=OrganizationDoc.class, converter=OrganizationDocumentToEntityConverter.class)
-//@Document(indexName = ESIndexName.ORGANIZATION, type= ESIndexType.ORGANIZATION)
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "COMPANY_ID")),
+    @AttributeOverride(name = "name", column = @Column(name="COMPANY_NAME", length=200))
+})
 public class OrganizationEntity extends AbstractEntitlementPolicyEntity {
     
     @Column(name="ALIAS", length=100)
@@ -84,11 +87,6 @@ public class OrganizationEntity extends AbstractEntitlementPolicyEntity {
 
     @Column(name="LST_UPDATED_BY", length=32)
     private String lstUpdatedBy;
-
-    //@Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
-    @Column(name="COMPANY_NAME", length=200)
-    @Size(max = 200, message = "organization.name.too.long")
-    private String name;
 
     @Column(name="INTERNAL_COMPANY_ID")
     private String internalOrgId;
@@ -225,12 +223,10 @@ public class OrganizationEntity extends AbstractEntitlementPolicyEntity {
         this.lstUpdatedBy = lstUpdatedBy;
     }
 
+    @Override
+    @Size(max = 200, message = "organization.name.too.long")
     public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+		return super.getName();
 	}
 
     public String getInternalOrgId() {
@@ -615,7 +611,6 @@ public class OrganizationEntity extends AbstractEntitlementPolicyEntity {
 				+ ((lstUpdate == null) ? 0 : lstUpdate.hashCode());
 		result = prime * result
 				+ ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime
 				* result
 				+ ((organizationType == null) ? 0 : organizationType.hashCode());
@@ -683,11 +678,6 @@ public class OrganizationEntity extends AbstractEntitlementPolicyEntity {
 			if (other.lstUpdatedBy != null)
 				return false;
 		} else if (!lstUpdatedBy.equals(other.lstUpdatedBy))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
 			return false;
 		if (organizationType == null) {
 			if (other.organizationType != null)

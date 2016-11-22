@@ -515,9 +515,9 @@ public class RoleDataServiceImpl implements RoleDataService {
     @LocalizedServiceGet
     public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId);
-        if (StringUtils.isBlank(searchBean.getKey()))
-            searchBean.setKeys(filter);
-        else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
+        if (CollectionUtils.isEmpty(searchBean.getKeySet())) {
+            searchBean.setKeySet(filter);
+        } else if (!DelegationFilterHelper.isAllowed(searchBean.getKeySet(), filter)) {
             return new ArrayList<RoleEntity>(0);
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {
@@ -549,9 +549,9 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Transactional(readOnly = true)
     public int countBeans(RoleSearchBean searchBean, final String requesterId) {
         Set<String> filter = getDelegationFilter(requesterId);
-        if (StringUtils.isBlank(searchBean.getKey()))
-            searchBean.setKeys(filter);
-        else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
+        if (CollectionUtils.isEmpty(searchBean.getKeySet())) {
+            searchBean.setKeySet(filter);
+        } else if (!DelegationFilterHelper.isAllowed(searchBean.getKeySet(), filter)) {
             return 0;
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {

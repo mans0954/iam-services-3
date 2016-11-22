@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.dao;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
@@ -24,8 +25,8 @@ public class AuthAttributeDaoImpl extends BaseDaoImpl<AuthAttributeEntity, Strin
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof AuthAttributeSearchBean) {
 			final AuthAttributeSearchBean sb = (AuthAttributeSearchBean)searchBean;
-			if(StringUtils.isNotBlank(sb.getKey())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+				criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
 			} else {
 				
 				if (StringUtils.isNotEmpty(sb.getProviderType())) {

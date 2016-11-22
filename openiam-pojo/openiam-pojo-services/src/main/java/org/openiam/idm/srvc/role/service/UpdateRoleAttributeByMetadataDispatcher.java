@@ -30,7 +30,7 @@ public class UpdateRoleAttributeByMetadataDispatcher extends UpdateAttributeByMe
     @Override
     protected void process(UpdateAttributeByMetadataRequest request) {
         RoleSearchBean searchBean = new RoleSearchBean();
-        searchBean.setType(request.getMetadataTypeId());
+        searchBean.setMetadataType(request.getMetadataTypeId());
         List<RoleEntity> roleList = roleDataService.findBeans(searchBean, null, -1, -1);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (RoleEntity role : roleList) {

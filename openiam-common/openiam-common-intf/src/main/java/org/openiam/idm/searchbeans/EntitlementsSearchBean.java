@@ -25,11 +25,13 @@ import java.util.Set;
         "resourceIdSet",
         "userIdSet",
         "organizationIdSet",
-        "includeAccessRights"
+        "includeAccessRights",
+        "metadataType"
 })
 public abstract class EntitlementsSearchBean<T extends KeyNameDTO, KeyType extends Serializable> extends AbstractKeyNameSearchBean<T, KeyType> {
     private Set<String> parentIdSet;
     private Set<String> childIdSet;
+    private String metadataType;
 
     /** requires custom service logic */
     protected boolean includeAccessRights;
@@ -182,6 +184,14 @@ public abstract class EntitlementsSearchBean<T extends KeyNameDTO, KeyType exten
         }
     }
 
+	public String getMetadataType() {
+		return metadataType;
+	}
+
+	public void setMetadataType(String metadataType) {
+		this.metadataType = metadataType;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -203,6 +213,9 @@ public abstract class EntitlementsSearchBean<T extends KeyNameDTO, KeyType exten
 				+ ((roleIdSet == null) ? 0 : roleIdSet.hashCode());
 		result = prime * result
 				+ ((userIdSet == null) ? 0 : userIdSet.hashCode());
+		
+		result = prime * result
+				+ ((metadataType == null) ? 0 : metadataType.hashCode());
 		return result;
 	}
 
@@ -251,6 +264,12 @@ public abstract class EntitlementsSearchBean<T extends KeyNameDTO, KeyType exten
 			if (other.userIdSet != null)
 				return false;
 		} else if (!userIdSet.equals(other.userIdSet))
+			return false;
+		
+		if (metadataType == null) {
+			if (other.metadataType != null)
+				return false;
+		} else if (!metadataType.equals(other.metadataType))
 			return false;
 		return true;
 	}

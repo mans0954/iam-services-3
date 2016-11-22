@@ -20,6 +20,7 @@ package org.openiam.idm.srvc.lang.service;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,8 +48,8 @@ public class LanguageDAOImpl extends OrderDaoImpl<LanguageEntity, String> implem
         Criteria criteria = getCriteria();
         if (searchBean != null && (searchBean instanceof LanguageSearchBean)) {
             final LanguageSearchBean sb = (LanguageSearchBean) searchBean;
-            if (!StringUtils.isEmpty(sb.getKey())) {
-                criteria.add(Restrictions.eq("id", sb.getKey()));
+            if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
             } else {
                 if (StringUtils.isNotBlank(sb.getCode())) {
                     criteria.add(Restrictions.eq("languageCode", sb.getCode()));

@@ -8,7 +8,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.springframework.stereotype.Component;
 
 @Component("goleDocumentToEntityConverter")
-public class GroupDocumentToEntityConverter extends AbstractMetdataTypeDocumentToEntityConverter<GroupDoc, GroupEntity> {
+public class GroupDocumentToEntityConverter extends AbstractMetadataTypeDocumentToEntityConverter<GroupDoc, GroupEntity> {
 
 	@Override
 	protected GroupDoc newDocument() {
@@ -33,7 +33,6 @@ public class GroupDocumentToEntityConverter extends AbstractMetdataTypeDocumentT
 	@Override
 	public GroupDoc convertToDocument(GroupEntity entity) {
 		final GroupDoc doc = super.convertToDocument(entity);
-		doc.setName(entity.getName());
 		if(entity.getManagedSystem() != null && StringUtils.isNotBlank(entity.getManagedSystem().getId())) {
 			doc.setManagedSysId(entity.getManagedSystem().getId());
 		}
@@ -58,7 +57,6 @@ public class GroupDocumentToEntityConverter extends AbstractMetdataTypeDocumentT
 	@Override
 	public GroupEntity convertToEntity(GroupDoc doc) {
 		final GroupEntity entity = super.convertToEntity(doc);
-		entity.setName(doc.getName());
 		if(StringUtils.isNotBlank(doc.getManagedSysId())) {
 			entity.setManagedSystem(new ManagedSysEntity());
 			entity.getManagedSystem().setId(doc.getManagedSysId());
