@@ -90,7 +90,17 @@ public class RoleToResourceMembershipXrefEntity extends AbstractMembershipXrefEn
 		return entity;
 	}
 	 
-	 
+	@Override
+	@Transient
+	public Class<RoleEntity> getEntityClass() {
+		return RoleEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<ResourceEntity> getMemberClass() {
+		return ResourceEntity.class;
+	}
 
 	public Set<AccessRightEntity> getRights() {
 		return rights;

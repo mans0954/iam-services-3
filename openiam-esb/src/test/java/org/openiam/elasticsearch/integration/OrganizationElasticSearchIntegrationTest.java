@@ -1,4 +1,4 @@
-package org.openiam.service.integration.entitlements;
+package org.openiam.elasticsearch.integration;
 
 import java.util.List;
 
@@ -7,9 +7,12 @@ import org.elasticsearch.common.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.SearchParam;
+import org.openiam.elasticsearch.model.OrganizationDoc;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.service.integration.AbstractServiceTest;
 import org.openiam.srvc.am.OrganizationDataService;
 import org.openiam.srvc.am.OrganizationTypeDataService;
@@ -19,40 +22,42 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class OrganizationElasticSearchTest extends AbstractServiceTest {
-	
+public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTypeElasticSearchIntegrationTest<OrganizationDoc, OrganizationSearchBean, Organization> {
 
-	@Autowired
-	@Qualifier("organizationServiceClient")
-	private OrganizationDataService organizationServiceClient;
-	
-	@Autowired
-	@Qualifier("organizationTypeClient")
-	private OrganizationTypeDataService organizationTypeClient;
 
 	private String parentOrganizationId;
-	private Organization organization = null;
-	
-	@BeforeClass
-	protected void _setUp() throws Exception {
-		organization = super.createOrganization();
+
+	@Override
+	protected Organization createDTO() {
+		// TODO Auto-generated method stub
+		Organization organization = super.createDTO();
+		organization.setAbbreviation(getRandomName());
+		organization.setAlias(getRandomName());
+		organization.setClassification(getRandomName());
+		organization.setDescription(getRandomName());
+		organization.setDomainName(getRandomName());
+		organization.setLdapStr(getRandomName());
+		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, getDefaultLanguage()).get(0).getId());
+		final Response response = organizationServiceClient.saveOrganization(organization, getRequestorId());
+		assertSuccess(response);
+		organization = organizationServiceClient.getOrganizationLocalized((String)response.getResponseValue(), getRequestorId(), getDefaultLanguage());
+		Assert.assertNotNull(organization);
+		
+		final String organizationId = organization.getId();
+		
 		parentOrganizationId = organizationServiceClient.findBeans(null, getRequestorId(), 0, 10)
-																		   .stream()
-																		   .filter(e -> !e.getId().equals(organization.getId()))
-																		   .findAny()
-																		   .get()
-																		   .getId();
+				   .stream()
+				   .filter(e -> !e.getId().equals(organizationId))
+				   .findAny()
+				   .get()
+				   .getId();
 		assertSuccess(organizationServiceClient.addChildOrganization(parentOrganizationId, organization.getId(), getRequestorId(), null, null, null));
-		sleep(3);
+		sleep(5);
+		return organization;
 	}
-	
-	@AfterClass
-	public void _tearDown()  throws Exception {
-		if(organization != null) {
-			organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId());
-		}
-	}
-	
+
+
+
 	private OrganizationSearchBean newSearchBean() {
 		final OrganizationSearchBean sb = new OrganizationSearchBean();
 		sb.setLanguage(getDefaultLanguage());
@@ -78,37 +83,49 @@ public class OrganizationElasticSearchTest extends AbstractServiceTest {
 		});
 	}
 	
-	private void assertOrganizationPresent(final OrganizationSearchBean sb) {
-		final List<Organization> found = organizationServiceClient.findBeans(sb, getRequestorId(), 0, 100);
-		Assert.assertTrue(CollectionUtils.isNotEmpty(found));
-		Assert.assertTrue(found.stream().filter(e -> e.getId().equals(organization.getId())).count() > 0);
-	}
-
-	@Test
-	public void testOrganizationSearchWithMetadataType() {
-		final OrganizationSearchBean sb = newSearchBean();
-		sb.setMetadataType(organization.getMdTypeId());
-		assertOrganizationPresent(sb);
-	}
-	
 	@Test
 	public void testOrganizationSearchWithOrganizationType() {
 		final OrganizationSearchBean sb = newSearchBean();
-		sb.setOrganizationTypeId(organization.getOrganizationTypeId());
-		assertOrganizationPresent(sb);
+		sb.setOrganizationTypeId(getDTO().getOrganizationTypeId());
+		assertFindBeans(sb);
 	}
 	
 	@Test
 	public void testSearchWithParentOrganizationId() {
 		final OrganizationSearchBean sb = newSearchBean();
 		sb.addParentId(parentOrganizationId);
-		assertOrganizationPresent(sb);
+		assertFindBeans(sb);
 	}
 	
 	@Test
 	public void testSearchWithParentOrganizationTypeId() {
 		final OrganizationSearchBean sb = newSearchBean();
 		sb.setValidParentTypeId(organizationServiceClient.getOrganizationLocalized(parentOrganizationId, getRequestorId(), getDefaultLanguage()).getOrganizationTypeId());
-		assertOrganizationPresent(sb);
+		assertFindBeans(sb);
+	}
+
+	@Override
+	protected void delete(Organization dto) {
+		assertSuccess(organizationServiceClient.deleteOrganization(dto.getId(), getRequestorId()));
+	}
+
+	@Override
+	protected Class<OrganizationSearchBean> getSearchBeanClass() {
+		return OrganizationSearchBean.class;
+	}
+
+	@Override
+	protected Class<OrganizationDoc> getDocumentClass() {
+		return OrganizationDoc.class;
+	}
+
+	@Override
+	protected Class<Organization> getDTOClass() {
+		return Organization.class;
+	}
+
+	@Override
+	protected List<Organization> findBeans(OrganizationSearchBean searchBean) {
+		return organizationServiceClient.findBeans(searchBean, getRequestorId(), 0, 10);
 	}
 }

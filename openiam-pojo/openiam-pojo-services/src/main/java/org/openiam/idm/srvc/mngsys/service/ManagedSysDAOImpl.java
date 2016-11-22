@@ -34,9 +34,9 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof ManagedSysSearchBean) {
 			final ManagedSysSearchBean sb = (ManagedSysSearchBean)searchBean;
-			if(StringUtils.isNotBlank(sb.getKey())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-			} else {
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
 				final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
                 if(nameCriterion != null) {
                 	criteria.add(nameCriterion);

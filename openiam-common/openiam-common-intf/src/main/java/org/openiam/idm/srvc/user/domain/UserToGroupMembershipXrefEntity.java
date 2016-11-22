@@ -93,6 +93,18 @@ public class UserToGroupMembershipXrefEntity extends AbstractMembershipXrefEntit
 	public void setRights(Set<AccessRightEntity> rights) {
 		this.rights = rights;
 	}
+	
+	@Override
+	@Transient
+	public Class<GroupEntity> getEntityClass() {
+		return GroupEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<UserEntity> getMemberClass() {
+		return UserEntity.class;
+	}	
 
 	@Override
 	public int hashCode() {
@@ -130,5 +142,5 @@ public class UserToGroupMembershipXrefEntity extends AbstractMembershipXrefEntit
 		} else if (!rights.equals(other.rights))
 			return false;
 		return true;
-	}	
+	}
 }

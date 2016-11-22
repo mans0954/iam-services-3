@@ -37,7 +37,7 @@ public class ResourceAttributeListener extends AbstractAttributeListener {
         ResourceSearchBean searchBean = new ResourceSearchBean();
         searchBean.setMetadataType(request.getMetadataTypeId());
 
-        List<ResourceEntity> resList = resourceService.findBeansLocalized(searchBean,-1,-1, null);
+        List<ResourceEntity> resList = resourceService.findBeans(searchBean,-1,-1, null);
         if(CollectionUtils.isNotEmpty(resList)){
             for(ResourceEntity res: resList){
                 Set<ResourcePropEntity> resAttributes = res.getResourceProps();

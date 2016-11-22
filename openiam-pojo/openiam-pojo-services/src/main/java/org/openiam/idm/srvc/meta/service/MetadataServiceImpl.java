@@ -60,7 +60,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     private MetadataTypeDAO metadataTypeDao;
     
     @Autowired
-    private MetadataTypeElasticSearchRepository metadataTypeRepo;
+    private MetadataTypeElasticSearchRepository metadataTypeESRepo;
     
     @Autowired
     private MetadataElementDAO metadataElementDao;
@@ -162,8 +162,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	//@Cacheable(value="metadataElementEntities",  key="{ #searchBean, #from, #size }", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size){
 		List<MetadataElementEntity> retVal = null;
-		if(searchBean != null  && searchBean.hasMultipleKeys()) {
-			retVal = metadataElementDao.findByIds(searchBean.getKeys());
+		if(searchBean != null && CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+			retVal = metadataElementDao.findByIds(searchBean.getKeySet());
 		} else {
 			retVal = metadataElementDao.getByExample(searchBean, from, size);
 		}
@@ -178,21 +178,21 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	public List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean != null) {
-			if(CollectionUtils.isNotEmpty(searchBean.getKeys())) {
-				retVal = metadataTypeDao.findByIds(searchBean.getKeys());
+			if(CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+				retVal = metadataTypeDao.findByIds(searchBean.getKeySet());
 			} else {
 				if(searchBean.isUseElasticSearch()) {
-					if(metadataTypeRepo.isValidSearchBean(searchBean)) {
-						retVal = metadataTypeRepo.findBeans(searchBean, from, size);
+					if(metadataTypeESRepo.isValidSearchBean(searchBean)) {
+						retVal = metadataTypeESRepo.findBeans(searchBean, from, size);
 					} else {
-						retVal = metadataTypeRepo.findAll(metadataTypeRepo.getPageable(searchBean, from, size)).getContent();
+						retVal = metadataTypeESRepo.findAll(metadataTypeESRepo.getPageable(searchBean, from, size)).getContent();
 					}
 				} else {
 					retVal = metadataTypeDao.getByExample(searchBean, from, size);
 				}
 			}
 		} else {
-			retVal = metadataTypeRepo.findAll(metadataTypeRepo.getPageable(searchBean, from, size)).getContent();
+			retVal = metadataTypeESRepo.findAll(metadataTypeESRepo.getPageable(searchBean, from, size)).getContent();
 		}
         return (retVal != null) ? metaDataTypeDozerConverter.convertToDTOList(retVal,true) : null;
 	}
@@ -204,8 +204,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	//@Cacheable(value="metadataTypeEntities", key="{ #searchBean, #from, #size,#lang}", condition="{#searchBean != null and #searchBean.findInCache}")
 	public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language){
 		List<MetadataTypeEntity> retVal = null;
-		if(searchBean.hasMultipleKeys()) {
-			retVal = metadataTypeDao.findByIds(searchBean.getKeys());
+		if(CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+			retVal = metadataTypeDao.findByIds(searchBean.getKeySet());
 		} else {
 			retVal = metadataTypeDao.getByExample(searchBean, from, size);
 		}
@@ -470,9 +470,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@Transactional(readOnly=true)
 	public int count(final MetadataTypeSearchBean searchBean) {
 		int retVal = 0;
-		if(searchBean.hasMultipleKeys()) {
-			final List<MetadataTypeEntity> entityList = metadataTypeDao.findByIds(searchBean.getKeys());
-			retVal = (entityList != null) ? entityList.size() : 0;
+		if(searchBean != null && searchBean.isUseElasticSearch()) {
+			retVal = metadataTypeESRepo.count(searchBean);
 		} else {
 			retVal = metadataTypeDao.count(searchBean);
 		}

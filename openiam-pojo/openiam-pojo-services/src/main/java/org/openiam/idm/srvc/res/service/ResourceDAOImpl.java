@@ -106,10 +106,8 @@ public class ResourceDAOImpl extends OrderDaoImpl<ResourceEntity, String>
 //				criteria.add(Restrictions.eq("resourceType.id", sb.getResourceTypeId()));
 //			}
 
-            if (sb.hasMultipleKeys()) {
-                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeys()));
-            } else if (StringUtils.isNotBlank(sb.getKey())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+            if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
             }
 
             if (Boolean.TRUE.equals(sb.getRootsOnly())) {

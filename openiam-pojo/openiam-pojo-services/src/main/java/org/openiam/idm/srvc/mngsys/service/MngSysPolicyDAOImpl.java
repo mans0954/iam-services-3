@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.mngsys.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Criterion;
@@ -52,23 +53,24 @@ public class MngSysPolicyDAOImpl extends BaseDaoImpl<MngSysPolicyEntity, String>
     }
 
     @Override
-    protected Criteria getExampleCriteria(SearchBean sb) {
+    protected Criteria getExampleCriteria(SearchBean searchBean) {
         final Criteria criteria = super.getCriteria();
-        if(sb != null) {
-            if(sb instanceof MngSysPolicySearchBean) {
-                final MngSysPolicySearchBean searchBean = (MngSysPolicySearchBean)sb;
-                if(StringUtils.isNotBlank(searchBean.getKey())) {
-                    criteria.add(Restrictions.idEq(searchBean.getKey()));
-                }
-                final Criterion nameCriterion = getStringCriterion("name", searchBean.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
-                if(nameCriterion != null) {
-                	criteria.add(nameCriterion);
-                }
-                if(StringUtils.isNotBlank(searchBean.getManagedSysId())) {
-                    criteria.add(Restrictions.eq("managedSystem.id", searchBean.getManagedSysId()));
-                }
-                if(StringUtils.isNotBlank(searchBean.getMetadataTypeId())) {
-                    criteria.add(Restrictions.eq("type.id", searchBean.getMetadataTypeId()));
+        if(searchBean != null) {
+            if(searchBean instanceof MngSysPolicySearchBean) {
+                final MngSysPolicySearchBean sb = (MngSysPolicySearchBean)searchBean;
+                if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                    criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+                } else {
+	                final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+	                if(nameCriterion != null) {
+	                	criteria.add(nameCriterion);
+	                }
+	                if(StringUtils.isNotBlank(sb.getManagedSysId())) {
+	                    criteria.add(Restrictions.eq("managedSystem.id", sb.getManagedSysId()));
+	                }
+	                if(StringUtils.isNotBlank(sb.getMetadataTypeId())) {
+	                    criteria.add(Restrictions.eq("type.id", sb.getMetadataTypeId()));
+	                }
                 }
             }
         }

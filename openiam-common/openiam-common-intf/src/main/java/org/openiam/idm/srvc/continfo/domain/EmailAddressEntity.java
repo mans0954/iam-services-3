@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.continfo.domain;
 import java.util.Date;
 
 import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -36,7 +37,10 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 //@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Document(indexName = ESIndexName.EMAIL, type= ESIndexType.EMAIL)
-@AttributeOverride(name = "id", column = @Column(name = "EMAIL_ID"))
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "EMAIL_ID")),
+    @AttributeOverride(name = "name", column = @Column(name = "NAME", length = 100))
+})
 @Internationalized
 public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 
@@ -70,10 +74,6 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
     @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     @ElasticsearchFieldBridge(impl = UserBrigde.class)
     private UserEntity parent;
-
-    @Column(name = "NAME", length = 100)
-    @Size(max = 100, message = "validator.email.label.toolong")
-    private String name;
     
     @Column(name = "LAST_UPDATE", length = 19)
     //@LuceneLastUpdate
@@ -126,12 +126,10 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
         this.parent = parent;
     }
 
+    @Override
+    @Size(max = 100, message = "validator.email.label.toolong")
     public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        return super.getName();
     }
 
     public Date getLastUpdate() {
@@ -180,7 +178,6 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 		result = prime * result + (isDefault ? 1231 : 1237);
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
@@ -218,11 +215,6 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 			if (other.lastUpdate != null)
 				return false;
 		} else if (!lastUpdate.equals(other.lastUpdate))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
 			return false;
 		return true;
 	}

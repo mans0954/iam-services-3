@@ -105,4 +105,16 @@ public class ResourceToOrgMembershipXrefEntity extends AbstractMembershipXrefEnt
 		return "ResourceToOrgMembershipXrefEntity [entity=" + entity
 				+ ", memberEntity=" + memberEntity + ", rights=" + rights + "]";
 	}
+
+	@Override
+	@Transient
+	public Class<OrganizationEntity> getEntityClass() {
+		return OrganizationEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<ResourceEntity> getMemberClass() {
+		return ResourceEntity.class;
+	}
 }

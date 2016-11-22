@@ -15,7 +15,7 @@ import org.springframework.data.elasticsearch.annotations.FieldIndex;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @MappedSuperclass
-public abstract class AbstractMetdataTypeEntity extends KeyEntity {
+public abstract class AbstractMetdataTypeEntity extends AbstractKeyNameEntity {
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)

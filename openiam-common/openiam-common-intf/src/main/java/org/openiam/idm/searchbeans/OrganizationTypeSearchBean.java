@@ -12,25 +12,15 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationTypeSearchBean", propOrder = {
-	"keySet",
 	"parentIds",
 	"childIds",
     "excludeIds"
 })
 public class OrganizationTypeSearchBean extends AbstractKeyNameSearchBean<OrganizationType, String> {
 
-	private Set<String> keySet;
 	private Set<String> parentIds;
 	private Set<String> childIds;
     private Set<String> excludeIds;
-
-	public Set<String> getKeySet() {
-		return keySet;
-	}
-
-	public void setKeySet(Set<String> keySet) {
-		this.keySet = keySet;
-	}
 
 	public Set<String> getParentIds() {
 		return parentIds;
@@ -91,7 +81,6 @@ public class OrganizationTypeSearchBean extends AbstractKeyNameSearchBean<Organi
 				+ ((childIds == null) ? 0 : childIds.hashCode());
 		result = prime * result
 				+ ((excludeIds == null) ? 0 : excludeIds.hashCode());
-		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
 		result = prime * result
 				+ ((parentIds == null) ? 0 : parentIds.hashCode());
 		return result;
@@ -115,11 +104,6 @@ public class OrganizationTypeSearchBean extends AbstractKeyNameSearchBean<Organi
 			if (other.excludeIds != null)
 				return false;
 		} else if (!excludeIds.equals(other.excludeIds))
-			return false;
-		if (keySet == null) {
-			if (other.keySet != null)
-				return false;
-		} else if (!keySet.equals(other.keySet))
 			return false;
 		if (parentIds == null) {
 			if (other.parentIds != null)

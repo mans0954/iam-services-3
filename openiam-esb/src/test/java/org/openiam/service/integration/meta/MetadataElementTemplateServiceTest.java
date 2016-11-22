@@ -79,7 +79,7 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 	protected MetadataElementPageTemplate get(String key) {
 		final MetadataElementPageTemplateSearchBean searchBean = newSearchBean();
 		searchBean.setDeepCopy(true);
-		searchBean.setKey(key);
+		searchBean.addKey(key);
 		return find(searchBean, 0, 1).get(0);
 	}
 

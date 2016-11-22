@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.naming.InitialContext;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,8 +39,8 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof ApproverAssocationSearchBean) {
 			final ApproverAssocationSearchBean sb = (ApproverAssocationSearchBean)searchBean;
-			if(StringUtils.isNotBlank(sb.getKey())) {
-				criteria.add(Restrictions.eq("id", sb.getKey()));
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+				criteria.add(Restrictions.in("id", sb.getKeySet()));
 			} else {
 				if(sb.getAssociationType() != null) {
 					criteria.add(Restrictions.eq("associationType", sb.getAssociationType()));

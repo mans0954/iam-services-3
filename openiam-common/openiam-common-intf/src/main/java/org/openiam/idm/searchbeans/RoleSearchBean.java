@@ -17,20 +17,16 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RoleSearchBean", propOrder = {
-        "keySet",
         "isRootsOnly",
         "description",
         "managedSysId",
-        "attributes",
-        "type"
+        "attributes"
 })
 public class RoleSearchBean extends EntitlementsSearchBean<Role, String> {
 
 	private static final long serialVersionUID = 1L;
-    private Set<String> keySet;
     private String managedSysId;
 	private Boolean isRootsOnly;
-    private String type;
     private List<Tuple<String,String>> attributes;
     private String description;
 
@@ -58,14 +54,6 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> {
         this.managedSysId = managedSysId;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public void addAttribute(final String key, final String value) {
         if(StringUtils.isNotBlank(key) || StringUtils.isNotBlank(value)) {
             if(this.attributes == null) {
@@ -84,38 +72,6 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> {
         this.attributes = attributes;
     }
 
-    @Override
-    public String getKey() {
-        return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
-    }
-
-    @Override
-    public void setKey(final String key) {
-        if(keySet == null) {
-            keySet = new HashSet<String>();
-        }
-        keySet.add(key);
-    }
-
-    public Set<String> getKeys() {
-        return keySet;
-    }
-
-    public void addKey(final String key) {
-        if(this.keySet == null) {
-            this.keySet = new HashSet<String>();
-        }
-        this.keySet.add(key);
-    }
-
-    public boolean hasMultipleKeys() {
-        return (keySet != null && keySet.size() > 1);
-    }
-
-    public void setKeys(final Set<String> keySet) {
-        this.keySet = keySet;
-    }
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -126,10 +82,8 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> {
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
 				+ ((isRootsOnly == null) ? 0 : isRootsOnly.hashCode());
-		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
 		result = prime * result
 				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
 
@@ -157,20 +111,10 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> {
 				return false;
 		} else if (!isRootsOnly.equals(other.isRootsOnly))
 			return false;
-		if (keySet == null) {
-			if (other.keySet != null)
-				return false;
-		} else if (!keySet.equals(other.keySet))
-			return false;
 		if (managedSysId == null) {
 			if (other.managedSysId != null)
 				return false;
 		} else if (!managedSysId.equals(other.managedSysId))
-			return false;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
 			return false;
 		return true;
 	}

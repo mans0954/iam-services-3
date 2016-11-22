@@ -146,7 +146,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
         final AuthStateId id = new AuthStateId();
         id.setUserId(request.getUserId());
         final AuthStateSearchBean sb = new AuthStateSearchBean();
-        sb.setKey(id);
+        sb.addKey(id);
         final List<AuthStateEntity> authStateList = authStateDAO.getByExample(sb);
 
         if (CollectionUtils.isEmpty(authStateList)) {

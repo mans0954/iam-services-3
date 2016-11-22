@@ -28,20 +28,20 @@ public class MetadataTemplateTypeFieldEntityDAOImpl extends BaseDaoImpl<Metadata
     protected Criteria getExampleCriteria(SearchBean searchBean) {
         final Criteria criteria = getCriteria();
         if (searchBean != null && searchBean instanceof MetadataTemplateTypeFieldSearchBean) {
-            final MetadataTemplateTypeFieldSearchBean bean = (MetadataTemplateTypeFieldSearchBean) searchBean;
-            if (StringUtils.isNotBlank(bean.getKey())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), bean.getKey()));
+            final MetadataTemplateTypeFieldSearchBean sb = (MetadataTemplateTypeFieldSearchBean) searchBean;
+            if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
             } else {
-                if (StringUtils.isNotBlank(bean.getName())) {
-                    criteria.add(Restrictions.eq("name", bean.getName()));
+                if (StringUtils.isNotBlank(sb.getName())) {
+                    criteria.add(Restrictions.eq("name", sb.getName()));
                 }
 
-                if (StringUtils.isNotBlank(bean.getTemplateTypeId())) {
-                    criteria.add(Restrictions.eq("templateType.id", bean.getTemplateTypeId()));
+                if (StringUtils.isNotBlank(sb.getTemplateTypeId())) {
+                    criteria.add(Restrictions.eq("templateType.id", sb.getTemplateTypeId()));
                 }
 
-                if (StringUtils.isNotBlank(bean.getTemplateId())) {
-                    criteria.createAlias("fieldXrefs", "xref").add(Restrictions.eq("xref.template.id", bean.getTemplateId()));
+                if (StringUtils.isNotBlank(sb.getTemplateId())) {
+                    criteria.createAlias("fieldXrefs", "xref").add(Restrictions.eq("xref.template.id", sb.getTemplateId()));
                 }
             }
         }

@@ -1,5 +1,6 @@
 package org.openiam.mq;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.request.*;
 import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
@@ -40,10 +41,11 @@ public class OrganizationTypeListener extends AbstractListener<OrganizationTypeA
             @Override
             public Response doProcess(OrganizationTypeAPI api, BaseSearchServiceRequest request) throws BasicDataServiceException {
                 Response response;
+                BaseSearchServiceRequest<OrganizationTypeSearchBean> req = ((BaseSearchServiceRequest<OrganizationTypeSearchBean>)request);
                 switch (api){
                     case FindBeans:
                         response = new OrganizationTypeListResponse();
-                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.findBeans(((BaseSearchServiceRequest<OrganizationTypeSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize(), request.getLanguage()));
+                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.findBeans(req.getSearchBean(), request.getFrom(), request.getSize(), request.getLanguage()));
                         break;
                     case FindAllowedChildren:
                         response = new OrganizationTypeListResponse();
@@ -51,11 +53,12 @@ public class OrganizationTypeListener extends AbstractListener<OrganizationTypeA
                         break;
                     case GetAllowedParents:
                         response = new OrganizationTypeListResponse();
-                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.getAllowedParents(((BaseSearchServiceRequest<OrganizationTypeSearchBean>)request).getSearchBean().getKey(), request.getRequesterId(), request.getLanguage()));
+                        final String id = (CollectionUtils.isNotEmpty((req.getSearchBean().getKeySet()))) ? req.getSearchBean().getKeySet().iterator().next() : null;
+                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.getAllowedParents(id, request.getRequesterId(), request.getLanguage()));
                         break;
                     case Count:
                         response = new IntResponse();
-                        ((IntResponse)response).setValue(organizationTypeService.count(((BaseSearchServiceRequest<OrganizationTypeSearchBean>)request).getSearchBean()));
+                        ((IntResponse)response).setValue(organizationTypeService.count(req.getSearchBean()));
                         break;
                     default:
                         throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());

@@ -95,6 +95,18 @@ public class RoleToGroupMembershipXrefEntity extends AbstractMembershipXrefEntit
 	public void setRights(Set<AccessRightEntity> rights) {
 		this.rights = rights;
 	}
+	
+	@Override
+	@Transient
+	public Class<RoleEntity> getEntityClass() {
+		return RoleEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<GroupEntity> getMemberClass() {
+		return GroupEntity.class;
+	}
 
 	@Override
 	public int hashCode() {

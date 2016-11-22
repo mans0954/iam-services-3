@@ -33,9 +33,6 @@ public class MngSysPolicyEntity extends AbstractMetdataTypeEntity {
     @JoinColumn(name = "MANAGED_SYS_ID", nullable = false)
     private ManagedSysEntity managedSystem;
 
-    @Column(name = "NAME", length = 150)
-    private String name;
-
     @Column(name = "LAST_UPDATE", length = 19)
     private Date lastUpdate;
 
@@ -60,14 +57,6 @@ public class MngSysPolicyEntity extends AbstractMetdataTypeEntity {
 
     public void setAttributeMaps(Set<AttributeMapEntity> attributeMaps) {
         this.attributeMaps = attributeMaps;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Date getLastUpdate() {
@@ -103,7 +92,6 @@ public class MngSysPolicyEntity extends AbstractMetdataTypeEntity {
         MngSysPolicyEntity that = (MngSysPolicyEntity) o;
 
         if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (id == null) {
             if (((MngSysPolicyEntity) o).getId() != null)
                 return false;
@@ -115,7 +103,6 @@ public class MngSysPolicyEntity extends AbstractMetdataTypeEntity {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         result = 31 * result + ((id == null) ? 0 : id.hashCode());
         return result;

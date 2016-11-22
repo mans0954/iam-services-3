@@ -12,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -85,6 +86,19 @@ public class UserToResourceMembershipXrefEntity extends AbstractMembershipXrefEn
 	public void setRights(Set<AccessRightEntity> rights) {
 		this.rights = rights;
 	}
+	
+	@Override
+	@Transient
+	public Class<ResourceEntity> getEntityClass() {
+		return ResourceEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<UserEntity> getMemberClass() {
+		return UserEntity.class;
+	}
+	
 
 	@Override
 	public int hashCode() {
@@ -123,6 +137,5 @@ public class UserToResourceMembershipXrefEntity extends AbstractMembershipXrefEn
 			return false;
 		return true;
 	}
-	
 	
 }

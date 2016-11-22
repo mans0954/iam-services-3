@@ -20,6 +20,10 @@ public enum ResourceRisk {
         value = val;
     }
     
+    public String getValue() {
+    	return value;
+    }
+    
     public static ResourceRisk getByValue(final String val) {
     	ResourceRisk retVal = null;
     	if(val != null) {

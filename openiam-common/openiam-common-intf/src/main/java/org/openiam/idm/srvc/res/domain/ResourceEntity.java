@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -33,8 +34,9 @@ import org.hibernate.annotations.Where;
 import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.constants.ESIndexName;
-import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.annotation.DocumentRepresentation;
+import org.openiam.elasticsearch.converter.ResourceDocumentToEntityConverter;
+import org.openiam.elasticsearch.model.ResourceDoc;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
@@ -49,7 +51,6 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldIndex;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -58,20 +59,18 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Table(name = "RES")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "ResourceEntity")
 @DozerDTOCorrespondence(Resource.class)
-@AttributeOverride(name = "id", column = @Column(name = "RESOURCE_ID"))
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "RESOURCE_ID")),
+    @AttributeOverride(name = "name", column = @Column(name = "NAME", length = 255))
+})
 @Internationalized
-@Document(indexName = ESIndexName.RESOURCE, type= ESIndexType.RESOURCE)
+@DocumentRepresentation(value=ResourceDoc.class, converter=ResourceDocumentToEntityConverter.class)
 public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RESOURCE_TYPE_ID")
     @Internationalized
     private ResourceTypeEntity resourceType;
-
-    @Column(name = "NAME", length = 255)
-    @Size(max = 255, message = "resource.name.too.long")
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
-    private String name;
 
     @Column(name = "DESCRIPTION", length = 512)
     @Size(max = 512, message = "resource.description.too.long")
@@ -194,12 +193,10 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         this.resourceType = resourceType;
     }
 
+    @Override
+    @Size(max = 255, message = "resource.name.too.long")
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
@@ -583,7 +580,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null) return false;
         if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) return false;
         if (minAuthLevel != null ? !minAuthLevel.equals(that.minAuthLevel) : that.minAuthLevel != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (resourceType != null ? !resourceType.equals(that.resourceType) : that.resourceType != null) return false;
         if (groovyScript != null ? !groovyScript.equals(that.groovyScript) : that.groovyScript != null) return false;
         return risk == that.risk;
@@ -593,7 +589,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (resourceType != null ? resourceType.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (displayOrder != null ? displayOrder.hashCode() : 0);
         result = 31 * result + (URL != null ? URL.hashCode() : 0);

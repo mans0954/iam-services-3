@@ -41,10 +41,8 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         if(searchBean != null && searchBean instanceof GroupSearchBean) {
             final GroupSearchBean sb = (GroupSearchBean)searchBean;
 
-            if(sb.hasMultipleKeys()) {
-                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeys()));
-            }else if(StringUtils.isNotBlank(sb.getKey())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+            if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
             } else {
             	final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
                 if(nameCriterion != null) {
@@ -55,12 +53,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
     				criteria.add(Restrictions.eq("managedSystem.id", sb.getManagedSysId()));
     			}
 
-	            if(sb.hasMultipleKeys()) {
-	                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeys()));
-	            }else if(StringUtils.isNotBlank(sb.getKey())) {
-	                criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-	            }
-	            
 	            if(CollectionUtils.isNotEmpty(sb.getRoleIdSet())){    
 	                criteria.createAlias("roles", "roleXrefs")
 							.createAlias("roleXrefs.entity", "role").add(
@@ -111,8 +103,8 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 	                }
 	            }
 	
-	            if(StringUtils.isNotBlank(sb.getType())){
-	                criteria.add(Restrictions.eq("type.id", sb.getType()));
+	            if(StringUtils.isNotBlank(sb.getMetadataType())){
+	                criteria.add(Restrictions.eq("type.id", sb.getMetadataType()));
 	            }
             }
 		}

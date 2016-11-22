@@ -95,6 +95,18 @@ public class GroupToResourceMembershipXrefEntity extends AbstractMembershipXrefE
 	public void setRights(Set<AccessRightEntity> rights) {
 		this.rights = rights;
 	}
+	
+	@Override
+	@Transient
+	public Class<GroupEntity> getEntityClass() {
+		return GroupEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<ResourceEntity> getMemberClass() {
+		return ResourceEntity.class;
+	}
 
 	@Override
 	public int hashCode() {

@@ -37,6 +37,11 @@
 			<class name="org.openiam.service.integration.entitlements.Group2OrganizationEntitlementsTest"/>
 			<class name="org.openiam.service.integration.entitlements.Role2OrganizationEntitlementsTest"/>
 			<class name="org.openiam.service.integration.entitlements.Resource2OrganizationEntitlementsTest"/>
+			
+			<!--
+			<class name="org.openiam.elasticsearch.integration.ResourceElasticSearchIntegrationTest" />
+			<class name="org.openiam.elasticsearch.integration.OrganizationElasticSearchIntegrationTest" />
+			-->
 		</classes>
 	</test>
 	
@@ -105,6 +110,7 @@
 			<class name="org.openiam.elasticsearch.integration.ElasticSearchIntegrationTest" />
 			-->
 			<class name="org.openiam.service.integration.log.IdmAuditLogServiceTest" />
+			
 		</classes>
 	</test>
 	

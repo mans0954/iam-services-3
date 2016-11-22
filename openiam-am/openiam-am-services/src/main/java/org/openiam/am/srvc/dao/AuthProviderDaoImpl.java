@@ -30,8 +30,8 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
     	Criteria criteria = this.getCriteria();
     	if(searchBean != null && (searchBean instanceof AuthProviderSearchBean)) {
     		final AuthProviderSearchBean sb = (AuthProviderSearchBean)searchBean;
-    		if (StringUtils.isNotBlank(sb.getKey())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+    		if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
             } else {
                 if (StringUtils.isNotEmpty(sb.getProviderType())) {
                     criteria.add(Restrictions.eq("type.id", sb.getProviderType()));

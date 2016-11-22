@@ -21,6 +21,10 @@ import org.openiam.cache.CacheKeyEvictions;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
+import org.openiam.elasticsearch.converter.ResourceDocumentToEntityConverter;
+import org.openiam.elasticsearch.dao.ResourceElasticSearchRepository;
+import org.openiam.elasticsearch.model.GroupDoc;
+import org.openiam.elasticsearch.model.ResourceDoc;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.ResourcePropSearchBean;
@@ -61,6 +65,7 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.internationalization.InternationalizationProvider;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
 import org.openiam.util.AuditLogHelper;
@@ -148,6 +153,15 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Autowired
     protected AuditLogHelper auditLogHelper;
+    
+    @Autowired
+    private ResourceElasticSearchRepository resourceElasticSearchRepo;
+    
+    @Autowired
+	private InternationalizationProvider internationalizationProvider;
+    
+    @Autowired
+    private ResourceDocumentToEntityConverter resourceDocConverter;
 
     @Autowired
     private AccessRightDAO accessRightDAO;
@@ -384,33 +398,11 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     public int count(ResourceSearchBean searchBean) {
         // final ResourceEntity entity =
         // resourceSearchBeanConverter.convert(searchBean);
-        return resourceDao.count(searchBean);
-    }
-
- /*   @Override
-    @Transactional(readOnly = true)
-    public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
-        return resourceDao.getByExampleNoLocalize(searchBean, from, size);
-    }*/
-
-    @Override
-    @Transactional(readOnly = true)
-    @LocalizedServiceGet
-    public List<ResourceEntity> findBeansLocalized(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        return resourceDao.getByExample(searchBean, from, size);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "resources", key = "{ #searchBean, #from, #size, #language}")
-    public List<Resource> findBeansLocalizedDto(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        //List<ResourceEntity> resourceEntityList = this.findBeansLocalized(searchBean, from, size, lang);
-
-        //ResourceService bean = (ResourceService)ac.getBean("resourceService");
-        List<ResourceEntity> resourceEntityList = this.getProxyService().findBeansLocalized(searchBean, from, size, language);
-
-        List<Resource> resourceList = resourceConverter.convertToDTOList(resourceEntityList, searchBean.isDeepCopy());
-        return resourceList;
+    	if(searchBean != null && searchBean.isUseElasticSearch()) {
+    		return resourceElasticSearchRepo.count(searchBean);
+    	} else {
+    		return resourceDao.count(searchBean);
+    	}
     }
 
     @Override
@@ -587,56 +579,6 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             roleDao.update(role);
         }
     }
-
-/*    @Override
-    @Transactional(readOnly = true)
-    public int getNumOfResourcesForRole(String roleId, final ResourceSearchBean searchBean) {
-        return resourceDao.getNumOfResourcesForRole(roleId, searchBean);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForRole(String roleId, int from, int size,
-                                                    final ResourceSearchBean searchBean) {
-        return resourceDao.getResourcesForRole(roleId, from, size, searchBean);
-    }
-
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public int getNumOfResourceForGroup(String groupId, final ResourceSearchBean searchBean) {
-        return resourceDao.getNumOfResourcesForGroup(groupId, searchBean);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForGroup(String groupId, int from, int size,
-                                                     final ResourceSearchBean searchBean) {
-        return resourceDao.getResourcesForGroup(groupId, from, size, searchBean);
-    }
-
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public int getNumOfResourceForUser(String userId, final ResourceSearchBean searchBean) {
-        return resourceDao.getNumOfResourcesForUser(userId, searchBean);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForUser(String userId, int from, int size,
-                                                    final ResourceSearchBean searchBean) {
-        return resourceDao.getResourcesForUser(userId, from, size, searchBean);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId,
-                                                          final ResourceSearchBean searchBean) {
-        return resourceDao.getResourcesForUserByType(userId, resourceTypeId, searchBean);
-    }*/
 
     @Override
     @Transactional(readOnly = true)
@@ -1009,7 +951,33 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     /* AM-851 */
     //@Cacheable(value = "resourceEntities", key = "{ #searchBean,#from,#size,#lang}", condition="{#searchBean != null and #searchBean.findInCache}")
     public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        return resourceDao.getByExample(searchBean, from, size);
+    	if(searchBean != null) {
+    		if(CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+    			return resourceDao.findByIds(searchBean.getKeySet());
+    		} else if(searchBean.isUseElasticSearch()) {
+    			List<ResourceDoc> docs = null;
+            	if(resourceElasticSearchRepo.isValidSearchBean(searchBean)) {
+            		docs = resourceElasticSearchRepo.findBeans(searchBean, from, size);
+            	} else {
+            		docs = resourceElasticSearchRepo.findAll(resourceElasticSearchRepo.getPageable(searchBean, from, size)).getContent();
+            	}
+            	final List<ResourceEntity> entities = resourceDocConverter.convertToEntityList(docs);
+            	internationalizationProvider.doDatabaseGet(entities);
+            	return entities;
+    		} else {
+    			return resourceDao.getByExample(searchBean, from, size);
+    		}
+    	} else {
+    		return resourceDao.getByExample(searchBean, from, size);
+    	}
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "resources", key = "{ #searchBean, #from, #size, #language}")
+    public List<Resource> findBeansDTO(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
+    	final List<ResourceEntity> entities = this.getProxyService().findBeans(searchBean, from, size, language);
+    	return resourceConverter.convertToDTOList(entities, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
 
     @Override

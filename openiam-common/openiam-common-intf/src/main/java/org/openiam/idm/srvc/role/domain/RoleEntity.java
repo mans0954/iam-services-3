@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -46,14 +47,13 @@ import org.openiam.internationalization.Internationalized;
 @Table(name="ROLE")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "RoleEntity")
 @DozerDTOCorrespondence(Role.class)
-@AttributeOverride(name = "id", column = @Column(name = "ROLE_ID"))
 @Internationalized
 @DocumentRepresentation(value=RoleDoc.class, converter=RoleDocumentToEntityConverter.class)
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "ROLE_ID")),
+    @AttributeOverride(name = "name", column = @Column(name="ROLE_NAME",length=80))
+})
 public class RoleEntity extends AbstractEntitlementPolicyEntity {
-
-    @Column(name="ROLE_NAME",length=80)
-    @Size(max = 80, message = "role.name.too.long")
-    private String name;
     
     @Column(name="DESCRIPTION")
     @Size(max = 255, message = "role.description.too.long")
@@ -109,12 +109,9 @@ public class RoleEntity extends AbstractEntitlementPolicyEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleToOrgMembershipXrefEntity> organizations = new HashSet<RoleToOrgMembershipXrefEntity>(0);
 
+    @Size(max = 80, message = "role.name.too.long")
 	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+		return super.getName();
 	}
 
 	public String getDescription() {
@@ -447,8 +444,6 @@ public class RoleEntity extends AbstractEntitlementPolicyEntity {
 		result = prime * result
 				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result
-				+ ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		return result;
 	}
@@ -486,11 +481,6 @@ public class RoleEntity extends AbstractEntitlementPolicyEntity {
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
 			return false;
 		if (status == null) {
 			if (other.status != null)

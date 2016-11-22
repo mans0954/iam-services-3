@@ -117,18 +117,9 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
         return resourceService.findResourcesDtoByIds(resourceIds, language);
     }
 
-    @WebMethod
+    @Override
     public int count(final ResourceSearchBean searchBean) {
-        int count = 0;
-        if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
-            final List<ResourceEntity> resultsEntities = resourceService
-                    .findBeans(searchBean, 0, Integer.MAX_VALUE, null);
-            count = (resultsEntities != null) ? resultsEntities.size() : 0;
-        } else {
-            count = resourceService.count(searchBean);
-        }
-
-        return count;
+        return resourceService.count(searchBean);
     }
 
     @Override

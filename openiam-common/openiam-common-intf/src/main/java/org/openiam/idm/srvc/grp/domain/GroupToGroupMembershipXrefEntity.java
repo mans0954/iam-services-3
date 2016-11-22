@@ -86,6 +86,18 @@ public class GroupToGroupMembershipXrefEntity extends AbstractMembershipXrefEnti
 	public GroupEntity getGroup() {
 		return entity;
 	}
+	
+	@Override
+	@Transient
+	public Class<GroupEntity> getEntityClass() {
+		return GroupEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<GroupEntity> getMemberClass() {
+		return GroupEntity.class;
+	}    
 
 	@Override
 	public int hashCode() {
@@ -123,5 +135,5 @@ public class GroupToGroupMembershipXrefEntity extends AbstractMembershipXrefEnti
 		} else if (!rights.equals(other.rights))
 			return false;
 		return true;
-	}    
+	}
 }

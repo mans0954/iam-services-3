@@ -16,13 +16,11 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 @XmlType(name = "MetadataTypeSearchBean", propOrder = { 
 	"active",
 	"syncManagedSys", 
-	"grouping", 
-	"keySet",
+	"grouping",
 	"usedForSMSOTP"
 })
 public class MetadataTypeSearchBean extends AbstractLanguageSearchBean<MetadataType, String> {
 
-    private Set<String> keySet;
     private Boolean active;
     private Boolean syncManagedSys;
     private MetadataTypeGrouping grouping;
@@ -52,34 +50,6 @@ public class MetadataTypeSearchBean extends AbstractLanguageSearchBean<MetadataT
 		this.grouping = grouping;
 	}
 
-    @Override
-    public void setKey(final String key) {
-        if (keySet == null) {
-            keySet = new HashSet<String>();
-        }
-        keySet.add(key);
-    }
-
-
-    public Set<String> getKeys() {
-        return keySet;
-    }
-
-    public void addKey(final String key) {
-        if (this.keySet == null) {
-            this.keySet = new HashSet<String>();
-        }
-        this.keySet.add(key);
-    }
-
-    public boolean hasMultipleKeys() {
-        return (keySet != null && keySet.size() > 1);
-    }
-
-    public void setKeys(final Set<String> keySet) {
-        this.keySet = keySet;
-    }
-    
 	public Boolean getUsedForSMSOTP() {
 		return usedForSMSOTP;
 	}
@@ -89,19 +59,12 @@ public class MetadataTypeSearchBean extends AbstractLanguageSearchBean<MetadataT
 	}
 
 	@Override
-    public String getKey() {
-        return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next()
-                : null;
-    }
-
-	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((active == null) ? 0 : active.hashCode());
 		result = prime * result
 				+ ((grouping == null) ? 0 : grouping.hashCode());
-		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
 		result = prime * result
 				+ ((syncManagedSys == null) ? 0 : syncManagedSys.hashCode());
 		result = prime * result
@@ -124,11 +87,6 @@ public class MetadataTypeSearchBean extends AbstractLanguageSearchBean<MetadataT
 		} else if (!active.equals(other.active))
 			return false;
 		if (grouping != other.grouping)
-			return false;
-		if (keySet == null) {
-			if (other.keySet != null)
-				return false;
-		} else if (!keySet.equals(other.keySet))
 			return false;
 		if (syncManagedSys == null) {
 			if (other.syncManagedSys != null)

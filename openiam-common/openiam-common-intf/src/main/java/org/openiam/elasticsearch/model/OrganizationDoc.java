@@ -14,19 +14,19 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @EntityRepresentation(value=OrganizationEntity.class, converter=OrganizationDocumentToEntityConverter.class)
 @Document(indexName = ESIndexName.ORGANIZATION, type= ESIndexType.ORGANIZATION)
-public class OrganizationDoc extends AbstractMetadataTypeKeyNameDoc {
+public class OrganizationDoc extends AbstractMetadataTypeDoc {
 	
 	public OrganizationDoc() {
 		super();
 	}
 
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed)
 	private String organizationTypeId;
 	
-	@Field(type = FieldType.Object, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.Object, index = FieldIndex.not_analyzed)
 	private List<String> parentIds;
 	
-	@Field(type = FieldType.Object, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.Object, index = FieldIndex.not_analyzed)
 	private List<String> parentOrganizationTypeIds;
 	
 	

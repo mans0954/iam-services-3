@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -160,7 +161,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	
 	@Autowired
 	@Qualifier("organizationTypeClient")
-	private OrganizationTypeDataService organizationTypeClient;
+	protected OrganizationTypeDataService organizationTypeClient;
 	
 	@Autowired
 	@Qualifier("accessRightServiceClient")
@@ -187,6 +188,12 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	private OpenIAMHttpClient httpClient;
 	
 	protected Language defaultLanguage;
+	
+	protected MetadataType getRandomMetadataType() {
+		final List<MetadataType> types = metadataServiceClient.findTypeBeans(null, 0, 10, getDefaultLanguage());
+		Assert.assertTrue(CollectionUtils.isNotEmpty(types));
+		return types.get(RandomUtils.nextInt(0, types.size()));
+	}
 	
 	protected Date getMiddleDate(final Date startDate, final Date endDate) {
 		if(startDate != null) {
@@ -372,7 +379,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	protected Language getDefaultLanguage() {
 		if(defaultLanguage == null) {
 			final LanguageSearchBean searchBean = new LanguageSearchBean();
-			searchBean.setKey("1");
+			searchBean.addKey("1");
 			defaultLanguage = languageServiceClient.findBeans(searchBean, 0, 1, null).get(0);
 		}
 		return defaultLanguage;

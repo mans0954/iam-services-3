@@ -19,14 +19,18 @@ import org.openiam.internationalization.Internationalized;
 @Table(name = "ADDRESS")
 @DozerDTOCorrespondence(Address.class)
 //@Indexed
-@AttributeOverride(name = "id", column = @Column(name = "ADDRESS_ID"))
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Internationalized
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "ADDRESS_ID")),
+    @AttributeOverride(name = "name", column = @Column(name = "NAME", length = 100))
+})
 public class AddressEntity extends AbstractMetdataTypeEntity {
 
     @Column(name = "ACTIVE")
     @Type(type = "yes_no")
     private boolean isActive = true;
+    
     @Column(name="IS_DEFAULT")
     @Type(type = "yes_no")
     private boolean isDefault = false;
@@ -95,10 +99,6 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
     @Column(name = "STATE", length = 100)
     @Size(max = 100, message = "validator.address.state.toolong")
     private String state;
-
-    @Column(name = "NAME", length = 100)
-    @Size(max = 100, message = "validator.address.label.toolong")
-    private String name;
     
     @Column(name = "LAST_UPDATE", length = 19)
     //@LuceneLastUpdate
@@ -258,12 +258,10 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
         this.state = state;
     }
 
+    @Override
+    @Size(max = 100, message = "validator.address.label.toolong")
     public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        return super.getName();
     }
     
     public Date getLastUpdate() {
@@ -321,7 +319,6 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
 		result = prime * result + (isDefault ? 1231 : 1237);
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((postalCd == null) ? 0 : postalCd.hashCode());
 		result = prime * result + ((state == null) ? 0 : state.hashCode());
@@ -411,11 +408,6 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
 			if (other.lastUpdate != null)
 				return false;
 		} else if (!lastUpdate.equals(other.lastUpdate))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
 			return false;
 		if (postalCd == null) {
 			if (other.postalCd != null)

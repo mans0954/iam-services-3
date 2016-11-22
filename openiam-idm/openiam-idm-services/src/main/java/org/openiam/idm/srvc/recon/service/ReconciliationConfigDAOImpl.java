@@ -30,21 +30,22 @@ public class ReconciliationConfigDAOImpl extends
     protected Criteria getExampleCriteria(SearchBean searchBean) {
         Criteria criteria = getCriteria();
         if(searchBean != null && searchBean instanceof ReconConfigSearchBean) {
-            final ReconConfigSearchBean reconSearchBean = (ReconConfigSearchBean)searchBean;
-            if(StringUtils.isNotBlank(reconSearchBean.getKey())) {
-            	criteria.add(Restrictions.eq(getPKfieldName(), reconSearchBean.getKey()));
-            }
-            if(StringUtils.isNotBlank(reconSearchBean.getManagedSysId())) {
-            	criteria.add(Restrictions.eq("managedSysId", reconSearchBean.getManagedSysId()));
-            }
-            if(StringUtils.isNotBlank(reconSearchBean.getName())) {
-            	criteria.add(Restrictions.eq("name", reconSearchBean.getName()));
-            }
-            if(StringUtils.isNotBlank(reconSearchBean.getReconType())) {
-            	criteria.add(Restrictions.eq("reconType", reconSearchBean.getReconType()));
-            }
-            if(StringUtils.isNotBlank(reconSearchBean.getResourceId())) {
-            	criteria.add(Restrictions.eq("resourceId", reconSearchBean.getResourceId()));
+            final ReconConfigSearchBean sb = (ReconConfigSearchBean)searchBean;
+            if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
+	            if(StringUtils.isNotBlank(sb.getManagedSysId())) {
+	            	criteria.add(Restrictions.eq("managedSysId", sb.getManagedSysId()));
+	            }
+	            if(StringUtils.isNotBlank(sb.getName())) {
+	            	criteria.add(Restrictions.eq("name", sb.getName()));
+	            }
+	            if(StringUtils.isNotBlank(sb.getReconType())) {
+	            	criteria.add(Restrictions.eq("reconType", sb.getReconType()));
+	            }
+	            if(StringUtils.isNotBlank(sb.getResourceId())) {
+	            	criteria.add(Restrictions.eq("resourceId", sb.getResourceId()));
+	            }
             }
         }
         return criteria;

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.synch.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,8 +41,8 @@ public class SynchReviewDAOImpl extends BaseDaoImpl<SynchReviewEntity, String> i
             if (StringUtils.isNotBlank(sb.getSynchConfigId())) {
                 criteria.add(Restrictions.eq("synchConfig.id", sb.getSynchConfigId()));
             }
-            if (sb.getKey() != null) {
-                criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+            if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
             }
         }
         return criteria;

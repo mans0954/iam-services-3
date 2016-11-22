@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.auth.login;
 
 // Generated May 22, 2009 10:08:01 AM by Hibernate Tools 3.2.2.GA
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
@@ -39,13 +40,16 @@ public class AuthStateDAOImpl extends BaseDaoImpl<AuthStateEntity, AuthStateId> 
 		Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof AuthStateSearchBean) {
 			final AuthStateSearchBean sb = (AuthStateSearchBean)searchBean;
-			if(sb.getKey() != null) {
-				if(StringUtils.isNotBlank(sb.getKey().getUserId())) {
-					criteria.add(Restrictions.eq("id.userId", sb.getKey().getUserId()));
-				}
-				if(StringUtils.isNotBlank(sb.getKey().getTokenType())) {
-					criteria.add(Restrictions.eq("id.tokenType", sb.getKey().getTokenType()));
-				}
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+				//assume 1
+				sb.getKeySet().forEach(key -> {
+					if(StringUtils.isNotBlank(key.getUserId())) {
+						criteria.add(Restrictions.eq("id.userId", key.getUserId()));
+					}
+					if(StringUtils.isNotBlank(key.getTokenType())) {
+						criteria.add(Restrictions.eq("id.tokenType", key.getTokenType()));
+					}
+				});
 			}
 			
 			if(sb.getAa() != null) {

@@ -44,9 +44,9 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
 		if(searchBean != null && searchBean instanceof EmailSearchBean) {
 			final EmailSearchBean sb = (EmailSearchBean)searchBean;
 			
-			if (StringUtils.isNotBlank(sb.getKey())) {
-	            criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-	        } else {
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
 	            if (StringUtils.isNotEmpty(sb.getName())) {
 	                String emailName = sb.getName();
 	                MatchMode matchMode = null;

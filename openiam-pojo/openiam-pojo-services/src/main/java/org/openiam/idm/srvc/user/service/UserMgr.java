@@ -780,12 +780,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Transactional(readOnly = true)
     public List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException {
         List<UserEntity> entityList = null;
-        if (StringUtils.isNotBlank(searchBean.getKey())) {
-            final UserEntity entity = userDao.findById(searchBean.getKey());
-            if (entity != null) {
-                entityList = new ArrayList<UserEntity>(1);
-                entityList.add(entity);
-            }
+        if (CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+        	entityList = userDao.findByIds(searchBean.getKeySet());
         } else {
         	final List<String> userIds = getUserIds(searchBean);
         	if(searchBean == null || searchBean.isUseElasticSearch()) {
@@ -807,12 +803,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Transactional(readOnly = true)
     public List<User> findBeansDto(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException {
         List<UserEntity> entityList = null;
-        if (StringUtils.isNotBlank(searchBean.getKey())) {
-            final UserEntity entity = userDao.findById(searchBean.getKey());
-            if (entity != null) {
-                entityList = new ArrayList<UserEntity>(1);
-                entityList.add(entity);
-            }
+        if(CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+            entityList = userDao.findByIds(searchBean.getKeySet());
         } else {
             entityList = userDao.findByIds(getUserIds(searchBean), searchBean, from, size);
         }
@@ -1841,9 +1833,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Transactional(readOnly = true)
     private List<UserEntity> findAllPotentialSupSubs(PotentialSupSubSearchBean searchBean) throws BasicDataServiceException {
         List<String> userIds = null;
-        if (StringUtils.isNotBlank(searchBean.getKey())) {
-            userIds = new ArrayList<String>(1);
-            userIds.add(searchBean.getKey());
+        if (CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
+            userIds = new ArrayList<String>(searchBean.getKeySet());
         } else {
             userIds = getUserIds(searchBean);
         }

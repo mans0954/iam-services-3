@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.mngsys.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Criterion;
@@ -38,9 +39,9 @@ public class ProvisionConnectorDaoImpl extends BaseDaoImpl<ProvisionConnectorEnt
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof ProvisionConnectorSearchBean) {
 			final ProvisionConnectorSearchBean sb = (ProvisionConnectorSearchBean)searchBean;
-			if(StringUtils.isNotBlank(sb.getKey())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-			} else {
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
 				final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
                 if(nameCriterion != null) {
                 	criteria.add(nameCriterion);

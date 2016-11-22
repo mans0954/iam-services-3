@@ -259,7 +259,7 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 	@Override
 	protected AuthProvider get(String key) {
 		final AuthProviderSearchBean searchBean = new AuthProviderSearchBean();
-		searchBean.setKey(key);
+		searchBean.addKey(key);
 		searchBean.setDeepCopy(true);
 		final List<AuthProvider> providers = find(searchBean, 0, 1);
 		return (CollectionUtils.isNotEmpty(providers)) ? providers.get(0) : null;

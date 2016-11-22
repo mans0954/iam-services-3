@@ -124,96 +124,95 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
         if (searchBean != null && searchBean instanceof OrganizationSearchBean) {
             final OrganizationSearchBean sb = (OrganizationSearchBean) searchBean;
 
-            if (sb.hasMultipleKeys()) {
-                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeys()));
-            } else if (StringUtils.isNotBlank(sb.getKey())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-            }
-            
-            final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
-            if(nameCriterion != null) {
-            	criteria.add(nameCriterion);
-            }
-
-            if (StringUtils.isNotBlank(sb.getInternalOrgId())) {
-                criteria.add(Restrictions.eq("internalOrgId",
-                		sb.getInternalOrgId()));
-            }
-
-            if(CollectionUtils.isNotEmpty(sb.getUserIdSet())){
-            	criteria.createAlias("users", "userXrefs")
-						.createAlias("userXrefs.memberEntity", "user").add(
-								Restrictions.in("user.id", sb.getUserIdSet()));
-            }
-            
-            if(CollectionUtils.isNotEmpty(sb.getChildIdSet())) {
-            	criteria.createAlias("childOrganizations", "childXrefs")
-						.createAlias("childXrefs.memberEntity", "child").add(
-						Restrictions.in("child.id", sb.getChildIdSet()));
-			}
-            
-            if(CollectionUtils.isNotEmpty(sb.getGroupIdSet())) {
-            	criteria.createAlias("groups", "groupXrefs")
-						.createAlias("groupXrefs.memberEntity", "group").add(
-						Restrictions.in("group.id", sb.getGroupIdSet()));
-			}
-            
-            if(CollectionUtils.isNotEmpty(sb.getRoleIdSet())) {
-            	criteria.createAlias("roles", "roleXrefs")
-						.createAlias("roleXrefs.memberEntity", "role").add(
-						Restrictions.in("role.id", sb.getRoleIdSet()));
-			}
-            
-            if(CollectionUtils.isNotEmpty(sb.getResourceIdSet())) {
-            	criteria.createAlias("resources", "resourceXrefs")
-						.createAlias("resourceXrefs.memberEntity", "resource").add(
-						Restrictions.in("resource.id", sb.getResourceIdSet()));
-			}
-			
-			if(CollectionUtils.isNotEmpty(sb.getParentIdSet())) {
-				criteria.createAlias("parentOrganizations", "parentXrefs")
-						.createAlias("parentXrefs.entity", "parent").add(
-						Restrictions.in("parent.id", sb.getParentIdSet()));
-			}
-
-            if (StringUtils.isNotBlank(sb
-                    .getValidParentTypeId())) {
-                criteria.createAlias("organizationType.parentTypes",
-                        "parentTypes").add(
-                        Restrictions.eq("parentTypes.id",
-                        		sb.getValidParentTypeId()));
-            }
-
-            if (CollectionUtils.isNotEmpty(sb.getOrganizationTypeIdSet())) {
-                criteria.add(Restrictions.in("organizationType.id",
-                		sb.getOrganizationTypeIdSet()));
-            }
-
-            if (CollectionUtils.isNotEmpty(sb.getAttributes())) {
-                for (final Tuple<String, String> attribute : sb.getAttributes()) {
-                    DetachedCriteria crit = DetachedCriteria.forClass(OrganizationAttributeEntity.class);
-                    if (StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
-                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()),
-                                Restrictions.eq("value", attribute.getValue())));
-                    } else if (StringUtils.isNotBlank(attribute.getKey())) {
-                        crit.add(Restrictions.eq("name", attribute.getKey()));
-                    } else if (StringUtils.isNotBlank(attribute.getValue())) {
-                        crit.add(Restrictions.eq("value", attribute.getValue()));
-                    }
-                    crit.setProjection(Projections.property("organization.id"));
-                    criteria.add(Subqueries.propertyIn("id", crit));
-                }
-            }
-
-            if (StringUtils.isNotBlank(sb.getMetadataType())) {
-                criteria.add(Restrictions.eq("type.id", sb.getMetadataType()));
-            }
-
-            if (sb.getIsSelectable() != null) {
-                criteria.add(Restrictions.eq("selectable", sb.getIsSelectable()));
-            }
-            if (StringUtils.isNotBlank(sb.getAbbreviation())) {
-                criteria.add(Restrictions.eq("abbreviation", sb.getAbbreviation()));
+            if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
+	            
+	            final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+	            if(nameCriterion != null) {
+	            	criteria.add(nameCriterion);
+	            }
+	
+	            if (StringUtils.isNotBlank(sb.getInternalOrgId())) {
+	                criteria.add(Restrictions.eq("internalOrgId",
+	                		sb.getInternalOrgId()));
+	            }
+	
+	            if(CollectionUtils.isNotEmpty(sb.getUserIdSet())){
+	            	criteria.createAlias("users", "userXrefs")
+							.createAlias("userXrefs.memberEntity", "user").add(
+									Restrictions.in("user.id", sb.getUserIdSet()));
+	            }
+	            
+	            if(CollectionUtils.isNotEmpty(sb.getChildIdSet())) {
+	            	criteria.createAlias("childOrganizations", "childXrefs")
+							.createAlias("childXrefs.memberEntity", "child").add(
+							Restrictions.in("child.id", sb.getChildIdSet()));
+				}
+	            
+	            if(CollectionUtils.isNotEmpty(sb.getGroupIdSet())) {
+	            	criteria.createAlias("groups", "groupXrefs")
+							.createAlias("groupXrefs.memberEntity", "group").add(
+							Restrictions.in("group.id", sb.getGroupIdSet()));
+				}
+	            
+	            if(CollectionUtils.isNotEmpty(sb.getRoleIdSet())) {
+	            	criteria.createAlias("roles", "roleXrefs")
+							.createAlias("roleXrefs.memberEntity", "role").add(
+							Restrictions.in("role.id", sb.getRoleIdSet()));
+				}
+	            
+	            if(CollectionUtils.isNotEmpty(sb.getResourceIdSet())) {
+	            	criteria.createAlias("resources", "resourceXrefs")
+							.createAlias("resourceXrefs.memberEntity", "resource").add(
+							Restrictions.in("resource.id", sb.getResourceIdSet()));
+				}
+				
+				if(CollectionUtils.isNotEmpty(sb.getParentIdSet())) {
+					criteria.createAlias("parentOrganizations", "parentXrefs")
+							.createAlias("parentXrefs.entity", "parent").add(
+							Restrictions.in("parent.id", sb.getParentIdSet()));
+				}
+	
+	            if (StringUtils.isNotBlank(sb
+	                    .getValidParentTypeId())) {
+	                criteria.createAlias("organizationType.parentTypes",
+	                        "parentTypes").add(
+	                        Restrictions.eq("parentTypes.id",
+	                        		sb.getValidParentTypeId()));
+	            }
+	
+	            if (CollectionUtils.isNotEmpty(sb.getOrganizationTypeIdSet())) {
+	                criteria.add(Restrictions.in("organizationType.id",
+	                		sb.getOrganizationTypeIdSet()));
+	            }
+	
+	            if (CollectionUtils.isNotEmpty(sb.getAttributes())) {
+	                for (final Tuple<String, String> attribute : sb.getAttributes()) {
+	                    DetachedCriteria crit = DetachedCriteria.forClass(OrganizationAttributeEntity.class);
+	                    if (StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
+	                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()),
+	                                Restrictions.eq("value", attribute.getValue())));
+	                    } else if (StringUtils.isNotBlank(attribute.getKey())) {
+	                        crit.add(Restrictions.eq("name", attribute.getKey()));
+	                    } else if (StringUtils.isNotBlank(attribute.getValue())) {
+	                        crit.add(Restrictions.eq("value", attribute.getValue()));
+	                    }
+	                    crit.setProjection(Projections.property("organization.id"));
+	                    criteria.add(Subqueries.propertyIn("id", crit));
+	                }
+	            }
+	
+	            if (StringUtils.isNotBlank(sb.getMetadataType())) {
+	                criteria.add(Restrictions.eq("type.id", sb.getMetadataType()));
+	            }
+	
+	            if (sb.getIsSelectable() != null) {
+	                criteria.add(Restrictions.eq("selectable", sb.getIsSelectable()));
+	            }
+	            if (StringUtils.isNotBlank(sb.getAbbreviation())) {
+	                criteria.add(Restrictions.eq("abbreviation", sb.getAbbreviation()));
+	            }
             }
         }
         return criteria;

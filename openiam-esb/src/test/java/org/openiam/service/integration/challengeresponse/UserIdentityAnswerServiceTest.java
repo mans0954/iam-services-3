@@ -58,7 +58,7 @@ public class UserIdentityAnswerServiceTest extends AbstractChallengeResponseServ
     @Override
     protected UserIdentityAnswer get(String key) {
         final IdentityAnswerSearchBean searchBean = new IdentityAnswerSearchBean();
-        searchBean.setKey(key);
+        searchBean.addKey(key);
         final List<UserIdentityAnswer> answerList = find(searchBean, 0, 1);
         return (CollectionUtils.isNotEmpty(answerList)) ? answerList.get(0) : null;
     }
@@ -159,7 +159,7 @@ public class UserIdentityAnswerServiceTest extends AbstractChallengeResponseServ
 
         final IdentityAnswerSearchBean searchBean = newSearchBean();
         searchBean.setDeepCopy(useDeepCopyOnFindBeans());
-        searchBean.setKey(instance.getId());
+        searchBean.addKey(instance.getId());
 
 /*
  confirm save on both nodes

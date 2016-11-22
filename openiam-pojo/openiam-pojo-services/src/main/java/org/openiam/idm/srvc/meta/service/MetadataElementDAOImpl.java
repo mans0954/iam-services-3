@@ -47,9 +47,9 @@ public class MetadataElementDAOImpl extends OrderDaoImpl<MetadataElementEntity, 
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof MetadataElementSearchBean) {
 			final MetadataElementSearchBean metaSearchBean = (MetadataElementSearchBean)searchBean;
-			if(CollectionUtils.isNotEmpty(metaSearchBean.getKeys())) {
-				criteria.add(Restrictions.in("id", metaSearchBean.getKeys()));
-			} else {
+			if(CollectionUtils.isNotEmpty(metaSearchBean.getKeySet())) {
+	            criteria.add(Restrictions.in(getPKfieldName(), metaSearchBean.getKeySet()));
+	        } else {
 				setAttributeNameCriteria(criteria, metaSearchBean.getAttributeName());	
 				if(StringUtils.isNotBlank(metaSearchBean.getDataType())) {
 					criteria.add(Restrictions.eq("dataType", metaSearchBean.getDataType()));

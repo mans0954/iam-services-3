@@ -240,7 +240,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
         final AuthStateId id = new AuthStateId();
         id.setUserId(userId);
         final AuthStateSearchBean sb = new AuthStateSearchBean();
-        sb.setKey(id);
+        sb.addKey(id);
         final List<AuthStateEntity> authStateList = authStateDao.getByExample(sb);
 
         if (CollectionUtils.isEmpty(authStateList)) {

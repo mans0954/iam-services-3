@@ -1,7 +1,10 @@
 package org.openiam.elasticsearch.hibernate;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
@@ -16,8 +19,10 @@ import org.hibernate.internal.util.ReflectHelper;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.persister.entity.EntityPersister;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.elasticsearch.annotation.DocumentRepresentation;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
 import org.openiam.elasticsearch.service.ElasticsearchReindexService;
+import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.springframework.beans.factory.InitializingBean;
@@ -69,48 +74,57 @@ public class OpeniamHibernateEventListener implements InitializingBean,
             runReindexTask(EventType.POST_COMMIT_UPDATE, event.getEntity());
         }
     }
+    
+    private ElasticsearchReindexRequest createUpdateReindexRequest(final KeyEntity entity, final Class<? extends KeyEntity> clazz) {
+    	return ElasticsearchReindexRequest.getUpdateReindexRequest(clazz);
+    }
 
     private void runReindexTask(EventType eventType, Object entity) {
         try {
             Class<?> clazz =entity.getClass();
             if(isEntityMapped(clazz) && (entity instanceof KeyEntity)){
                 log.info(String.format("==== Hibernate Event: %s for Entity: %s =====",  eventType.eventName(), entity.getClass().getSimpleName()));
-                ElasticsearchReindexRequest request = null;
+                final List<ElasticsearchReindexRequest> requestList = new LinkedList<ElasticsearchReindexRequest>();
                 
-                if(entity instanceof OrgToOrgMembershipXrefEntity) {
-                	/* OrganiztionDoc contains references to parents, so have to re-index the child */
-                	final OrgToOrgMembershipXrefEntity xref = (OrgToOrgMembershipXrefEntity)entity;
+                if(entity instanceof AbstractMembershipXrefEntity) {
+                	final AbstractMembershipXrefEntity xref = (AbstractMembershipXrefEntity)entity;
                 	if(xref.getMemberEntity() != null) {
-                        if(EventType.POST_COMMIT_INSERT.equals(eventType) || EventType.POST_COMMIT_UPDATE.equals(eventType)){
-                            request = ElasticsearchReindexRequest.getUpdateReindexRequest(OrganizationEntity.class);
-                        } else if(EventType.POST_COMMIT_DELETE.equals(eventType)){
-                            request = ElasticsearchReindexRequest.getDeleteReindexRequest(OrganizationEntity.class);
-                        }
+                		ElasticsearchReindexRequest request = ElasticsearchReindexRequest.getUpdateReindexRequest(xref.getMemberClass());
                 		request.addEntityId(xref.getMemberEntity().getId());
+                		requestList.add(request);
                 	}
-                } else {
-                    if(EventType.POST_COMMIT_INSERT.equals(eventType) || EventType.POST_COMMIT_UPDATE.equals(eventType)){
-                        request = ElasticsearchReindexRequest.getUpdateReindexRequest(entity.getClass());
-                    } else if(EventType.POST_COMMIT_DELETE.equals(eventType)){
-                        request = ElasticsearchReindexRequest.getDeleteReindexRequest(entity.getClass());
-                    }
-                	request.addEntityId(((KeyEntity)entity).getId());
+                	if(xref.getEntity() != null) {
+                		ElasticsearchReindexRequest request = ElasticsearchReindexRequest.getUpdateReindexRequest(xref.getEntityClass());
+                		request.addEntityId(xref.getEntity().getId());
+                		requestList.add(request);
+                	}
                 }
+                	
+                ElasticsearchReindexRequest request = null;
+                if(EventType.POST_COMMIT_INSERT.equals(eventType) || EventType.POST_COMMIT_UPDATE.equals(eventType)){
+                	request = ElasticsearchReindexRequest.getUpdateReindexRequest(entity.getClass());
+                } else if(EventType.POST_COMMIT_DELETE.equals(eventType)){
+                	request = ElasticsearchReindexRequest.getDeleteReindexRequest(entity.getClass());
+                }
+                request.addEntityId(((KeyEntity)entity).getId());
+                requestList.add(request);
                 
-                if(request!=null){
-                    elasticsearchReindexService.reindex(request);
+                if(CollectionUtils.isNotEmpty(requestList)) {
+                	for(final ElasticsearchReindexRequest req : requestList) {
+                		elasticsearchReindexService.reindex(req);
+                	}
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error(e.getMessage(), e);
         }
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Map<String, ClassMetadata> map =  sessionFactory.getAllClassMetadata();
-        for(String entityName : map.keySet()){
-            Class<?> clazz = ReflectHelper.classForName(entityName);
+        final Map<String, ClassMetadata> map =  sessionFactory.getAllClassMetadata();
+        for(final String entityName : map.keySet()){
+        	final Class<?> clazz = ReflectHelper.classForName(entityName);
             if(isEntityIndexed(clazz)){
                 registerEntityHolder(clazz);
             }
@@ -122,8 +136,7 @@ public class OpeniamHibernateEventListener implements InitializingBean,
     }
 
     private boolean isEntityIndexed(Class<?> clazz) {
-        final Document annotation =  clazz.getAnnotation(Document.class);
-        return annotation != null;
+    	return clazz.isAnnotationPresent(Document.class) || clazz.isAnnotationPresent(DocumentRepresentation.class);
     }
 
     private void registerEntityHolder(Class<?> clazz) {

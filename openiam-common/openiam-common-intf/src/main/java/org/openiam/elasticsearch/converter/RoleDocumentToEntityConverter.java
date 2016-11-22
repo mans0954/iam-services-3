@@ -7,7 +7,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.springframework.stereotype.Component;
 
 @Component("roleDocumentToEntityConverter")
-public class RoleDocumentToEntityConverter extends AbstractMetdataTypeDocumentToEntityConverter<RoleDoc, RoleEntity> {
+public class RoleDocumentToEntityConverter extends AbstractMetadataTypeDocumentToEntityConverter<RoleDoc, RoleEntity> {
 
 	@Override
 	protected RoleDoc newDocument() {
@@ -32,7 +32,6 @@ public class RoleDocumentToEntityConverter extends AbstractMetdataTypeDocumentTo
 	@Override
 	public RoleDoc convertToDocument(RoleEntity entity) {
 		final RoleDoc doc = super.convertToDocument(entity);
-		doc.setName(entity.getName());
 		if(entity.getManagedSystem() != null && StringUtils.isNotBlank(entity.getManagedSystem().getId())) {
 			doc.setManagedSysId(entity.getManagedSystem().getId());
 		}
@@ -42,7 +41,6 @@ public class RoleDocumentToEntityConverter extends AbstractMetdataTypeDocumentTo
 	@Override
 	public RoleEntity convertToEntity(RoleDoc doc) {
 		final RoleEntity entity = super.convertToEntity(doc);
-		entity.setName(doc.getName());
 		if(StringUtils.isNotBlank(doc.getManagedSysId())) {
 			entity.setManagedSystem(new ManagedSysEntity());
 			entity.getManagedSystem().setId(doc.getManagedSysId());

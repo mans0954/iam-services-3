@@ -36,7 +36,7 @@ public class GroupAttributeListener extends AbstractAttributeListener {
     @Override
     protected void process(UpdateAttributeByMetadataRequest request) {
         GroupSearchBean searchBean = new GroupSearchBean();
-        searchBean.setType(request.getMetadataTypeId());
+        searchBean.setMetadataType(request.getMetadataTypeId());
 
         List<GroupEntity> groupList = groupManager.findBeans(searchBean,null,-1,-1);
         if(CollectionUtils.isNotEmpty(groupList)){

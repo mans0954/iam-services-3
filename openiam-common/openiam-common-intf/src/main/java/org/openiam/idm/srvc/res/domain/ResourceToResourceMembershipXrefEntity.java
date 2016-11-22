@@ -90,6 +90,18 @@ public class ResourceToResourceMembershipXrefEntity extends AbstractMembershipXr
 	public ResourceEntity getResource() {
 		return entity;
 	}
+	
+	@Override
+	@Transient
+	public Class<ResourceEntity> getEntityClass() {
+		return ResourceEntity.class;
+	}
+
+	@Override
+	@Transient
+	public Class<ResourceEntity> getMemberClass() {
+		return ResourceEntity.class;
+	}
 
 	@Override
 	public int hashCode() {

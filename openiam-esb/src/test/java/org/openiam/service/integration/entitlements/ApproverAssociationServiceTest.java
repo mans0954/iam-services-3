@@ -50,7 +50,7 @@ public class ApproverAssociationServiceTest extends AbstractKeyServiceTest<Appro
 	@Override
 	protected ApproverAssociation get(String key) {
 		final ApproverAssocationSearchBean searchBean = newSearchBean();
-		searchBean.setKey(key);
+		searchBean.addKey(key);
 		final List<ApproverAssociation> associations = find(searchBean, 0, 1);
 		return (CollectionUtils.isNotEmpty(associations)) ? associations.get(0) : null;
 	}

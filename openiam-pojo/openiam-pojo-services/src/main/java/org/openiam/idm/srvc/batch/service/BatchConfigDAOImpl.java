@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,18 +32,18 @@ public class BatchConfigDAOImpl extends BaseDaoImpl<BatchTaskEntity, String> imp
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         Criteria criteria = getCriteria();
         if(searchBean != null && searchBean instanceof BatchTaskSearchBean) {
-            final BatchTaskSearchBean taskSearchBean = (BatchTaskSearchBean)searchBean;
+            final BatchTaskSearchBean sb = (BatchTaskSearchBean)searchBean;
 
-            if(StringUtils.isNotBlank(taskSearchBean.getKey())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), taskSearchBean.getKey()));
+            if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
             } else {
-            	final Criterion nameCriterion = getStringCriterion("name", taskSearchBean.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
+            	final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
                 if(nameCriterion != null) {
                 	criteria.add(nameCriterion);
                 }
                 
-                if(taskSearchBean.getEnabled() != null) {
-                	criteria.add(Restrictions.eq("enabled", taskSearchBean.getEnabled()));
+                if(sb.getEnabled() != null) {
+                	criteria.add(Restrictions.eq("enabled", sb.getEnabled()));
                 }
             }
         }

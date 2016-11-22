@@ -18,14 +18,12 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceSearchBean", propOrder = {
-		"keySet",
         "resourceTypeIdSet",
         "rootsOnly",
         "attributes",
         "excludeResourceTypes",
         "risk",
         "URL",
-        "metadataType",
         "coorelatedName",
 		"referenceId",
 		"ownerId"
@@ -34,13 +32,11 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 
 	private static final long serialVersionUID = 1L;
     public static final String TYPE_MANAGED_SYS = "MANAGED_SYS";
-	private Set<String> keySet;
 	private Set<String> resourceTypeIdSet;
 	private Boolean rootsOnly;
 	private List<Tuple<String, String>> attributes;
 	private Set<String> excludeResourceTypes;
     private ResourceRisk risk;
-    private String metadataType;
     private String URL;
 	private String coorelatedName;
 	private String referenceId;
@@ -124,14 +120,6 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
         this.URL = URL;
     }
 
-    public String getMetadataType() {
-        return metadataType;
-    }
-
-    public void setMetadataType(String metadataType) {
-        this.metadataType = metadataType;
-    }
-
 	public String getReferenceId() {
 		return referenceId;
 	}
@@ -146,40 +134,6 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 
 	public void setOwnerId(String ownerId) {
 		this.ownerId = ownerId;
-	}
-
-
-	@Override
-	public String getKey() {
-		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
-	}
-
-	@Override
-	public void setKey(final String key) {
-		if(keySet == null) {
-			keySet = new HashSet<String>();
-		}
-		keySet.add(key);
-	}
-
-
-	public Set<String> getKeys() {
-		return keySet;
-	}
-
-	public void addKey(final String key) {
-		if(this.keySet == null) {
-			this.keySet = new HashSet<String>();
-		}
-		this.keySet.add(key);
-	}
-
-	public boolean hasMultipleKeys() {
-		return (keySet != null && keySet.size() > 1);
-	}
-
-	public void setKeys(final Set<String> keySet) {
-		this.keySet = keySet;
 	}
 
 	public void addResourceType(final String resourceType) {
@@ -210,9 +164,6 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 				* result
 				+ ((excludeResourceTypes == null) ? 0 : excludeResourceTypes
 						.hashCode());
-		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
-		result = prime * result
-				+ ((metadataType == null) ? 0 : metadataType.hashCode());
 		result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
 		result = prime * result
 				+ ((referenceId == null) ? 0 : referenceId.hashCode());
@@ -254,16 +205,6 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 			if (other.excludeResourceTypes != null)
 				return false;
 		} else if (!excludeResourceTypes.equals(other.excludeResourceTypes))
-			return false;
-		if (keySet == null) {
-			if (other.keySet != null)
-				return false;
-		} else if (!keySet.equals(other.keySet))
-			return false;
-		if (metadataType == null) {
-			if (other.metadataType != null)
-				return false;
-		} else if (!metadataType.equals(other.metadataType))
 			return false;
 		if (ownerId == null) {
 			if (other.ownerId != null)

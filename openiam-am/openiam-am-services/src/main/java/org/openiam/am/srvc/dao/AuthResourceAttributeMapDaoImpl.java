@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.dao;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Criterion;
@@ -25,8 +26,8 @@ public class AuthResourceAttributeMapDaoImpl extends BaseDaoImpl<AuthResourceAtt
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof AuthResourceAttributeMapSearchBean) {
 			final AuthResourceAttributeMapSearchBean sb = (AuthResourceAttributeMapSearchBean)searchBean;
-			if (StringUtils.isNotBlank(sb.getKey())) {
-	            criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+			if (CollectionUtils.isNotEmpty(sb.getKeySet())) {
+	            criteria.add(Restrictions.eq(getPKfieldName(), sb.getKeySet()));
 	        } else {
 	            if (StringUtils.isNotEmpty(sb.getProviderId())) {
 	                criteria.add(Restrictions.eq("provider.id", sb.getProviderId()));

@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.loc.service;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,9 +49,9 @@ public class LocationDAOImpl extends BaseDaoImpl<LocationEntity, String> impleme
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof LocationSearchBean) {
 			final LocationSearchBean sb = (LocationSearchBean)searchBean;
-			if(StringUtils.isNotBlank(sb.getKey())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-			} else {
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
 				if (StringUtils.isNotBlank(sb.getOrganizationId())) {
 					criteria.add(Restrictions.eq("organization.id", sb.getOrganizationId()));
 	            }

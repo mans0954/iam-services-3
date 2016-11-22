@@ -75,7 +75,7 @@ public class ApproverAssocationSearchBeanServiseTest extends ApproverAssociation
 
     private void deleteApproverAssociation() {
         ApproverAssocationSearchBean searchBean = new ApproverAssocationSearchBean();
-        searchBean.setKey(apprAssocId);
+        searchBean.addKey(apprAssocId);
 
         List<ApproverAssociation> approverAssociationList = find(searchBean, 0, Integer.MAX_VALUE);
         ApproverAssociation approverAssociation = (CollectionUtils.isNotEmpty(approverAssociationList)) ? approverAssociationList.get(0) : null;

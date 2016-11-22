@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.dao;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -33,9 +34,9 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof ContentProviderSearchBean) {
 			final ContentProviderSearchBean sb = (ContentProviderSearchBean)searchBean;
-			if (StringUtils.isNotBlank(sb.getKey())) {
-	            criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
-	        } else {
+			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
+            } else {
 
 	        	final Criterion nameCriterion = getStringCriterion("name", sb.getNameToken(), sysConfig.isCaseInSensitiveDatabase());
                 if(nameCriterion != null) {
