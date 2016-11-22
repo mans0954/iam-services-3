@@ -33,6 +33,9 @@ public class RabbitMQSender {
             ApiResponse response = getFailedResponse(apiResponseClass);
             response.setErrorCode(rabbitMqResponse.getErrorCode());
             response.setErrorText(rabbitMqResponse.getErrorText());
+            response.setErrorTokenList(rabbitMqResponse.getErrorTokenList());
+            response.setFieldMappings(rabbitMqResponse.getFieldMappings());
+            response.setStacktraceText(rabbitMqResponse.getStacktraceText());
             return response;
         }
         return rabbitMqResponse;

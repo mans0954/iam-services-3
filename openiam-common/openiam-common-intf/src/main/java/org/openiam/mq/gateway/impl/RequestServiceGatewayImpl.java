@@ -48,7 +48,7 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
                             return message;
                         });
         if (response != null) {
-            ((Response) response).succeed();
+            //((Response) response).succeed();
             log.info("Received response from backend: " + response.toString());
         } else {
 
