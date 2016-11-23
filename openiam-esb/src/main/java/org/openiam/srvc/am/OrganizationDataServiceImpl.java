@@ -700,4 +700,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId){
         return organizationService.getOrgAttributesDtoList(orgId);
     }
+
+	@Override
+	public boolean isIndexed(String organizationId) {
+		return organizationService.isIndexed(organizationId);
+	}
 }

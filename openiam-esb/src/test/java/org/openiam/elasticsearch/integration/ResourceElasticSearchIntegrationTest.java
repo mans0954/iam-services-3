@@ -94,7 +94,6 @@ public class ResourceElasticSearchIntegrationTest extends AbstractMetdataTypeEla
 		assertSuccess(response);
 		final Resource dto = resourceDataService.getResource((String)response.getResponseValue(), getDefaultLanguage());
 		Assert.assertNotNull(dto);
-		sleep(5);
 		return dto;
 	}
 	
@@ -108,5 +107,10 @@ public class ResourceElasticSearchIntegrationTest extends AbstractMetdataTypeEla
 	@Override
 	protected void delete(Resource dto) {
 		resourceDataService.deleteResource(dto.getId(), getRequestorId());
+	}
+
+	@Override
+	protected boolean isIndexed(String id) {
+		return resourceDataService.isIndexed(id);
 	}
 }

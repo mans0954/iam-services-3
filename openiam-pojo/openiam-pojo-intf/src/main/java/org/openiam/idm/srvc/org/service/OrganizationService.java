@@ -179,4 +179,6 @@ public interface OrganizationService {
                                  final Date endDate);
 
     public Response removeUserFromOrg(String orgId, String userId, final String requestorId);
+    
+    public boolean isIndexed(String id);
 }

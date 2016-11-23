@@ -5,7 +5,8 @@ import org.openiam.idm.searchbeans.EntitlementsSearchBean;
 import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.testng.annotations.Test;
 
-public abstract class AbstractMetdataTypeElasticSearchIntegrationTest<D extends AbstractMetadataTypeDoc, S extends EntitlementsSearchBean, DTO extends AbstractEntitlementsDTO> extends AbstractKeyNameDocElasticSearchIntegrationTest<D, S, DTO> {
+public abstract class AbstractMetdataTypeElasticSearchIntegrationTest<D extends AbstractMetadataTypeDoc, S extends EntitlementsSearchBean, DTO extends AbstractEntitlementsDTO> 
+				extends AbstractKeyNameDocElasticSearchIntegrationTest<D, S, DTO> {
 
 	
 	

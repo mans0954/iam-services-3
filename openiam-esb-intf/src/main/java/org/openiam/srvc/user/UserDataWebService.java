@@ -925,5 +925,6 @@ public interface UserDataWebService {
     @WebMethod
     public List<Supervisor> findSupervisors(@WebParam(name = "searchBean", targetNamespace = "") SupervisorSearchBean supervisorSearchBean);
 
-
+    @WebMethod
+    public boolean isIndexed(@WebParam(name = "userId", targetNamespace = "") String id);
 }

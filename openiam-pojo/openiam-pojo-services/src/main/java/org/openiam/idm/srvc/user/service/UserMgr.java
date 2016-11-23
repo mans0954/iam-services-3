@@ -2735,4 +2735,9 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         List<EmailAddressEntity> emailAddressEntityList = this.getProxyService().getEmailAddressList(searchBean, from, size);
         return emailAddressDozerConverter.convertToDTOList(emailAddressEntityList, searchBean.isDeepCopy());
     }
+
+	@Override
+	public boolean isIndexed(String id) {
+		return userRepo.exists(id);
+	}
 }

@@ -155,4 +155,6 @@ public interface ResourceService {
 	public Response deleteResource(final String resourceId, final String requesterId);
 
 	public Response saveResourceWeb(final Resource resource, final String requesterId);
+	
+	public boolean isIndexed(String id);
 }

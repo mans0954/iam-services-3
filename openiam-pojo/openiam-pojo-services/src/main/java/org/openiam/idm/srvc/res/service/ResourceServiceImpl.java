@@ -1439,4 +1439,9 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         }
         return response;
     }
+
+	@Override
+	public boolean isIndexed(String id) {
+		return resourceElasticSearchRepo.exists(id);
+	}
 }

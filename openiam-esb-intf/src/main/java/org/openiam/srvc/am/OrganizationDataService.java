@@ -285,5 +285,13 @@ public interface OrganizationDataService {
                                                         @WebParam(name = "lang", targetNamespace = "") final Language language);
     @WebMethod
     public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId);
+    
+    /**
+     * Checks if a Organization has been indexed in the search engine (currently ElasticSearch)
+     * @param resourceId
+     * @return
+     */
+    @WebMethod
+    boolean isIndexed(@WebParam(name = "organizationId", targetNamespace = "") String organizationId);
 
 }

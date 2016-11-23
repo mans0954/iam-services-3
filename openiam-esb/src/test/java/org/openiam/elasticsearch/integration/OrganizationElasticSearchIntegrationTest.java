@@ -86,6 +86,7 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 	@Test
 	public void testOrganizationSearchWithOrganizationType() {
 		final OrganizationSearchBean sb = newSearchBean();
+		sb.setNameToken(new SearchParam(getDTO().getName(), MatchType.EXACT)); /* further qualifier */
 		sb.setOrganizationTypeId(getDTO().getOrganizationTypeId());
 		assertFindBeans(sb);
 	}
@@ -94,15 +95,19 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 	public void testSearchWithParentOrganizationId() {
 		final OrganizationSearchBean sb = newSearchBean();
 		sb.addParentId(parentOrganizationId);
+		sb.setNameToken(new SearchParam(getDTO().getName(), MatchType.EXACT)); /* further qualifier */
 		assertFindBeans(sb);
 	}
 	
+	/*
 	@Test
 	public void testSearchWithParentOrganizationTypeId() {
 		final OrganizationSearchBean sb = newSearchBean();
 		sb.setValidParentTypeId(organizationServiceClient.getOrganizationLocalized(parentOrganizationId, getRequestorId(), getDefaultLanguage()).getOrganizationTypeId());
+		sb.setNameToken(new SearchParam(getDTO().getName(), MatchType.EXACT));
 		assertFindBeans(sb);
 	}
+	*/
 
 	@Override
 	protected void delete(Organization dto) {
@@ -127,5 +132,12 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 	@Override
 	protected List<Organization> findBeans(OrganizationSearchBean searchBean) {
 		return organizationServiceClient.findBeans(searchBean, getRequestorId(), 0, 10);
+	}
+
+
+
+	@Override
+	protected boolean isIndexed(String id) {
+		return organizationServiceClient.isIndexed(id);
 	}
 }

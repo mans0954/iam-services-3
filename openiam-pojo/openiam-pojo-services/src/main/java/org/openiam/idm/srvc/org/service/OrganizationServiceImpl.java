@@ -1813,4 +1813,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
         return response;
     }
+
+	@Override
+	public boolean isIndexed(String id) {
+		return organizationElasticSearchRepository.exists(id);
+	}
 }
