@@ -75,7 +75,7 @@ public interface IdentitySynchService {
 
     int count(SynchConfigSearchBean searchBean);
 
-    List<SynchConfigEntity> findBeans(SynchConfigSearchBean searchBean, Integer from, Integer size);
+    List<SynchConfigEntity> findBeans(SynchConfigSearchBean searchBean, int from, int size);
 
     void deleteSynchReviewList(List<SynchReviewEntity> reviewList);
 

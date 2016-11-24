@@ -577,7 +577,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SynchConfigEntity> findBeans(SynchConfigSearchBean example, Integer from, Integer size) {
+    public List<SynchConfigEntity> findBeans(SynchConfigSearchBean example, int from, int size) {
         return synchConfigDao.getByExample(example, from, size);
     }
 

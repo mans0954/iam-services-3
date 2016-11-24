@@ -35,9 +35,9 @@ public interface ManagedSystemService {
 
     MngSysPolicyDto getManagedSysPolicyByMngSysIdAndMetadataType(String mngSysId, String metadataTypeId);
 
-    List<MngSysPolicyDto> findMngSysPolicies(MngSysPolicySearchBean searchBean, Integer from, Integer size);
+    List<MngSysPolicyDto> findMngSysPolicies(MngSysPolicySearchBean searchBean, int from, int size);
 
-    List<MngSysPolicyBean> findMngSysPolicyBeans(MngSysPolicySearchBean searchBean, Integer from, Integer size);
+    List<MngSysPolicyBean> findMngSysPolicyBeans(MngSysPolicySearchBean searchBean, int from, int size);
 
     String saveMngSysPolicyBean(MngSysPolicyBean mngSysPolicy) throws BasicDataServiceException;
 

@@ -430,7 +430,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             return 0;
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {
-        	return organizationElasticSearchRepository.count(searchBean);
+        	if(organizationElasticSearchRepository.isValidSearchBean(searchBean)) {
+        		return organizationElasticSearchRepository.count(searchBean);
+        	} else {
+        		return orgDao.count(searchBean);
+        	}
         } else {
         	return orgDao.count(searchBean);
         }
@@ -1531,7 +1535,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional(readOnly = true)
-    public List<LocationEntity> getLocationList(String organizationId, Integer from, Integer size ) {
+    public List<LocationEntity> getLocationList(String organizationId, int from, int size ) {
         if (organizationId == null)
             throw new NullPointerException("organizationId is null");
 
@@ -1543,7 +1547,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional(readOnly = true)
-    public List<Location> getLocationDtoList(String organizationId, Integer from, Integer size) {
+    public List<Location> getLocationDtoList(String organizationId, int from, int size) {
         /*if (organizationId == null)
             throw new NullPointerException("organizationId is null");
 
@@ -1557,7 +1561,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional(readOnly = true)
-    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, Integer from, Integer size) {
+    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, int from, int size) {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
@@ -1566,7 +1570,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional(readOnly = true)
-    public List<Location> getLocationDtoList(LocationSearchBean searchBean, Integer from, Integer size) {
+    public List<Location> getLocationDtoList(LocationSearchBean searchBean, int from, int size) {
         /*if (searchBean == null)
             throw new NullPointerException("searchBean is null");*/
 
@@ -1596,7 +1600,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         return count;
     }
 
-    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size) {
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, int from, int size) {
         return locationDao.findByOrganizationList(orgsId, from, size);
     }
 

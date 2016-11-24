@@ -602,12 +602,12 @@ public class ManagedSystemWebServiceImpl extends AbstractApiService implements M
     }
 
     @Override
-    public List<MngSysPolicyDto> findMngSysPolicies(MngSysPolicySearchBean searchBean, Integer from, Integer size) {
+    public List<MngSysPolicyDto> findMngSysPolicies(MngSysPolicySearchBean searchBean, int from, int size) {
         return managedSystemService.findMngSysPolicies(searchBean, from, size);
     }
 
     @Override
-    public List<MngSysPolicyBean> findMngSysPolicyBeans(MngSysPolicySearchBean searchBean, Integer from, Integer size) {
+    public List<MngSysPolicyBean> findMngSysPolicyBeans(MngSysPolicySearchBean searchBean, int from, int size) {
         return managedSystemService.findMngSysPolicyBeans(searchBean, from, size);
     }
 

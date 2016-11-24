@@ -35,7 +35,7 @@ public interface ContentProviderService {
 
     int getNumOfContentProviders(ContentProviderSearchBean cpsb);
 
-    List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, Integer from, Integer size);
+    List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, int from, int size);
 
     String saveContentProvider(ContentProvider provider) throws BasicDataServiceException;
 

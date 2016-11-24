@@ -637,7 +637,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Override
     //@Transactional(readOnly = true)
-    public List<Location> getLocationListByPage(String organizationId, Integer from, Integer size) {
+    public List<Location> getLocationListByPage(String organizationId, int from, int size) {
         return organizationService.getLocationDtoList(organizationId, from, size);
     }
 
@@ -666,7 +666,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size) {
+    public List<Location> getLocationListByPageForUser(String userId, int from, int size) {
 
         final Set<String> orgsId = new HashSet<String>();
         final OrganizationSearchBean sb = new OrganizationSearchBean();

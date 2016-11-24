@@ -90,8 +90,8 @@ public interface ContentProviderWebService {
     @WebMethod
     @Deprecated
     List<URIPattern> getUriPatternsForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId,
-                                               @WebParam(name = "from", targetNamespace = "") Integer from,
-                                               @WebParam(name = "size", targetNamespace = "") Integer size);
+                                               @WebParam(name = "from", targetNamespace = "") int from,
+                                               @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     @Deprecated

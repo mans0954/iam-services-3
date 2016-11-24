@@ -59,7 +59,7 @@ public class IdentityWebServiceImpl implements IdentityWebService {
     }
 
     @Override
-    public List<IdentityDto> findByExample(IdentitySearchBean searchBean, String requesterId, Integer from, Integer size) {
+    public List<IdentityDto> findByExample(IdentitySearchBean searchBean, String requesterId, int from, int size) {
         return identityService.findByExample(searchBean, requesterId, from, size);
     }
 

@@ -555,7 +555,11 @@ public class RoleDataServiceImpl implements RoleDataService {
             return 0;
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {
-        	return roleElasticSearchRepository.count(searchBean);
+        	if(roleElasticSearchRepository.isValidSearchBean(searchBean)) {
+        		return roleElasticSearchRepository.count(searchBean);
+        	} else {
+        		return roleDao.count(searchBean);
+        	}
         } else {
         	return roleDao.count(searchBean);
         }

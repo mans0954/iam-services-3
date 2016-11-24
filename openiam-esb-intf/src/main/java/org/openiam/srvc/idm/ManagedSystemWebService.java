@@ -219,13 +219,13 @@ public interface ManagedSystemWebService {
 
     @WebMethod
     List<MngSysPolicyDto> findMngSysPolicies(@WebParam(name = "searchBean", targetNamespace = "") MngSysPolicySearchBean searchBean,
-                                             @WebParam(name = "from", targetNamespace = "") Integer from,
-                                             @WebParam(name = "size", targetNamespace = "") Integer size);
+                                             @WebParam(name = "from", targetNamespace = "") int from,
+                                             @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     List<MngSysPolicyBean> findMngSysPolicyBeans(@WebParam(name = "searchBean", targetNamespace = "") MngSysPolicySearchBean searchBean,
-                                                 @WebParam(name = "from", targetNamespace = "") Integer from,
-                                                 @WebParam(name = "size", targetNamespace = "") Integer size);
+                                                 @WebParam(name = "from", targetNamespace = "") int from,
+                                                 @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     int getMngSysPoliciesCount(@WebParam(name = "searchBean", targetNamespace = "") MngSysPolicySearchBean searchBean);

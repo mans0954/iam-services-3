@@ -34,7 +34,7 @@ public interface LocationDAO extends BaseDao<LocationEntity, String> {
 
     void removeByOrganizationId(final String organizationId);
 
-    List<LocationEntity> findByOrganizationList(Set<String> orgsId, Integer from, Integer size);
+    List<LocationEntity> findByOrganizationList(Set<String> orgsId, int from, int size);
 
     List<LocationEntity> findByOrganizationList(Set<String> orgsId);
 

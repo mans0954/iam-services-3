@@ -56,7 +56,7 @@ public interface LoginDataWebService {
     
     @WebMethod
     List<Login> findBeans(
-            @WebParam(name = "searchBean", targetNamespace = "") LoginSearchBean searchBean, Integer from, Integer size);
+            @WebParam(name = "searchBean", targetNamespace = "") LoginSearchBean searchBean, int from, int size);
 
     @WebMethod
     Integer count(@WebParam(name = "searchBean", targetNamespace = "") LoginSearchBean searchBean);

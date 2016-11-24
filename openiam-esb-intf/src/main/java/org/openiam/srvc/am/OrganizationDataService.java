@@ -256,8 +256,8 @@ public interface OrganizationDataService {
 
     @WebMethod
     public List<Location> getLocationListByPage(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
-                                                @WebParam(name = "from", targetNamespace = "") Integer from,
-                                                @WebParam(name = "size", targetNamespace = "") Integer size);
+                                                @WebParam(name = "from", targetNamespace = "") int from,
+                                                @WebParam(name = "size", targetNamespace = "") int size);
     @WebMethod
     public List<Location> findLocationBeans(@WebParam(name = "searchBean", targetNamespace = "") LocationSearchBean searchBean,
                                             @WebParam(name = "from", targetNamespace = "")  int from,
@@ -273,8 +273,8 @@ public interface OrganizationDataService {
 
     @WebMethod
     public List<Location> getLocationListByPageForUser(@WebParam(name = "userId", targetNamespace = "") String organizationId,
-                                                       @WebParam(name = "from", targetNamespace = "") Integer from,
-                                                       @WebParam(name = "size", targetNamespace = "") Integer size);
+                                                       @WebParam(name = "from", targetNamespace = "") int from,
+                                                       @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     public List<Organization> getUserAffiliationsByType(@WebParam(name = "userId", targetNamespace = "") final String userId,

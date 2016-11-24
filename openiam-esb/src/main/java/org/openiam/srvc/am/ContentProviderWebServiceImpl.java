@@ -116,7 +116,7 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 
     @Override
     @Deprecated
-    public List<URIPattern> getUriPatternsForProvider(String providerId, Integer from, Integer size) {
+    public List<URIPattern> getUriPatternsForProvider(String providerId, int from, int size) {
         final URIPatternSearchBean sb = new URIPatternSearchBean();
         sb.setContentProviderId(providerId);
         return findUriPatterns(sb, from, size);

@@ -200,7 +200,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
     @Override
     @Transactional(readOnly = true)
-    public List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, Integer from, Integer size) {
+    public List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, int from, int size) {
         List<ContentProviderEntity> contentProviderEntities =  contentProviderDao.getByExample(cpsb, from, size);
         return contentProviderEntities != null ? contentProviderDozerConverter.convertToDTOList(contentProviderEntities, cpsb.isDeepCopy()) : null;
     }

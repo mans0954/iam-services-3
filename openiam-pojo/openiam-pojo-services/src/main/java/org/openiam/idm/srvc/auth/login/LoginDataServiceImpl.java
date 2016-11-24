@@ -208,7 +208,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size) {
+    public List<LoginEntity> findBeans(LoginSearchBean searchBean, int from, int size) {
         List<LoginEntity> retVal = null;
         if (CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
             final List<LoginEntity> entityList = loginDao.findByIds(searchBean.getKeySet());
