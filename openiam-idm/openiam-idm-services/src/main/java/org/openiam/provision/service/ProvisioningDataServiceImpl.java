@@ -132,7 +132,87 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     private Boolean sendActivationLink;
 
     //---
+    @Value("${openiam.preprocessor.custom.error.1}")
+    private String preCustom1;
+    @Value("${openiam.preprocessor.custom.error.2}")
+    private String preCustom2;
+    @Value("${openiam.preprocessor.custom.error.3}")
+    private String preCustom3;
+    @Value("${openiam.preprocessor.custom.error.4}")
+    private String preCustom4;
+    @Value("${openiam.preprocessor.custom.error.5}")
+    private String preCustom5;
+    @Value("${openiam.preprocessor.custom.error.6}")
+    private String preCustom6;
+    @Value("${openiam.preprocessor.custom.error.7}")
+    private String preCustom7;
+    @Value("${openiam.preprocessor.custom.error.8}")
+    private String preCustom8;
+    @Value("${openiam.preprocessor.custom.error.9}")
+    private String preCustom9;
+    @Value("${openiam.preprocessor.custom.error.10}")
+    private String preCustom10;
+    @Value("${openiam.preprocessor.custom.error.11}")
+    private String preCustom11;
+    @Value("${openiam.preprocessor.custom.error.12}")
+    private String preCustom12;
+    @Value("${openiam.preprocessor.custom.error.13}")
+    private String preCustom13;
+    @Value("${openiam.preprocessor.custom.error.14}")
+    private String preCustom14;
+    @Value("${openiam.preprocessor.custom.error.15}")
+    private String preCustom15;
+    @Value("${openiam.preprocessor.custom.error.16}")
+    private String preCustom16;
+    @Value("${openiam.preprocessor.custom.error.17}")
+    private String preCustom17;
+    @Value("${openiam.preprocessor.custom.error.18}")
+    private String preCustom18;
+    @Value("${openiam.preprocessor.custom.error.19}")
+    private String preCustom19;
+    @Value("${openiam.preprocessor.custom.error.20}")
+    private String preCustom20;
 
+    @Value("${openiam.postprocessor.custom.error.1}")
+    private String postCustom1;
+    @Value("${openiam.postprocessor.custom.error.2}")
+    private String postCustom2;
+    @Value("${openiam.postprocessor.custom.error.3}")
+    private String postCustom3;
+    @Value("${openiam.postprocessor.custom.error.4}")
+    private String postCustom4;
+    @Value("${openiam.postprocessor.custom.error.5}")
+    private String postCustom5;
+    @Value("${openiam.postprocessor.custom.error.6}")
+    private String postCustom6;
+    @Value("${openiam.postprocessor.custom.error.7}")
+    private String postCustom7;
+    @Value("${openiam.postprocessor.custom.error.8}")
+    private String postCustom8;
+    @Value("${openiam.postprocessor.custom.error.9}")
+    private String postCustom9;
+    @Value("${openiam.postprocessor.custom.error.10}")
+    private String postCustom10;
+    @Value("${openiam.postprocessor.custom.error.11}")
+    private String postCustom11;
+    @Value("${openiam.postprocessor.custom.error.12}")
+    private String postCustom12;
+    @Value("${openiam.postprocessor.custom.error.13}")
+    private String postCustom13;
+    @Value("${openiam.postprocessor.custom.error.14}")
+    private String postCustom14;
+    @Value("${openiam.postprocessor.custom.error.15}")
+    private String postCustom15;
+    @Value("${openiam.postprocessor.custom.error.16}")
+    private String postCustom16;
+    @Value("${openiam.postprocessor.custom.error.17}")
+    private String postCustom17;
+    @Value("${openiam.postprocessor.custom.error.18}")
+    private String postCustom18;
+    @Value("${openiam.postprocessor.custom.error.19}")
+    private String postCustom19;
+    @Value("${openiam.postprocessor.custom.error.20}")
+    private String postCustom20;
     //----
 
 
@@ -1005,9 +1085,93 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPreProcessor result=" + (callPreProcessor == 1 ? "SUCCESS" : "FAIL"));
         if (callPreProcessor != ProvisioningConstants.SUCCESS) {
             auditLog.fail();
-            auditLog.setFailureReason("PreProcessor error.");
             resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+
+            switch (callPreProcessor) {
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_1:
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_1);
+                    auditLog.setFailureReason(resp.getErrorText());
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_2:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_2);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_2);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_3:
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_3);
+                    auditLog.setFailureReason(resp.getErrorText());
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_4:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_4);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_4);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_5:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_5);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_5);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_6:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_6);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_6);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_7:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_7);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_7);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_8:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_8);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_8);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_9:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_9);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_9);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_10:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_10);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_10);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_11:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_11);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_11);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_12:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_12);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_12);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_13:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_13);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_13);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_14:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_14);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_14);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_15:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_15);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_15);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_16:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_16);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_16);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_17:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_17);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_17);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_18:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_18);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_18);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_19:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_19);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_19);
+                    break;
+                case ProvisioningConstants.FAIL_PREPROCESSOR_CUSTOM_ERROR_20:
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_20);
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR_CUSTOM_ERROR_20);
+                    break;
+                default:
+                    auditLog.setFailureReason("PreProcessor error.");
+                    resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+            }
             return resp;
         }
         // make sure that our object as the attribute set that will be used for
@@ -1389,9 +1553,95 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap, null);
         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result=" + (callPostProcessorResult == 1 ? "SUCCESS" : "FAIL"));
         if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
+            //resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+            //auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "PostProcessor error.");
+            auditLog.fail();
             resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "PostProcessor error.");
+            switch (callPostProcessorResult) {
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_1:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_1);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_1);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_2:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_2);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_2);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_3:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_3);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_3);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_4:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_4);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_4);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_5:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_5);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_5);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_6:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_6);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_6);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_7:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_7);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_7);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_8:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_8);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_8);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_9:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_9);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_9);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_10:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_10);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_10);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_11:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_11);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_11);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_12:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_12);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_12);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_13:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_13);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_13);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_14:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_14);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_14);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_15:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_15);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_15);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_16:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_16);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_16);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_17:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_17);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_17);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_18:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_18);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_18);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_19:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_19);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_19);
+                    break;
+                case ProvisioningConstants.FAIL_POSTPROCESSOR_CUSTOM_ERROR_20:
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_20);
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR_CUSTOM_ERROR_20);
+                    break;
+                default:
+                    auditLog.setFailureReason("PostProcessor error.");
+                    resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+            }
             return resp;
         }
         /* Response object */
