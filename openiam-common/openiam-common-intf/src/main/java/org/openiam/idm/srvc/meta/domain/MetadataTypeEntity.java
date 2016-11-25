@@ -1,34 +1,44 @@
 package org.openiam.idm.srvc.meta.domain;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.*;
-//import org.hibernate.search.annotations.*;
-//import org.hibernate.search.annotations.Index;
-import org.openiam.base.domain.KeyEntity;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.constants.ESIndexName;
-import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.annotation.DocumentRepresentation;
+import org.openiam.elasticsearch.converter.MetadataTypeDocToEntityConverter;
+import org.openiam.elasticsearch.model.MetadataTypeDoc;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldIndex;
-import org.springframework.data.elasticsearch.annotations.FieldType;
-
-import javax.persistence.*;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+//import org.hibernate.search.annotations.*;
+//import org.hibernate.search.annotations.Index;
 
 @Entity
 @Table(name = "METADATA_TYPE")
@@ -39,7 +49,7 @@ import java.util.Set;
 	@AttributeOverride(name = "id", column = @Column(name = "TYPE_ID")),
 	@AttributeOverride(name = "name", column = @Column(name = "NAME", length = 100, nullable = true))
 })
-@Document(indexName = ESIndexName.METADATA_TYPE, type= ESIndexType.METADATA_TYPE)
+@DocumentRepresentation(value=MetadataTypeDoc.class, converter=MetadataTypeDocToEntityConverter.class)
 public class MetadataTypeEntity extends AbstractKeyNameEntity {
 
     private static final long serialVersionUID = 1L;
@@ -66,7 +76,6 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "GROUPING", length = 100)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private MetadataTypeGrouping grouping;
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = { CascadeType.ALL })
