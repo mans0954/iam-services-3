@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.audit.syslogs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
@@ -75,10 +76,10 @@ public class AuditSysLog
     @PostConstruct
     public void init(){
         actions = new HashSet<String>();
-        String[] splitActions = logActions.split(",");
+        String[] splitActions = logActions.replaceAll(" ","").split(",");
         if (splitActions.length > 0) {
             for (String act : splitActions) {
-                actions.add(act);
+                actions.add(AuditAction.valueOf(act).value());
             }
         }
 
@@ -146,32 +147,49 @@ public class AuditSysLog
             for (String st : dataOrder) {
                 switch (st) {
                     case "action":
-                        logMessage.append(" Action:").append(log.getAction());
+                        logMessage.append(" Action:[").append(log.getAction()).append("]");
                         break;
                     case "clientip":
-                        logMessage.append(" ClientIP:").append(log.getClientIP());
+                        logMessage.append(" ClientIP:[").append(log.getClientIP()).append("]");
                         break;
                     case "principal":
-                        logMessage.append(" Principal:").append(log.getPrincipal());
+                        logMessage.append(" Principal:[").append(log.getPrincipal()).append("]");
                         break;
                     case "result":
-                        logMessage.append(" Result:").append(log.getResult());
+                        logMessage.append(" Result:[").append(log.getResult()).append("]");
                         break;
                     case "target":
                         if (log.getTargets() != null && log.getTargets().size() > 0) {
-                            logMessage.append(" Targets: ");
+                            logMessage.append(" Targets:[");
                             for (AuditLogTarget alt : log.getTargets()) {
                                 logMessage.append("[").append(alt.getTargetType()).append(":").append(alt.getObjectPrincipal()).append("]");
                             }
+                            logMessage.append("]");
                         }
+                        break;
+                    case "datetime":
+                        logMessage.append(" DateTime:[").append(log.getTimestamp().toString()).append("]");
                         break;
                     case "description":
                         if (log.getCustomRecords() != null && log.getCustomRecords().size() > 0) {
-                            logMessage.append(" Descriptions: ");
+                            StringBuilder addInfo = new StringBuilder();
                             for (IdmAuditLogCustom ialc : log.getCustomRecords()) {
                                 if ("DESCRIPTION".equalsIgnoreCase(ialc.getKey())) {
-                                    logMessage.append("[").append(ialc.getValue()).append("]");
+                                    addInfo.append("[").append(ialc.getValue()).append("]");
                                 }
+                            }
+                            if (addInfo.length() > 0) {
+                                logMessage.append(" Description:[").append(addInfo.toString()).append("]");
+                            }
+
+                            addInfo = new StringBuilder();
+                            for (IdmAuditLogCustom ialc : log.getCustomRecords()) {
+                                if (!"DESCRIPTION".equalsIgnoreCase(ialc.getKey())) {
+                                    addInfo.append(ialc.getKey()).append(":[").append(ialc.getValue()).append("]");
+                                }
+                            }
+                            if (addInfo.length() > 0) {
+                                logMessage.append(" Additional_info:[").append(addInfo.toString()).append("]");
                             }
                         }
                         break;
@@ -184,11 +202,9 @@ public class AuditSysLog
     public void sendSysLog( int priority, String msg ) {
         int		pricode;
         int		length;
-        int		idx, sidx, nidx;
-        StringBuffer	buffer;
-        byte[]		data;
-        byte[]		numbuf = new byte[32];
-        String		strObj;
+        int		idx;
+        byte[]	data;
+        String	strObj;
 
         pricode = MakePriorityCode( facility, priority );
         Integer priObj = new Integer( pricode );
@@ -202,18 +218,18 @@ public class AuditSysLog
         data[idx++] = '<';
 
         strObj = priObj.toString( priObj.intValue() );
-        strObj.getBytes( 0, strObj.length(), data, idx );
+        System.arraycopy(strObj.getBytes(), 0, data, idx, strObj.length());
         idx += strObj.length();
 
         data[idx++] = '>';
 
-        ident.getBytes( 0, ident.length(), data, idx );
+        System.arraycopy(ident.getBytes(), 0, data, idx, ident.length());
         idx += ident.length();
 
         data[idx++] = ':';
         data[idx++] = ' ';
 
-        msg.getBytes( 0, msg.length(), data, idx );
+        System.arraycopy(msg.getBytes(), 0, data, idx, msg.length());
         idx += msg.length();
 
         data[idx] = 0;
