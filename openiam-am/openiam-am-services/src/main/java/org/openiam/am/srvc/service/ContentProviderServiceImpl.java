@@ -1352,7 +1352,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 		
 		final MetadataElementPageTemplateEntity groupTemplate = templateService.findById(defaultGroupPageTemplate);
 		if(groupTemplate != null) {
-			groupTemplate.setUriPatterns(groupTemplatePatterns);
+			groupTemplatePatterns.forEach(pattern -> {
+				groupTemplate.addURIPattern(pattern);
+			});
 			templateService.save(template);
 		}
         return providerId;

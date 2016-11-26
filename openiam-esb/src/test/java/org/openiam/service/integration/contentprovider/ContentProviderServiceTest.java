@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
 import org.openiam.am.srvc.dto.AuthProvider;
@@ -171,24 +172,32 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 			).forEach(e -> {
 				final TemplateRequest templateRequest = new TemplateRequest();
 				templateRequest.setLanguageId(getDefaultLanguage().getId());
-				//templateRequest.setRequestURI(URIUtils.getRequestURL(request));
 				templateRequest.setPatternId(e.getId());
 				templateRequest.setTargetObjectId("3000");
 				final PageTempate template = metadataTemplateServiceClient.getTemplate(templateRequest);
 				Assert.assertNotNull(template);
-				Assert.assertTrue(StringUtils.isNotBlank(template.getTemplateId()));
-				
-/*
- the current UI Field size is based on # of elemtns in defualt.page.template.fields.json
-*/
-
+				Assert.assertTrue(StringUtils.isNotBlank(template.getTemplateId()));				
+				/* the current UI Field size is based on # of elemtns in defualt.page.template.fields.json.  
+				 * There are 3 objects in that json file, at the time of this test 
+				 */
 				Assert.assertTrue(template.getUiFields() != null && template.getUiFields().size() == 3);
 			});
 			
-/*
- b/c default patterns were created in setup
-*/
-
+			provider.getPatternSet().stream().filter(e -> 
+				StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editGroup") ||
+				StringUtils.startsWithIgnoreCase(e.getPattern(), "/webconsole/editGroup")
+			).forEach(e -> {
+				final TemplateRequest templateRequest = new TemplateRequest();
+				templateRequest.setLanguageId(getDefaultLanguage().getId());
+				templateRequest.setPatternId(e.getId());
+				templateRequest.setTargetObjectId("3000");
+				final PageTempate template = metadataTemplateServiceClient.getTemplate(templateRequest);
+				Assert.assertNotNull(template);
+				Assert.assertTrue(StringUtils.isNotBlank(template.getTemplateId()));				
+				Assert.assertTrue(MapUtils.isNotEmpty(template.getUiFields()));
+			});
+			
+			/* b/c default patterns were created in setup */
 			Assert.assertTrue(CollectionUtils.isNotEmpty(provider.getPatternSet()));
 		} finally {
 			if(provider != null && StringUtils.isNotBlank(provider.getId())) {
