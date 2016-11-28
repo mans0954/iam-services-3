@@ -98,4 +98,7 @@ public abstract class AbstractApiService {
         return manageCrudApiRequest(apiName, new BaseCrudServiceRequest<V>(data));
     }
 
+    protected MqQueue getRabbitMqQueue() {
+        return rabbitMqQueue;
+    }
 }

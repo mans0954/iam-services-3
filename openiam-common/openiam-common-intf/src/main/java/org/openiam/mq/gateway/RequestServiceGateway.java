@@ -11,5 +11,6 @@ import org.openiam.mq.constants.queue.MqQueue;
 public interface RequestServiceGateway {
     Response sendAndReceive(MqQueue queue, OpenIAMAPI api, final BaseServiceRequest request);
     void send(MqQueue queue, OpenIAMAPI api,final BaseServiceRequest request);
+    void schedule(MqQueue queue, OpenIAMAPI api, final Long delayMillis, final BaseServiceRequest request);
     void publish(MqQueue queue, OpenIAMAPI api, final BaseServiceRequest request);
 }

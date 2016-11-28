@@ -44,6 +44,11 @@ public class RabbitMQSender {
         apiRequest.setAsych(true);
         requestServiceGateway.send(queue, apiName, apiRequest);
     }
+
+    public <API extends OpenIAMAPI> void schedule(MqQueue queue, API apiName, final Long delayMillis, final BaseServiceRequest apiRequest){
+        apiRequest.setAsych(true);
+        requestServiceGateway.schedule(queue, apiName, delayMillis, apiRequest);
+    }
     public <API extends OpenIAMAPI>  void publish(MqQueue queue, API apiName, final BaseServiceRequest apiRequest){
         apiRequest.setAsych(true);
         requestServiceGateway.publish(queue, apiName, apiRequest);

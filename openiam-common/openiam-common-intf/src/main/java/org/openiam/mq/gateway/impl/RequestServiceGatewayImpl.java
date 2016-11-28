@@ -9,6 +9,7 @@ import org.openiam.mq.constants.queue.MqQueue;
 import org.openiam.mq.gateway.RequestServiceGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitGatewaySupport;
 
 /**
@@ -25,13 +26,26 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
             log.error(String.format("Cannot send a message {%s} to queue {%s}", request.toString(), queue.getName()), e);
         }
     }
+    public void schedule(MqQueue queue, OpenIAMAPI api, Long delayMillis, final BaseServiceRequest request){
+        if(!queue.getExchange().isDelayed()){
+            log.warn(String.format("Cannot schedule a message {%s} to queue {%s}. Exchange must be declared as x-delayed-type. The message will be sent immediately", request.toString(), queue.getName()));
+            delayMillis=null;
+        }
+        try {
+            this.convertAndSendWithName(queue, api, delayMillis, request, queue.getRoutingKey());
+        } catch (Exception e) {
+            log.error(String.format("Cannot publish a message {%s} to queue {%s}", request.toString(), queue.getName()), e);
+        }
+
+    }
     public void publish(MqQueue queue, final OpenIAMAPI api, final BaseServiceRequest request) {
         try {
-            this.convertAndSendWithName(queue, api, request, "");
+            this.convertAndSendWithName(queue, api, null, request, "");
         } catch (Exception e) {
             log.error(String.format("Cannot publish a message {%s} to queue {%s}", request.toString(), queue.getName()), e);
         }
     }
+
     /**
      * @param queue
      * @param request
@@ -64,20 +78,23 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
     }
 
     private void convertAndSend(MqQueue queue, final OpenIAMAPI api, final BaseServiceRequest request) throws Exception {
-        this.convertAndSendWithName(queue, api, request, queue.getRoutingKey());
+        this.convertAndSendWithName(queue, api, null, request, queue.getRoutingKey());
     }
 
-    private void convertAndSendWithName(MqQueue queue, final OpenIAMAPI api, final BaseServiceRequest request, String routingKey) throws Exception {
+    private void convertAndSendWithName(MqQueue queue, final OpenIAMAPI api, final Long delayMillis, final BaseServiceRequest request, String routingKey) throws Exception {
         log.debug("Send to QUEUE : QUEUE = " + queue.toString() + "; " + request.toString());
-        convertAndSendWithName(queue.getVHost(), queue.getExchange().name(), api, request, routingKey);
+        convertAndSendWithName(queue.getVHost(), queue.getExchange().name(), api, delayMillis, request, routingKey);
     }
 
-    private void convertAndSendWithName(final String vhost, final String exchange, final OpenIAMAPI api, final BaseServiceRequest request, final String routingKey) throws Exception {
+    private void convertAndSendWithName(final String vhost, final String exchange, final OpenIAMAPI api, final Long delayMillis, final BaseServiceRequest request, final String routingKey) throws Exception {
         log.debug("Send to exchange : EXCHANGE = " + exchange + "; RoutingKey: " + routingKey + ";" + request.toString());
         getRabbitOperations().convertAndSend(exchange, routingKey, request,
                 message -> {
                     message.getMessageProperties().setHeader(MQConstant.VIRTUAL_HOST, vhost);
                     message.getMessageProperties().setHeader(MQConstant.API_NAME, api);
+                    if(delayMillis!=null && delayMillis>=0){
+                        message.getMessageProperties().setHeader(MessageProperties.X_DELAY, delayMillis);
+                    }
                     return message;
                 });
     }

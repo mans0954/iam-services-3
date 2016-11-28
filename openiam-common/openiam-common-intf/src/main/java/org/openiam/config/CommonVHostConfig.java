@@ -1,10 +1,7 @@
 package org.openiam.config;
 
 import org.openiam.mq.constants.RabbitMQVHosts;
-import org.openiam.mq.constants.queue.common.BatchTaskQueue;
-import org.openiam.mq.constants.queue.common.LanguageServiceQueue;
-import org.openiam.mq.constants.queue.common.MailQueue;
-import org.openiam.mq.constants.queue.common.PolicyQueue;
+import org.openiam.mq.constants.queue.common.*;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -53,6 +50,13 @@ public class CommonVHostConfig extends BaseVHostConfig{
     @Bean
     public PolicyQueue PolicyQueue() {
         PolicyQueue queue =  new PolicyQueue();
+        bindQueue(commonAmqpAdmin(), queue);
+        return queue;
+    }
+
+    @Bean
+    public EsReindexQueue EsReindexQueue() {
+        EsReindexQueue queue =  new EsReindexQueue();
         bindQueue(commonAmqpAdmin(), queue);
         return queue;
     }

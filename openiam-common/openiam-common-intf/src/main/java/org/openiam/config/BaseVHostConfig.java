@@ -102,12 +102,14 @@ public class BaseVHostConfig {
             case ExchangeTypes.DIRECT:
 
                 exchange = new DirectExchange(queue.getExchange().name());
+                exchange.setDelayed(queue.getExchange().isDelayed());
                 amqpAdmin.declareExchange(exchange);
                 amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue)
                         .to((DirectExchange) exchange).with(queue.getRoutingKey()));
                 break;
             case ExchangeTypes.FANOUT:
                 exchange = new FanoutExchange(queue.getExchange().name());
+                exchange.setDelayed(queue.getExchange().isDelayed());
                 amqpAdmin.declareExchange(exchange);
                 amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue).to(
                         (FanoutExchange) exchange));
@@ -115,6 +117,7 @@ public class BaseVHostConfig {
             case ExchangeTypes.HEADERS:
             case ExchangeTypes.TOPIC:
                 exchange = new TopicExchange(queue.getExchange().name());
+                exchange.setDelayed(queue.getExchange().isDelayed());
                 amqpAdmin.declareExchange(exchange);
                 amqpAdmin.declareBinding(BindingBuilder.bind(rabbitQueue)
                         .to((TopicExchange) exchange).with(queue.getRoutingKey()));

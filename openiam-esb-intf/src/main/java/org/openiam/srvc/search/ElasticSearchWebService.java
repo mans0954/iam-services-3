@@ -1,6 +1,6 @@
 package org.openiam.srvc.search;
 
-import java.util.Set;
+import java.util.List;
 
 import javax.jws.WebService;
 
@@ -11,5 +11,7 @@ public interface ElasticSearchWebService {
 
 	public Response reindex(final Class<?> entityClass);
 	
-	public Set<Class<?>> indexedClasses();
+	public List<Class<?>> indexedClasses();
+
+	public Response scheduleReindex(final Class<?> entityClass, final String id, final Long delay);
 }

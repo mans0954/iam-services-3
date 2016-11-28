@@ -1,11 +1,6 @@
 package org.openiam.elasticsearch.dao.impl;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
@@ -20,6 +15,7 @@ import org.dozer.Mapper;
 import org.elasticsearch.common.netty.util.internal.ConcurrentHashMap;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.core.dao.BaseDao;
 import org.openiam.elasticsearch.annotation.DocumentRepresentation;
 import org.openiam.elasticsearch.annotation.EntityRepresentation;
@@ -28,6 +24,8 @@ import org.openiam.elasticsearch.dao.AbstractCustomElasticSearchRepository;
 import org.openiam.elasticsearch.dao.OpeniamElasticSearchRepository;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
 import org.openiam.elasticsearch.service.ElasticsearchReindexProcessor;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -67,8 +65,8 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 	private Map<Class<?>, OpeniamElasticSearchRepository> documentRepositoryMap = new HashMap<Class<?>, OpeniamElasticSearchRepository>();
 	private Map<Class<?>, AbstractCustomElasticSearchRepository> customDocumentRepositoryImplMap = new HashMap<>();
 	
-	public Set<Class<?>> getIndexedClasses() {
-		return documentRepositoryMap.keySet();
+	public List<Class<?>> getIndexedClasses() {
+		return new ArrayList<>(documentRepositoryMap.keySet());
 	}
 	
 	@PostConstruct
@@ -203,8 +201,8 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 	private Class<?> getDocumentClass(final Class<?> entityClass) {
 		return (entity2DocumentClassMap.containsKey(entityClass)) ? entity2DocumentClassMap.get(entityClass) : entityClass;
 	}
-	
-	private int reindex(final Class<?> entityClass, final Collection<String> ids) {
+	@Transactional
+	public int reindex(final Class<?> entityClass, final Collection<String> ids) {
 		if(ids != null) {
 			if(logger.isDebugEnabled()) {
 				logger.debug(String.format("Hibernate listener re-index request for %s", entityClass));
