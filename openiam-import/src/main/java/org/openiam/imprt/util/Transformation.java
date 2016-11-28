@@ -749,6 +749,11 @@ public class Transformation {
     }
 
     private void mergeGroups(String[] membersOf, Map<String, GroupEntity> groupsEntities, UserEntity user) {
+        if (user.getGroups() != null) {
+            for (GroupEntity g : user.getGroups()) {
+                g.setName("DELETE_FROM_DB");
+            }
+        }
         if (membersOf == null) return;
         for (String member : membersOf) {
             GroupEntity groupEntity = groupsEntities.get(member.toLowerCase());
@@ -760,6 +765,7 @@ public class Transformation {
                 for (GroupEntity gr : user.getGroups()) {
                     if (gr.getId().equals(groupEntity.getId())) {
                         isFind = true;
+                        gr.setName("");
                         break;
                     }
                 }
