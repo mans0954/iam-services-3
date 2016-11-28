@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.grp.ws;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -9,10 +8,10 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.LanguageDozerConverter;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.GroupAttributeDozerConverter;
 import org.openiam.dozer.converter.GroupDozerConverter;
+import org.openiam.dozer.converter.LanguageDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -34,7 +33,6 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import java.util.*;
+import java.util.List;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as well
@@ -688,6 +686,15 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public List<Group> findGroupsByAttributeValueLocalize(String attrName, String attrValue, final Language language) {
         return groupManager.findGroupsDtoByAttributeValueLocalize(attrName, attrValue, languageConverter.convertToEntity(language, false));
+    }
+
+    @Override
+    public List<GroupAttribute> getAttributeDTOsByGroupIds(List<String> groupIds, String attrName) {
+        List<GroupAttributeEntity> entities = groupManager.getAttributeEntityByGroupIds(groupIds, attrName);
+        if (entities != null) {
+            return groupAttributeDozerConverter.convertToDTOList(entities, true);
+        }
+        return null;
     }
 
     @Override

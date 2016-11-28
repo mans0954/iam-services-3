@@ -588,4 +588,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         sort.setOrderBy(OrderConstants.ASC);
         searchBean.addSortParam(sort);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getAttrNameByMngSysIdWithParams(String managedSysId, String objType, String status) {
+        return attributeMapDAO.getAttrNameByMngSysIdWithParams(managedSysId, objType, status);
+    }
 }

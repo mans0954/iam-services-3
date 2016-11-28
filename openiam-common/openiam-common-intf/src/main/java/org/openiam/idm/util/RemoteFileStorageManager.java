@@ -24,6 +24,10 @@ public class RemoteFileStorageManager {
     @Value("${org.openiam.upload.remote.sftp.directory}")
     private String remoteFilestorageDir;
 
+    public String getRemoteFilestorageDir() {
+        return remoteFilestorageDir;
+    }
+
     //Upload Attachment to remote host
     public void uploadFile(final InputStream fileInputStream, final String destSubDirectory, final String fileName) throws JSchException, SftpException {
         Session session = getSession();
@@ -56,24 +60,8 @@ public class RemoteFileStorageManager {
         session.disconnect();
     }
 
-    //Download Attachment from remote host
-    public InputStream downloadFile(final String destSubDirectory, final String destFile) throws JSchException, SftpException {
-        String destFilePath = remoteFilestorageDir + "/" + destSubDirectory + "/" + destFile;
 
-        Session session = getSession();
-
-        Channel channel = session.openChannel("sftp");
-        channel.connect();
-        ChannelSftp sftpChannel = (ChannelSftp) channel;
-
-        InputStream is = sftpChannel.get(destFilePath);
-
-        session.disconnect();
-
-        return is;
-    }
-
-    private Session getSession() throws JSchException {
+    public Session getSession() throws JSchException {
         JSch jsch = new JSch();
         Session session = null;
         if (StringUtils.isNotEmpty(remoteFilestorageKeypath)) {

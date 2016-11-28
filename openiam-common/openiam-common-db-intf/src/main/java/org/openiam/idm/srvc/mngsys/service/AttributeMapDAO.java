@@ -51,4 +51,5 @@ public interface AttributeMapDAO extends BaseDao<AttributeMapEntity, String> {
 
     void update(AttributeMapEntity entity);
 
+    List<String> getAttrNameByMngSysIdWithParams(String managedSysId, String objType, String status);
 }

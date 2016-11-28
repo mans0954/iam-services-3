@@ -5,9 +5,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.authmanager.common.SetStringResponse;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
-import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.GroupDozerConverter;
@@ -15,7 +13,6 @@ import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
-import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -42,14 +39,12 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
-import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -57,7 +52,6 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
-import org.openiam.util.ws.collection.StringUtil;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -998,11 +992,11 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                         group.addChildGroup(childGroup);
                     }
                 }
-        groupDao.update(group);
-        groupDao.evictCache();
-    }
+            groupDao.update(group);
+            groupDao.evictCache();
+        }
 
-}
+    }
 
     private Set<String> getDelegationFilter(String requesterId) {
         Set<String> filterData = null;
@@ -1179,19 +1173,23 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         pageTemplateService.validate(request);
     }
 
-    public List<Map<String,String>> getAttributeByGroupIds(List<String> groupIds, String attrName) {
-        if ((groupIds == null)||(groupIds.size() < 1)||(attrName == null)) {
+    public List<Map<String, String>> getAttributeByGroupIds(List<String> groupIds, String attrName) {
+        if ((groupIds == null) || (groupIds.size() < 1) || (attrName == null)) {
             return null;
         }
         return groupAttrDao.getAttributeByGroupIds(groupIds, attrName);
 
     }
 
-    public String getAttributeByGroupId(String groupId, String attrName){
-        if ((groupId == null)||(attrName == null)) {
+    public String getAttributeByGroupId(String groupId, String attrName) {
+        if ((groupId == null) || (attrName == null)) {
             return null;
         }
         return groupAttrDao.getAttributeByGroupId(groupId, attrName);
 
+    }
+
+    public List<GroupAttributeEntity> getAttributeEntityByGroupIds(List<String> groupIds, String attrName) {
+        return groupAttrDao.getAttributeEntityByGroupIds(groupIds, attrName);
     }
 }

@@ -6,6 +6,7 @@ package org.openiam.idm.srvc.mngsys.service;
 import java.util.List;
 
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.criterion.*;
 import org.mule.util.StringUtils;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -115,4 +116,30 @@ public class AttributeMapDAOImpl extends
         return "attributeMapId";
     }
 
+    @Override
+    public List<String> getAttrNameByMngSysIdWithParams(String managedSysId, String objType, String status){
+        if (StringUtils.isBlank(managedSysId)) {
+            return null;
+        }
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT attr.attributeName from org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity attr where attr.managedSystem.id=:parManagedSysId");
+        if (StringUtils.isNotBlank(objType)) {
+            sql.append(" and attr.mapForObjectType=:parObjType");
+        }
+        if (StringUtils.isNotBlank(status)) {
+            sql.append(" and attr.status=:parStatus");
+        }
+
+        Query qry = this.getSession().createQuery(sql.toString());
+        qry.setString("parManagedSysId", managedSysId);
+        if (StringUtils.isNotBlank(objType)) {
+            qry.setString("parObjType", objType);
+        }
+        if (StringUtils.isNotBlank(status)) {
+            qry.setString("parStatus", status);
+        }
+
+        List<String> results = (List<String>) qry.setCacheable(this.cachable()).list();
+        return results;
+    }
 }
