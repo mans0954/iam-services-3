@@ -39,6 +39,7 @@ public class Transformation {
     private final String AD_MNG_SYS_ID = "DD6CA4CC8BBC4D78A5879D93CEBC8A29";
     private final String PDD_EMAIL = "PDDUser@cog.akzonobel.com";
 
+    final String g_GSS_EUS_Intune_enable = "g_GSS_EUS_Intune_enable";
     final String ARCHIVE_CACHE_ENABLED = "g_gss_eus_maas_vaultcache_enabled - vv";
     final String g_GSS_MDMUsers = "g_GSS_MDMUsers".toLowerCase();
     final String g_GSS_MDMEmailWMS = "g_GSS_MDMEmailWMS".toLowerCase();
@@ -208,7 +209,9 @@ public class Transformation {
 
         attr = this.getValue(lo.get("employeeType"));
         if (StringUtils.isNotBlank(attr)) {
-            if (attr.contains("Long Term Absence")) {
+            if (attr.toLowerCase().contains("Shared \\ Departmental".toLowerCase())) {
+                addUserAttribute(user, new UserAttributeEntity("mailboxType", "Shared \\ Departmental"));
+            } else if (attr.contains("Long Term Absence")) {
                 addUserAttribute(user, new UserAttributeEntity("employeeType", "Employee"));
                 addUserAttribute(user, new UserAttributeEntity("longTermAbsence", "On"));
             } else {
@@ -216,7 +219,15 @@ public class Transformation {
                 addUserAttribute(user, new UserAttributeEntity("longTermAbsence", "Off"));
             }
         }
-
+        attr = this.getValue(lo.get("msExchResourceMetaData"));
+        if (StringUtils.isNotBlank(attr)) {
+            if (attr.toLowerCase().contains("resourcetype:room")) {
+                addUserAttribute(user, new UserAttributeEntity("mailboxType", "Room"));
+            }
+            if (attr.toLowerCase().contains("resourcetype:equipment")) {
+                addUserAttribute(user, new UserAttributeEntity("mailboxType", "Equipment"));
+            }
+        }
         attr = this.getValue(lo.get("otherName"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("otherName", attr));
@@ -494,13 +505,15 @@ public class Transformation {
         boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
         boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
         boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
+        boolean isIntune = containsNameGroup(memberOf, groupsMap, g_GSS_EUS_Intune_enable);
 //
         boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
-//        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
         //  addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
         addUserAttribute(user, new UserAttributeEntity("lyncMobility", isMDM ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("intune", isIntune ? "On" : null));
 //
         if (isCacheEnabled) {
             addUserAttribute(user, new UserAttributeEntity("archieve", "Cached - Laptop"));
