@@ -207,10 +207,47 @@ public class Transformation {
             addUserAttribute(user, new UserAttributeEntity("localEmployeeNumber", attr));
         }
 
+        boolean isService = false;
+
+        attr = this.getValue(lo.get("extensionAttribute14"));
+        addUserAttribute(user, new UserAttributeEntity("extensionAttribute14", attr));
+        String classification = attr == null ? "None" : attr;
+        addUserAttribute(user, new UserAttributeEntity("classification", attr));
+        if (samAccountName.length() > 4) {
+            switch (samAccountName.substring(0, 4).toLowerCase()) {
+                case "adm_":
+                    mdTypeId = "AKZONOBEL_ADM_ACCOUNT";
+                    classification = "ADM";
+                    break;
+                case "srv_":
+                    mdTypeId = "AKZONOBEL_SRV_ACCOUNT";
+                    classification = "SVC";
+                    isService = true;
+                    break;
+                case "tst_":
+                    mdTypeId = "AKZONOBEL_TST_ACCOUNT";
+                    classification = "TST";
+                    isService = true;
+                    break;
+                case "rsc_":
+                    mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+                    classification = "RSC";
+                    isService = true;
+                    break;
+                case "pos_":
+                    mdTypeId = "AKZONOBEL_POS_ACCOUNT";
+                    classification = "POS";
+                    isService = true;
+                    break;
+            }
+        }
+
         attr = this.getValue(lo.get("employeeType"));
         if (StringUtils.isNotBlank(attr)) {
             if (attr.toLowerCase().contains("Shared \\ Departmental".toLowerCase())) {
                 addUserAttribute(user, new UserAttributeEntity("mailboxType", "Shared \\ Departmental"));
+                mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+                classification = "RSC";
             } else if (attr.contains("Long Term Absence")) {
                 addUserAttribute(user, new UserAttributeEntity("employeeType", "Employee"));
                 addUserAttribute(user, new UserAttributeEntity("longTermAbsence", "On"));
@@ -223,9 +260,13 @@ public class Transformation {
         if (StringUtils.isNotBlank(attr)) {
             if (attr.toLowerCase().contains("resourcetype:room")) {
                 addUserAttribute(user, new UserAttributeEntity("mailboxType", "Room"));
+                mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+                classification = "RSC";
             }
             if (attr.toLowerCase().contains("resourcetype:equipment")) {
                 addUserAttribute(user, new UserAttributeEntity("mailboxType", "Equipment"));
+                mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+                classification = "RSC";
             }
         }
         attr = this.getValue(lo.get("otherName"));
@@ -409,40 +450,7 @@ public class Transformation {
         String siteCode = attr;
         addUserAttribute(user, new UserAttributeEntity("siteCode", attr));
 
-        boolean isService = false;
 
-        attr = this.getValue(lo.get("extensionAttribute14"));
-        addUserAttribute(user, new UserAttributeEntity("extensionAttribute14", attr));
-        String classification = attr == null ? "None" : attr;
-        addUserAttribute(user, new UserAttributeEntity("classification", attr));
-        if (samAccountName.length() > 4) {
-            switch (samAccountName.substring(0, 4).toLowerCase()) {
-                case "adm_":
-                    mdTypeId = "AKZONOBEL_ADM_ACCOUNT";
-                    classification = "ADM";
-                    break;
-                case "srv_":
-                    mdTypeId = "AKZONOBEL_SRV_ACCOUNT";
-                    classification = "SVC";
-                    isService = true;
-                    break;
-                case "tst_":
-                    mdTypeId = "AKZONOBEL_TST_ACCOUNT";
-                    classification = "TST";
-                    isService = true;
-                    break;
-                case "rsc_":
-                    mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
-                    classification = "RSC";
-                    isService = true;
-                    break;
-                case "pos_":
-                    mdTypeId = "AKZONOBEL_POS_ACCOUNT";
-                    classification = "POS";
-                    isService = true;
-                    break;
-            }
-        }
 
         String mbType = this.getValue(lo.get("msExchRecipientTypeDetails"));
         System.out.println("mailbox type=" + mbType);
@@ -529,6 +537,11 @@ public class Transformation {
             addRoleId(user, "MDM_ROLE_ID");
         } else {
             removeRoleId(user, "MDM_ROLE_ID");
+        }
+        if (isIntune) {
+            addRoleId(user, "INTUNE_ROLE_ID");
+        } else {
+            removeRoleId(user, "INTUNE_ROLE_ID");
         }
         try {
             mergeGroups(memberOf, groupsMapEntities, user);
