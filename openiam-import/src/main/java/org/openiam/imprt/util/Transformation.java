@@ -39,7 +39,7 @@ public class Transformation {
     private final String AD_MNG_SYS_ID = "DD6CA4CC8BBC4D78A5879D93CEBC8A29";
     private final String PDD_EMAIL = "PDDUser@cog.akzonobel.com";
 
-    final String g_GSS_EUS_Intune_enable = "g_GSS_EUS_Intune_enable";
+    final String g_GSS_EUS_Intune_enable = "g_GSS_EUS_Intune_enable".toLowerCase();
     final String ARCHIVE_CACHE_ENABLED = "g_gss_eus_maas_vaultcache_enabled - vv";
     final String g_GSS_MDMUsers = "g_GSS_MDMUsers".toLowerCase();
     final String g_GSS_MDMEmailWMS = "g_GSS_MDMEmailWMS".toLowerCase();
