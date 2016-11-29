@@ -62,7 +62,7 @@ public class ManagedSysEntity implements Serializable {
     private Integer updateSecondary;
     @Column(name = "DRIVER_URL", length = 100)
     private String driverUrl;
-    @Column(name = "CONNECTION_STRING", length = 100)
+    @Column(name = "CONNECTION_STRING", length = 512)
     private String connectionString;
     @Column(name = "ADD_HNDLR", length = 120)
     private String addHandler;
