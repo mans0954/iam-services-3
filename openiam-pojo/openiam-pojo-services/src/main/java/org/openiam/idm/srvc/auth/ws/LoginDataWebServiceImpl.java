@@ -107,6 +107,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 			}
 			
 			final LoginEntity entity = loginDozerConverter.convertToEntity(principal, true);
+			entity.setPasswordHistory(currentEntity.getPasswordHistory());
 			if(StringUtils.isNotBlank(entity.getLoginId())) {
 				loginDS.updateLogin(entity);
 			} else {
