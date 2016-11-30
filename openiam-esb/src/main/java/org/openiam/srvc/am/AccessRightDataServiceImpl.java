@@ -6,44 +6,42 @@ import java.util.List;
 
 import javax.jws.WebService;
 
-import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.request.IdsServiceRequest;
 import org.openiam.base.response.AccessRightListResponse;
 import org.openiam.base.response.AccessRightResponse;
 import org.openiam.base.response.IntResponse;
-import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.mq.constants.AccessRightAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.api.AccessRightAPI;
+import org.openiam.mq.constants.queue.am.AccessRightQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service("accessRightWS")
 @WebService(endpointInterface = "org.openiam.srvc.am.AccessRightDataService", targetNamespace = "urn:idm.openiam.org/srvc/access/service", portName = "AccessRightDataServicePort", serviceName = "AccessRightDataService")
 public class AccessRightDataServiceImpl extends AbstractApiService implements AccessRightDataService {
 
-	public AccessRightDataServiceImpl() {
-		super(OpenIAMQueue.AccessRightQueue);
+	@Autowired
+	public AccessRightDataServiceImpl(AccessRightQueue queue) {
+		super(queue);
 	}
 
 	@Override
-	public StringResponse save(final AccessRight dto) {
-		final BaseCrudServiceRequest<AccessRight> request = new BaseCrudServiceRequest<>(dto);
-		final StringResponse response= this.manageApiRequest(AccessRightAPI.Save, request, StringResponse.class);
-		return response;
+	public Response save(final AccessRight dto) {
+		return this.manageCrudApiRequest(AccessRightAPI.Save, dto);
 	}
 
 	@Override
 	public Response delete(String id) {
-		final IdServiceRequest request= new IdServiceRequest();
-		request.setId(id);
-		return this.manageApiRequest(AccessRightAPI.Delete, request, Response.class);
+		AccessRight dto = new AccessRight();
+		dto.setId(id);
+		return this.manageCrudApiRequest(AccessRightAPI.Delete, dto);
 	}
 
 	@Override

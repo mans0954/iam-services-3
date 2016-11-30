@@ -5,9 +5,9 @@ import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
+import org.openiam.base.request.EmptyServiceRequest;
 import org.openiam.constants.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
-import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.request.TaskSearchRequest;
 import org.openiam.base.response.ManagedSysListResponse;
@@ -24,9 +24,10 @@ import org.openiam.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
-import org.openiam.mq.constants.ActivitiAPI;
-import org.openiam.mq.constants.ManagedSystemAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.api.ActivitiAPI;
+import org.openiam.mq.constants.api.idm.ManagedSystemAPI;
+import org.openiam.mq.constants.queue.activiti.ActivitiServiceQueue;
+import org.openiam.mq.constants.queue.idm.ManagedSysQueue;
 import org.openiam.mq.utils.RabbitMQSender;
 import org.openiam.base.response.TaskWrapper;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
@@ -64,6 +65,10 @@ public class AccessReviewServiceImpl implements AccessReviewService {
 
     @Autowired
     protected RabbitMQSender rabbitMQSender;
+    @Autowired
+    private ActivitiServiceQueue activitiServiceQueue;
+    @Autowired
+    private ManagedSysQueue managedSysQueue;
 
     private Boolean isExcludeMenus() {
         return propertyValueSweeper.getBoolean("org.openiam.attestation.exclude.menus");
@@ -138,9 +143,9 @@ public class AccessReviewServiceImpl implements AccessReviewService {
             TaskWrapper attestationTask = null;
             IdServiceRequest request = new IdServiceRequest();
             request.setId(filter.getAttestationTaskId());
-            TaskWrapperResponse resp = rabbitMQSender.sendAndReceive(OpenIAMQueue.ActivitiQueue, ActivitiAPI.GetTask, request, TaskWrapperResponse.class);
+            TaskWrapperResponse resp = rabbitMQSender.sendAndReceive(activitiServiceQueue, ActivitiAPI.GetTask, request, TaskWrapperResponse.class);
             if(resp.isSuccess()){
-                attestationTask = resp.getTask();
+                attestationTask = resp.getValue();
             }
             if(attestationTask!=null){
                 filter.setAttestationManagedSysFilter(new HashSet<String>(attestationTask.getAttestationManagedSysFilter()));
@@ -166,9 +171,9 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         request.setFrom(0);
         request.setSize(Integer.MAX_VALUE);
 
-        TaskListResponse response = rabbitMQSender.sendAndReceive(OpenIAMQueue.ActivitiQueue, ActivitiAPI.FindTasks, request, TaskListResponse.class);
+        TaskListResponse response = rabbitMQSender.sendAndReceive(activitiServiceQueue, ActivitiAPI.FindTasks, request, TaskListResponse.class);
         if(response.isSuccess()){
-            accessReviewData.setWorkflowsMaps(response.getTaskList());
+            accessReviewData.setWorkflowsMaps(response.getList());
         }
         accessReviewData.setExcludeMenus(this.isExcludeMenus());
 
@@ -188,10 +193,10 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         Map<String, ManagedSysDto> managedSysMap = new HashMap<>();
 //        ManagedSysSearchBean searchBean = new ManagedSysSearchBean();
 
-        ManagedSysListResponse response = rabbitMQSender.sendAndReceive(OpenIAMQueue.ManagedSysQueue, ManagedSystemAPI.GetAllManagedSys, new BaseServiceRequest(), ManagedSysListResponse.class);
+        ManagedSysListResponse response = rabbitMQSender.sendAndReceive(managedSysQueue, ManagedSystemAPI.GetAllManagedSys, new EmptyServiceRequest(), ManagedSysListResponse.class);
         List<ManagedSysDto> results = null;
         if(response.isSuccess()){
-            results = response.getManagedSysList();
+            results = response.getList();
         }
         if (CollectionUtils.isNotEmpty(results)) {
             for(ManagedSysDto mngsys : results){

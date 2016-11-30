@@ -21,7 +21,7 @@ import org.springframework.mock.web.MockServletContext;
 		}
 	)
 })
-@Import(value={BasePojoConfiguration.class, BaseAuthManagerConfiguration.class, BaseActivitiConfiguration.class, BaseAccessManagerConfig.class})
+@Import(value={BasePojoConfiguration.class, BaseAuthManagerConfiguration.class, BaseAccessManagerConfig.class})
 public class UnitTestConfig {
 
 	@Bean

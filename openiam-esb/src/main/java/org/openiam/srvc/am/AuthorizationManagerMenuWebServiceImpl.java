@@ -9,13 +9,15 @@ import org.openiam.am.srvc.dto.jdbc.AuthorizationMenu;
 import org.openiam.base.request.*;
 import org.openiam.base.response.AuthorizationMenuResponse;
 import org.openiam.base.response.BooleanResponse;
-import org.openiam.mq.constants.AMCacheAPI;
-import org.openiam.mq.constants.AMMenuAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.api.AMCacheAPI;
+import org.openiam.mq.constants.api.AMMenuAPI;
+import org.openiam.mq.constants.queue.am.AMCacheQueue;
+import org.openiam.mq.constants.queue.am.AMMenuQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.base.response.MenuSaveResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @WebService(endpointInterface = "org.openiam.srvc.am.AuthorizationManagerMenuWebService",
@@ -26,9 +28,11 @@ import org.springframework.stereotype.Service;
 public class AuthorizationManagerMenuWebServiceImpl  extends AbstractApiService implements AuthorizationManagerMenuWebService {
 
 	private static final Log log = LogFactory.getLog(AuthorizationManagerMenuWebServiceImpl.class);
-	
-	public AuthorizationManagerMenuWebServiceImpl() {
-		super(OpenIAMQueue.AMMenuQueue);
+	@Autowired
+	private AMCacheQueue amCacheQueue;
+	@Autowired
+	public AuthorizationManagerMenuWebServiceImpl(AMMenuQueue queue) {
+		super(queue);
 	}
 
 	@Override
@@ -94,7 +98,7 @@ public class AuthorizationManagerMenuWebServiceImpl  extends AbstractApiService 
 
 	@Override
 	public void sweep() {
-		this.publish(OpenIAMQueue.AMCacheQueue, AMCacheAPI.RefreshAMMenu, new BaseServiceRequest());
+		this.publish(amCacheQueue, AMCacheAPI.RefreshAMMenu, new EmptyServiceRequest());
 	}
 
 	@Override

@@ -1,37 +1,76 @@
 package org.openiam.mq.constants;
 
+import org.springframework.amqp.core.ExchangeTypes;
+
 /**
  * @author Alexander Dukkardt
  * 
  */
 public enum RabbitMqExchange {
+    /*Exchanges for COMMON vhost*/
     COMMON_EXCHANGE,
-    METADATA_ELEMENT_EXCHANGE,
-    REFRESH_OAUTH_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT),
-    URI_FEDERATION_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT),
-    CHECK_LISTENER_EXCHANGE(RabbitMqExchangeType.FANOUT),
-    AM_CACHE_EXCHANGE(RabbitMqExchangeType.FANOUT);
+    /*Exchanges for AM vhost*/
+    AM_EXCHANGE,
+    REFRESH_OAUTH_CACHE_EXCHANGE(ExchangeTypes.FANOUT),
+    URI_FEDERATION_CACHE_EXCHANGE(ExchangeTypes.FANOUT),
+    AM_CACHE_EXCHANGE(ExchangeTypes.FANOUT),
 
-    private final RabbitMqExchangeType type;
+    /*Exchanges for ACTIVITI vhost*/
+    ACTIVITI_EXCHANGE,
 
+    /*Exchanges for AUDIT vhost*/
+    AUDIT_EXCHANGE,
+    /*Exchanges for IDM vhost*/
+    IDM_EXCHANGE,
+
+    /*Exchanges for CONNECTOR vhost*/
+    CONNECTOR_EXCHANGE,
+    ELASTIC_SEARCH_EXCHANGE(true),
+    /*Exchanges for USER vhost*/
+    USER_EXCHANGE
+    ;
+
+
+    private final String type;
+    private boolean durable = true;
+    private boolean autoDelete = false;
+    private boolean delayed = false;
     /**
      * 
      */
     private RabbitMqExchange() {
-        type = RabbitMqExchangeType.DIRECT;
+        this(ExchangeTypes.DIRECT,false);
+    }
+    private RabbitMqExchange(String type) {
+        this(type,false);
+    }
+    private RabbitMqExchange(boolean delayed) {
+        this(ExchangeTypes.DIRECT,delayed);
+    }
+    /**
+     *
+     */
+    private RabbitMqExchange(String type, boolean delayed) {
+        this.type = type;
+        this.delayed = delayed;
     }
 
     /**
      * @return the type
      */
-    public RabbitMqExchangeType getType() {
+    public String getType() {
         return type;
     }
 
-    /**
-     * 
-     */
-    private RabbitMqExchange(RabbitMqExchangeType type) {
-        this.type = type;
+    public boolean isDurable() {
+        return durable;
+    }
+
+    public boolean isAutoDelete() {
+        return autoDelete;
+    }
+
+    public boolean isDelayed() {
+        return delayed;
     }
 }

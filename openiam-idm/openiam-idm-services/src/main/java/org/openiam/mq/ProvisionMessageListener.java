@@ -1,37 +1,45 @@
 package org.openiam.mq;
 
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMAPICommon;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.listener.AbstractRabbitMQListener;
-import org.openiam.provision.service.ProvisionDispatcher;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.mq.constants.MQConstant;
+import org.openiam.mq.constants.api.idm.ProvisionAPI;
+import org.openiam.mq.constants.queue.idm.ProvisionQueue;
+import org.openiam.mq.listener.AbstractListener;
+import org.openiam.provision.service.ProvisionDataContainer;
+import org.openiam.provision.service.ProvisionDispatcherTransactionHelper;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by alexander on 01/08/16.
  */
 @Component
-public class ProvisionMessageListener extends AbstractRabbitMQListener<OpenIAMAPICommon> {
+@RabbitListener(id="provisionMessageListener",
+        queues = "#{ProvisionQueue.name}",
+        containerFactory = "idmRabbitListenerContainerFactory")
+public class ProvisionMessageListener extends AbstractListener<ProvisionAPI> {
     @Autowired
-    private ProvisionDispatcher provisionDispatcher;
+    protected ProvisionDispatcherTransactionHelper provisionTransactionHelper;
 
-    public ProvisionMessageListener() {
-        super(OpenIAMQueue.ProvisionQueue);
+    @Autowired
+    public ProvisionMessageListener(ProvisionQueue queue) {
+        super(queue);
     }
 
-    @Override
-    protected void doOnMessage(MQRequest<BaseServiceRequest, OpenIAMAPICommon> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        OpenIAMAPICommon apiName = message.getRequestApi();
-        switch (apiName){
-            case UserProvisioning:
-                addTask(provisionDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            default:
-                break;
-        }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) ProvisionAPI api, ProvisionDataContainer request)  throws BasicDataServiceException {
+        log.debug("Got message in Listener:  {} API. Message:  {}", api, request);
+        return  this.processRequest(api, request, new RequestProcessor<ProvisionAPI, ProvisionDataContainer>(){
+            @Override
+            public Response doProcess(ProvisionAPI api, ProvisionDataContainer request) throws BasicDataServiceException {
+                provisionTransactionHelper.process(request);
+                return new Response(ResponseStatus.SUCCESS);
+            }
+        });
     }
 }

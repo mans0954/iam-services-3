@@ -27,26 +27,17 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.jws.WebService;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.openiam.base.request.*;
 import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.PolicySearchBean;
-import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.policy.dto.ITPolicy;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
-import org.openiam.idm.srvc.policy.dto.*;
 
 import org.openiam.idm.srvc.policy.service.*;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.constants.PolicyAPI;
-import org.openiam.mq.constants.RoleAPI;
+import org.openiam.mq.constants.api.PolicyAPI;
+import org.openiam.mq.constants.queue.common.PolicyQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -69,17 +60,16 @@ public class PolicyDataServiceImpl extends AbstractApiService implements PolicyD
 
     @Autowired
     private PolicyService policyService;
-
-    protected PolicyDataServiceImpl() {
-        super(OpenIAMQueue.PolicyQueue);
+    @Autowired
+    protected PolicyDataServiceImpl(PolicyQueue queue) {
+        super(queue);
     }
 
     @Override
     public Policy getPolicy(String policyId) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(policyId);
-        return this.manageApiRequest(PolicyAPI.GetPolicy, request,
-                PolicyGetResponse.class).getPolicy();
+        return this.getValue(PolicyAPI.GetPolicy, request, PolicyResponse.class);
     }
 
     @Override
@@ -88,57 +78,47 @@ public class PolicyDataServiceImpl extends AbstractApiService implements PolicyD
         PolicyGetAppPolicyAttrubutesRequest request = new PolicyGetAppPolicyAttrubutesRequest();
         request.setId(policyDefId);
         request.setPswdGroup(pswdGroup);
-        return this.manageApiRequest(PolicyAPI.GetAllPolicyAttributes, request,
-                PolicyDefParamFindBeansResponse.class).getPolicyDefParams();
+        return this.getValueList(PolicyAPI.GetAllPolicyAttributes, request, PolicyDefParamListResponse.class);
 
     }
 
     public Response savePolicy(final Policy policy) {
-        PolicySavePolicyRequest policySavePolicyRequest = new PolicySavePolicyRequest();
-        policySavePolicyRequest.setPolicy(policy);
-        return this.manageApiRequest(PolicyAPI.SavePolicy, policySavePolicyRequest,
-                StringResponse.class).convertToBase();
+        BaseCrudServiceRequest<Policy> policySavePolicyRequest = new BaseCrudServiceRequest<>(policy);
+        return this.manageCrudApiRequest(PolicyAPI.SavePolicy, policySavePolicyRequest, StringResponse.class);
     }
 
     @Override
     public Response deletePolicy(String policyId) {
-        IdServiceRequest request = new IdServiceRequest();
-        request.setId(policyId);
-        return this.manageApiRequest(PolicyAPI.DeletePolicy, request,
-                BooleanResponse.class).convertToBase();
+        Policy obj = new Policy();
+        obj.setId(policyId);
+        return this.manageCrudApiRequest(PolicyAPI.DeletePolicy, obj, BooleanResponse.class);
     }
 
 
     @Override
     public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size) {
-        return this.manageApiRequest(PolicyAPI.FindBeans, new BaseSearchServiceRequest<>(searchBean, from, size),
-                PolicyFindBeansResponse.class).getPolicies();
+        return this.getValueList(PolicyAPI.FindBeans, new BaseSearchServiceRequest<>(searchBean, from, size), PolicyListResponse.class);
     }
 
     @Override
     public int count(PolicySearchBean searchBean) {
-        return this.manageApiRequest(PolicyAPI.Count, new BaseSearchServiceRequest<>(searchBean, -1, -1),
-                CountResponse.class).getRowCount();
+        return this.getValue(PolicyAPI.Count, new BaseSearchServiceRequest<>(searchBean, -1, -1), IntResponse.class);
     }
 
     @Override
     public ITPolicy findITPolicy() {
-        return this.manageApiRequest(PolicyAPI.FindITPolicy, new BaseServiceRequest(),
-                ITPolicyResponse.class).getItPolicy();
+        return this.getValue(PolicyAPI.FindITPolicy, new EmptyServiceRequest(), ITPolicyResponse.class);
     }
 
     @Override
     public Response resetITPolicy() {
-        return this.manageApiRequest(PolicyAPI.ResetITPolicy, new BaseServiceRequest(),
+        return this.manageApiRequest(PolicyAPI.ResetITPolicy, new EmptyServiceRequest(),
                 Response.class);
     }
 
     @Override
     public Response saveOrUpdateITPolicy(ITPolicy itPolicy) {
-        PolicySaveOrUpdateITPolicyRequest request = new PolicySaveOrUpdateITPolicyRequest();
-        request.setItPolicy(itPolicy);
-        return this.manageApiRequest(PolicyAPI.SaveOrUpdateITPolicy, request,
-                BooleanResponse.class).convertToBase();
+        return this.manageCrudApiRequest(PolicyAPI.SaveOrUpdateITPolicy, itPolicy, BooleanResponse.class);
     }
 
 }

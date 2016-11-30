@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.cxf.transport.servlet.CXFServlet;
-import org.openiam.am.srvc.config.AmMessageListenerConfig;
-import org.openiam.authmanager.config.AuthManagerMessageListenerConfig;
 import org.openiam.authmanager.config.BaseAuthManagerConfiguration;
 import org.openiam.authmanager.web.AuthorizationManagerHessianServlet;
 import org.springframework.boot.SpringApplication;
@@ -29,7 +27,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableWebMvc
 //@EnableCaching
 @EnableAutoConfiguration(exclude={DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class, VelocityAutoConfiguration.class})
-@Import(value={BasePojoConfiguration.class, IdmMessageListenerConfig.class, AmMessageListenerConfig.class, BaseAuthManagerConfiguration.class, AuthManagerMessageListenerConfig.class,
+@Import(value={BasePojoConfiguration.class,  BaseAuthManagerConfiguration.class,
 		BaseActivitiConfiguration.class, BaseAccessManagerConfig.class, OpeniamCacheConfiguration.class})
 public class Application {
 

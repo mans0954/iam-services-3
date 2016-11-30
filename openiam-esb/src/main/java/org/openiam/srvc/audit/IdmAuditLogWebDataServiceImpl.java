@@ -22,7 +22,6 @@ package org.openiam.srvc.audit;
 
 import java.util.List;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -38,9 +37,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.service.AuditLogService;
-import org.openiam.mq.constants.AuditLogAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.api.AuditLogAPI;
+import org.openiam.mq.constants.queue.audit.AuditLogQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,9 +56,9 @@ public class IdmAuditLogWebDataServiceImpl extends AbstractApiService implements
 	private AuditLogHelper auditLogHelper;
 
 	private static final Log LOG = LogFactory.getLog(IdmAuditLogWebDataServiceImpl.class);
-
-	public IdmAuditLogWebDataServiceImpl() {
-		super(OpenIAMQueue.AuditLog);
+	@Autowired
+	public IdmAuditLogWebDataServiceImpl(AuditLogQueue queue) {
+		super(queue);
 	}
 
 	@Override

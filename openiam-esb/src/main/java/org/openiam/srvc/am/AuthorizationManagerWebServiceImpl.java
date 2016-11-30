@@ -9,16 +9,14 @@ import org.openiam.am.srvc.dto.jdbc.GroupAuthorizationRight;
 import org.openiam.am.srvc.dto.jdbc.OrganizationAuthorizationRight;
 import org.openiam.am.srvc.dto.jdbc.ResourceAuthorizationRight;
 import org.openiam.am.srvc.dto.jdbc.RoleAuthorizationRight;
-import org.openiam.authmanager.service.AuthorizationManagerService;
-import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.base.request.EmptyServiceRequest;
 import org.openiam.base.request.GetEntitlementRequest;
 import org.openiam.base.response.*;
-import org.openiam.mq.constants.AMCacheAPI;
-import org.openiam.mq.constants.AMManagerAPI;
-import org.openiam.mq.constants.AMMenuAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.api.AMCacheAPI;
+import org.openiam.mq.constants.api.AMManagerAPI;
+import org.openiam.mq.constants.queue.am.AMCacheQueue;
+import org.openiam.mq.constants.queue.am.AMManagerQueue;
 import org.openiam.srvc.AbstractApiService;
-import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,12 +26,12 @@ import org.springframework.stereotype.Service;
 			serviceName = "AuthorizationManagerWebService")
 @Service("authorizationManagerWebService")
 public class AuthorizationManagerWebServiceImpl extends AbstractApiService implements AuthorizationManagerWebService {
+	@Autowired
+	private AMCacheQueue amCacheQueue;
 
 	@Autowired
-	private AuthorizationManagerService authManagerService;
-
-	public AuthorizationManagerWebServiceImpl() {
-		super(OpenIAMQueue.AMManagerQueue);
+	public AuthorizationManagerWebServiceImpl(AMManagerQueue queue) {
+		super(queue);
 	}
 
 	private boolean getBooleanResponse(AMManagerAPI apiName, GetEntitlementRequest  request){
@@ -107,7 +105,7 @@ public class AuthorizationManagerWebServiceImpl extends AbstractApiService imple
 
 	@Override
 	public void refreshCache() {
-		this.publish(OpenIAMQueue.AMCacheQueue, AMCacheAPI.RefreshAMManager, new BaseServiceRequest());
+		this.publish(amCacheQueue, AMCacheAPI.RefreshAMManager, new EmptyServiceRequest());
 	}
 
 	@Override

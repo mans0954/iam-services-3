@@ -1,9 +1,8 @@
 package org.openiam.rest;
 
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.hazelcast.HazelcastConfiguration;
-import org.openiam.mq.constants.OAuthAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.base.request.EmptyServiceRequest;
+import org.openiam.mq.constants.api.OAuthAPI;
+import org.openiam.mq.constants.queue.am.RefreshOAuthCache;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,13 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/oauthProviders")
 public class OAuthProviderRestController extends AbstractApiService {
 
-	public OAuthProviderRestController() {
-		super(OpenIAMQueue.RefreshOAuthCache);
+	@Autowired
+	public OAuthProviderRestController(RefreshOAuthCache queue) {
+		super(queue);
 	}
 
 	@RequestMapping("/refresh")
 	public @ResponseBody String refresh() {
-		publish(OAuthAPI.RefreshOAuthCache, new BaseServiceRequest());
+		publish(OAuthAPI.RefreshOAuthCache, new EmptyServiceRequest());
 		return "OK";
 	}
 }

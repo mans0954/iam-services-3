@@ -12,8 +12,8 @@ import org.openiam.activiti.model.dto.HistorySearchBean;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
-import org.openiam.mq.constants.ActivitiAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.api.ActivitiAPI;
+import org.openiam.mq.constants.queue.activiti.ActivitiServiceQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,8 +34,9 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 	@Autowired
 	private ActivitiDataService activitiDataService;
 
-	public ActivitiServiceImpl() {
-		super(OpenIAMQueue.ActivitiQueue);
+	@Autowired
+	public ActivitiServiceImpl(ActivitiServiceQueue queue) {
+		super(queue);
 	}
 
 
@@ -77,8 +78,7 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 	public String getProcessInstanceIdByExecutionId(String executionId) {
 		IdServiceRequest request = new IdServiceRequest();
 		request.setId(executionId);
-		StringResponse resp = this.manageApiRequest(ActivitiAPI.ProcessInstanceIdByExecutionId, request, StringResponse.class);
-		return resp.getValue();
+		return this.getValue(ActivitiAPI.ProcessInstanceIdByExecutionId, request, StringResponse.class);
 	}
 
 	@Override
@@ -106,11 +106,7 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 	public TaskWrapper getTask(String taskId) {
 		IdServiceRequest request = new IdServiceRequest();
 		request.setId(taskId);
-		TaskWrapperResponse resp = this.manageApiRequest(ActivitiAPI.GetTask, request, TaskWrapperResponse.class);
-		if(resp.isFailure()){
-			return null;
-		}
-		return resp.getTask();
+		return this.getValue(ActivitiAPI.GetTask, request, TaskWrapperResponse.class);
 	}
 
 	@Override
@@ -118,11 +114,7 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 		ActivitiFilterRequest request = new ActivitiFilterRequest();
 		request.setExecutionId(executionId);
 		request.setTaskId(taskId);
-		TaskWrapperResponse resp = this.manageApiRequest(ActivitiAPI.TaskFromHistory, request, TaskWrapperResponse.class);
-		if(resp.isFailure()){
-			return null;
-		}
-		return resp.getTask();
+		return this.getValue(ActivitiAPI.TaskFromHistory, request, TaskWrapperResponse.class);
 	}
 
 	@Override
@@ -133,9 +125,7 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 		request.setRequesterId(requesterId);
 		request.setFromDate(fromDate);
 		request.setToDate(toDate);
-
-		IntResponse resp = this.manageApiRequest(ActivitiAPI.NumOfAssignedTasksWithFilter, request, IntResponse.class);
-		return resp.getValue();
+		return this.getValue(ActivitiAPI.NumOfAssignedTasksWithFilter, request, IntResponse.class);
 	}
 
 	@Override
@@ -146,8 +136,7 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 		request.setFromDate(fromDate);
 		request.setToDate(toDate);
 
-		IntResponse resp = this.manageApiRequest(ActivitiAPI.NumOfCandidateTasksWithFilter, request, IntResponse.class);
-		return resp.getValue();
+		return this.getValue(ActivitiAPI.NumOfCandidateTasksWithFilter, request, IntResponse.class);
 	}
 
 	@Override
@@ -160,11 +149,7 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 		request.setFrom(from);
 		request.setSize(size);
 
-		TaskListWrapperResponse resp = this.manageApiRequest(ActivitiAPI.TasksForCandidateUserWithFilter, request, TaskListWrapperResponse.class);
-		if(resp.isFailure()){
-			return null;
-		}
-		return resp.getTaskListWrapper();
+		return this.getValue(ActivitiAPI.TasksForCandidateUserWithFilter, request, TaskListWrapperResponse.class);
 	}
 
 	@Override
@@ -178,11 +163,7 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 		request.setSize(size);
 		request.setRequesterId(requesterId);
 
-		TaskListWrapperResponse resp = this.manageApiRequest(ActivitiAPI.TasksForAssignedUserWithFilter, request, TaskListWrapperResponse.class);
-		if(resp.isFailure()){
-			return null;
-		}
-		return resp.getTaskListWrapper();
+		return this.getValue(ActivitiAPI.TasksForAssignedUserWithFilter, request, TaskListWrapperResponse.class);
 	}
 
 
@@ -190,11 +171,7 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 	public List<TaskHistoryWrapper> getHistoryForInstance(final String executionId) {
 		IdServiceRequest request = new IdServiceRequest();
 		request.setId(executionId);
-		TaskHistoryListResponse resp = this.manageApiRequest(ActivitiAPI.HistoryForInstance, request, TaskHistoryListResponse.class);
-		if(resp.isFailure()){
-			return null;
-		}
-		return resp.getTaskHistoryList();
+		return this.getValueList(ActivitiAPI.HistoryForInstance, request, TaskHistoryListResponse.class);
 	}
 
 	@Override
@@ -204,23 +181,14 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 		request.setFrom(from);
 		request.setSize(size);
 
-		TaskListResponse resp = this.manageApiRequest(ActivitiAPI.GetHistory, request, TaskListResponse.class);
-		if(resp.isFailure()){
-			return null;
-		}
-		return resp.getTaskList();
+		return this.getValueList(ActivitiAPI.GetHistory, request, TaskListResponse.class);
 	}
 
 	@Override
 	public int count(final HistorySearchBean searchBean) {
 		HistorySearchRequest request = new HistorySearchRequest();
 		request.setSearchBean(searchBean);
-
-		IntResponse resp = this.manageApiRequest(ActivitiAPI.Count, request, IntResponse.class);
-		if(resp.isFailure()){
-			return 0;
-		}
-		return resp.getValue();
+		return this.getValue(ActivitiAPI.Count, request, IntResponse.class);
 	}
 
 
@@ -250,11 +218,7 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 		request.setFrom(from);
 		request.setSize(size);
 
-		TaskListWrapperResponse response = this.manageApiRequest(ActivitiAPI.GetTasksForUser, request, TaskListWrapperResponse.class);
-		if(response.isFailure()){
-			return null;
-		}
-		return response.getTaskListWrapper();
+		return this.getValue(ActivitiAPI.GetTasksForUser, request, TaskListWrapperResponse.class);
 	}
 
 	@Override
@@ -279,28 +243,22 @@ public class ActivitiServiceImpl extends AbstractApiService implements ActivitiS
 		request.setSearchBean(searchBean);
 		request.setFrom(from);
 		request.setSize(size);
-
-		TaskListResponse response = this.manageApiRequest(ActivitiAPI.FindTasks, request, TaskListResponse.class);
-		if(response.isFailure()){
-			return null;
-		}
-		return response.getTaskList();
+		return this.getValueList(ActivitiAPI.FindTasks, request, TaskListResponse.class);
 	}
 
 	@Override
 	public int countTasks(TaskSearchBean searchBean) {
 		TaskSearchRequest request = new TaskSearchRequest();
 		request.setSearchBean(searchBean);
-		IntResponse response = this.manageApiRequest(ActivitiAPI.CountTasks, request, IntResponse.class);
-		if(response.isFailure()){
-			return 0;
-		}
-		return response.getValue();
+		return this.getValue(ActivitiAPI.CountTasks, request, IntResponse.class);
 	}
 
 	@Override
 	public List<String> getApproverUserIds(List<String> associationIds, final String targetUserId) {
-		return activitiDataService.getApproverUserIds(associationIds, targetUserId);
+		ApproverUserRequest request = new ApproverUserRequest();
+		request.setAssociationIds(associationIds);
+		request.setId(targetUserId);
+		return this.getValueList(ActivitiAPI.GetApproverUserIds, request, StringListResponse.class);
 	}
 }
 

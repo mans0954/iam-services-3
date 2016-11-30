@@ -1,64 +1,119 @@
 package org.openiam.mq;
 
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.idm.srvc.batch.dispatcher.*;
-import org.openiam.mq.constants.BatchTaskAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.listener.AbstractRabbitMQListener;
+import org.openiam.base.request.*;
+import org.openiam.base.response.*;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.BatchTaskScheduleSearchBean;
+import org.openiam.idm.searchbeans.BatchTaskSearchBean;
+import org.openiam.idm.srvc.batch.service.BatchService;
+import org.openiam.mq.constants.MQConstant;
+import org.openiam.mq.constants.api.BatchTaskAPI;
+import org.openiam.mq.constants.queue.common.BatchTaskQueue;
+import org.openiam.mq.listener.AbstractListener;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by alexander on 25/10/16.
  */
 @Component
-public class BatchTaskListener extends AbstractRabbitMQListener<BatchTaskAPI> {
-    GetBatchTaskDispatcher  getBatchTaskDispatcher;
-    GetSchedulesForTaskDispatcher getSchedulesForTaskDispatcher;
-    GetNumSchedulesForTaskDispatcher getNumSchedulesForTaskDispatcher;
-    RunTaskDispatcher runTaskDispatcher;
-    DeleteTaskDispatcher deleteTaskDispatcher;
-    SaveTaskDispatcher saveTaskDispatcher;
-    FindBeansDispatcher findBeansDispatcher;
-    CountBatchTaskDispatcher countBatchTaskDispatcher;
+@RabbitListener(id="batchTaskListener",
+        queues = "#{BatchTaskQueue.name}",
+        containerFactory = "commonRabbitListenerContainerFactory")
+public class BatchTaskListener extends AbstractListener<BatchTaskAPI> {
+    @Autowired
+    protected BatchService batchService;
 
-    public BatchTaskListener() {
-        super(OpenIAMQueue.BatchTaskQueue);
+    @Autowired
+    public BatchTaskListener(BatchTaskQueue queue) {
+        super(queue);
     }
 
-    @Override
-    protected void doOnMessage(MQRequest<BaseServiceRequest, BatchTaskAPI> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        BatchTaskAPI apiName = message.getRequestApi();
-        switch (apiName){
-            case GetBatchTask:
-                addTask(getBatchTaskDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetSchedulesForTask:
-                addTask(getSchedulesForTaskDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetNumOfSchedulesForTask:
-                addTask(getNumSchedulesForTaskDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case Run:
-            case Schedule:
-                addTask(runTaskDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case Save:
-                addTask(saveTaskDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case Delete:
-            case DeleteScheduledTask:
-                addTask(deleteTaskDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case FindBeans:
-                addTask(findBeansDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case Count:
-                addTask(countBatchTaskDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            default:
-                break;
-        }
+    protected RequestProcessor<BatchTaskAPI, BaseSearchServiceRequest> getSearchRequestProcessor(){
+        return new RequestProcessor<BatchTaskAPI, BaseSearchServiceRequest>(){
+            @Override
+            public Response doProcess(BatchTaskAPI api, BaseSearchServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api) {
+                    case GetSchedulesForTask:
+                        response = new BatchTaskScheduleListResponse();
+                        ((BatchTaskScheduleListResponse) response).setList(batchService.getSchedulesForTask(((BaseSearchServiceRequest<BatchTaskScheduleSearchBean>) request).getSearchBean(), request.getFrom(), request.getSize()));
+                        break;
+                    case GetNumOfSchedulesForTask:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(batchService.count(((BaseSearchServiceRequest<BatchTaskScheduleSearchBean>) request).getSearchBean()));
+                        break;
+                    case FindBeans:
+                        response = new BatchTaskListResponse();
+                        ((BatchTaskListResponse) response).setList(batchService.findBeans(((BaseSearchServiceRequest<BatchTaskSearchBean>) request).getSearchBean(), request.getFrom(), request.getSize()));
+                        break;
+                    case Count:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(batchService.count(((BaseSearchServiceRequest<BatchTaskSearchBean>) request).getSearchBean()));
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
+    }
+    protected RequestProcessor<BatchTaskAPI, IdServiceRequest> getGetRequestProcessor(){
+        return new RequestProcessor<BatchTaskAPI, IdServiceRequest>(){
+            @Override
+            public Response doProcess(BatchTaskAPI api, IdServiceRequest request) throws BasicDataServiceException {
+                BatchTaskResponse response = new BatchTaskResponse();
+                response.setValue(batchService.findDto(request.getId()));
+                return response;
+            }
+        };
+    }
+    protected RequestProcessor<BatchTaskAPI, BaseCrudServiceRequest> getCrudRequestProcessor(){
+        return new RequestProcessor<BatchTaskAPI, BaseCrudServiceRequest>(){
+            @Override
+            public Response doProcess(BatchTaskAPI api, BaseCrudServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api) {
+                    case Save:
+                        response = new StringResponse();
+                        ((StringResponse)response).setValue(batchService.save(((BatchTaskSaveRequest)request).getObject(), ((BatchTaskSaveRequest)request).isPurgeNonExecutedTasks()));
+                        break;
+                    case Delete:
+                        response = new Response();
+                        batchService.delete(request.getObject().getId());
+                        break;
+                    case DeleteScheduledTask:
+                        response = new Response();
+                        batchService.deleteScheduledTask(request.getObject().getId());
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
+    }
+    @RabbitHandler
+    public Response processingApiRequest(@Header(MQConstant.API_NAME) BatchTaskAPI api, StartBatchTaskRequest request)  throws BasicDataServiceException {
+        return  this.processRequest(api, request, new RequestProcessor<BatchTaskAPI, StartBatchTaskRequest>(){
+            @Override
+            public Response doProcess(BatchTaskAPI api, StartBatchTaskRequest request) throws BasicDataServiceException {
+                switch (api){
+                    case Run:
+                        batchService.run(request.getId(), request.isSynchronous());
+                        break;
+                    case Schedule:
+                        batchService.schedule(request.getId(), request.getWhen());
+                        break;
+
+                }
+                return new Response();
+            }
+        });
     }
 }

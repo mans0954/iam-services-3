@@ -257,7 +257,8 @@ public enum AuditAction {
     KEY_MANAGEMENT_INITIALIZATION("KEY_MANAGEMENT_INITIALIZATION"),
     
     CACHE_PUT("CACHE_PUT"),
-    CACHE_EVICT("CACHE_EVICT")
+    CACHE_EVICT("CACHE_EVICT"),
+    REINDEX("reindex")
 	;
 
     private String value;

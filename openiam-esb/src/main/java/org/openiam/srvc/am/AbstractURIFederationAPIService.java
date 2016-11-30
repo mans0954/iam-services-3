@@ -3,8 +3,8 @@ package org.openiam.srvc.am;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.request.URIFederationServiceRequest;
 import org.openiam.base.response.URIFederationResponse;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.constants.URIFederationAPI;
+import org.openiam.mq.constants.api.URIFederationAPI;
+import org.openiam.mq.constants.queue.am.URIFederationQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.http.HttpMethod;
 
@@ -29,8 +29,8 @@ public abstract class AbstractURIFederationAPIService extends AbstractApiService
         return StringUtils.isNotBlank(method) ? httpMethodMap.get(method.toLowerCase()) : null;
     }
 
-    public AbstractURIFederationAPIService() {
-        super(OpenIAMQueue.URIFederationQueue);
+    public AbstractURIFederationAPIService(URIFederationQueue queue) {
+        super(queue);
     }
 
     protected URIFederationResponse getURIFederationMetadata(String proxyURI, String method) {

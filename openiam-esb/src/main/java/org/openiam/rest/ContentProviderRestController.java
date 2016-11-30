@@ -1,10 +1,9 @@
 package org.openiam.rest;
 
-import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.base.request.EmptyServiceRequest;
 import org.openiam.hazelcast.HazelcastConfiguration;
-import org.openiam.mq.constants.OAuthAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.constants.URIFederationAPI;
+import org.openiam.mq.constants.api.URIFederationAPI;
+import org.openiam.mq.constants.queue.am.RefreshUriFederationCache;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,13 +17,14 @@ public class ContentProviderRestController extends AbstractApiService {
 	@Autowired
     private HazelcastConfiguration hazelcastConfiguration;
 
-	public ContentProviderRestController() {
-		super(OpenIAMQueue.RefreshUriFederationCache);
+	@Autowired
+	public ContentProviderRestController(RefreshUriFederationCache queue) {
+		super(queue);
 	}
 
 	@RequestMapping("/refresh")
 	public @ResponseBody String refresh() {
-		publish(URIFederationAPI.RefreshCache, new BaseServiceRequest());
+		publish(URIFederationAPI.RefreshCache, new EmptyServiceRequest());
 		return "OK";
 	}
 }
