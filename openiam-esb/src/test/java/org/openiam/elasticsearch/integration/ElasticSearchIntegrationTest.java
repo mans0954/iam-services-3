@@ -27,7 +27,7 @@ public class ElasticSearchIntegrationTest extends AbstractServiceTest {
 		});
 	}
 
-	@Test
+//	@Test
 	public void testScheduleReindex() {
 		elasticSearchServiceClient.indexedClasses().forEach(clazz -> {
 			final Response wsResponse = elasticSearchServiceClient.scheduleReindex(clazz, null, 10000l);
