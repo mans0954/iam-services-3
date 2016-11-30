@@ -10,9 +10,21 @@ dependencies:
     - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
     - sudo apt-get update
     - sudo apt-get install bash
-    - sudo rabbitmqctl add_vhost openiam
+    - sudo rabbitmqctl add_vhost openiam_am
+    - sudo rabbitmqctl add_vhost openiam_idm
+    - sudo rabbitmqctl add_vhost openiam_audit
+    - sudo rabbitmqctl add_vhost openiam_common
+    - sudo rabbitmqctl add_vhost openiam_connector
+    - sudo rabbitmqctl add_vhost openiam_activiti
+    - sudo rabbitmqctl add_vhost openiam_user
     - sudo rabbitmqctl add_user openiam passwd00
-    - sudo rabbitmqctl set_permissions -p openiam openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_am openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_idm openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_audit openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_common openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_connector openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_activiti openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_user openiam ".*" ".*" ".*"
     - sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server-5.6
     - cd conf; sudo /bin/sh setup.sh
     - cd /tmp/openiam/schema/mysql; sudo ./execute.sh passwd00 new_install
