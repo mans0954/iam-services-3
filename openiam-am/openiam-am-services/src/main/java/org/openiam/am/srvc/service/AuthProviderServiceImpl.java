@@ -189,7 +189,7 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     */
     @Override
     @Transactional(readOnly=true)
-    public List<AuthAttribute> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, Integer size, Integer from) {
+    public List<AuthAttribute> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, int size, int from) {
         List<AuthAttributeEntity> attributeList = authAttributeDao.getByExample(searchBean, from, size);
         return authAttributeDozerConverter.convertToDTOList(attributeList, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }

@@ -524,7 +524,11 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             return 0;
         }
         if(searchBean != null && searchBean.isUseElasticSearch()) {
-        	return groupElasticSearchRepo.count(searchBean);
+        	if(groupElasticSearchRepo.isValidSearchBean(searchBean)) {
+        		return groupElasticSearchRepo.count(searchBean);
+        	} else {
+        		return groupDao.count(searchBean);
+        	}
         } else {
         	return groupDao.count(searchBean);
         }

@@ -146,7 +146,7 @@ public interface PasswordService {
     ValidatePasswordResetTokenResponse validatePasswordResetToken(String token);
 
 
-    Set<PasswordHistory> getPasswordHistory(String id, Integer from, Integer count);
+    Set<PasswordHistory> getPasswordHistory(String id, int from, int count);
 
     String getPasswordResetToken(PasswordResetTokenRequest request);
 }

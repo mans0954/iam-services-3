@@ -68,6 +68,15 @@ public interface ResourceDataService {
     Resource getResource(
     		@WebParam(name = "resourceId", targetNamespace = "") String resourceId,
     		final @WebParam(name = "lang", targetNamespace = "") Language language);
+    
+    
+    /**
+     * Checks if a Reource has been indexed in the search engine (currently ElasticSearch)
+     * @param resourceId
+     * @return
+     */
+    @WebMethod
+    boolean isIndexed(@WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
     /**
      * Find   resource list.

@@ -16,7 +16,9 @@ import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
+import org.openiam.elasticsearch.converter.MetadataTypeDocToEntityConverter;
 import org.openiam.elasticsearch.dao.MetadataTypeElasticSearchRepository;
+import org.openiam.elasticsearch.model.MetadataTypeDoc;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
@@ -31,6 +33,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.internationalization.InternationalizationProvider;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.mq.constants.api.OpenIAMAPICommon;
 import org.openiam.mq.constants.queue.MqQueue;
@@ -91,6 +94,12 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
 	@Autowired
 	private RabbitMQSender rabbitMQSender;
+
+	@Autowired
+	private InternationalizationProvider internationalizationProvider;
+
+	@Autowired
+	private MetadataTypeDocToEntityConverter docCoverter;
 
 
 	@Autowired
@@ -182,17 +191,20 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 				retVal = metadataTypeDao.findByIds(searchBean.getKeySet());
 			} else {
 				if(searchBean.isUseElasticSearch()) {
+					List<MetadataTypeDoc> docs = null;
 					if(metadataTypeESRepo.isValidSearchBean(searchBean)) {
-						retVal = metadataTypeESRepo.findBeans(searchBean, from, size);
+						docs = metadataTypeESRepo.findBeans(searchBean, from, size);
 					} else {
-						retVal = metadataTypeESRepo.findAll(metadataTypeESRepo.getPageable(searchBean, from, size)).getContent();
+						docs = metadataTypeESRepo.findAll(metadataTypeESRepo.getPageable(searchBean, from, size)).getContent();
 					}
+					retVal = docCoverter.convertToEntityList(docs);
+					internationalizationProvider.doDatabaseGet(retVal);
 				} else {
 					retVal = metadataTypeDao.getByExample(searchBean, from, size);
 				}
 			}
 		} else {
-			retVal = metadataTypeESRepo.findAll(metadataTypeESRepo.getPageable(searchBean, from, size)).getContent();
+			retVal = metadataTypeDao.getByExample(searchBean, from, size);
 		}
         return (retVal != null) ? metaDataTypeDozerConverter.convertToDTOList(retVal,true) : null;
 	}

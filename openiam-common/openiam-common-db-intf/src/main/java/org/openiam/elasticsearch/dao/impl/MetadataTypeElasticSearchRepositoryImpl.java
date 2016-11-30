@@ -3,6 +3,7 @@ package org.openiam.elasticsearch.dao.impl;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.elasticsearch.dao.MetadataTypeElasticSearchRepositoryCustom;
+import org.openiam.elasticsearch.model.MetadataTypeDoc;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
@@ -11,15 +12,15 @@ import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class MetadataTypeElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<MetadataTypeEntity, String, MetadataTypeSearchBean> implements MetadataTypeElasticSearchRepositoryCustom {
+public class MetadataTypeElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<MetadataTypeDoc, String, MetadataTypeSearchBean> implements MetadataTypeElasticSearchRepositoryCustom {
 
 	@Override
-	public Class<MetadataTypeEntity> getDocumentClass() {
-		return MetadataTypeEntity.class;
+	public Class<MetadataTypeDoc> getDocumentClass() {
+		return MetadataTypeDoc.class;
 	}
 
 	@Override
-	public void prepare(MetadataTypeEntity entity) {
+	public void prepare(MetadataTypeDoc entity) {
 		// TODO Auto-generated method stub
 		
 	}

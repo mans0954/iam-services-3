@@ -131,13 +131,13 @@ public interface OrganizationService {
 
     public List<Location> getLocationDtoList(String organizationId, boolean isDeep);
 
-    public List<LocationEntity> getLocationList(String organizationId, Integer from, Integer size);
+    public List<LocationEntity> getLocationList(String organizationId, int from, int size);
 
-    public List<Location> getLocationDtoList(String organizationId, Integer from, Integer size);
+    public List<Location> getLocationDtoList(String organizationId, int from, int size);
 
-    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, Integer from, Integer size);
+    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, int from, int size);
 
-    public List<Location> getLocationDtoList(LocationSearchBean searchBean, Integer from, Integer size);
+    public List<Location> getLocationDtoList(LocationSearchBean searchBean, int from, int size);
 
     public int getNumOfLocations(LocationSearchBean searchBean);
 
@@ -145,7 +145,7 @@ public interface OrganizationService {
 
     public int getNumOfLocationsForOrganization(String organizationId);
 
-    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size);
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, int from, int size);
 
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
     
@@ -179,4 +179,6 @@ public interface OrganizationService {
                                  final Date endDate);
 
     public Response removeUserFromOrg(String orgId, String userId, final String requestorId);
+    
+    public boolean isIndexed(String id);
 }

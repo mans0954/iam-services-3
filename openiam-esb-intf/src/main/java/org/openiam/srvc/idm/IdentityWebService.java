@@ -35,7 +35,9 @@ public interface IdentityWebService {
     void updateIdentity(@WebParam(name = "identity", targetNamespace = "") IdentityDto identityDto);
 
     @WebMethod
-    List<IdentityDto> findByExample(@WebParam(name = "searchBean", targetNamespace = "") IdentitySearchBean searchBean, @WebParam(name = "requesterId", targetNamespace = "") String requesterId, @WebParam(name = "from", targetNamespace = "") Integer from, @WebParam(name = "size", targetNamespace = "") Integer size);
+    List<IdentityDto> findByExample(@WebParam(name = "searchBean", targetNamespace = "") IdentitySearchBean searchBean, @WebParam(name = "requesterId", targetNamespace = "") String requesterId, 
+    								@WebParam(name = "from", targetNamespace = "") int from, 
+    								@WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     Integer countBeans(@WebParam(name = "searchBean", targetNamespace = "") IdentitySearchBean searchBean, @WebParam(name = "requesterId", targetNamespace = "") String requesterId);

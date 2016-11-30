@@ -571,4 +571,9 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
 	public boolean isMemberOfAnyEntity(final String resourceId) {
 		return resourceService.isMemberOfAnyEntity(resourceId);
 	}
+
+	@Override
+	public boolean isIndexed(String resourceId) {
+		return resourceService.isIndexed(resourceId);
+	}
 }

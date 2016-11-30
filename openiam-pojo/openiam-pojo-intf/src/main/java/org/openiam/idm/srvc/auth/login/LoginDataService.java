@@ -188,7 +188,7 @@ public interface LoginDataService {
 
     Integer count(LoginSearchBean searchBean);
 
-    List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size);
+    List<LoginEntity> findBeans(LoginSearchBean searchBean, int from, int size);
 
     void forgotUsername(String email) throws BasicDataServiceException;
 

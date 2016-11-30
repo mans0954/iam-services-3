@@ -266,7 +266,7 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
     }
 
     @Override
-    public List<SynchConfig> getSynchConfigs(@WebParam(name = "searchBean", targetNamespace = "") SynchConfigSearchBean searchBean, @WebParam(name = "size", targetNamespace = "") Integer size, @WebParam(name = "from", targetNamespace = "") Integer from) {
+    public List<SynchConfig> getSynchConfigs(final SynchConfigSearchBean searchBean, final int size, final int from) {
         List<SynchConfig> synchConfigDtos = new LinkedList<SynchConfig>();
         List<SynchConfigEntity> entities = synchService.findBeans(searchBean, size, from);
         if (entities != null) {

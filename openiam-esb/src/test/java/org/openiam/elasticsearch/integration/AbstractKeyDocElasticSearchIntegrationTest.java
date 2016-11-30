@@ -19,6 +19,13 @@ public abstract class AbstractKeyDocElasticSearchIntegrationTest<D extends Abstr
 	@BeforeClass
 	public void before() {
 		dto = createDTO();
+		int numOfAttempts = 0;
+		while(!isIndexed(dto.getId())) {
+			sleep(5);
+			if(numOfAttempts++ >= 5) {
+				Assert.fail(String.format("Entity %s not indexed in ElasticSearch - can't continue", dto));
+			}
+		}
 	}
 	
 	@AfterClass
@@ -50,6 +57,7 @@ public abstract class AbstractKeyDocElasticSearchIntegrationTest<D extends Abstr
 		return dto;
 	}
 	
+	protected abstract boolean isIndexed(String id);
 	protected abstract void delete(DTO dto);
 	protected abstract Class<S> getSearchBeanClass();
 	protected abstract Class<D> getDocumentClass();

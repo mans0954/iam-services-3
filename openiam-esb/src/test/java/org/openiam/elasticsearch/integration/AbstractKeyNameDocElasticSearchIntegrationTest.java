@@ -8,7 +8,8 @@ import org.openiam.elasticsearch.model.AbstractKeyNameDoc;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 import org.testng.annotations.Test;
 
-public abstract class AbstractKeyNameDocElasticSearchIntegrationTest<D extends AbstractKeyNameDoc, S extends AbstractKeyNameSearchBean, DTO extends KeyNameDTO> extends AbstractKeyDocElasticSearchIntegrationTest<D, S, DTO>{
+public abstract class AbstractKeyNameDocElasticSearchIntegrationTest<D extends AbstractKeyNameDoc, S extends AbstractKeyNameSearchBean, DTO extends KeyNameDTO> 
+				extends AbstractKeyDocElasticSearchIntegrationTest<D, S, DTO>{
 	
 
 	@Override

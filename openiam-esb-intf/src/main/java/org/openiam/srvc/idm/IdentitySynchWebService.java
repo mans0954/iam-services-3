@@ -100,8 +100,8 @@ public interface IdentitySynchWebService {
     @WebMethod
     List<SynchConfig> getSynchConfigs(
             @WebParam(name = "searchBean", targetNamespace = "") SynchConfigSearchBean searchBean,
-            @WebParam(name = "size", targetNamespace = "") Integer size,
-            @WebParam(name = "from", targetNamespace = "") Integer from);
+            @WebParam(name = "size", targetNamespace = "") int size,
+            @WebParam(name = "from", targetNamespace = "") int from);
 
     @WebMethod
     List<AttributeMap> getSynchConfigAttributeMaps(

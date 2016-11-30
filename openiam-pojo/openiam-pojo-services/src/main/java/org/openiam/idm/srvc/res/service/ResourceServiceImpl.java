@@ -399,7 +399,11 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         // final ResourceEntity entity =
         // resourceSearchBeanConverter.convert(searchBean);
     	if(searchBean != null && searchBean.isUseElasticSearch()) {
-    		return resourceElasticSearchRepo.count(searchBean);
+    		if(resourceElasticSearchRepo.isValidSearchBean(searchBean))	 {
+    			return resourceElasticSearchRepo.count(searchBean);
+    		} else {
+    			return resourceDao.count(searchBean);
+    		}
     	} else {
     		return resourceDao.count(searchBean);
     	}
@@ -1439,4 +1443,9 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         }
         return response;
     }
+
+	@Override
+	public boolean isIndexed(String id) {
+		return resourceElasticSearchRepo.exists(id);
+	}
 }

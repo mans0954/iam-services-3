@@ -37,6 +37,15 @@ public class UserServiceTest extends AbstractServiceTest {
 			Assert.assertTrue(user.getEmailAddresses().iterator().next().getEmailAddress().equals(email));
 			createdUsers.add(user);
 		}
+		createdUsers.forEach(user -> {
+			int numOfWaits = 0;
+			while(!userServiceClient.isIndexed(user.getId())) {
+				sleep(5);
+				if(numOfWaits++ > 4) {
+					Assert.fail(String.format("Waited too long for user %s to be reindexed", user.getId()));
+				}
+			}
+		});
 	}
 	
 	@Test

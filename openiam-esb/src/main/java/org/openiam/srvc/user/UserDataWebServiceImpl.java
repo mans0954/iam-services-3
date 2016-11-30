@@ -1462,4 +1462,9 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
         return userManager.findSupervisors(supervisorSearchBean);
     }
 
+	@Override
+	public boolean isIndexed(String id) {
+		return userManager.isIndexed(id);
+	}
+
 }

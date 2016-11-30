@@ -32,7 +32,7 @@ public interface AuthProviderService {
     *===================================================
     */
 
-    List<AuthAttribute> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, Integer size, Integer from);
+    List<AuthAttribute> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, int size, int from);
 
     /*
     *==================================================

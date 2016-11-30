@@ -440,14 +440,14 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MngSysPolicyDto> findMngSysPolicies(MngSysPolicySearchBean searchBean, Integer from, Integer size) {
+    public List<MngSysPolicyDto> findMngSysPolicies(MngSysPolicySearchBean searchBean, int from, int size) {
         List<MngSysPolicyEntity> entities = mngSysPolicyDAO.getByExample(searchBean, from, size);
         return mngSysPolicyDozerConverter.convertToDTOList(entities, searchBean.isDeepCopy());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<MngSysPolicyBean> findMngSysPolicyBeans(MngSysPolicySearchBean searchBean, Integer from, Integer size) {
+    public List<MngSysPolicyBean> findMngSysPolicyBeans(MngSysPolicySearchBean searchBean, int from, int size) {
         List<MngSysPolicyBean> ret = new ArrayList<>();
         List<MngSysPolicyDto> policies = findMngSysPolicies(searchBean, from, size);
         if (CollectionUtils.isNotEmpty(policies)) {

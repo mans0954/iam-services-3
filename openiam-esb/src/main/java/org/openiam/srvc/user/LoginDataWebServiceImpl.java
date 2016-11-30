@@ -434,7 +434,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	@Override
-    public List<Login> findBeans(LoginSearchBean searchBean, Integer from, Integer size){
+    public List<Login> findBeans(LoginSearchBean searchBean, int from, int size){
         return loginDozerConverter.convertToDTOList(loginDS.findBeans(searchBean, from, size), false);
     }
 

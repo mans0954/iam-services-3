@@ -200,7 +200,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
     @Override
     @Transactional(readOnly = true)
-    public List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, Integer from, Integer size) {
+    public List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, int from, int size) {
         List<ContentProviderEntity> contentProviderEntities =  contentProviderDao.getByExample(cpsb, from, size);
         return contentProviderEntities != null ? contentProviderDozerConverter.convertToDTOList(contentProviderEntities, cpsb.isDeepCopy()) : null;
     }
@@ -1352,7 +1352,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 		
 		final MetadataElementPageTemplateEntity groupTemplate = templateService.findById(defaultGroupPageTemplate);
 		if(groupTemplate != null) {
-			groupTemplate.setUriPatterns(groupTemplatePatterns);
+			groupTemplatePatterns.forEach(pattern -> {
+				groupTemplate.addURIPattern(pattern);
+			});
 			templateService.save(template);
 		}
         return providerId;
