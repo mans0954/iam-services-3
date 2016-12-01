@@ -5,10 +5,8 @@ import java.util.List;
 
 import javax.jws.WebService;
 
-import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
-import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.lang.dto.Language;
 

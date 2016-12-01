@@ -4,7 +4,7 @@ import org.openiam.mq.constants.api.common.LanguageAPI;
 import org.openiam.mq.constants.queue.common.LanguageServiceQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.base.request.BaseSearchServiceRequest;
-import org.openiam.base.response.LanguageListResponse;
+import org.openiam.base.response.list.LanguageListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;

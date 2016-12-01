@@ -9,8 +9,8 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.openiam.base.request.FileRequest;
-import org.openiam.base.response.FileResponse;
-import org.openiam.base.response.StringResponse;
+import org.openiam.base.response.data.FileResponse;
+import org.openiam.base.response.data.StringResponse;
 import org.openiam.mq.constants.api.common.FileAPI;
 import org.openiam.mq.constants.queue.common.FileQueue;
 import org.openiam.srvc.AbstractApiService;

@@ -1,7 +1,7 @@
 package org.openiam.mq;
 
 import org.openiam.base.request.EmptyServiceRequest;
-import org.openiam.base.response.ManagedSysListResponse;
+import org.openiam.base.response.list.ManagedSysListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;

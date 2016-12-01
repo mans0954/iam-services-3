@@ -1,20 +1,15 @@
 package org.openiam.mq;
 
 import org.openiam.base.request.FileRequest;
-import org.openiam.base.response.FileResponse;
-import org.openiam.base.response.StringResponse;
+import org.openiam.base.response.data.FileResponse;
+import org.openiam.base.response.data.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.file.FileService;
-import org.openiam.idm.srvc.msg.service.MailSenderClient;
-import org.openiam.idm.srvc.msg.service.Message;
 import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.api.common.FileAPI;
-import org.openiam.mq.constants.api.common.OpenIAMAPICommon;
 import org.openiam.mq.constants.queue.common.FileQueue;
-import org.openiam.mq.constants.queue.common.MailQueue;
 import org.openiam.mq.listener.AbstractListener;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

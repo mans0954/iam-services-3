@@ -2,6 +2,8 @@ package org.openiam.mq;
 
 import org.openiam.base.request.*;
 import org.openiam.base.response.*;
+import org.openiam.base.response.data.BooleanResponse;
+import org.openiam.base.response.data.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
