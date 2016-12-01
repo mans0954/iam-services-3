@@ -4,6 +4,7 @@ import org.openiam.base.request.*;
 import org.openiam.base.response.IdServiceResponse;
 import org.openiam.base.response.IntResponse;
 import org.openiam.base.response.LanguageListResponse;
+import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
@@ -43,11 +44,11 @@ public class LanguageListener extends AbstractListener<OpenIAMAPICommon> {
                 switch (api){
                     case GetUsedLanguages:
                         response = new LanguageListResponse();
-                        ((LanguageListResponse)response).setLanguageList(languageDataService.getUsedLanguages(request.getLanguage()));
+                        ((LanguageListResponse)response).setList(languageDataService.getUsedLanguages(request.getLanguage()));
                         return response;
                     case FindLanguages:
                         response = new LanguageListResponse();
-                        ((LanguageListResponse)response).setLanguageList(languageDataService.findBeans(((BaseSearchServiceRequest<LanguageSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize(), request.getLanguage()));
+                        ((LanguageListResponse)response).setList(languageDataService.findBeans(((BaseSearchServiceRequest<LanguageSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize(), request.getLanguage()));
                         return response;
                     case CountLanguages:
                         response = new IntResponse();
@@ -65,8 +66,8 @@ public class LanguageListener extends AbstractListener<OpenIAMAPICommon> {
         return new RequestProcessor<OpenIAMAPICommon, BaseCrudServiceRequest>(){
             @Override
             public Response doProcess(OpenIAMAPICommon api, BaseCrudServiceRequest request) throws BasicDataServiceException {
-                IdServiceResponse response = new IdServiceResponse();
-                response.setId(languageDataService.save(((BaseCrudServiceRequest<Language>)request).getObject()));
+                StringResponse response = new StringResponse();
+                response.setValue(languageDataService.save(((BaseCrudServiceRequest<Language>)request).getObject()));
                 return response;
             }
         };
