@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.msg.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,7 +18,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
@@ -66,72 +66,98 @@ public class MailDataServiceImpl extends AbstractBaseService implements MailData
         log.warn("sendToGroup was called, but is not implemented");
     }
 
-    /*
-     * public void send(String from, String to, String subject, String msg) {
-     * sendWithCC(from, to, null, subject, msg); }
-     */
+//    /*
+//     * public void send(String from, String to, String subject, String msg) {
+//     * sendWithCC(from, to, null, subject, msg); }
+//     */
+//
+//    /*
+//     * (non-Javadoc)
+//     *
+//     * @see
+//     * org.openiam.srvc.user.MailService#sendWithCC(java.lang.String,
+//     * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+//     * java.lang.String, boolean)
+//     */
+//    public void sendEmail(String from, String to, String cc, String subject, String msg, String attachment,
+//            boolean isHtmlFormat) {
+//    	if(log.isDebugEnabled()) {
+//	        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
+//	                + ", Format:" + isHtmlFormat);
+//    	}
+//        Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, null);
+//        try {
+//            mailSender.send(message);
+//        } catch (Throwable e) {
+//            log.error("can't send email", e);
+//        }
+//    }
+//
+//    public void sendEmailByDateTime(String from, String to, String cc, String subject, String msg, String attachment,
+//                                    boolean isHtmlFormat, Date executionDateTime) {
+//    	if(log.isDebugEnabled()) {
+//	    	log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
+//	                + ", Format:" + isHtmlFormat);
+//    	}
+//        Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, executionDateTime);
+//        try {
+//            mailSender.send(message);
+//        } catch (Throwable e) {
+//            log.error("can't send email", e);
+//        }
+//    }
+//
+//    /*
+//     * (non-Javadoc)
+//     *
+//     * @see org.openiam.srvc.user.MailService#send(java.lang.String,
+//     * java.lang.String[], java.lang.String[], java.lang.String[],
+//     * java.lang.String, java.lang.String, boolean, java.lang.String[])
+//     */
+//    public void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg,
+//            boolean isHtmlFormat, String[] attachmentPath) {
+//    	if(log.isDebugEnabled()) {
+//	        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", CC:" + cc + ", BCC:" + bcc
+//	                + ", Attachment:" + attachmentPath);
+//    	}
+//        Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, null);
+//        try {
+//            mailSender.send(message);
+//        } catch (Exception e) {
+//            log.error(e.toString());
+//        }
+//    }
+//
+//    @Override
+//    public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime) {
+//        Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, executionDateTime);
+//
+//        try {
+//            mailSender.send(message);
+//        } catch (Exception e) {
+//            log.error(e.toString());
+//        }
+//    }
+    public void sendEmail(String from, String to, String cc, String bcc, String subject, String msg, boolean isHtmlFormat, String attachmentPath, Date executionDateTime) {
+        List<String> toList = new ArrayList<>();
+        List<String> ccList = new ArrayList<>();
+        List<String> bccList = new ArrayList<>();
+        List<String> attachmentList = new ArrayList<>();
+        toList.add(to);
+        ccList.add(cc);
+        bccList.add(bcc);
+        attachmentList.add(attachmentPath);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.srvc.user.MailService#sendWithCC(java.lang.String,
-     * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
-     * java.lang.String, boolean)
-     */
-    public void sendEmail(String from, String to, String cc, String subject, String msg, String attachment,
-            boolean isHtmlFormat) {
-    	if(log.isDebugEnabled()) {
-	        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
-	                + ", Format:" + isHtmlFormat);
-    	}
-        Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, null);
-        try {
-            mailSender.send(message);
-        } catch (Throwable e) {
-            log.error("can't send email", e);
-        }
-    }
-
-    public void sendEmailByDateTime(String from, String to, String cc, String subject, String msg, String attachment,
-                                    boolean isHtmlFormat, Date executionDateTime) {
-    	if(log.isDebugEnabled()) {
-	    	log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
-	                + ", Format:" + isHtmlFormat);
-    	}
-        Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, executionDateTime);
-        try {
-            mailSender.send(message);
-        } catch (Throwable e) {
-            log.error("can't send email", e);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openiam.srvc.user.MailService#send(java.lang.String,
-     * java.lang.String[], java.lang.String[], java.lang.String[],
-     * java.lang.String, java.lang.String, boolean, java.lang.String[])
-     */
-    public void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg,
-            boolean isHtmlFormat, String[] attachmentPath) {
-    	if(log.isDebugEnabled()) {
-	        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", CC:" + cc + ", BCC:" + bcc
-	                + ", Attachment:" + attachmentPath);
-    	}
-        Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, null);
-        try {
-            mailSender.send(message);
-        } catch (Exception e) {
-            log.error(e.toString());
-        }
+        this.sendEmails(from, toList, ccList, bccList,subject,msg,isHtmlFormat,attachmentList,executionDateTime);
     }
 
     @Override
-    public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime) {
+    public void sendEmails(String from, List<String> to, List<String> cc, List<String> bcc, String subject, String msg, boolean isHtmlFormat, List<String> attachmentPath, Date executionDateTime) {
+        if(log.isDebugEnabled()) {
+            log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", CC:" + cc + ", BCC:" + bcc
+                    + ", Attachment:" + attachmentPath);
+        }
         Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, executionDateTime);
-
         try {
             mailSender.send(message);
         } catch (Exception e) {
@@ -139,17 +165,18 @@ public class MailDataServiceImpl extends AbstractBaseService implements MailData
         }
     }
 
-    private Message fillMessage(String from, String to, String cc, String bcc, String subject, String msg, boolean isHtmlFormat, String attachment, Date executionDateTime) {
-        return fillMessage(from, (to != null) ? new String[]{to} : null,
-                (cc != null)? new String[]{cc} : null,
-                (bcc != null)? new String[]{bcc} : null,
-                subject, msg,
-                isHtmlFormat,
-                (attachment != null)? new String[]{attachment} : null,
-                executionDateTime);
-    }
 
-    private Message fillMessage(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime) {
+//    private Message fillMessage(String from, String to, String cc, String bcc, String subject, String msg, boolean isHtmlFormat, String attachment, Date executionDateTime) {
+//        return fillMessage(from, (to != null) ? new String[]{to} : null,
+//                (cc != null)? new String[]{cc} : null,
+//                (bcc != null)? new String[]{bcc} : null,
+//                subject, msg,
+//                isHtmlFormat,
+//                (attachment != null)? new String[]{attachment} : null,
+//                executionDateTime);
+//    }
+
+    private Message fillMessage(String from, List<String> to, List<String> cc, List<String> bcc, String subject, String msg, boolean isHtmlFormat, List<String> attachmentPath, Date executionDateTime) {
         Message message = new Message();
 
         if (StringUtils.isNotBlank(from)) {
@@ -157,14 +184,15 @@ public class MailDataServiceImpl extends AbstractBaseService implements MailData
         } else {
             message.setFrom(defaultSender);
         }
-        if (to != null && to.length > 0) {
+
+        if (CollectionUtils.isNotEmpty(to)) {
             for (String toString : to) {
             	if(StringUtils.isNotBlank(toString)) {
             		message.addTo(StringUtils.trimToNull(toString));
             	}
             }
         }
-        if (cc != null && cc.length > 0) {
+        if (CollectionUtils.isNotEmpty(cc)) {
             for (String ccString : cc) {
             	if(StringUtils.isNotBlank(ccString)) {
             		message.addCc(StringUtils.trimToNull(ccString));
@@ -172,7 +200,7 @@ public class MailDataServiceImpl extends AbstractBaseService implements MailData
             }
         }
 
-        if (bcc != null && bcc.length > 0) {
+        if (CollectionUtils.isNotEmpty(bcc)) {
             for (String bccString : bcc) {
             	if(StringUtils.isNotBlank(bccString)) {
             		message.addBcc(StringUtils.trimToNull(bccString));
@@ -202,7 +230,7 @@ public class MailDataServiceImpl extends AbstractBaseService implements MailData
         }
 
         message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT : Message.BodyType.PLAIN_TEXT);
-        if (attachmentPath != null) {
+        if (CollectionUtils.isNotEmpty(attachmentPath)) {
             for (String attachmentPathString : attachmentPath) {
                 message.addAttachments(attachmentPathString);
             }
@@ -263,8 +291,8 @@ public class MailDataServiceImpl extends AbstractBaseService implements MailData
 
         String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
         if (emailBody != null) {
-            sendEmailByDateTime(null, req.getTo(), req.getCc(), emailDetails[SUBJECT_IDX], emailBody, null,
-                    isHtmlFormat(emailDetails), req.getExecutionDateTime());
+            sendEmail(null, req.getTo(), req.getCc(), null, emailDetails[SUBJECT_IDX], emailBody,
+                    isHtmlFormat(emailDetails), null, req.getExecutionDateTime());
             return true;
         }
         return false;
@@ -320,8 +348,10 @@ public class MailDataServiceImpl extends AbstractBaseService implements MailData
 
         String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
         if (emailBody != null) {
-            sendEmailByDateTime(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX], emailBody, null,
-                    isHtmlFormat(emailDetails), req.getExecutionDateTime());
+            sendEmail(null, usr.getEmail(), null, null, emailDetails[SUBJECT_IDX], emailBody,
+                    isHtmlFormat(emailDetails), null, req.getExecutionDateTime());
+//            sendEmailByDateTime(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX], emailBody, null,
+//                    isHtmlFormat(emailDetails), req.getExecutionDateTime());
             return true;
         }
         log.warn("Email not sent - failure occurred");

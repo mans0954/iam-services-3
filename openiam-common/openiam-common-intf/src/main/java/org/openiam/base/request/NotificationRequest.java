@@ -48,7 +48,7 @@ import java.util.List;
 @XmlSeeAlso({
         NotificationParam.class
 })
-public class NotificationRequest {
+public class NotificationRequest extends BaseServiceRequest {
 
     String notificationType;
     String userId;
