@@ -48,6 +48,13 @@ public class CommonVHostConfig extends BaseVHostConfig{
         return queue;
     }
     @Bean
+    public MailServiceQueue MailServiceQueue() {
+        MailServiceQueue queue =  new MailServiceQueue();
+        bindQueue(commonAmqpAdmin(), queue);
+        return queue;
+    }
+
+    @Bean
     public PolicyQueue PolicyQueue() {
         PolicyQueue queue =  new PolicyQueue();
         bindQueue(commonAmqpAdmin(), queue);
