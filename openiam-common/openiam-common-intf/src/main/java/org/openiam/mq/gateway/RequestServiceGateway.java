@@ -1,15 +1,16 @@
 package org.openiam.mq.gateway;
 
-import org.openiam.mq.constants.MqQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.dto.MQResponse;
+import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.base.ws.Response;
+import org.openiam.mq.constants.api.OpenIAMAPI;
+import org.openiam.mq.constants.queue.MqQueue;
 
 /**
  * Created by alexander on 07/07/16.
  */
 public interface RequestServiceGateway {
-    MQResponse sendAndReceive(MqQueue queue, final MQRequest request);
-    void send(MqQueue queue, final MQRequest response);
-    void send(String exchange, String routingKey, final MQRequest request) ;
-    void publish(MqQueue queue, final MQRequest request);
+    Response sendAndReceive(MqQueue queue, OpenIAMAPI api, final BaseServiceRequest request);
+    void send(MqQueue queue, OpenIAMAPI api,final BaseServiceRequest request);
+    void schedule(MqQueue queue, OpenIAMAPI api, final Long delayMillis, final BaseServiceRequest request);
+    void publish(MqQueue queue, OpenIAMAPI api, final BaseServiceRequest request);
 }

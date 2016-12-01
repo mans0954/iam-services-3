@@ -2,11 +2,9 @@ package org.openiam.provision.service;
 
 import java.util.List;
 
-import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMAPICommon;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.gateway.RequestServiceGateway;
+import org.openiam.mq.constants.api.idm.ProvisionAPI;
+import org.openiam.mq.constants.queue.idm.ProvisionQueue;
+import org.openiam.mq.utils.RabbitMQSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,13 +12,13 @@ import org.springframework.stereotype.Component;
 public class ProvisionQueueService {
 
     @Autowired
-    private RequestServiceGateway  requestServiceGateway;
+    private RabbitMQSender rabbitMQSender;
+
+    @Autowired
+    private ProvisionQueue provisionQueue;
 
     public void enqueue(final ProvisionDataContainer data) {
-        MQRequest<ProvisionDataContainer, OpenIAMAPICommon> request = new MQRequest();
-        request.setRequestBody(data);
-        request.setRequestApi(OpenIAMAPICommon.UserProvisioning);
-        requestServiceGateway.send(OpenIAMQueue.ProvisionQueue, request);
+        rabbitMQSender.send(provisionQueue, ProvisionAPI.UserProvisioning, data);
     }
 
     public void enqueue(final List<ProvisionDataContainer> dataList) {

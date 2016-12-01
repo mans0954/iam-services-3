@@ -1,5 +1,7 @@
 package org.openiam.elasticsearch.model;
 
+import org.openiam.base.request.BaseServiceRequest;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +10,7 @@ import java.util.List;
  * Created by: Alexander Duckardt
  * Date: 9/18/14.
  */
-public class ElasticsearchReindexRequest implements Serializable {
+public class ElasticsearchReindexRequest extends BaseServiceRequest {
     private boolean saveOrUpdate = false;
     private boolean delete = false;
     private List<String> entityIdList;

@@ -22,7 +22,6 @@ import org.openiam.elasticsearch.model.MetadataTypeDoc;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
-import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -36,9 +35,15 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.internationalization.InternationalizationProvider;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.mq.constants.*;
+import org.openiam.mq.constants.api.common.OpenIAMAPICommon;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.am.GroupAttributeQueue;
+import org.openiam.mq.constants.queue.am.OrganizationAttributeQueue;
+import org.openiam.mq.constants.queue.am.ResourceAttributeQueue;
+import org.openiam.mq.constants.queue.am.RoleAttributeQueue;
+import org.openiam.mq.constants.queue.user.UserAttributeQueue;
 import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.gateway.RequestServiceGateway;
+import org.openiam.mq.utils.RabbitMQSender;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,17 +93,25 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 //    private RedisTemplate<String, Object> redisTemplate;
 
 	@Autowired
-	private RequestServiceGateway requestServiceGateway;
-	
+	private RabbitMQSender rabbitMQSender;
+
 	@Autowired
 	private InternationalizationProvider internationalizationProvider;
-	
+
 	@Autowired
 	private MetadataTypeDocToEntityConverter docCoverter;
 
-/*    @Autowired
-    @Qualifier(value = "metaElementQueue")
-    private Queue queue;*/
+
+	@Autowired
+	private RoleAttributeQueue roleAttributeQueue;
+	@Autowired
+	private GroupAttributeQueue groupAttributeQueue;
+	@Autowired
+	private OrganizationAttributeQueue organizationAttributeQueue;
+	@Autowired
+	private ResourceAttributeQueue resourceAttributeQueue;
+	@Autowired
+	private UserAttributeQueue userAttributeQueue;
 
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
@@ -299,28 +312,28 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			mqRequest.setRequestBody(request);
 			mqRequest.setRequestApi(OpenIAMAPICommon.UpdateAttributesByMetadata);
 
-			OpenIAMQueue queue = null;
+			MqQueue queue = null;
 			switch (entity.getMetadataType().getGrouping()) {
 				case USER_OBJECT_TYPE:
-					queue = OpenIAMQueue.UserAttributeQueue;
+					queue = userAttributeQueue;
 					break;
 				case ROLE_TYPE:
-					queue = OpenIAMQueue.RoleAttributeQueue;
+					queue = roleAttributeQueue;
 					break;
 				case GROUP_TYPE:
-					queue = OpenIAMQueue.GroupAttributeQueue;
+					queue = groupAttributeQueue;
 					break;
 				case ORG_TYPE:
-					queue = OpenIAMQueue.OrganizationAttributeQueue;
+					queue = organizationAttributeQueue;
 					break;
 				case RESOURCE_TYPE:
-					queue = OpenIAMQueue.ResourceAttributeQueue;
+					queue = resourceAttributeQueue;
 					break;
 				default:
 					return;
 			}
 			try {
-				requestServiceGateway.send(queue, mqRequest);
+				rabbitMQSender.send(queue, OpenIAMAPICommon.UpdateAttributesByMetadata, request);
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
 			}

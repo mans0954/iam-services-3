@@ -35,7 +35,8 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMQueue;
+import org.openiam.mq.constants.queue.am.GroupQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.audit.IdmAuditLogWebDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,9 +84,9 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     private AccessRightProcessor accessRightProcessor;
     @Autowired
     private IdmAuditLogWebDataService auditLogService;
-
-    public GroupDataWebServiceImpl() {
-        super(OpenIAMQueue.GroupQueue);
+    @Autowired
+    public GroupDataWebServiceImpl(GroupQueue queue) {
+        super(queue);
     }
 
     protected Language getDefaultLanguage() {

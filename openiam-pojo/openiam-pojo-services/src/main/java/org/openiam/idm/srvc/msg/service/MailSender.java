@@ -2,11 +2,9 @@ package org.openiam.idm.srvc.msg.service;
 
 import javax.annotation.PostConstruct;
 
-import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMAPICommon;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.gateway.RequestServiceGateway;
+import org.openiam.mq.constants.api.common.OpenIAMAPICommon;
+import org.openiam.mq.constants.queue.common.MailQueue;
+import org.openiam.mq.utils.RabbitMQSender;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -16,11 +14,14 @@ import org.springframework.stereotype.Component;
 public class MailSender {
     
     @Autowired
-    private RequestServiceGateway requestServiceGateway;
+    private RabbitMQSender rabbitMQSender;
     
     @Autowired
     @Qualifier("scheduler")
     private ThreadPoolTaskScheduler scheduler;
+
+	@Autowired
+	private MailQueue mailQueue;
     
     @PostConstruct
     public void init() {
@@ -51,9 +52,6 @@ public class MailSender {
     }
 
 	private void doSend(final Message mail){
-		MQRequest<Message, OpenIAMAPICommon> mqRequest = new MQRequest<>();
-		mqRequest.setRequestBody(mail);
-		mqRequest.setRequestApi(OpenIAMAPICommon.UpdateAttributesByMetadata);
-		requestServiceGateway.send(OpenIAMQueue.MailQueue, mqRequest);
+		rabbitMQSender.send(mailQueue, OpenIAMAPICommon.SendEmail, mail);
 	}
 }

@@ -14,15 +14,15 @@ import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.am.srvc.searchbean.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbean.URIPatternSearchBean;
 import org.openiam.base.request.BaseSearchServiceRequest;
-import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.base.request.EmptyServiceRequest;
 import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
-import org.openiam.mq.constants.ContentProviderAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.api.ContentProviderAPI;
+import org.openiam.mq.constants.queue.am.ContentProviderQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("contentProviderWS")
 @WebService(endpointInterface = "org.openiam.srvc.am.ContentProviderWebService",
@@ -30,8 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
             serviceName = "ContentProviderWebService")
 public class ContentProviderWebServiceImpl extends AbstractApiService implements ContentProviderWebService{
 
-    public ContentProviderWebServiceImpl() {
-        super(OpenIAMQueue.ContentProviderQueue);
+    @Autowired
+    public ContentProviderWebServiceImpl(ContentProviderQueue queue) {
+        super(queue);
     }
 
 
@@ -49,7 +50,9 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 
 	@Override
 	public Response deleteAuthLevelAttribute(String id) {
-        return this.manageCrudApiRequest(ContentProviderAPI.DeleteAuthLevelAttribute, id);
+        AuthLevelAttribute obj = new AuthLevelAttribute();
+        obj.setId(id);
+        return this.manageCrudApiRequest(ContentProviderAPI.DeleteAuthLevelAttribute, obj);
 	}
     
     @Override
@@ -59,7 +62,9 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 
 	@Override
 	public Response deleteAuthLevelGrouping(String id) {
-        return this.manageCrudApiRequest(ContentProviderAPI.DeleteAuthLevelGrouping, id);
+        AuthLevelGrouping obj = new AuthLevelGrouping();
+        obj.setId(id);
+        return this.manageCrudApiRequest(ContentProviderAPI.DeleteAuthLevelGrouping, obj);
 	}
 
 	@Override
@@ -71,12 +76,12 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 
 	@Override
     public List<AuthLevel> getAuthLevelList() {
-        return getValueList(ContentProviderAPI.GetAuthLevelList, new BaseServiceRequest(), AuthLevelListResponse.class);
+        return getValueList(ContentProviderAPI.GetAuthLevelList, new EmptyServiceRequest(), AuthLevelListResponse.class);
 	}
 	
     @Override
     public List<AuthLevelGrouping> getAuthLevelGroupingList() {
-        return getValueList(ContentProviderAPI.GetAuthLevelGroupingList, new BaseServiceRequest(), AuthLevelGroupingListResponse.class);
+        return getValueList(ContentProviderAPI.GetAuthLevelGroupingList, new EmptyServiceRequest(), AuthLevelGroupingListResponse.class);
     }
 
     @Override
@@ -111,7 +116,9 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 
     @Override
     public Response deleteContentProvider(String providerId){
-        return manageCrudApiRequest(ContentProviderAPI.DeleteContentProvider, providerId);
+        ContentProvider obj = new ContentProvider();
+        obj.setId(providerId);
+        return manageCrudApiRequest(ContentProviderAPI.DeleteContentProvider, obj);
     }
 
     @Override
@@ -156,16 +163,20 @@ public class ContentProviderWebServiceImpl extends AbstractApiService implements
 
     @Override
     public Response deleteProviderPattern(@WebParam(name = "providerId", targetNamespace = "") String providerId) {
-        return this.manageCrudApiRequest(ContentProviderAPI.DeleteProviderPattern, providerId);
+        ContentProvider obj = new ContentProvider();
+        obj.setId(providerId);
+        return this.manageCrudApiRequest(ContentProviderAPI.DeleteProviderPattern, obj);
     }
 
     @Override
     public List<URIPatternMetaType> getAllMetaType() {
-        return getValueList(ContentProviderAPI.GetAllMetaType, new BaseServiceRequest(), URIPatternMetaTypeListResponse.class);
+        return getValueList(ContentProviderAPI.GetAllMetaType, new EmptyServiceRequest(), URIPatternMetaTypeListResponse.class);
     }
 
 	@Override
 	public Response createDefaultURIPatterns(String providerId) {
-        return this.manageCrudApiRequest(ContentProviderAPI.CreateDefaultURIPatterns, providerId);
+        ContentProvider obj = new ContentProvider();
+        obj.setId(providerId);
+        return this.manageCrudApiRequest(ContentProviderAPI.CreateDefaultURIPatterns, obj);
 	}
 }

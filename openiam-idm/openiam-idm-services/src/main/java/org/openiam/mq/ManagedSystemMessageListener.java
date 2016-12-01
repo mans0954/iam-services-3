@@ -1,14 +1,15 @@
 package org.openiam.mq;
 
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.idm.srvc.mngsys.service.dispatcher.GetAllManagedSysDispatcher;
-import org.openiam.mq.constants.ManagedSystemAPI;
-import org.openiam.mq.constants.OpenIAMAPICommon;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.listener.AbstractRabbitMQListener;
-import org.openiam.provision.service.ProvisionDispatcher;
+import org.openiam.base.request.EmptyServiceRequest;
+import org.openiam.base.response.ManagedSysListResponse;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.mq.constants.api.idm.ManagedSystemAPI;
+import org.openiam.mq.constants.queue.idm.ManagedSysQueue;
+import org.openiam.mq.listener.AbstractListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,23 +17,33 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 01/08/16.
  */
 @Component
-public class ManagedSystemMessageListener extends AbstractRabbitMQListener<ManagedSystemAPI> {
+@RabbitListener(id="managedSystemMessageListener",
+        queues = "#{ManagedSysQueue.name}",
+        containerFactory = "idmRabbitListenerContainerFactory")
+public class ManagedSystemMessageListener extends AbstractListener<ManagedSystemAPI> {
     @Autowired
-    private GetAllManagedSysDispatcher getAllManagedSysDispatcher;
+    private ManagedSystemService managedSystemService;
 
-    public ManagedSystemMessageListener() {
-        super(OpenIAMQueue.ManagedSysQueue);
+    @Autowired
+    public ManagedSystemMessageListener(ManagedSysQueue queue) {
+        super(queue);
     }
 
-    @Override
-    protected void doOnMessage(MQRequest<BaseServiceRequest, ManagedSystemAPI> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        ManagedSystemAPI apiName = message.getRequestApi();
-        switch (apiName){
-            case GetAllManagedSys:
-                addTask(getAllManagedSysDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            default:
-                break;
-        }
+    protected RequestProcessor<ManagedSystemAPI, EmptyServiceRequest> getEmptyRequestProcessor(){
+        return new RequestProcessor<ManagedSystemAPI, EmptyServiceRequest>(){
+            @Override
+            public Response doProcess(ManagedSystemAPI api, EmptyServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api){
+                    case GetAllManagedSys:
+                        response = new ManagedSysListResponse();
+                        ((ManagedSysListResponse)response).setList(managedSystemService.getAllManagedSysDTO());
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
     }
 }

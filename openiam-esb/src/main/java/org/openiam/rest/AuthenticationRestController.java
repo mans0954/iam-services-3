@@ -6,9 +6,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.request.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
 import org.openiam.base.response.AuthenticationResponse;
-import org.openiam.mq.constants.AuthenticationAPI;
-import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.api.AuthenticationAPI;
+import org.openiam.mq.constants.queue.am.AuthenticationQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,9 +32,9 @@ public class AuthenticationRestController extends AbstractApiService {
 
 	@Autowired
 	private AuthenticationServiceService authenticationService;
-
-	public AuthenticationRestController() {
-		super(OpenIAMQueue.AuthenticationQueue);
+	@Autowired
+	public AuthenticationRestController(AuthenticationQueue queue) {
+		super(queue);
 	}
 
 	@RequestMapping(value="/login", method=RequestMethod.POST)

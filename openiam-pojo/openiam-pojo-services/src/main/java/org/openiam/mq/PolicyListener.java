@@ -1,12 +1,19 @@
 package org.openiam.mq;
 
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.idm.srvc.policy.service.dispatcher.*;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.constants.PolicyAPI;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.listener.AbstractRabbitMQListener;
+import org.openiam.base.request.*;
+import org.openiam.base.response.*;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.PolicySearchBean;
+import org.openiam.idm.srvc.policy.dto.ITPolicy;
+import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.service.PolicyService;
+import org.openiam.mq.constants.api.PolicyAPI;
+import org.openiam.mq.constants.queue.common.PolicyQueue;
+import org.openiam.mq.listener.AbstractListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,68 +21,106 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 11/08/16.
  */
 @Component
-public class PolicyListener extends AbstractRabbitMQListener<PolicyAPI> {
+@RabbitListener(id="policyListener",
+        queues = "#{PolicyQueue.name}",
+        containerFactory = "commonRabbitListenerContainerFactory")
+public class PolicyListener extends AbstractListener<PolicyAPI> {
     @Autowired
-    private PolicyFindBeansDispatcher policyFindBeansDispatcher;
-
+    protected PolicyService policyService;
     @Autowired
-    private PolicyGetPolicyDispatcher policyGetPolicyDispatcher;
-
-    @Autowired
-    private PolicyGetAllPolicyAttributesDispatcher policyGetAllPolicyAttributesDispatcher;
-
-    @Autowired
-    private PolicySaveOrUpdateITPolicyDispatcher policySaveOrUpdateITPolicyDispatcher;
-    @Autowired
-    private PolicyCountBeansDispatcher policyCountBeansDispatcher;
-    @Autowired
-    private PolicyFindItPolicyDispatcher policyFindItPolicyDispatcher;
-
-    @Autowired
-    private PolicyResetItPolicyDispatcher policyResetItPolicyDispatcher;
-
-    @Autowired
-    private PolicySavePolicyDispatcher policySavePolicyDispatcher;
-    @Autowired
-    private PolicyDeletePolicyDispatcher policyDeletePolicyDispatcher;
-
-    public PolicyListener() {
-        super(OpenIAMQueue.PolicyQueue);
+    public PolicyListener(PolicyQueue queue) {
+        super(queue);
     }
 
-    @Override
-    protected void doOnMessage(MQRequest<BaseServiceRequest, PolicyAPI> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        PolicyAPI apiName = message.getRequestApi();
-        switch (apiName) {
-            case FindBeans:
-                addTask(policyFindBeansDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetPolicy:
-                addTask(policyGetPolicyDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case GetAllPolicyAttributes:
-                addTask(policyGetAllPolicyAttributesDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case SaveOrUpdateITPolicy:
-                addTask(policySaveOrUpdateITPolicyDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case Count:
-                addTask(policyCountBeansDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case FindITPolicy:
-                addTask(policyFindItPolicyDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case ResetITPolicy:
-                addTask(policyResetItPolicyDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case SavePolicy:
-                addTask(policySavePolicyDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            case DeletePolicy:
-                addTask(policyDeletePolicyDispatcher, correlationId, message, apiName, isAsync);
-                break;
-            default:
-                throw new RejectMessageException();
-        }
+    protected RequestProcessor<PolicyAPI, EmptyServiceRequest> getEmptyRequestProcessor(){
+        return new RequestProcessor<PolicyAPI, EmptyServiceRequest>(){
+            @Override
+            public Response doProcess(PolicyAPI api, EmptyServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api) {
+                    case FindITPolicy:
+                        response = new ITPolicyResponse();
+                        ((ITPolicyResponse)response).setValue(policyService.findITPolicy());
+                        break;
+                    case ResetITPolicy:
+                        policyService.resetITPolicy();
+                        response = new Response(ResponseStatus.SUCCESS);
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
+    }
+    protected RequestProcessor<PolicyAPI, BaseSearchServiceRequest> getSearchRequestProcessor(){
+        return new RequestProcessor<PolicyAPI, BaseSearchServiceRequest>(){
+            @Override
+            public Response doProcess(PolicyAPI api, BaseSearchServiceRequest request) throws BasicDataServiceException {
+                BaseSearchServiceRequest<PolicySearchBean> req = (BaseSearchServiceRequest<PolicySearchBean>)request;
+                Response response;
+                switch (api) {
+                    case FindBeans:
+                        response = new PolicyListResponse();
+                        ((PolicyListResponse)response).setList(policyService.findBeans(req.getSearchBean(), req.getFrom(), req.getSize()));
+                        break;
+                    case Count:
+                        response = new IntResponse();
+                        ((IntResponse)response).setValue(policyService.count(req.getSearchBean()));
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
+    }
+    protected RequestProcessor<PolicyAPI, IdServiceRequest> getGetRequestProcessor(){
+        return new RequestProcessor<PolicyAPI, IdServiceRequest>(){
+            @Override
+            public Response doProcess(PolicyAPI api, IdServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api) {
+                    case GetPolicy:
+                        response = new PolicyResponse();
+                        ((PolicyResponse)response).setValue(policyService.getPolicy(request.getId()));
+                        break;
+                    case GetAllPolicyAttributes:
+                        response = new PolicyDefParamListResponse();
+                        ((PolicyDefParamListResponse)response).setList(policyService.findPolicyDefParamByGroup(request.getId(), ((PolicyGetAppPolicyAttrubutesRequest)request).getPswdGroup()));
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
+    }
+    protected RequestProcessor<PolicyAPI, BaseCrudServiceRequest> getCrudRequestProcessor(){
+        return new RequestProcessor<PolicyAPI, BaseCrudServiceRequest>(){
+            @Override
+            public Response doProcess(PolicyAPI api, BaseCrudServiceRequest request) throws BasicDataServiceException {
+                Response response;
+                switch (api) {
+                    case SaveOrUpdateITPolicy:
+                        response = new BooleanResponse();
+                        policyService.saveITPolicy(((BaseCrudServiceRequest<ITPolicy>)request).getObject());
+                        ((BooleanResponse)response).setValue(Boolean.TRUE);
+                        break;
+                    case SavePolicy:
+                        response = new StringResponse();
+                        ((StringResponse)response).setValue(policyService.savePolicy(((BaseCrudServiceRequest<Policy>)request).getObject()));
+                        break;
+                    case DeletePolicy:
+                        response = new BooleanResponse();
+                        policyService.deletePolicy(((BaseCrudServiceRequest<Policy>)request).getObject().getId());
+                        ((BooleanResponse)response).setValue(Boolean.TRUE);
+                        break;
+                    default:
+                        throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
+                }
+                return response;
+            }
+        };
     }
 }

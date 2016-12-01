@@ -1,23 +1,16 @@
 package org.openiam.mq.gateway.impl;
 
+import org.openiam.base.request.BaseServiceRequest;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.mq.constants.MqQueue;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.dto.MQResponse;
+import org.openiam.mq.constants.MQConstant;
+import org.openiam.mq.constants.api.OpenIAMAPI;
+import org.openiam.mq.constants.queue.MqQueue;
 import org.openiam.mq.gateway.RequestServiceGateway;
-import org.openiam.mq.template.CustomRabbitTemplate;
-import org.openiam.mq.utils.RabbitMQAdminUtils;
-import org.openiam.util.OpenIAMUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpException;
-import org.springframework.amqp.core.Address;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessagePostProcessor;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitGatewaySupport;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * @author Alexander Dukkardt
@@ -26,128 +19,83 @@ import java.io.UnsupportedEncodingException;
 public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements RequestServiceGateway {
     protected Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private Long replyTimeout;
-
-    private RabbitMQAdminUtils rabbitMQAdminUtils;
-
-    public Long getReplyTimeout() {
-        return replyTimeout;
-    }
-
-    public void setReplyTimeout(Long replyTimeout) {
-        this.replyTimeout = replyTimeout;
-    }
-
-    public RabbitMQAdminUtils getRabbitMQAdminUtils() {
-        return rabbitMQAdminUtils;
-    }
-
-    public void setRabbitMQAdminUtils(RabbitMQAdminUtils rabbitMQAdminUtils) {
-        this.rabbitMQAdminUtils = rabbitMQAdminUtils;
-    }
-
-    public void send(MqQueue queue, final MQRequest request){
+    public void send(MqQueue queue, final OpenIAMAPI api, final BaseServiceRequest request){
         try {
-            this.convertAndSend(queue,request);
+            this.convertAndSend(queue, api, request);
         } catch (Exception e) {
             log.error(String.format("Cannot send a message {%s} to queue {%s}", request.toString(), queue.getName()), e);
         }
     }
-    public void send(String exchange, String routingKey, final MQRequest request) {
-        try {
-            this.convertAndSendWithName(exchange, request, routingKey);
-        } catch (Exception e) {
-            log.error(String.format("Cannot send a message {%s} to exchange {%s} with routingKey {%s}", request.toString(), exchange, routingKey), e);
+    public void schedule(MqQueue queue, OpenIAMAPI api, Long delayMillis, final BaseServiceRequest request){
+        if(!queue.getExchange().isDelayed()){
+            log.warn(String.format("Cannot schedule a message {%s} to queue {%s}. Exchange must be declared as x-delayed-type. The message will be sent immediately", request.toString(), queue.getName()));
+            delayMillis=null;
         }
-    }
-    public void publish(MqQueue queue, final MQRequest request) {
         try {
-            this.convertAndSendWithName(queue, request, "");
+            this.convertAndSendWithName(queue, api, delayMillis, request, queue.getRoutingKey());
+        } catch (Exception e) {
+            log.error(String.format("Cannot publish a message {%s} to queue {%s}", request.toString(), queue.getName()), e);
+        }
+
+    }
+    public void publish(MqQueue queue, final OpenIAMAPI api, final BaseServiceRequest request) {
+        try {
+            this.convertAndSendWithName(queue, api, null, request, "");
         } catch (Exception e) {
             log.error(String.format("Cannot publish a message {%s} to queue {%s}", request.toString(), queue.getName()), e);
         }
     }
+
     /**
      * @param queue
      * @param request
      * @return
      */
-    public MQResponse sendAndReceive(MqQueue queue, final MQRequest request) {
-        request.setReplyTo(rabbitMQAdminUtils.getReplyQuequeName(queue.getName()));
+    public Response sendAndReceive(MqQueue queue, final OpenIAMAPI api, final BaseServiceRequest request) {
         long startTime = System.currentTimeMillis();
         log.debug("Send to QUEUE : {}; Request: {};", queue.toString(), request.toString());
-        Object response = ((CustomRabbitTemplate) getRabbitTemplate())
-                .convertSendAndReceive(queue.getExchange().name(),
-                        queue.getRoutingKey(), request, new MessagePostProcessor() {
-                            @Override
-                            public Message postProcessMessage(Message message)
-                                    throws AmqpException {
-                                message.getMessageProperties()
-                                        .setReplyToAddress(
-                                                new Address(request
-                                                        .getReplyTo()));
-                                try {
-                                    message.getMessageProperties()
-                                            .setCorrelationId( rabbitMQAdminUtils.generateCorrelationId());
-                                    log.debug(
-                                            "CorrelationID before SEND: {}",
-                                            OpenIAMUtils
-                                                    .byteArrayToString(
-                                                            message.getMessageProperties()
-                                                                    .getCorrelationId()));
-                                } catch (UnsupportedEncodingException e) {
-                                    throw new AmqpException(e);
-                                }
-                                return message;
-                            }
-                        }, request.getReplyTo());
+
+        Object response = getRabbitOperations().convertSendAndReceive(queue.getExchange().name(), queue.getRoutingKey(),
+                            request, message -> {
+                            message.getMessageProperties().setHeader(MQConstant.VIRTUAL_HOST, queue.getVHost());
+                            message.getMessageProperties().setHeader(MQConstant.API_NAME, api);
+                            return message;
+                        });
         if (response != null) {
-            ((MQResponse<String>) response).succeed();
-            log.trace("Received response from backend: " + response.toString());
+            //((Response) response).succeed();
+            log.info("Received response from backend: " + response.toString());
         } else {
 
             log.warn("Response is not received from backend!");
-            response = new MQResponse<String>();
-            ((MQResponse<String>) response).fail();
-            ((MQResponse<String>) response).setErrorCode(ResponseCode.INTERNAL_ERROR);
-            ((MQResponse<String>) response).setErrorText("Response is not received from RabbitMQ during reply timeout");
-            ((MQResponse<String>) response).setResponseBody("");
+            response = new Response();
+            ((Response) response).fail();
+            ((Response) response).setErrorCode(ResponseCode.INTERNAL_ERROR);
+            ((Response) response).setErrorText("Response is not received from RabbitMQ during reply timeout");
         }
         long totalTime = System.currentTimeMillis() - startTime;
-        log.debug("Received {} API response. Total time: {}", request.getRequestApi().name(), totalTime / 1000.0f);
-        return (MQResponse) response;
+        log.debug("sendAndReceive {} API response ends. Total time: {}", api.name(), totalTime / 1000.0f);
+        return (Response) response;
     }
 
-    private void convertAndSend(MqQueue queue, final MQRequest request) throws Exception {
-        this.convertAndSendWithName(queue, request, queue.getRoutingKey());
+    private void convertAndSend(MqQueue queue, final OpenIAMAPI api, final BaseServiceRequest request) throws Exception {
+        this.convertAndSendWithName(queue, api, null, request, queue.getRoutingKey());
     }
 
-    private void convertAndSendWithName(MqQueue queue, final MQRequest request, String routingKey) throws Exception {
+    private void convertAndSendWithName(MqQueue queue, final OpenIAMAPI api, final Long delayMillis, final BaseServiceRequest request, String routingKey) throws Exception {
         log.debug("Send to QUEUE : QUEUE = " + queue.toString() + "; " + request.toString());
-        convertAndSendWithName(queue.getExchange().name(), request, routingKey);
+        convertAndSendWithName(queue.getVHost(), queue.getExchange().name(), api, delayMillis, request, routingKey);
     }
 
-    private void convertAndSendWithName(String exchange, final MQRequest request, String routingKey) throws Exception {
+    private void convertAndSendWithName(final String vhost, final String exchange, final OpenIAMAPI api, final Long delayMillis, final BaseServiceRequest request, final String routingKey) throws Exception {
         log.debug("Send to exchange : EXCHANGE = " + exchange + "; RoutingKey: " + routingKey + ";" + request.toString());
-        ((CustomRabbitTemplate) getRabbitTemplate()).convertAndSend(exchange, routingKey, request,
-                new MessagePostProcessor() {
-                    @Override
-                    public Message postProcessMessage(Message message)
-                            throws AmqpException {
-                        message.getMessageProperties().setReplyToAddress(
-                                new Address(request.getReplyTo()));
-                        try {
-                            message.getMessageProperties().setCorrelationId(
-                                    rabbitMQAdminUtils.generateCorrelationId());
-                            log.debug("CorrelationID before SEND: {}",
-                                    OpenIAMUtils.byteArrayToString(message
-                                            .getMessageProperties()
-                                            .getCorrelationId()));
-                        } catch (UnsupportedEncodingException e) {
-                            throw new AmqpException(e);
-                        }
-                        return message;
+        getRabbitOperations().convertAndSend(exchange, routingKey, request,
+                message -> {
+                    message.getMessageProperties().setHeader(MQConstant.VIRTUAL_HOST, vhost);
+                    message.getMessageProperties().setHeader(MQConstant.API_NAME, api);
+                    if(delayMillis!=null && delayMillis>=0){
+                        message.getMessageProperties().setHeader(MessageProperties.X_DELAY, delayMillis);
                     }
+                    return message;
                 });
     }
 }

@@ -26,4 +26,13 @@ public class ElasticSearchIntegrationTest extends AbstractServiceTest {
 			Assert.assertTrue(wsResponse.isSuccess());
 		});
 	}
+
+//	@Test
+	public void testScheduleReindex() {
+		elasticSearchServiceClient.indexedClasses().forEach(clazz -> {
+			final Response wsResponse = elasticSearchServiceClient.scheduleReindex(clazz, null, 10000l);
+			Assert.assertNotNull(wsResponse);
+			Assert.assertTrue(wsResponse.isSuccess());
+		});
+	}
 }

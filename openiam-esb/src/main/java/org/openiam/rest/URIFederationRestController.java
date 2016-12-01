@@ -1,43 +1,22 @@
 package org.openiam.rest;
 
-import java.io.ByteArrayInputStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-import javax.security.cert.X509Certificate;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.am.cert.groovy.DefaultCertToIdentityConverter;
-import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
 import org.openiam.base.request.URIFederationServiceRequest;
 import org.openiam.base.request.model.CertificateLoginServiceRequest;
 import org.openiam.base.response.URIFederationResponse;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
-import org.openiam.base.request.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.SSOToken;
-import org.openiam.idm.srvc.auth.dto.Subject;
-import org.openiam.base.response.AuthenticationResponse;
 import org.openiam.base.response.LoginResponse;
-import org.openiam.mq.constants.OpenIAMAPICommon;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.constants.URIFederationAPI;
+import org.openiam.mq.constants.api.URIFederationAPI;
+import org.openiam.mq.constants.queue.am.URIFederationQueue;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.am.AbstractURIFederationAPIService;
 import org.openiam.srvc.am.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -80,7 +59,12 @@ public class URIFederationRestController extends AbstractURIFederationAPIService
 	
 	@Autowired
 	private AuthProviderService authProviderService;
-	
+
+	@Autowired
+	public URIFederationRestController(URIFederationQueue queue) {
+		super(queue);
+	}
+
 	@RequestMapping(value="/federateUser", method=RequestMethod.GET)
 	public @ResponseBody URIFederationResponse federateProxyURI(final @RequestParam(required=true, value="userId") String userId, 
 																final @RequestParam(required=true, value="proxyURI") String proxyURI, 

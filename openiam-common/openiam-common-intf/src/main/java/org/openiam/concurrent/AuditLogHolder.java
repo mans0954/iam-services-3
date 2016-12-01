@@ -11,7 +11,6 @@ public class AuditLogHolder {
 
 
     private AuditLogHolder() {
-        //locale = new Locale("en", "CA");
     }
 
     public static AuditLogHolder getInstance() {

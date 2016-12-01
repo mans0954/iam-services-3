@@ -3,11 +3,10 @@ package org.openiam.srvc;
 import org.openiam.base.KeyDTO;
 import org.openiam.base.request.BaseCrudServiceRequest;
 import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.response.*;
 import org.openiam.base.ws.Response;
-import org.openiam.mq.constants.OpenIAMAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.api.OpenIAMAPI;
+import org.openiam.mq.constants.queue.MqQueue;
 import org.openiam.mq.utils.RabbitMQSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,14 +20,14 @@ import java.util.List;
  */
 public abstract class AbstractApiService {
     protected Logger log = LoggerFactory.getLogger(this.getClass());
-    private OpenIAMQueue rabbitMqQueue;
+    private MqQueue rabbitMqQueue;
     @Autowired
     protected RabbitMQSender rabbitMQSender;
     
     @Autowired
     protected ApplicationContext applicationContext;
 
-    public AbstractApiService(OpenIAMQueue rabbitMqQueue){
+    public AbstractApiService(MqQueue rabbitMqQueue){
         this.rabbitMqQueue=rabbitMqQueue;
     }
 
@@ -37,20 +36,20 @@ public abstract class AbstractApiService {
         return manageApiRequest(rabbitMqQueue, apiName, apiRequest, apiResponseClass);
     }
 
-    protected <ApiResponse extends Response, API extends OpenIAMAPI> ApiResponse manageApiRequest(OpenIAMQueue queue, API apiName, BaseServiceRequest apiRequest, Class<ApiResponse> apiResponseClass) {
+    protected <ApiResponse extends Response, API extends OpenIAMAPI> ApiResponse manageApiRequest(MqQueue queue, API apiName, BaseServiceRequest apiRequest, Class<ApiResponse> apiResponseClass) {
         return rabbitMQSender.sendAndReceive(queue, apiName, apiRequest, apiResponseClass);
     }
 
     protected <API extends OpenIAMAPI> void sendAsync(API apiName, BaseServiceRequest apiRequest){
         sendAsync(rabbitMqQueue, apiName, apiRequest);
     }
-    protected <API extends OpenIAMAPI> void sendAsync(OpenIAMQueue queue, API apiName, BaseServiceRequest apiRequest){
+    protected <API extends OpenIAMAPI> void sendAsync(MqQueue queue, API apiName, BaseServiceRequest apiRequest){
         rabbitMQSender.send(queue, apiName, apiRequest);
     }
     protected <API extends OpenIAMAPI> void publish(API apiName, BaseServiceRequest apiRequest){
         rabbitMQSender.publish(rabbitMqQueue, apiName, apiRequest);
     }
-    protected <API extends OpenIAMAPI> void publish(OpenIAMQueue queue, API apiName, BaseServiceRequest apiRequest){
+    protected <API extends OpenIAMAPI> void publish(MqQueue queue, API apiName, BaseServiceRequest apiRequest){
         rabbitMQSender.publish(queue, apiName, apiRequest);
     }
 
@@ -69,7 +68,6 @@ public abstract class AbstractApiService {
 
     protected <V, ApiResponse extends BaseDataResponse<V>, API extends OpenIAMAPI> V getValue(API apiName, BaseServiceRequest request, Class<ApiResponse> clazz){
         ApiResponse response = getResponse(apiName, request, clazz);
-//                ApiResponse response = this.manageApiRequest(apiName, request, clazz);
         if(response.isFailure()){
             return null;
         }
@@ -77,7 +75,6 @@ public abstract class AbstractApiService {
     }
     protected <V, ApiResponse extends BaseListResponse<V>, API extends OpenIAMAPI> List<V> getValueList(API apiName, BaseServiceRequest request, Class<ApiResponse> clazz){
         ApiResponse response = getResponse(apiName, request, clazz);
-// ApiResponse response = this.manageApiRequest(apiName, request, clazz);
         if(response.isFailure()){
             return null;
         }
@@ -92,17 +89,14 @@ public abstract class AbstractApiService {
         return manageCrudApiRequest(apiName, new BaseCrudServiceRequest<V>(data), clazz);
     }
     protected <V extends KeyDTO, API extends OpenIAMAPI, ApiRequest extends BaseCrudServiceRequest<V>> Response manageCrudApiRequest(API apiName, ApiRequest request){
-        StringResponse response = getResponse(apiName, request, StringResponse.class);
+        Response response = getResponse(apiName, request, Response.class);
         return response.convertToBase();
     }
     protected <V extends KeyDTO, API extends OpenIAMAPI> Response manageCrudApiRequest(API apiName, V data){
         return manageCrudApiRequest(apiName, new BaseCrudServiceRequest<V>(data));
     }
-    protected <API extends OpenIAMAPI> Response manageCrudApiRequest(API apiName, String id){
-        IdServiceRequest request = new IdServiceRequest();
-        request.setId(id);
-        return getResponse(apiName, request, Response.class);
+
+    protected MqQueue getRabbitMqQueue() {
+        return rabbitMqQueue;
     }
-
-
 }

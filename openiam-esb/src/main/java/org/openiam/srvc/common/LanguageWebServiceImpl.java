@@ -1,16 +1,14 @@
 package org.openiam.srvc.common;
 
-import org.openiam.base.request.BaseCrudServiceRequest;
-import org.openiam.mq.constants.OpenIAMAPICommon;
+import org.openiam.mq.constants.api.common.LanguageAPI;
+import org.openiam.mq.constants.queue.common.LanguageServiceQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.base.request.BaseSearchServiceRequest;
-import org.openiam.base.response.CountResponse;
-import org.openiam.base.response.IdServiceResponse;
 import org.openiam.base.response.LanguageListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
@@ -24,38 +22,32 @@ import java.util.List;
 @Service("languageWebService")
 public class LanguageWebServiceImpl extends AbstractApiService implements LanguageWebService {
 
-    public LanguageWebServiceImpl(){
-        super(OpenIAMQueue.LanguageServiceQueue);
+    @Autowired
+    public LanguageWebServiceImpl(LanguageServiceQueue queue){
+        super(queue);
     }
 
     @Override
     public List<Language> getUsedLanguages(Language language) {
         BaseSearchServiceRequest<LanguageSearchBean> request = new BaseSearchServiceRequest<LanguageSearchBean>();
         request.setLanguage(language);
-        LanguageListResponse response = this.manageApiRequest(OpenIAMAPICommon.GetUsedLanguages, request, LanguageListResponse.class);
-        return response.getLanguageList();
+        return this.getValueList(LanguageAPI.GetUsedLanguages, request, LanguageListResponse.class);
     }
 
     @Override
     public List<Language> findBeans(LanguageSearchBean searchBean, int from, int size, Language language) {
         BaseSearchServiceRequest<LanguageSearchBean> request = new BaseSearchServiceRequest<LanguageSearchBean>(searchBean, from, size, language);
-
-        LanguageListResponse response = this.manageApiRequest(OpenIAMAPICommon.FindLanguages, request, LanguageListResponse.class);
-        return response.getLanguageList();
+        return this.getValueList(LanguageAPI.FindLanguages, request, LanguageListResponse.class);
     }
 
     @Override
     public int count(LanguageSearchBean searchBean) {
         BaseSearchServiceRequest<LanguageSearchBean> request = new BaseSearchServiceRequest<LanguageSearchBean>(searchBean);
-        CountResponse response = this.manageApiRequest(OpenIAMAPICommon.CountLanguages, request, CountResponse.class);
-        return response.getRowCount();
+        return this.getIntValue(LanguageAPI.CountLanguages, request);
     }
 
     @Override
     public Response save(Language language) {
-        BaseCrudServiceRequest<Language> request = new BaseCrudServiceRequest<>(language);
-        IdServiceResponse response =  this.manageApiRequest(OpenIAMAPICommon.SaveLanguage, request, IdServiceResponse.class);
-
-       return response.convertToBase();
+       return this.manageCrudApiRequest(LanguageAPI.SaveLanguage, language);
     }
 }

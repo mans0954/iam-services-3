@@ -1,12 +1,13 @@
 package org.openiam.am.srvc.mq;
 
-import org.openiam.am.srvc.service.dispatcher.*;
-import org.openiam.base.request.BaseServiceRequest;
-import org.openiam.mq.constants.OAuthAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
-import org.openiam.mq.dto.MQRequest;
-import org.openiam.mq.exception.RejectMessageException;
-import org.openiam.mq.listener.AbstractRabbitMQListener;
+import org.openiam.am.srvc.service.AuthProviderService;
+import org.openiam.base.request.EmptyServiceRequest;
+import org.openiam.base.ws.Response;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.mq.constants.api.OAuthAPI;
+import org.openiam.mq.constants.queue.am.RefreshOAuthCache;
+import org.openiam.mq.listener.AbstractListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,17 +15,28 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 19/09/16.
  */
 @Component
-public class OAuthCacheListener extends AbstractRabbitMQListener<OAuthAPI> {
-    @Autowired
-    private RefreshOAuthCacheDispatcher refreshOAuthCacheDispatcher;
+@RabbitListener(id="oauthCacheListener",
+        queues = "#{RefreshOAuthCache.name}",
+        containerFactory = "amRabbitListenerContainerFactory")
+public class OAuthCacheListener extends AbstractListener<OAuthAPI> {
 
-    public OAuthCacheListener() {
-        super(OpenIAMQueue.RefreshOAuthCache);
+    @Autowired
+    private AuthProviderService authProviderService;
+
+    @Autowired
+    public OAuthCacheListener(RefreshOAuthCache queue) {
+        super(queue);
     }
 
+
     @Override
-    protected void doOnMessage(MQRequest<BaseServiceRequest, OAuthAPI> message, byte[] correlationId, boolean isAsync) throws RejectMessageException, CloneNotSupportedException {
-        OAuthAPI apiName = message.getRequestApi();
-        addTask(refreshOAuthCacheDispatcher, correlationId, message, apiName, isAsync);
+    protected RequestProcessor<OAuthAPI, EmptyServiceRequest> getEmptyRequestProcessor() {
+        return new RequestProcessor<OAuthAPI, EmptyServiceRequest>(){
+            @Override
+            public Response doProcess(OAuthAPI api, EmptyServiceRequest request) throws BasicDataServiceException {
+                authProviderService.sweepOAuthProvider();
+                return new Response();
+            }
+        };
     }
 }

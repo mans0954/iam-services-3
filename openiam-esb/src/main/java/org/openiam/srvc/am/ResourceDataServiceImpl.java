@@ -26,9 +26,6 @@ import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.base.AbstractBaseService;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -42,7 +39,8 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.queue.am.AMQueue;
+import org.openiam.mq.constants.queue.am.ResourceQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.audit.IdmAuditLogWebDataService;
 import org.openiam.util.UserUtils;
@@ -85,9 +83,9 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     private IdmAuditLogWebDataService auditLogService;
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
-
-    public ResourceDataServiceImpl() {
-        super(OpenIAMQueue.ResourceQueue);
+    @Autowired
+    public ResourceDataServiceImpl(ResourceQueue queue) {
+        super(queue);
     }
 
     @Override

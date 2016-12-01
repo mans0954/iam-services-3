@@ -10,9 +10,22 @@ dependencies:
     - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
     - sudo apt-get update
     - sudo apt-get install bash
-    - sudo rabbitmqctl add_vhost openiam
+    - sudo rabbitmqctl add_vhost openiam_am
+    - sudo rabbitmqctl add_vhost openiam_idm
+    - sudo rabbitmqctl add_vhost openiam_audit
+    - sudo rabbitmqctl add_vhost openiam_common
+    - sudo rabbitmqctl add_vhost openiam_connector
+    - sudo rabbitmqctl add_vhost openiam_activiti
+    - sudo rabbitmqctl add_vhost openiam_user
     - sudo rabbitmqctl add_user openiam passwd00
-    - sudo rabbitmqctl set_permissions -p openiam openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_am openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_idm openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_audit openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_common openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_connector openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_activiti openiam ".*" ".*" ".*"
+    - sudo rabbitmqctl set_permissions -p openiam_user openiam ".*" ".*" ".*"
+    - cd /usr/lib/rabbitmq/lib/rabbitmq_server-3.5.6/plugins;sudo wget https://www.rabbitmq.com/community-plugins/v3.5.x/rabbitmq_delayed_message_exchange-0.0.1-rmq3.5.x-9bf265e4.ez;sudo rabbitmq-plugins enable rabbitmq_delayed_message_exchange
     - sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server-5.6
     - cd conf; sudo /bin/sh setup.sh
     - cd /tmp/openiam/schema/mysql; sudo ./execute.sh passwd00 new_install

@@ -1,133 +1,117 @@
 package org.openiam.config;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ShutdownListener;
-import com.rabbitmq.client.ShutdownSignalException;
+import org.openiam.mq.constants.MQConstant;
+import org.openiam.mq.constants.RabbitMQVHosts;
+import org.openiam.mq.constants.queue.activiti.ActivitiServiceQueue;
+import org.openiam.mq.constants.queue.am.*;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.audit.AuditLogQueue;
+import org.openiam.mq.constants.queue.common.BatchTaskQueue;
+import org.openiam.mq.constants.queue.common.LanguageServiceQueue;
+import org.openiam.mq.constants.queue.common.MailQueue;
+import org.openiam.mq.constants.queue.common.PolicyQueue;
+import org.openiam.mq.constants.queue.idm.ManagedSysQueue;
+import org.openiam.mq.constants.queue.idm.ProvisionQueue;
+import org.openiam.mq.constants.queue.user.UserAttributeQueue;
+import org.openiam.mq.constants.queue.user.UserServiceQueue;
 import org.openiam.mq.gateway.RequestServiceGateway;
-import org.openiam.mq.gateway.ResponseServiceGateway;
 import org.openiam.mq.gateway.impl.RequestServiceGatewayImpl;
-import org.openiam.mq.gateway.impl.ResponseServiceGatewayImpl;
-import org.openiam.mq.template.CustomRabbitTemplate;
-import org.openiam.mq.utils.RabbitMQAdminUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.rabbit.support.DefaultMessagePropertiesConverter;
-import org.springframework.amqp.rabbit.support.MessagePropertiesConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.retry.support.RetryTemplate;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by alexander on 27/07/16.
  */
 @Configuration
+@EnableRabbit
+@Import(value={CommonVHostConfig.class,AuditVHostConfig.class,UserVHostConfig.class,AmVHostConfig.class,IdmVHostConfig.class,ActivitiVHostConfig.class,ConnectorVHostConfig.class})
 public class RabbitMQConfig {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
-    @Value("${org.openiam.rabbitmq.hosts}")
-    private String brokersAddress;
-    @Value("${org.openiam.rabbitmq.VirtualHost}")
-    private String virtualHost;
-    @Value("${org.openiam.rabbitmq.Username}")
-    private String userName;
-    @Value("${org.openiam.rabbitmq.Password}")
-    private String password;
-    @Value("${org.openiam.rabbitmq.ConcurrentConsumers}")
-    private Integer concurrentConsumers;
-    @Value("${org.openiam.rabbitmq.channelTransacted}")
-    private Boolean channelTransacted;
-    @Value("${org.openiam.rabbitmq.channelCacheSize}")
-    private Integer channelCacheSize;
     @Value("${org.openiam.mq.broker.reply.timeout}")
     private Long replyTimeout;
-    @Value("${org.openiam.mq.broker.encoding}")
-    protected String encoding;
+
+    @Autowired
+    private ConnectionFactory amCF;
+    @Autowired
+    private ConnectionFactory idmCF;
+    @Autowired
+    private ConnectionFactory auditCF;
+    @Autowired
+    private ConnectionFactory commonCF;
+    @Autowired
+    private ConnectionFactory connectorCF;
+    @Autowired
+    private ConnectionFactory activitiCF;
+    @Autowired
+    private ConnectionFactory userCF;
+
+    //TODO: need to get some statistic of working in RabbitMQ cluster. If we experience with performance issue we need to
+    //TODO: implement LocalizedQueueConnectionFactory. See details in http://docs.spring.io/spring-amqp/reference/htmlsingle/#queue-affinity
+    //TODO: for now it is ok to manage connection with CachingConnectionFactory
 
     @Bean
     public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
+        // this bean is only for send messages to the proper virtual host
+        SimpleRoutingConnectionFactory routingConnectionFactory  = new SimpleRoutingConnectionFactory();
+        Map<Object, ConnectionFactory> targetConnectionFactories = new HashMap<>();
 
-        logger.info("RabbitMQ user: {}", userName);
-        logger.info("RabbitMQ pass: {}", password);
-        logger.info("RabbitMQ vhost: {}", virtualHost);
-        connectionFactory.setAddresses(brokersAddress);
-        connectionFactory.setUsername(userName);
-        connectionFactory.setPassword(password);
-        connectionFactory.setVirtualHost(virtualHost);
-        connectionFactory.setChannelCacheSize(channelCacheSize);
-        connectionFactory.addChannelListener(new ChannelListener() {
-            protected Logger log = LoggerFactory.getLogger(this.getClass());
-            @Override
-            public void onCreate(Channel channel, boolean transactional) {
-                log.trace("New rabbitmq channel is created : {}, transactional: {}",
-                        channel.toString(), transactional);
-                channel.addShutdownListener(new ShutdownListener() {
-                    @Override
-                    public void shutdownCompleted(ShutdownSignalException cause) {
-                        log.trace("Rabbitmq channel is closed. Cause: {}", cause.getMessage());
-                    }
-                });
-            }
-        });
-        connectionFactory.addConnectionListener(new ConnectionListener() {
-            protected Logger log = LoggerFactory.getLogger(this.getClass());
-            @Override
-            public void onCreate(Connection connection) {
-                log.debug("New rabbitmq connection is created: {}", connection.toString());
-            }
-
-            @Override
-            public void onClose(Connection connection) {
-                log.debug("Rabbitmq connection is closed {}", connection.toString());
-
-            }
-        });
-
-        return connectionFactory;
+        targetConnectionFactories.put(amCF.getVirtualHost(), amCF);
+        targetConnectionFactories.put(idmCF.getVirtualHost(), idmCF);
+        targetConnectionFactories.put(auditCF.getVirtualHost(), auditCF);
+        targetConnectionFactories.put(commonCF.getVirtualHost(), commonCF);
+        targetConnectionFactories.put(connectorCF.getVirtualHost(), connectorCF);
+        targetConnectionFactories.put(activitiCF.getVirtualHost(), activitiCF);
+        targetConnectionFactories.put(userCF.getVirtualHost(), userCF);
+        routingConnectionFactory.setTargetConnectionFactories(targetConnectionFactories);
+        return routingConnectionFactory;
     }
 
     @Bean
     public RabbitTemplate rabbitTemplate() {
-        RabbitTemplate template = new CustomRabbitTemplate(connectionFactory());
+        RabbitTemplate template = new RabbitTemplate(connectionFactory());
+        ExpressionParser parser = new SpelExpressionParser();
+        Expression exp = parser.parseExpression("messageProperties.headers['"+ MQConstant.VIRTUAL_HOST+"']");
+        template.setSendConnectionFactorySelectorExpression(exp);
+
+        //http://docs.spring.io/spring-amqp/reference/htmlsingle/#template-retry
+        RetryTemplate retryTemplate = new RetryTemplate();
+        ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
+        backOffPolicy.setInitialInterval(500);
+        backOffPolicy.setMultiplier(10.0);
+        backOffPolicy.setMaxInterval(10000);
+        retryTemplate.setBackOffPolicy(backOffPolicy);
+        template.setRetryTemplate(retryTemplate);
+
         template.setReplyTimeout(replyTimeout);
-        template.setMessagePropertiesConverter(messagePropertiesConverter());
-        // template.setChannelTransacted(erpProperties.getChannelTransacted());
+
         return template;
     }
-    @Bean
-    public MessagePropertiesConverter messagePropertiesConverter() {
-        return new DefaultMessagePropertiesConverter();
-    }
 
-    @Bean
-    public AmqpAdmin amqpAdmin() {
-        return new RabbitAdmin(connectionFactory());
-    }
-    @Bean
-    public RabbitMQAdminUtils rabbitMQAdminUtils(){
-        RabbitMQAdminUtils adminUtils = new RabbitMQAdminUtils();
-        adminUtils.setConcurrentConsumer(concurrentConsumers);
-        adminUtils.setAmqpAdmin(amqpAdmin());
-        adminUtils.setEncoding(encoding);
-        return adminUtils;
-    }
     @Bean(name = "rabbitRequestServiceGateway")
     public RequestServiceGateway requestServiceGateway() {
         RequestServiceGatewayImpl gateway = new RequestServiceGatewayImpl();
         gateway.setConnectionFactory(connectionFactory());
-        gateway.setRabbitTemplate(rabbitTemplate());
-        gateway.setRabbitMQAdminUtils(rabbitMQAdminUtils());
-        gateway.setReplyTimeout(replyTimeout);
+        gateway.setRabbitOperations(rabbitTemplate());
         return gateway;
-    }
-    @Bean(name = "rabbitResponseServiceGateway")
-    public ResponseServiceGateway responseServiceGateway() {
-        ResponseServiceGatewayImpl responseServiceGateway = new ResponseServiceGatewayImpl();
-        responseServiceGateway.setRabbitTemplate(rabbitTemplate());
-        responseServiceGateway.setRabbitMQAdminUtils(rabbitMQAdminUtils());
-        return responseServiceGateway;
     }
 }

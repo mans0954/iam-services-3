@@ -1,6 +1,5 @@
 package org.openiam.base.response;
 
-import org.openiam.base.ws.Response;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -11,24 +10,13 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "TaskWrapperResponse", propOrder = {
-        "task"
 })
-public class TaskWrapperResponse extends Response {
-    private TaskWrapper task;
-
-    public TaskWrapper getTask() {
-        return task;
-    }
-
-    public void setTask(TaskWrapper task) {
-        this.task = task;
-    }
+public final class TaskWrapperResponse extends BaseDataResponse<TaskWrapper> {
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("TaskWrapperResponse{");
         sb.append(super.toString());
-        sb.append("task=").append(task);
         sb.append('}');
         return sb.toString();
     }

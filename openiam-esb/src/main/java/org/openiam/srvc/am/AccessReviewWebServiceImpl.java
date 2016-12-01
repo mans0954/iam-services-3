@@ -5,10 +5,9 @@ import java.util.Date;
 import org.openiam.base.request.AccessReviewRequest;
 import org.openiam.model.AccessViewFilterBean;
 import org.openiam.model.AccessViewResponse;
-import org.openiam.am.srvc.service.AccessReviewService;
 import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.mq.constants.AccessReviewAPI;
-import org.openiam.mq.constants.OpenIAMQueue;
+import org.openiam.mq.constants.api.AccessReviewAPI;
+import org.openiam.mq.constants.queue.am.AccessReviewQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,8 +18,9 @@ import javax.jws.WebService;
 @WebService(endpointInterface = "org.openiam.srvc.am.AccessReviewWebService", targetNamespace = "urn:idm.openiam.org/srvc/access/review/service",
             portName = "AccessReviewWebServicePort", serviceName = "AccessReviewWebService")
 public class AccessReviewWebServiceImpl extends AbstractApiService implements AccessReviewWebService {
-    public AccessReviewWebServiceImpl() {
-        super(OpenIAMQueue.AccessReviewQueue);
+    @Autowired
+    public AccessReviewWebServiceImpl(AccessReviewQueue queue) {
+        super(queue);
     }
 
     @Override
