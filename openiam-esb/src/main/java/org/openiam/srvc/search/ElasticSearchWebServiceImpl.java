@@ -9,7 +9,6 @@ import org.openiam.base.response.IntResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
-import org.openiam.elasticsearch.service.ElasticsearchReindexProcessor;
 import org.openiam.mq.constants.api.EsAPI;
 import org.openiam.mq.constants.queue.common.EsReindexQueue;
 import org.openiam.srvc.AbstractApiService;
@@ -29,8 +28,6 @@ public class ElasticSearchWebServiceImpl extends AbstractApiService implements E
 	
 	private final Log logger = LogFactory.getLog(this.getClass());
 
-
-
 	@Autowired
 	public ElasticSearchWebServiceImpl(EsReindexQueue queue) {
 		super(queue);
@@ -42,30 +39,11 @@ public class ElasticSearchWebServiceImpl extends AbstractApiService implements E
 		ElasticsearchReindexRequest reindexRequest = ElasticsearchReindexRequest.getUpdateReindexRequest(entityClass);
 		this.getValue(EsAPI.Reindex, reindexRequest, IntResponse.class);
 		return new Response(ResponseStatus.SUCCESS);
-//		final Response response = new Response(ResponseStatus.SUCCESS);
-//		final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-//		auditLog.setAction("reindex");
-//		auditLog.setTargetClass(entityClass);
-//		try {
-//			final int numOfReindexedEntities = reindexer.reindex(entityClass);
-//			auditLog.put("numOfReindexedEntities", Integer.valueOf(numOfReindexedEntities).toString());
-//			auditLog.succeed();
-//			response.succeed();
-//		} catch(Throwable e) {
-//			auditLog.fail();
-//			response.fail();
-//			response.setErrorText(ExceptionUtils.getFullStackTrace(e));
-//			logger.error(String.format("Can't reindex %s", entityClass), e);
-//		} finally {
-//			auditLogHelper.enqueue(auditLog);
-//		}
-//		return response;
 	}
 
 	@Override
 	public List<Class<?>> indexedClasses() {
 		return this.getValueList(EsAPI.IndexedClasses, new EmptyServiceRequest(), ClassListResponse.class);
-//		return reindexer.getIndexedClasses();
 	}
 
 
