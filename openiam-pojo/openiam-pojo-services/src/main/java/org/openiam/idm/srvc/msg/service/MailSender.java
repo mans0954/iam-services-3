@@ -2,7 +2,7 @@ package org.openiam.idm.srvc.msg.service;
 
 import javax.annotation.PostConstruct;
 
-import org.openiam.mq.constants.api.OpenIAMAPICommon;
+import org.openiam.mq.constants.api.common.OpenIAMAPICommon;
 import org.openiam.mq.constants.queue.common.MailQueue;
 import org.openiam.mq.utils.RabbitMQSender;
 import org.springframework.beans.factory.annotation.Autowired;

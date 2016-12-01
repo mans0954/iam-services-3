@@ -68,7 +68,6 @@ public abstract class AbstractApiService {
 
     protected <V, ApiResponse extends BaseDataResponse<V>, API extends OpenIAMAPI> V getValue(API apiName, BaseServiceRequest request, Class<ApiResponse> clazz){
         ApiResponse response = getResponse(apiName, request, clazz);
-//                ApiResponse response = this.manageApiRequest(apiName, request, clazz);
         if(response.isFailure()){
             return null;
         }
@@ -76,7 +75,6 @@ public abstract class AbstractApiService {
     }
     protected <V, ApiResponse extends BaseListResponse<V>, API extends OpenIAMAPI> List<V> getValueList(API apiName, BaseServiceRequest request, Class<ApiResponse> clazz){
         ApiResponse response = getResponse(apiName, request, clazz);
-// ApiResponse response = this.manageApiRequest(apiName, request, clazz);
         if(response.isFailure()){
             return null;
         }

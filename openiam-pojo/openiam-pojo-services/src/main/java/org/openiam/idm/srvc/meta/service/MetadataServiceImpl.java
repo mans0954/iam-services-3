@@ -35,7 +35,7 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.internationalization.InternationalizationProvider;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.mq.constants.api.OpenIAMAPICommon;
+import org.openiam.mq.constants.api.common.OpenIAMAPICommon;
 import org.openiam.mq.constants.queue.MqQueue;
 import org.openiam.mq.constants.queue.am.GroupAttributeQueue;
 import org.openiam.mq.constants.queue.am.OrganizationAttributeQueue;

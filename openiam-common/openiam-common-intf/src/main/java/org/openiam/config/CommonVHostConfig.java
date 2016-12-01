@@ -60,4 +60,11 @@ public class CommonVHostConfig extends BaseVHostConfig{
         bindQueue(commonAmqpAdmin(), queue);
         return queue;
     }
+    @Bean
+    public FileQueue FileQueue() {
+        FileQueue queue =  new FileQueue();
+        bindQueue(commonAmqpAdmin(), queue);
+        return queue;
+    }
+
 }

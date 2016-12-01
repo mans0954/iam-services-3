@@ -6,7 +6,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.msg.service.MailSenderClient;
 import org.openiam.idm.srvc.msg.service.Message;
 import org.openiam.mq.constants.MQConstant;
-import org.openiam.mq.constants.api.OpenIAMAPICommon;
+import org.openiam.mq.constants.api.common.OpenIAMAPICommon;
 import org.openiam.mq.constants.queue.common.MailQueue;
 import org.openiam.mq.listener.AbstractListener;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;

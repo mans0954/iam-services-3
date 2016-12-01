@@ -1,4 +1,6 @@
-package org.openiam.mq.constants.api;
+package org.openiam.mq.constants.api.common;
+
+import org.openiam.mq.constants.api.OpenIAMAPI;
 
 /**
  * Created by alexander on 06/07/16.
@@ -6,8 +8,5 @@ package org.openiam.mq.constants.api;
 public enum OpenIAMAPICommon implements OpenIAMAPI {
     UpdateAttributesByMetadata,
     SendEmail,
-    GetUsedLanguages,
-    FindLanguages,
-    CountLanguages,
-    SaveLanguage,
+
 }
