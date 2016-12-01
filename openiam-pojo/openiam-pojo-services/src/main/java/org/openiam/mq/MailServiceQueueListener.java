@@ -1,21 +1,15 @@
 package org.openiam.mq;
 
-import org.openiam.base.request.FileRequest;
 import org.openiam.base.request.NotificationRequest;
 import org.openiam.base.request.SendEmailRequest;
 import org.openiam.base.request.TweetMessageRequest;
 import org.openiam.base.response.BooleanResponse;
-import org.openiam.base.response.FileResponse;
-import org.openiam.base.response.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.srvc.file.FileService;
 import org.openiam.idm.srvc.msg.service.MailDataService;
 import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.api.common.EmailAPI;
-import org.openiam.mq.constants.api.common.FileAPI;
-import org.openiam.mq.constants.queue.common.FileQueue;
 import org.openiam.mq.constants.queue.common.MailServiceQueue;
 import org.openiam.mq.listener.AbstractListener;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -28,8 +22,8 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 01/08/16.
  */
 @Component
-@RabbitListener(id="fileQueueListener",
-        queues = "#{FileQueue.name}",
+@RabbitListener(id="mailServiceQueueListener",
+        queues = "#{MailServiceQueue.name}",
         containerFactory = "commonRabbitListenerContainerFactory")
 public class MailServiceQueueListener extends AbstractListener<EmailAPI> {
     @Autowired
