@@ -107,10 +107,13 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
             }
 
             final LoginEntity entity = loginDozerConverter.convertToEntity(principal, true);
-            if (currentEntity!=null && currentEntity.getPasswordHistory() != null) {
-                entity.setPasswordHistory(currentEntity.getPasswordHistory());
-            }
+//            if (currentEntity!=null && currentEntity.getPasswordHistory() != null) {
+//                entity.setPasswordHistory(currentEntity.getPasswordHistory());
+//            }
             if (StringUtils.isNotBlank(entity.getLoginId())) {
+                if (currentEntity != null) {
+                    entity.setPasswordHistory(currentEntity.getPasswordHistory());
+                }
                 loginDS.updateLogin(entity);
             } else {
                 loginDS.addLogin(entity);
@@ -337,7 +340,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
     }
 
     /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#resetPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#resetPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
     @Override
     public Response resetPasswordAndNotifyUser(String principal, String managedSysId, String password, boolean notifyUserViaEmail) {

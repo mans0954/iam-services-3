@@ -159,7 +159,7 @@ public class LoginEntity implements java.io.Serializable {
     @LuceneLastUpdate
     private Date lastUpdate;
 
-    @OneToMany(orphanRemoval = true, mappedBy = "login", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @OneToMany(orphanRemoval = true, mappedBy = "login", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private Set<PasswordHistoryEntity> passwordHistory = new HashSet<PasswordHistoryEntity>(0);
 
