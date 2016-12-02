@@ -32,10 +32,6 @@ import java.util.List;
 @Test(groups = "groupProv")
 public class GroupManagementServiceTest extends AbstractServiceTest {
 
-    private static final String REQUESTER_ID = "3000";
-    private static final String AD_RES_ID = "110";
-    private static final String AD_MNGSYS_ID = "110";
-
     private static final String adMngSysId = "110";
     private static final String ldapMngSysId = "101";
     private static final String groupSameName = getRandomNameStatic();
@@ -75,14 +71,14 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         if (CollectionUtils.isNotEmpty(groupIds)) {
             for (String groupId : groupIds) {
                 try {
-                    groupProvisionServiceClient.remove(groupId, REQUESTER_ID);
+                    groupProvisionServiceClient.remove(groupId, getRequestorId());
                 } catch (Exception e) {}
             }
         }
         if (CollectionUtils.isNotEmpty(userIds)) {
             for (String userId : userIds) {
                 try {
-                    provisionServiceClient.deleteByUserId(userId, UserStatusEnum.REMOVE, REQUESTER_ID);
+                    provisionServiceClient.deleteByUserId(userId, UserStatusEnum.REMOVE, getRequestorId());
                 } catch (Exception e) {}
             }
         }
@@ -96,7 +92,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Group group = new Group();
         group.setName(getRandomName());
         group.setDescription(getRandomName());
-        Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
+        Response res = groupServiceClient.saveGroup(group, getRequestorId());
         Assert.assertNotNull(res, "Response can not be null");
         Assert.assertTrue(res.isSuccess(), "Response should be successful");
         String id = (String)res.getResponseValue();
@@ -104,7 +100,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         groupIds.add(id);
 
         //provision add group
-        Group pGroup = new ProvisionGroup(groupServiceClient.getGroup(id, REQUESTER_ID));
+        Group pGroup = new ProvisionGroup(groupServiceClient.getGroup(id, getRequestorId()));
         Response provResponse = groupProvisionServiceClient.add(pGroup);
         Assert.assertNotNull(provResponse, "Response can not be null");
         Assert.assertTrue(provResponse.isSuccess(), "Response should be successful");
@@ -118,14 +114,14 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Assert.assertEquals(CollectionUtils.isNotEmpty(groupIds), true);
         String id = groupIds.get(0);
         //modify group
-        Group group1 = groupServiceClient.getGroup(id, REQUESTER_ID);
+        Group group1 = groupServiceClient.getGroup(id, getRequestorId());
         String origDesc = group1.getDescription();
         Assert.assertNotNull(group1, "Group can not be null");
         group1.setDescription(origDesc + " modified");
-        Response res = groupServiceClient.saveGroup(group1, REQUESTER_ID);
+        Response res = groupServiceClient.saveGroup(group1, getRequestorId());
         Assert.assertNotNull(res, "Response can not be null");
         Assert.assertTrue(res.isSuccess(), "Response should be successful");
-        Group group2 = groupServiceClient.getGroup(id, REQUESTER_ID);
+        Group group2 = groupServiceClient.getGroup(id, getRequestorId());
         Assert.assertNotNull(group2, "Group can not be null");
         Assert.assertFalse(StringUtils.equals(origDesc, group2.getDescription()));
 
@@ -145,7 +141,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         String userId = user.getId();
         Assert.assertNotNull(userId, "User id can not be null");
         userIds.add(userId);
-        Response res = groupServiceClient.addUserToGroup(id, userId, REQUESTER_ID, null, new Date(), new Date());
+        Response res = groupServiceClient.addUserToGroup(id, userId, getRequestorId(), null, new Date(), new Date());
         Assert.assertNotNull(res, "Response can not be null");
         Assert.assertTrue(res.isSuccess(), "Response should be successful");
 
@@ -162,7 +158,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         String id = groupIds.get(0);
         Assert.assertEquals(CollectionUtils.isNotEmpty(userIds), true);
         String userId = userIds.get(0);
-        Response res = groupServiceClient.removeUserFromGroup(id, userId, REQUESTER_ID);
+        Response res = groupServiceClient.removeUserFromGroup(id, userId, getRequestorId());
         Assert.assertNotNull(res, "Response can not be null");
         Assert.assertTrue(res.isSuccess(), "Response should be successful");
 
@@ -178,11 +174,11 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     public void createADGroup() throws InterruptedException {
         Assert.assertEquals(CollectionUtils.isNotEmpty(groupIds), true);
         String id = groupIds.get(0);
-        Response res = resourceServiceClient.addGroupToResource(AD_RES_ID, id, REQUESTER_ID, null, new Date(), new Date());
+        Response res = resourceServiceClient.addGroupToResource(AD_RES_ID, id, getRequestorId(), null, new Date(), new Date());
         Assert.assertNotNull(res, "Response can not be null");
         Assert.assertTrue(res.isSuccess(), "Response should be successful");
 
-        Group group = groupServiceClient.getGroup(id, REQUESTER_ID);
+        Group group = groupServiceClient.getGroup(id, getRequestorId());
         ProvisionGroup pGroup = new ProvisionGroup(group);
         pGroup.setName(getRandomName());
         Set<org.openiam.idm.srvc.res.dto.Resource> ressss = group.getResources();
@@ -223,11 +219,11 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Assert.assertEquals(CollectionUtils.isNotEmpty(groupIds), true);
         String id = groupIds.get(0);
 
-        Group group1 = groupServiceClient.getGroup(id, REQUESTER_ID);
+        Group group1 = groupServiceClient.getGroup(id, getRequestorId());
         group1.setDescription("AD DESCRIPTION");
-        Response res = groupServiceClient.saveGroup(group1, REQUESTER_ID);
+        Response res = groupServiceClient.saveGroup(group1, getRequestorId());
 
-        Group group2 = groupServiceClient.getGroup(id, REQUESTER_ID);
+        Group group2 = groupServiceClient.getGroup(id, getRequestorId());
         ProvisionGroup pGroup = new ProvisionGroup(group2);
         groupProvisionServiceClient.modify(pGroup);
 
@@ -267,7 +263,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         final ProvisionUser pUser = new ProvisionUser();
         pUser.setFirstName(getRandomName());
         pUser.setLastName(getRandomName());
-        pUser.setRequestorUserId(REQUESTER_ID);
+        pUser.setRequestorUserId(getRequestorId());
         pUser.setMdTypeId(getMetadataTypesByGrouping(MetadataTypeGrouping.USER_OBJECT_TYPE).get(0).getId());
         org.openiam.idm.srvc.res.dto.Resource resource = resourceServiceClient.getResource(AD_RES_ID, getDefaultLanguage());
         pUser.addResource(resource);
@@ -305,8 +301,8 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Assert.assertNotNull(objectValue, "Object value can not be null");
         Assert.assertTrue(CollectionUtils.isNotEmpty(objectValue.getAttributeList()), "Attribute list should not be empty");
 
-        Group group = groupServiceClient.getGroup(id, REQUESTER_ID);
-        Response res1 = groupServiceClient.addUserToGroup(id, userId, REQUESTER_ID, null, new Date(), new Date());
+        Group group = groupServiceClient.getGroup(id, getRequestorId());
+        Response res1 = groupServiceClient.addUserToGroup(id, userId, getRequestorId(), null, new Date(), new Date());
         Assert.assertNotNull(res1, "Response can not be null");
         Assert.assertTrue(res1.isSuccess(), "Response should be successful");
 
@@ -351,14 +347,14 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Assert.assertEquals(CollectionUtils.isNotEmpty(groupIds), true);
         String id = groupIds.get(0);
 
-        User user = userServiceClient.getUsersForGroup(id, REQUESTER_ID, 0, 1).get(0);
+        User user = userServiceClient.getUsersForGroup(id, getRequestorId(), 0, 1).get(0);
         Assert.assertNotNull(user, "User can not be null");
 
-        Response res = groupServiceClient.removeUserFromGroup(id, user.getId(), REQUESTER_ID);
+        Response res = groupServiceClient.removeUserFromGroup(id, user.getId(), getRequestorId());
         Assert.assertNotNull(res, "Response can not be null");
         Assert.assertTrue(res.isSuccess(), "Response should be successful");
 
-        Group group = groupServiceClient.getGroup(id, REQUESTER_ID);
+        Group group = groupServiceClient.getGroup(id, getRequestorId());
         Response provResponse = groupProvisionServiceClient.modify(group);
         Assert.assertNotNull(provResponse, "Response can not be null");
         Assert.assertTrue(provResponse.isSuccess(), "Response should be successful");
@@ -397,11 +393,11 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         String id = groupIds.get(0);
 
         //provision delete group
-        Response res = groupProvisionServiceClient.remove(id, REQUESTER_ID);
+        Response res = groupProvisionServiceClient.remove(id, getRequestorId());
         Assert.assertNotNull(res, "Response can not be null");
         Assert.assertTrue(res.isSuccess(), "Response should be successful");
 
-        Group group = groupServiceClient.getGroup(id, REQUESTER_ID);
+        Group group = groupServiceClient.getGroup(id, getRequestorId());
         Assert.assertNull(group, "Group is not removed");
         IdentityDto identity = identityServiceClient.getIdentityByManagedSys(id, getDefaultManagedSystemId());
         Assert.assertNull(identity, "Group identity is not removed");
@@ -419,7 +415,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Group group = new Group();
         group.setName(groupSameName);
         group.setManagedSysId(adMngSysId);
-        Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
+        Response res = groupServiceClient.saveGroup(group, getRequestorId());
         Assert.assertNotNull(res);
         String groupId = (String)res.getResponseValue();
         sameGroupIds.add(groupId);
@@ -427,7 +423,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Group newGroup = new Group();
         newGroup.setName(groupSameName);
         newGroup.setManagedSysId(ldapMngSysId);
-        Response newRes = groupServiceClient.saveGroup(newGroup, REQUESTER_ID);
+        Response newRes = groupServiceClient.saveGroup(newGroup, getRequestorId());
         Assert.assertNotNull(newRes);
         String newGroupId = (String)newRes.getResponseValue();
         sameGroupIds.add(newGroupId);
@@ -444,10 +440,10 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     	final GroupSearchBean sb = new GroupSearchBean();
     	sb.setNameToken(new SearchParam(name, MatchType.EXACT));
     	sb.setLanguage(getDefaultLanguage());
-    	final List<Group> groups = groupServiceClient.findBeans(sb, REQUESTER_ID, 0, Integer.MAX_VALUE);
+    	final List<Group> groups = groupServiceClient.findBeans(sb, getRequestorId(), 0, Integer.MAX_VALUE);
     	if(CollectionUtils.isNotEmpty(groups)) {
     		groups.forEach(e -> {
-    			assertSuccess(groupServiceClient.deleteGroup(e.getId(), REQUESTER_ID));
+    			assertSuccess(groupServiceClient.deleteGroup(e.getId(), getRequestorId()));
     		});
     	}
     }
@@ -460,7 +456,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Group group = new Group();
         group.setName(groupSameName1);
         group.setManagedSysId(adMngSysId);
-        Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
+        Response res = groupServiceClient.saveGroup(group, getRequestorId());
         Assert.assertNotNull(res);
         String groupId = (String)res.getResponseValue();
         sameGroupIds.add(groupId);
@@ -468,7 +464,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Group newGroup = new Group();
         newGroup.setName(groupSameName1);
         newGroup.setManagedSysId(adMngSysId);
-        Response newRes = groupServiceClient.saveGroup(newGroup, REQUESTER_ID);
+        Response newRes = groupServiceClient.saveGroup(newGroup, getRequestorId());
         Assert.assertNotNull(newRes);
         String newGroupId = (String)newRes.getResponseValue();
         sameGroupIds.add(newGroupId);
@@ -488,7 +484,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Group group = new Group();
         group.setName(groupSameName2);
         group.setManagedSysId(null);
-        Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
+        Response res = groupServiceClient.saveGroup(group, getRequestorId());
         Assert.assertNotNull(res);
         String groupId = (String)res.getResponseValue();
         sameGroupIds.add(groupId);
@@ -496,7 +492,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Group newGroup = new Group();
         newGroup.setName(groupSameName2);
         newGroup.setManagedSysId(null);
-        Response newRes = groupServiceClient.saveGroup(newGroup, REQUESTER_ID);
+        Response newRes = groupServiceClient.saveGroup(newGroup, getRequestorId());
         Assert.assertNotNull(newRes);
         String newGroupId = (String)newRes.getResponseValue();
         sameGroupIds.add(newGroupId);
@@ -514,7 +510,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             String firstGroupName = sameGroupIds.get(0);
             Response resFirst = groupServiceClient.validateDelete(firstGroupName);
             if (resFirst.isSuccess()) {
-                groupServiceClient.deleteGroup(firstGroupName, REQUESTER_ID);
+                groupServiceClient.deleteGroup(firstGroupName, getRequestorId());
             }
         }
 
@@ -522,7 +518,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             String secondGroupName = sameGroupIds.get(1);
             Response resSecond = groupServiceClient.validateDelete(secondGroupName);
             if (resSecond.isSuccess()) {
-                groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
+                groupServiceClient.deleteGroup(secondGroupName, getRequestorId());
             }
         }
 
@@ -531,7 +527,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             String firstGroupName = sameGroupIds.get(2);
             Response resFirst = groupServiceClient.validateDelete(firstGroupName);
             if (resFirst.isSuccess()) {
-                groupServiceClient.deleteGroup(firstGroupName, REQUESTER_ID);
+                groupServiceClient.deleteGroup(firstGroupName, getRequestorId());
             }
         }
 
@@ -539,7 +535,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             String secondGroupName = sameGroupIds.get(3);
             Response resSecond = groupServiceClient.validateDelete(secondGroupName);
             if (resSecond.isSuccess()) {
-                groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
+                groupServiceClient.deleteGroup(secondGroupName, getRequestorId());
             }
         }
 
@@ -548,7 +544,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             String firstGroupName = sameGroupIds.get(4);
             Response resFirst = groupServiceClient.validateDelete(firstGroupName);
             if (resFirst.isSuccess()) {
-                groupServiceClient.deleteGroup(firstGroupName, REQUESTER_ID);
+                groupServiceClient.deleteGroup(firstGroupName, getRequestorId());
             }
         }
 
@@ -556,7 +552,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
             String secondGroupName = sameGroupIds.get(5);
             Response resSecond = groupServiceClient.validateDelete(secondGroupName);
             if (resSecond.isSuccess()) {
-                groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
+                groupServiceClient.deleteGroup(secondGroupName, getRequestorId());
             }
         }
 
