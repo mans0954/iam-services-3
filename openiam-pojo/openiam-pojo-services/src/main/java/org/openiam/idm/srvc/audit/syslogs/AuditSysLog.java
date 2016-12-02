@@ -166,10 +166,10 @@ public class AuditSysLog {
                         break;
                     case "datetime":
                         if (log.getTimestamp() == null) {
-                            //timestamp is created on DB side
-                            log.setTimestamp(new Date());
+                            logMessage.append(" DateTime:[").append(new Date().toString()).append("]");
+                        } else {
+                            logMessage.append(" DateTime:[").append(log.getTimestamp().toString()).append("]");
                         }
-                        logMessage.append(" DateTime:[").append(log.getTimestamp().toString()).append("]");
                         break;
                     case "description":
                         if (log.getCustomRecords() != null && log.getCustomRecords().size() > 0) {

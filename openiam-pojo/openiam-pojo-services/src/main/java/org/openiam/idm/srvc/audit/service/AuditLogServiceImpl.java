@@ -102,13 +102,13 @@ public class AuditLogServiceImpl implements AuditLogService {
     private IdmAuditLogEntity prepare(final IdmAuditLog log) {
 //        IdmAuditLogEntity auditLogEntity = log.getId() == null ? auditLogDozerConverter.convertToEntity(log, false) : logDAO.findById(log.getId());
         IdmAuditLogEntity auditLogEntity = auditLogDozerConverter.convertToEntity(log, false);// : logDAO.findById(log.getId());
-        if (auditLogEntity.getTimestamp() == null) {
-            auditLogEntity.setTimestamp(new Date(System.currentTimeMillis()));
-        }
-        try {
-            Thread.sleep(1); //TODO: Subject to discuss. Waiting for timestamp is changed (this will explicitly change hashCodes for similar children logs)
-        } catch (InterruptedException e) {
-        }
+//        if (auditLogEntity.getTimestamp() == null) {
+//            auditLogEntity.setTimestamp(new Date(System.currentTimeMillis()));
+//        }
+//        try {
+//            Thread.sleep(1); //TODO: Subject to discuss. Waiting for timestamp is changed (this will explicitly change hashCodes for similar children logs)
+//        } catch (InterruptedException e) {
+//        }
         if (log != null) {
             if (auditLogEntity.getId() == null || auditLogEntity.getHash() == null) {
                 auditLogEntity.setHash(DigestUtils.sha256Hex(log.concat()));
