@@ -43,6 +43,9 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.common.MetadataQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +57,7 @@ import org.springframework.stereotype.Service;
  */
 @WebService(endpointInterface = "org.openiam.srvc.common.MetadataWebService", targetNamespace = "urn:idm.openiam.org/srvc/meta/service", portName = "MetadataWebServicePort", serviceName = "MetadataWebService")
 @Service("metadataWS")
-public class MetadataWebServiceImpl implements MetadataWebService {
+public class MetadataWebServiceImpl extends AbstractApiService implements MetadataWebService {
     @Autowired
     private MetadataService metadataService;
 
@@ -63,8 +66,15 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 
     private static final Log LOG = LogFactory.getLog(MetadataWebServiceImpl.class);
 
+    @Autowired
+    public MetadataWebServiceImpl(MetadataQueue queue) {
+        super(queue);
+    }
+
     @Override
     public MetadataElement getElementByAttrNameAndTypeId(String attrName, String typeId, final Language language) {
+
+
         return metadataService.findElementByAttrNameAndTypeId(attrName, typeId, language);
     }
 
