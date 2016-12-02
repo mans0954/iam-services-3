@@ -1,7 +1,9 @@
 package org.openiam.mq;
 
 import org.openiam.base.request.*;
-import org.openiam.base.response.*;
+import org.openiam.base.response.data.*;
+import org.openiam.base.response.list.PolicyDefParamListResponse;
+import org.openiam.base.response.list.PolicyListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;

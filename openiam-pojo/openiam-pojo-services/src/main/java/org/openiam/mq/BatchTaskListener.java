@@ -1,7 +1,11 @@
 package org.openiam.mq;
 
 import org.openiam.base.request.*;
-import org.openiam.base.response.*;
+import org.openiam.base.response.data.BatchTaskResponse;
+import org.openiam.base.response.data.IntResponse;
+import org.openiam.base.response.data.StringResponse;
+import org.openiam.base.response.list.BatchTaskListResponse;
+import org.openiam.base.response.list.BatchTaskScheduleListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;

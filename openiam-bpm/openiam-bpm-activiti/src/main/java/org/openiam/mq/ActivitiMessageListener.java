@@ -1,7 +1,13 @@
 package org.openiam.mq;
 
 import org.openiam.base.request.*;
-import org.openiam.base.response.*;
+import org.openiam.base.response.data.IntResponse;
+import org.openiam.base.response.data.StringResponse;
+import org.openiam.base.response.data.TaskListWrapperResponse;
+import org.openiam.base.response.data.TaskWrapperResponse;
+import org.openiam.base.response.list.StringListResponse;
+import org.openiam.base.response.list.TaskHistoryListResponse;
+import org.openiam.base.response.list.TaskListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;

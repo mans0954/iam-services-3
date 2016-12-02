@@ -4,6 +4,7 @@ import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
 import org.openiam.am.srvc.service.AuthResourceAttributeService;
 import org.openiam.base.request.*;
 import org.openiam.base.response.*;
+import org.openiam.base.response.data.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;

@@ -1,46 +1,26 @@
 package org.openiam.mq;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.openiam.base.request.BaseSearchServiceRequest;
 import org.openiam.base.request.EmptyServiceRequest;
-import org.openiam.base.request.IdServiceRequest;
-import org.openiam.base.request.IdmAuditLogRequest;
-import org.openiam.base.request.model.AuditLogBatchContainer;
-import org.openiam.base.response.*;
+import org.openiam.base.response.data.IntResponse;
+import org.openiam.base.response.list.ClassListResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.concurrent.AuditLogHolder;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
 import org.openiam.elasticsearch.service.ElasticsearchReindexProcessor;
 import org.openiam.elasticsearch.service.ElasticsearchReindexService;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
-import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.mq.constants.MQConstant;
-import org.openiam.mq.constants.api.AuditLogAPI;
 import org.openiam.mq.constants.api.EsAPI;
-import org.openiam.mq.constants.queue.audit.AuditLogQueue;
 import org.openiam.mq.constants.queue.common.EsReindexQueue;
 import org.openiam.mq.listener.AbstractListener;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import java.util.List;
 
 /**
  * Created by alexander on 01/08/16.

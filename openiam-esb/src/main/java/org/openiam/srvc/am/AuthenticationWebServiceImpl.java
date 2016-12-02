@@ -3,6 +3,8 @@ package org.openiam.srvc.am;
 
 import org.openiam.base.request.*;
 import org.openiam.base.response.*;
+import org.openiam.base.response.data.BooleanResponse;
+import org.openiam.base.response.data.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;

@@ -41,6 +41,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXref;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.meta.service.MetadataTemplateTypeFieldEntityDAO;
@@ -1283,11 +1284,10 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 		fieldWrapper = mapper.readValue(stream, MetadataTemplateFieldJSONWrapper.class);
 	}
 	
-	private MetadataElementPageTemplateEntity getTemplate(final ContentProvider provider) {
-		MetadataElementPageTemplateEntity template = new MetadataElementPageTemplateEntity();
-		template.setPublic(true);
-		template.setTemplateType(new MetadataTemplateTypeEntity());
-		template.getTemplateType().setId(userTemplateId);
+	private MetadataElementPageTemplate getTemplate(final ContentProvider provider) {
+        MetadataElementPageTemplate template = new MetadataElementPageTemplate();
+		template.setIsPublic(true);
+		template.setMetadataTemplateTypeId(userTemplateId);
 		template.setName(String.format("Default Template for %s", provider.getName()));
 		return template;
 	}
@@ -1298,20 +1298,23 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 		String providerId = saveContentProvider(provider);
 		Set<URIPatternEntity> patternSet = createDefaultURIPatterns(providerId);
 		
-		final Set<URIPatternEntity> userProfilePatterns = patternSet.stream().filter(e -> 
+		final List<URIPatternEntity> userProfilePatternsEntity = patternSet.stream().filter(e ->
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/selfRegistration") ||
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editProfile") ||
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/newUser") ||
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editUser")
-		).collect(Collectors.toSet());
+		).collect(Collectors.toList());
+
+        final Set<URIPattern> userProfilePatterns = new HashSet<>(uriPatternDozerConverter.convertToDTOList(userProfilePatternsEntity, false));
 		
-		final Set<URIPatternEntity> groupTemplatePatterns = patternSet.stream().filter(e ->
+		final List<URIPatternEntity> groupTemplatePatternsEntity = patternSet.stream().filter(e ->
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editGroup") ||
 			StringUtils.startsWithIgnoreCase(e.getPattern(), "/webconsole/editGroup")
-		).collect(Collectors.toSet());
+		).collect(Collectors.toList());
+        final Set<URIPattern> groupTemplatePatterns = new HashSet<>(uriPatternDozerConverter.convertToDTOList(groupTemplatePatternsEntity, false));
 		
-		MetadataElementPageTemplateEntity template = getTemplate(provider);
-		templateService.save(template);
+		MetadataElementPageTemplate template = getTemplate(provider);
+        template.setId(templateService.save(template));
 		
 		/* crazy bug.  since hte templateService.save() method is basically a huge merge, it will use
 		 * the same refernces as the template object.  Consequently, it *may* null out things that we set
@@ -1324,38 +1327,39 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 		template.setId(id);
 		
 		for(final MetadataFieldTemplateXref field : fieldWrapper.getFields()) {
-			final MetadataFieldTemplateXrefEntity xref = new MetadataFieldTemplateXrefEntity();
-			xref.setDisplayOrder(field.getDisplayOrder());
-			xref.setEditable(field.isEditable());
-			xref.setRequired(field.isRequired());
-			//xref.setTemplate(template);
-			if(xref.getLanguageMap() == null) {
-				xref.setLanguageMap(new HashMap<String, LanguageMappingEntity>());
-			}
-			field.getLanguageMap().forEach((languageId, text) -> {
-				if(StringUtils.isNotBlank(languageId)) {
-					final LanguageMappingEntity mapping = new LanguageMappingEntity();
-					mapping.setLanguageId(languageId);
-					mapping.setValue(text.getValue());
-					//mapping.setReferenceId(referenceId);
-					xref.getLanguageMap().put(languageId, mapping);
-				}
-			});
-			xref.setField(new MetadataTemplateTypeFieldEntity());
-			xref.getField().setId(field.getField().getId());
-			xref.setTemplate(template);
-			template.addField(xref);
+//			final MetadataFieldTemplateXrefEntity xref = new MetadataFieldTemplateXrefEntity();
+//			xref.setDisplayOrder(field.getDisplayOrder());
+//			xref.setEditable(field.isEditable());
+//			xref.setRequired(field.isRequired());
+//			//xref.setTemplate(template);
+//			if(xref.getLanguageMap() == null) {
+//				xref.setLanguageMap(new HashMap<String, LanguageMappingEntity>());
+//			}
+//			field.getLanguageMap().forEach((languageId, text) -> {
+//				if(StringUtils.isNotBlank(languageId)) {
+//					final LanguageMappingEntity mapping = new LanguageMappingEntity();
+//					mapping.setLanguageId(languageId);
+//					mapping.setValue(text.getValue());
+//					//mapping.setReferenceId(referenceId);
+//					xref.getLanguageMap().put(languageId, mapping);
+//				}
+//			});
+//			xref.setField(new MetadataTemplateTypeFieldEntity());
+//			xref.getField().setId(field.getField().getId());
+//			xref.setTemplate(template);
+
+			template.addFieldXref(field);
 		}
 		
 		template.setUriPatterns(userProfilePatterns);
 		templateService.save(template);
 		
-		final MetadataElementPageTemplateEntity groupTemplate = templateService.findById(defaultGroupPageTemplate);
+		final MetadataElementPageTemplate groupTemplate = templateService.findById(defaultGroupPageTemplate);
 		if(groupTemplate != null) {
 			groupTemplatePatterns.forEach(pattern -> {
-				groupTemplate.addURIPattern(pattern);
+				groupTemplate.addPattern(pattern);
 			});
-			templateService.save(template);
+			templateService.save(groupTemplate);
 		}
         return providerId;
 	}

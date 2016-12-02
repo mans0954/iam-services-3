@@ -73,5 +73,11 @@ public class CommonVHostConfig extends BaseVHostConfig{
         bindQueue(commonAmqpAdmin(), queue);
         return queue;
     }
+    @Bean
+    public MetadataElementTemplateQueue MetadataElementTemplateQueue() {
+        MetadataElementTemplateQueue queue =  new MetadataElementTemplateQueue();
+        bindQueue(commonAmqpAdmin(), queue);
+        return queue;
+    }
 
 }

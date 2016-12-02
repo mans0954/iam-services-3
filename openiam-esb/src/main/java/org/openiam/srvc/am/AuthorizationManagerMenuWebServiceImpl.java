@@ -8,7 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dto.jdbc.AuthorizationMenu;
 import org.openiam.base.request.*;
 import org.openiam.base.response.AuthorizationMenuResponse;
-import org.openiam.base.response.BooleanResponse;
+import org.openiam.base.response.data.BooleanResponse;
 import org.openiam.mq.constants.api.AMCacheAPI;
 import org.openiam.mq.constants.api.AMMenuAPI;
 import org.openiam.mq.constants.queue.am.AMCacheQueue;
