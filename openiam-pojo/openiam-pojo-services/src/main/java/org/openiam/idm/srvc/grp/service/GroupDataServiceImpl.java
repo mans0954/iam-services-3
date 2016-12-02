@@ -766,12 +766,14 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                     group.setUsers(dbGroup.getUsers());
                     group.setLastUpdatedBy(requestorId);
                     group.setLastUpdate(Calendar.getInstance().getTime());
+                    group.setOrganizations(dbGroup.getOrganizations());
                     
-                    /* hibernate fails you just null out the PersistentSet.  As of Hibernate 4 */
+                    /*
+                    // hibernate fails you just null out the PersistentSet.  As of Hibernate 4
                     if(CollectionUtils.isEmpty(group.getOrganizations())) {
                     	dbGroup.getOrganizations().clear();
                     } else {
-                    	/* basically, we need to remove entries from the DB perstent set tha we don't need */
+                    	// basically, we need to remove entries from the DB perstent set tha we don't need
                     	final Set<String> incomingOrganizationIds = (group.getOrganizations() != null) ? 
                     			group.getOrganizations().stream().map(e -> e.getEntity().getId()).collect(Collectors.toSet()) : null;
                     	group.getOrganizations().forEach(xref -> {
@@ -782,12 +784,13 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                     	});
                     }
                     
-                    /* now set the persistent set  on the transient object */
-                    group.setOrganizations(dbGroup.getOrganizations());
+                    // now set the persistent set  on the transient object
                     group.getOrganizations().forEach(xref -> {
                     	xref.setMemberEntity(group);
                     	xref.setEntity(organizationDAO.findById(xref.getEntity().getId()));
+                    	xref.setMemberEntity(group);
                     });
+                    */
                 } else {
                     return;
                 }
@@ -803,8 +806,17 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             			group.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId), null, null);
             		}
             	}
+            	
+                if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
+                	group.getParentGroups().forEach(xref -> {
+                		xref.setMemberEntity(group);
+                	});
+                }
+            	
                 group.setCreatedBy(requestorId);
                 group.setCreateDate(Calendar.getInstance().getTime());
+                group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
+                addRequiredAttributes(group);
                 groupDao.save(group);
 
                 IdentityEntity groupDefaultEntity = new IdentityEntity(IdentityTypeEnum.GROUP);
@@ -815,9 +827,6 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                 groupDefaultEntity.setStatus(LoginStatusEnum.ACTIVE);
                 groupDefaultEntity.setIdentity(group.getName());
                 identityDAO.save(groupDefaultEntity);
-                group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
-
-                addRequiredAttributes(group);
             }
         }
     }
@@ -1272,6 +1281,12 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
         final GroupEntity groupEntity = groupDozerConverter.convertToEntity(request.getTargetObject(), true);
         final PageTemplateAttributeToken token = pageTemplateService.getAttributesFromTemplate(request);
+        
+        if(CollectionUtils.isNotEmpty(request.getGroupParents())) {
+        	request.getGroupParents().stream().filter(e -> e.getId() != null).forEach(parent -> {
+        		groupEntity.addParentGroup(groupDao.findById(parent.getId()), accessRightDAO.findAll(), null, null);
+        	});
+        }
 
         if(token != null) {
             if(CollectionUtils.isNotEmpty(token.getSaveList())) {

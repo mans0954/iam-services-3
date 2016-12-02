@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.grp.dto;
 
+import java.util.List;
+
 import org.openiam.base.BaseTemplateRequestModel;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -11,13 +13,21 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupRequestModel",
-        propOrder = {
-                "group"
-        })
+	propOrder = {
+		"group",
+		"groupParents"
+	})
 public class GroupRequestModel extends BaseTemplateRequestModel<Group> {
     private Group group;
+    private List<Group> groupParents;
 
-    public Group getTargetObject(){
+    public List<Group> getGroupParents() {
+		return groupParents;
+	}
+	public void setGroupParents(List<Group> groupParents) {
+		this.groupParents = groupParents;
+	}
+	public Group getTargetObject(){
         return group;
     }
     public void setTargetObject(Group group) {

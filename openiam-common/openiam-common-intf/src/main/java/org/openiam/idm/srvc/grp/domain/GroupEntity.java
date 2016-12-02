@@ -98,7 +98,7 @@ public class GroupEntity extends AbstractEntitlementPolicyEntity {
     @MapKeyColumn(name = "name")
     @Fetch(FetchMode.SUBSELECT)
     @Internationalized
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupAttributeEntity> attributes;
 
     
@@ -214,6 +214,33 @@ public class GroupEntity extends AbstractEntitlementPolicyEntity {
     		rights.add(right);
     		addChildGroup(entity, rights, startDate, endDate);
     	}
+    }
+    
+    public void addParentGroup(final GroupEntity parent, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
+    	if(parent != null) {
+			if(this.parentGroups == null) {
+				this.parentGroups = new LinkedHashSet<GroupToGroupMembershipXrefEntity>();
+			}
+			GroupToGroupMembershipXrefEntity theXref = null;
+			for(final GroupToGroupMembershipXrefEntity xref : this.parentGroups) {
+				if(xref.getEntity().getId().equals(parent.getId()) && xref.getMemberEntity().getId().equals(getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new GroupToGroupMembershipXrefEntity();
+				theXref.setEntity(parent);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
+			this.parentGroups.add(theXref);
+		}
     }
     
     public void addChildGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
