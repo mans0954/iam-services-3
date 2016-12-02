@@ -15,7 +15,6 @@ import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.mq.constants.MQConstant;
-import org.openiam.mq.constants.api.common.FileAPI;
 import org.openiam.mq.constants.api.common.TemplateAPI;
 import org.openiam.mq.constants.queue.common.MetadataElementTemplateQueue;
 import org.openiam.mq.listener.AbstractListener;
@@ -58,7 +57,7 @@ public class MetadataElementTemplateQueueListener extends AbstractListener<Templ
                         break;
                     case Count:
                         response = new IntResponse();
-                        ((IntResponse)response).setValue(templateService.count((MetadataElementPageTemplateSearchBean)(request.getSearchBean()));
+                        ((IntResponse)response).setValue(templateService.count((MetadataElementPageTemplateSearchBean)(request.getSearchBean())));
                         break;
                     case FindTemplateType:
                         response = new MetadataTemplateTypeListResponse();
@@ -73,7 +72,6 @@ public class MetadataElementTemplateQueueListener extends AbstractListener<Templ
                     case CountUIFields:
                         response = new IntResponse();
                         ((IntResponse)response).setValue(templateService.countUIFields((MetadataTemplateTypeFieldSearchBean)(request.getSearchBean())));
-                        break;
                         break;
                     default:
                         throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
@@ -112,14 +110,12 @@ public class MetadataElementTemplateQueueListener extends AbstractListener<Templ
                 switch (api){
                     case Save:
                         response = new StringResponse();
-
                         ((StringResponse)response).setValue(templateService.save((MetadataElementPageTemplate)(request.getObject())));
                         break;
                     case Delete:
                         response = new Response();
                         templateService.delete(request.getObject().getId());
                         break;
-                    break;
                     default:
                         throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
                 }

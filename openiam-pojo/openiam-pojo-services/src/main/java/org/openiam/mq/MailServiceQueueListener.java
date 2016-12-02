@@ -22,8 +22,8 @@ import org.springframework.stereotype.Component;
  * Created by alexander on 01/08/16.
  */
 @Component
-@RabbitListener(id="fileQueueListener",
-        queues = "#{FileQueue.name}",
+@RabbitListener(id="mailServiceQueueListener",
+        queues = "#{MailServiceQueue.name}",
         containerFactory = "commonRabbitListenerContainerFactory")
 public class MailServiceQueueListener extends AbstractListener<EmailAPI> {
     @Autowired

@@ -25,6 +25,10 @@ import org.openiam.base.BaseTemplateRequestModel;
 import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.MetadataElementTemplateDozerConverter;
+import org.openiam.dozer.converter.MetadataTemplateTypeDozerConverter;
+import org.openiam.dozer.converter.MetadataTemplateTypeFieldDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
@@ -40,13 +44,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity;
-import org.openiam.idm.srvc.meta.dto.PageElement;
-import org.openiam.idm.srvc.meta.dto.PageElementValidValue;
-import org.openiam.idm.srvc.meta.dto.PageElementValue;
-import org.openiam.idm.srvc.meta.dto.PageTempate;
-import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
-import org.openiam.idm.srvc.meta.dto.TemplateRequest;
-import org.openiam.idm.srvc.meta.dto.TemplateUIField;
+import org.openiam.idm.srvc.meta.dto.*;
 import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -125,19 +123,31 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	@Qualifier("customJacksonMapper")
 	protected ObjectMapper jacksonMapper;
 
+	@Autowired
+	private MetadataElementTemplateDozerConverter templateDozerConverter;
+	@Autowired
+	private MetadataTemplateTypeDozerConverter templateTypeDozerConverter;
+	@Autowired
+	private MetadataTemplateTypeFieldDozerConverter uiFieldDozerConverter;
+
 	
 	private static final Log LOG = LogFactory.getLog(MetadataElementTemplateServiceImpl.class);
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<MetadataElementPageTemplateEntity> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size) {
-		List<MetadataElementPageTemplateEntity> retVal = null;
+	public List<MetadataElementPageTemplate> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size) {
+		List<MetadataElementPageTemplateEntity> entityList = findEntityBeans(searchBean, from, size);
+		return (entityList != null) ? templateDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+	}
+	@Transactional(readOnly=true)
+	private List<MetadataElementPageTemplateEntity> findEntityBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size) {
+		List<MetadataElementPageTemplateEntity> entityList = null;
 		if(CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
-			retVal = pageTemplateDAO.findByIds(searchBean.getKeySet());
+			entityList = pageTemplateDAO.findByIds(searchBean.getKeySet());
 		} else {
-			retVal = pageTemplateDAO.getByExample(searchBean, from, size);
+			entityList = pageTemplateDAO.getByExample(searchBean, from, size);
 		}
-		return retVal;
+		return entityList;
 	}
 
 	@Override
@@ -154,7 +164,15 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 
 	@Override
 	@Transactional
-	public void save(final MetadataElementPageTemplateEntity entity) {
+	public String save(final MetadataElementPageTemplate template) throws BasicDataServiceException {
+		if(template == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
+		if(StringUtils.isBlank(template.getMetadataTemplateTypeId())) {
+			throw new BasicDataServiceException(ResponseCode.TEMPLATE_TYPE_REQUIRED);
+		}
+		MetadataElementPageTemplateEntity entity = templateDozerConverter.convertToEntity(template, true);
+
 		if(entity != null) {
 			if(StringUtils.isNotBlank(entity.getId())) {
 				final MetadataElementPageTemplateEntity dbEntity = pageTemplateDAO.findById(entity.getId());
@@ -261,6 +279,9 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 			}
 		}
 		pageTemplateDAO.evictFromSecondLevelCache(entity);
+		template.setId(entity.getId());
+
+		return entity.getId();
 	}
 
 	@Override
@@ -283,7 +304,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 			searchBean.setDeepCopy(true);
 			final String patternId = request.getPatternId();
 			searchBean.addPatternId(patternId);
-			final List<MetadataElementPageTemplateEntity> entityList = findBeans(searchBean, 0, Integer.MAX_VALUE);
+			final List<MetadataElementPageTemplateEntity> entityList = findEntityBeans(searchBean, 0, Integer.MAX_VALUE);
 			if(CollectionUtils.isNotEmpty(entityList)) {
 				if(entityList.size() > 1) {
 					LOG.warn(String.format("Pattern %s mapped to multiple templates - can't fetch template", request.getPatternId()));
@@ -796,21 +817,23 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 
 	@Override
 	@Transactional(readOnly=true)
-	public MetadataTemplateTypeEntity getTemplateType(String id) {
-		return templateTypeDAO.findById(id);
+	public MetadataTemplateType getTemplateType(String id) {
+		MetadataTemplateTypeEntity entity = templateTypeDAO.findById(id);
+		return (entity != null) ? templateTypeDozerConverter.convertToDTO(entity, true) : null;
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<MetadataTemplateTypeEntity> findTemplateTypes(
-			MetadataTemplateTypeSearchBean searchBean, int from, int size) {
-		return templateTypeDAO.getByExample(searchBean, from, size);
+	public List<MetadataTemplateType> findTemplateTypes(MetadataTemplateTypeSearchBean searchBean, int from, int size) {
+		List<MetadataTemplateTypeEntity> entityList = templateTypeDAO.getByExample(searchBean, from, size);
+		return (entityList != null) ? templateTypeDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size) {
-		return uiFieldDAO.getByExample(searchBean, from, size);
+	public List<MetadataTemplateTypeField> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size) {
+		List<MetadataTemplateTypeFieldEntity> entityList = uiFieldDAO.getByExample(searchBean, from, size);
+		return (entityList != null) ? uiFieldDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
 	}
 	
     @Override
@@ -837,7 +860,8 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 
 	@Override
 	@Transactional(readOnly=true)
-	public MetadataElementPageTemplateEntity findById(String id) {
-		return pageTemplateDAO.findById(id);
+	public MetadataElementPageTemplate findById(String id) {
+		MetadataElementPageTemplateEntity entity = pageTemplateDAO.findById(id);
+		return (entity!=null) ? templateDozerConverter.convertToDTO(entity, true) : null;
 	}
 }
