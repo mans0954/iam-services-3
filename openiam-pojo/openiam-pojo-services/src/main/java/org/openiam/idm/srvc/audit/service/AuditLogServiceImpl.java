@@ -219,12 +219,15 @@ public class AuditLogServiceImpl implements AuditLogService {
     private void send(final IdmAuditLog log) {
 //         AuditSysLog auditSysLog = new AuditSysLog( "testSysLog", 0, AuditSysLog.LOG_INFO );
 //         auditSysLog.AuditSysLog(AuditSysLog.LOG_ERR, "Hello.My_test_log");
-        if (auditSysLog.isEnable()) {
-            if (auditSysLog.hasAction(log.getAction())) {
-                auditSysLog.sendSysLog(log);
+        try {
+            if (auditSysLog.isEnable()) {
+                if (auditSysLog.hasAction(log.getAction())) {
+                    auditSysLog.sendSysLog(log);
+                }
             }
+        } catch (Exception e) {
+            LOG.error("Count not send to syslog. " + e);
         }
-
         jmsTemplate.send(queue, new MessageCreator() {
             public javax.jms.Message createMessage(Session session) throws JMSException {
                 javax.jms.Message message = session.createObjectMessage(log);
@@ -281,7 +284,8 @@ public class AuditLogServiceImpl implements AuditLogService {
         final String id = auditLogEntity.getId();
         return auditLogDozerConverter.convertToDTO(auditLogEntity, true);
     }
-@Override
+
+    @Override
     public void deleteOlderThan(Date date) {
         logDAO.deleteOlderThan(date);
     }

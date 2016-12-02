@@ -4,7 +4,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
 import org.openiam.base.AttributeOperationEnum;
@@ -1239,8 +1238,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("FirstName old=" + userEntity.getFirstName() + "; new=" + pUser.getFirstName());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getLastName()) && !pUser.getLastName().equals(userEntity.getLastName())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1255,8 +1254,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("LastName old=" + userEntity.getLastName() + "; new=" + pUser.getLastName());
             }
-            
-            
+
+
         }
         if (pUser.getBirthdate() != null && !pUser.getBirthdate().equals(userEntity.getBirthdate())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1271,8 +1270,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Birthdate old=" + userEntity.getBirthdate() + "; new=" + pUser.getBirthdate());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getCostCenter()) && !pUser.getCostCenter().equals(userEntity.getCostCenter())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1287,7 +1286,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("CostCenter old=" + userEntity.getCostCenter() + "; new=" + pUser.getCostCenter());
             }
-            
+
             //
         }
         if (StringUtils.isNotEmpty(pUser.getDisplayName()) && !pUser.getDisplayName().equals(userEntity.getDisplayName())) {
@@ -1303,8 +1302,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("DisplayName old=" + userEntity.getDisplayName() + "; new=" + pUser.getDisplayName());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getMaidenName()) && !pUser.getMaidenName().equals(userEntity.getMaidenName())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1319,8 +1318,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("MaidenName old=" + userEntity.getMaidenName() + "; new=" + pUser.getMaidenName());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getNickname()) && !pUser.getNickname().equals(userEntity.getNickname())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1335,8 +1334,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Nickname old=" + userEntity.getNickname() + "; new=" + pUser.getNickname());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getMiddleInit()) && !pUser.getMiddleInit().equals(userEntity.getMiddleInit())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1351,8 +1350,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("MiddleInit old=" + userEntity.getMiddleInit() + "; new=" + pUser.getMiddleInit());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getEmployeeId()) && !pUser.getEmployeeId().equals(userEntity.getEmployeeId())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1367,8 +1366,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("EmployeeId old=" + userEntity.getEmployeeId() + "; new=" + pUser.getEmployeeId());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getEmployeeTypeId()) && (userEntity.getEmployeeType() == null ||
                 !pUser.getEmployeeTypeId().equals(userEntity.getEmployeeType().getId()))) {
@@ -1385,8 +1384,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("EmployeeType old=" + (userEntity.getEmployeeType() != null ? userEntity.getEmployeeType() : "N/A") + "; new=" + metadataType.getDescription());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getUserTypeInd()) && (userEntity.getType() == null || !pUser.getUserTypeInd().equals(userEntity.getType().getId()))) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1402,8 +1401,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("UserType old=" + (userEntity.getUserTypeInd() != null ? userEntity.getUserTypeInd() : "N/A") + "; new=" + pUser.getUserTypeInd());
             }
-            
-            
+
+
         }
 
         if (StringUtils.isNotEmpty(pUser.getJobCodeId()) && (userEntity.getJobCode() == null ||
@@ -1421,8 +1420,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("JobCode old=" + (userEntity.getJobCode() != null ? userEntity.getJobCode() : "N/A") + "; new=" + metadataType.getDescription());
             }
-            
-            
+
+
         }
         if (pUser.getStartDate() != null && !pUser.getStartDate().equals(userEntity.getStartDate())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1437,7 +1436,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("StartDate old=" + userEntity.getStartDate() + "; new=" + pUser.getStartDate());
             }
-            
+
         }
         if (pUser.getLastDate() != null && !pUser.getLastDate().equals(userEntity.getLastDate())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1452,7 +1451,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("LastDate old=" + userEntity.getLastDate() + "; new=" + pUser.getLastDate());
             }
-            
+
             //
         }
         if (pUser.getStatus() != null && !pUser.getStatus().equals(userEntity.getStatus())) {
@@ -1468,8 +1467,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Status old=" + userEntity.getStatus() + "; new=" + pUser.getStatus());
             }
-            
-            
+
+
         }
         if (pUser.getSecondaryStatus() != null && !pUser.getSecondaryStatus().equals(userEntity.getSecondaryStatus())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1484,8 +1483,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("SecondaryStatus old=" + userEntity.getSecondaryStatus() + "; new=" + pUser.getSecondaryStatus());
             }
-            
-            
+
+
         }
         if (!StringUtils.equals(pUser.getSuffix(), userEntity.getSuffix())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1500,8 +1499,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Suffix old=" + userEntity.getSuffix() + "; new=" + pUser.getSuffix());
             }
-            
-            
+
+
         }
         if (!StringUtils.equals(pUser.getTitle(), userEntity.getTitle())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1516,8 +1515,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Title old=" + userEntity.getTitle() + "; new=" + pUser.getTitle());
             }
-            
-            
+
+
         }
         if (!StringUtils.equals(pUser.getClassification(), userEntity.getClassification())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1532,8 +1531,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Classification old=" + userEntity.getClassification() + "; new=" + pUser.getClassification());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getUserSubTypeId()) && (userEntity.getSubType() == null ||
                 !pUser.getUserSubTypeId().equals(userEntity.getSubType().getId()))) {
@@ -1550,7 +1549,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("SubType old=" + (userEntity.getSubType() != null ? userEntity.getSubType() : "N/A") + "; new=" + metadataType.getDescription());
             }
-            
+
             //
         }
         if (!StringUtils.equals(pUser.getPrefixLastName(), userEntity.getPrefixLastName())) {
@@ -1566,8 +1565,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Prefix Last Name old=" + userEntity.getPrefixLastName() + "; new=" + pUser.getPrefixLastName());
             }
-            
-            
+
+
         }
         if (!StringUtils.equals(pUser.getPartnerName(), userEntity.getPartnerName())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1582,8 +1581,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Partner Name old=" + userEntity.getPartnerName() + "; new=" + pUser.getPartnerName());
             }
-            
-            
+
+
         }
         if (!StringUtils.equals(pUser.getPrefixPartnerName(), userEntity.getPrefixPartnerName())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -1598,8 +1597,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Preffix Partner Name old=" + userEntity.getPrefixPartnerName() + "; new=" + pUser.getPrefixPartnerName());
             }
-            
-            
+
+
         }
         if (((pUser.getSecondaryStatus() == null && userEntity.getSecondaryStatus() == UserStatusEnum.DISABLED)
                 || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.INACTIVE)
@@ -1615,8 +1614,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug(pUser.getDisplayName() + " User rehired");
             }
-            
-            
+
+
         }
         if (pUser.getStatus() == UserStatusEnum.INACTIVE && saveRehireChange.equalsIgnoreCase("true")) {
             IdmAuditLog auditLog = new IdmAuditLog();
@@ -1629,8 +1628,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug(pUser.getDisplayName() + " User inactived");
             }
-            
-            
+
+
         }
         if (pUser.getSecondaryStatus() == UserStatusEnum.DISABLED && saveRehireChange.equalsIgnoreCase("true")) {
             IdmAuditLog auditLog = new IdmAuditLog();
@@ -1643,8 +1642,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug(pUser.getDisplayName() + " User disabled");
             }
-            
-            
+
+
         }
         if (pUser.getStatus() == UserStatusEnum.DELETED && saveRehireChange.equalsIgnoreCase("true")) {
             IdmAuditLog auditLog = new IdmAuditLog();
@@ -1657,8 +1656,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug(pUser.getDisplayName() + " User deleted");
             }
-            
-            
+
+
         }
 
         userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
@@ -1667,13 +1666,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         userEntity.setJobCode(jobCode);
         userEntity.setEmployeeType(employeeType);
         userEntity.setSubType(userSubType);
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            log.warn(mapper.writeValueAsString(parentLog));
-        }catch (Exception e){
-            log.error(e);
-        }
-
     }
 
     public void updateUserAttributes(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
@@ -2614,8 +2606,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("FirstName New=" + pUser.getFirstName());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getLastName())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2630,8 +2622,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("LastName New=" + pUser.getLastName());
             }
-            
-            
+
+
         }
         if (pUser.getBirthdate() != null) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2646,8 +2638,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Birthdate New=" + pUser.getBirthdate());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getCostCenter())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2662,7 +2654,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("CostCenter New=" + pUser.getCostCenter());
             }
-            
+
         }
         if (StringUtils.isNotEmpty(pUser.getDisplayName())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2677,8 +2669,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("DisplayName New=" + pUser.getDisplayName());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getMaidenName())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2693,8 +2685,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("MaidenName New=" + pUser.getMaidenName());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getNickname())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2709,8 +2701,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Nickname New=" + pUser.getNickname());
             }
-            
-            
+
+
         }
 
         if (StringUtils.isNotEmpty(pUser.getMiddleInit())) {
@@ -2726,8 +2718,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("MiddleInit New=" + pUser.getMiddleInit());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getEmployeeId())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2742,8 +2734,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("EmployeeId New=" + pUser.getEmployeeId());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getEmployeeTypeId())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2759,8 +2751,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("EmployeeType New=" + metadataType.getDescription());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getUserTypeInd())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2775,8 +2767,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("UserType New=" + pUser.getUserTypeInd());
             }
-            
-            
+
+
         }
         if (userEntity.getJobCode() != null && StringUtils.isNotEmpty(pUser.getJobCodeId())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2792,8 +2784,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("JobCode New=" + metadataType.getDescription());
             }
-            
-            
+
+
         }
         if (pUser.getStartDate() != null) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2808,7 +2800,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("StartDate New=" + pUser.getStartDate());
             }
-            
+
         }
         if (pUser.getLastDate() != null) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2823,8 +2815,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("LastDate New=" + pUser.getLastDate());
             }
-            
-            
+
+
         }
         if (pUser.getStatus() != null) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2839,8 +2831,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Status New=" + pUser.getStatus());
             }
-            
-            
+
+
         }
         if (pUser.getSecondaryStatus() != null) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2855,8 +2847,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("SecondaryStatus New=" + pUser.getSecondaryStatus());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getSuffix())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2871,8 +2863,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Suffix New=" + pUser.getSuffix());
             }
-            
-            
+
+
         }
         if (StringUtils.isNotEmpty(pUser.getTitle())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2887,8 +2879,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Title New=" + pUser.getTitle());
             }
-            
-            
+
+
         }
         // SIA: Added
         if (StringUtils.isNotEmpty(pUser.getClassification())) {
@@ -2904,8 +2896,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Classification New=" + pUser.getClassification());
             }
-            
-            
+
+
         }
         // SIA Added to complete user fields
         if (StringUtils.isNotEmpty(pUser.getUserSubTypeId()) && (userEntity.getSubType() == null ||
@@ -2923,7 +2915,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("SubType New=" + metadataType.getDescription());
             }
-            
+
         }
 
         if (!StringUtils.equals(pUser.getPrefixLastName(), userEntity.getPrefixLastName())) {
@@ -2939,7 +2931,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Prefix Last Name New=" + pUser.getPrefixLastName());
             }
-            
+
         }
 
         if (!StringUtils.equals(pUser.getPartnerName(), userEntity.getPartnerName())) {
@@ -2955,7 +2947,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Partner Name New=" + pUser.getPartnerName());
             }
-            
+
         }
 
         if (!StringUtils.equals(pUser.getPrefixPartnerName(), userEntity.getPrefixPartnerName())) {
@@ -2971,7 +2963,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("Preffix Partner Name New=" + pUser.getPrefixPartnerName());
             }
-            
+
         }
     }
 
