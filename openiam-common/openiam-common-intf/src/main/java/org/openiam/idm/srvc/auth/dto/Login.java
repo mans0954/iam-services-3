@@ -51,7 +51,8 @@ import java.util.*;
         "loginId",
         "lastUpdate",
         "passwordHistory",
-        "challengeResponseFailCount"
+        "challengeResponseFailCount",
+        "forceChangePassword"
 })
 @XmlSeeAlso({
         Subject.class,
@@ -117,6 +118,8 @@ public class Login implements java.io.Serializable {
     protected Integer isDefault = new Integer(0);
 
     protected Integer passwordChangeCount = new Integer(0);
+
+    protected Integer forceChangePassword = new Integer(0);
 
     protected String lastLoginIP;
 
@@ -301,6 +304,13 @@ public class Login implements java.io.Serializable {
         this.passwordChangeCount = passwordChangeCount;
     }
 
+    public Integer getForceChangePassword() {
+        return forceChangePassword;
+    }
+
+    public void setForceChangePassword(Integer forceChangePassword) {
+        this.forceChangePassword = forceChangePassword;
+    }
 
     public Date getLastLogin() {
         return lastLogin;

@@ -125,6 +125,9 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name = "PWD_CHANGE_COUNT")
     protected Integer passwordChangeCount = 0;
 
+    @Column(name = "FORCE_CHANGE_PASSWORD")
+    protected int forceChangePassword=0;
+
     @Column(name = "LAST_LOGIN_IP")
     protected String lastLoginIP;
 
@@ -473,6 +476,14 @@ public class LoginEntity implements java.io.Serializable {
         this.smsResetTokenExp = smsResetTokenExp;
     }
 
+    public int getForceChangePassword() {
+        return forceChangePassword;
+    }
+
+    public void setForceChangePassword(int forceChangePassword) {
+        this.forceChangePassword = forceChangePassword;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -729,6 +740,7 @@ public class LoginEntity implements java.io.Serializable {
         setResetPassword(login.getResetPassword());
         setStatus(login.getStatus());
         setUserId(login.getUserId());
+        setForceChangePassword(login.getForceChangePassword());
     }
 }
 

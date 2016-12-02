@@ -1765,7 +1765,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             log.debug(" - Managed System Id = " + managedSysId);
                             log.debug(" - Resource Id = " + res.getId());
                         }
-                        final boolean retval = loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(), encPassword, passwordSync.getUserActivateFlag());
+                        final boolean retval = loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(), encPassword, passwordSync.getUserActivateFlag(),passwordSync.getForceChange());
 
                         if (retval) {
                             if (log.isDebugEnabled()) {
