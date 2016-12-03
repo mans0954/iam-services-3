@@ -1,6 +1,7 @@
 package org.openiam.elasticsearch.integration;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.srvc.search.ElasticSearchWebService;
 import org.openiam.service.integration.AbstractServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +17,6 @@ public class ElasticSearchIntegrationTest extends AbstractServiceTest {
 	
 	@Test
 	public void testReindex() {
-		Response response = elasticSearchServiceClient.reindex(null);
-		Assert.assertNotNull(response);
-		Assert.assertTrue(response.isFailure());
-		
 		elasticSearchServiceClient.indexedClasses().forEach(clazz -> {
 			final Response wsResponse = elasticSearchServiceClient.reindex(clazz);
 			Assert.assertNotNull(wsResponse);
@@ -34,5 +31,12 @@ public class ElasticSearchIntegrationTest extends AbstractServiceTest {
 			Assert.assertNotNull(wsResponse);
 			Assert.assertTrue(wsResponse.isSuccess());
 		});
+	}
+	
+	@Test
+	public void testNegativeDelay() {
+		final Response wsResponse = elasticSearchServiceClient.scheduleReindex(OrganizationEntity.class, "100", -1L);
+		Assert.assertNotNull(wsResponse);
+		Assert.assertTrue(wsResponse.isSuccess());
 	}
 }

@@ -73,6 +73,11 @@ public abstract class AbstractKeyDocElasticSearchIntegrationTest<D extends Abstr
 		Assert.assertTrue(dtos.stream().filter(e -> e.getId().equals(getDTO().getId())).count() > 0);
 	}
 	
+	protected void assertNotFound(final S sb) {
+		final List<DTO> dtos = findBeans(sb);
+		Assert.assertTrue(CollectionUtils.isEmpty(dtos));
+	}
+	
 	@Test
 	public void testFindById() {
 		final S sb = createSearchBean();
