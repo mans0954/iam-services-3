@@ -3,6 +3,7 @@ package org.openiam.mq;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.request.GetEntitlementRequest;
 import org.openiam.base.response.*;
+import org.openiam.base.response.data.BooleanResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;

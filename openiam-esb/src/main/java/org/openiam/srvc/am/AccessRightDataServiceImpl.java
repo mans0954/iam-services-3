@@ -11,7 +11,7 @@ import org.openiam.base.request.IdServiceRequest;
 import org.openiam.base.request.IdsServiceRequest;
 import org.openiam.base.response.AccessRightListResponse;
 import org.openiam.base.response.AccessRightResponse;
-import org.openiam.base.response.IntResponse;
+import org.openiam.base.response.data.IntResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;

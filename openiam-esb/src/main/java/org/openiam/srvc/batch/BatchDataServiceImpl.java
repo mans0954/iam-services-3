@@ -27,7 +27,10 @@ import java.util.List;
 import javax.jws.WebService;
 
 import org.openiam.base.request.*;
-import org.openiam.base.response.*;
+import org.openiam.base.response.data.BatchTaskResponse;
+import org.openiam.base.response.data.IntResponse;
+import org.openiam.base.response.list.BatchTaskListResponse;
+import org.openiam.base.response.list.BatchTaskScheduleListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.BatchTaskScheduleSearchBean;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;

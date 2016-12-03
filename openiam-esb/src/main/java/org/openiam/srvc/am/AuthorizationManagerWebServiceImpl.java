@@ -12,6 +12,7 @@ import org.openiam.am.srvc.dto.jdbc.RoleAuthorizationRight;
 import org.openiam.base.request.EmptyServiceRequest;
 import org.openiam.base.request.GetEntitlementRequest;
 import org.openiam.base.response.*;
+import org.openiam.base.response.data.BooleanResponse;
 import org.openiam.mq.constants.api.AMCacheAPI;
 import org.openiam.mq.constants.api.AMManagerAPI;
 import org.openiam.mq.constants.queue.am.AMCacheQueue;

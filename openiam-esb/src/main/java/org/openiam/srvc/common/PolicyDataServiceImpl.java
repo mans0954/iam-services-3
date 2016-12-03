@@ -28,7 +28,9 @@ import org.apache.commons.logging.LogFactory;
 import javax.jws.WebService;
 
 import org.openiam.base.request.*;
-import org.openiam.base.response.*;
+import org.openiam.base.response.data.*;
+import org.openiam.base.response.list.PolicyDefParamListResponse;
+import org.openiam.base.response.list.PolicyListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.dto.ITPolicy;

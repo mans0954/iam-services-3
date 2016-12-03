@@ -1,9 +1,9 @@
 package org.openiam.mq;
 
 import org.openiam.base.request.*;
-import org.openiam.base.response.IntResponse;
-import org.openiam.base.response.LanguageListResponse;
-import org.openiam.base.response.StringResponse;
+import org.openiam.base.response.data.IntResponse;
+import org.openiam.base.response.list.LanguageListResponse;
+import org.openiam.base.response.data.StringResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
@@ -11,7 +11,6 @@ import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDataService;
 import org.openiam.mq.constants.api.common.LanguageAPI;
-import org.openiam.mq.constants.api.common.OpenIAMAPICommon;
 import org.openiam.mq.constants.queue.common.LanguageServiceQueue;
 import org.openiam.mq.listener.AbstractListener;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

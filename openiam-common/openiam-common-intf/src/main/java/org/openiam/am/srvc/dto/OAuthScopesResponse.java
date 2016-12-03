@@ -1,14 +1,9 @@
 package org.openiam.am.srvc.dto;
 
-import org.openiam.base.response.BaseListResponse;
-import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.response.list.BaseListResponse;
 import org.openiam.idm.srvc.res.dto.Resource;
 
 import javax.xml.bind.annotation.*;
-import java.io.Serializable;
-import java.util.List;
 
 /**
  * Created by alexander on 02/08/15.

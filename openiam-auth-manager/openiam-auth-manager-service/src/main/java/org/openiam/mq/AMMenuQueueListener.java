@@ -3,7 +3,7 @@ package org.openiam.mq;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.base.request.*;
 import org.openiam.base.response.AuthorizationMenuResponse;
-import org.openiam.base.response.BooleanResponse;
+import org.openiam.base.response.data.BooleanResponse;
 import org.openiam.base.response.MenuSaveResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;

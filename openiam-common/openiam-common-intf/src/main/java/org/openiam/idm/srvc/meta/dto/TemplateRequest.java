@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import org.openiam.base.request.BaseServiceRequest;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -15,7 +17,7 @@ import javax.xml.bind.annotation.XmlType;
 		"requestURI",
 		"requesterId"
 })
-public class TemplateRequest {
+public class TemplateRequest extends BaseServiceRequest {
 
 	private String targetObjectId;
 	private String languageId;
