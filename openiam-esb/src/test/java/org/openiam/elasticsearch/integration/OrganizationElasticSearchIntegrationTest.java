@@ -1,8 +1,10 @@
 package org.openiam.elasticsearch.integration;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -63,6 +65,41 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 		sb.setLanguage(getDefaultLanguage());
 		sb.setUseElasticSearch(true);
 		return sb;
+	}
+	
+	/* there is really no good way to test this, as timing will be differnet (scheduled RabbitMQ messages) per ENV */
+	@Test(enabled=false)
+	public void testWithDelayedStartAndEndDate() {
+		Organization child = null;
+		Organization parent = null;
+		try {
+			final Date now = new Date();
+			child = super.createOrganization();
+			parent = super.createOrganization();
+			
+			final OrganizationSearchBean sb = newSearchBean();
+			sb.addParentId(parent.getId());
+			
+			/* start in 15 s, end in 30 s */
+			assertSuccess(organizationServiceClient.addChildOrganization(parent.getId(), child.getId(), getRequestorId(), null, DateUtils.addSeconds(now, 15), DateUtils.addSeconds(now, 30)));
+			sleep(5000);
+			assertNotFound(sb);
+			
+			/* start date */
+			sleep(10000);
+			assertFindBeans(sb);
+			
+			/* end date */
+			sleep(20000);
+			assertNotFound(sb);
+		} finally {
+			if(child != null) {
+				organizationServiceClient.deleteOrganization(child.getId(), getRequestorId());
+			}
+			if(parent != null) {
+				organizationServiceClient.deleteOrganization(parent.getId(), getRequestorId());
+			}
+		}
 	}
 	
 	@Test
