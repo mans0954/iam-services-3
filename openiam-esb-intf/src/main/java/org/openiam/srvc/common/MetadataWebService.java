@@ -29,19 +29,10 @@ import javax.jws.WebService;
 @WebService
 public interface MetadataWebService {
 
-    @WebMethod
-    MetadataType getByNameGrouping(final @WebParam(name = "name", targetNamespace = "") String name,
-                                   final @WebParam(name = "grouping", targetNamespace = "") MetadataTypeGrouping grouping,
-                                   final @WebParam(name = "lang", targetNamespace = "") Language language);
-
-    @WebMethod
-    String getElementIdByAttrNameAndTypeId(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
-                                           final @WebParam(name = "typeId", targetNamespace = "") String typeId);
-
-    @WebMethod
-    MetadataElement getElementByAttrNameAndTypeId(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
-                                                  final @WebParam(name = "typeId", targetNamespace = "") String typeId,
-                                                  final @WebParam(name = "lang", targetNamespace = "") Language language);
+//    @WebMethod
+//    MetadataType getByNameGrouping(final @WebParam(name = "name", targetNamespace = "") String name,
+//                                   final @WebParam(name = "grouping", targetNamespace = "") MetadataTypeGrouping grouping,
+//                                   final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     List<MetadataElement> findElementBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataElementSearchBean searchBean,
@@ -49,11 +40,11 @@ public interface MetadataWebService {
                                            final @WebParam(name = "size", targetNamespace = "") int size,
                                            final @WebParam(name = "lang", targetNamespace = "") Language language);
     @WebMethod
-    MetadataElement getMetadataElementById(final @WebParam(name = "id", targetNamespace = "") String id,
+    MetadataElement getMetadataElement(final @WebParam(name = "id", targetNamespace = "") String id,
                                            final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
-    MetadataType getMetadataTypeById(final @WebParam(name = "id", targetNamespace = "") String id);
+    MetadataType getMetadataType(final @WebParam(name = "id", targetNamespace = "") String id);
 
     @WebMethod
     List<MetadataType> findTypeBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTypeSearchBean searchBean,
@@ -71,7 +62,7 @@ public interface MetadataWebService {
     Response saveMetadataType(final @WebParam(name = "dto", targetNamespace = "") MetadataType dto);
     
     @WebMethod
-    Response saveMetadataEntity(final @WebParam(name = "dto", targetNamespace = "") MetadataElement dto);
+    Response saveMetadataElement(final @WebParam(name = "dto", targetNamespace = "") MetadataElement dto);
     
     @WebMethod
     Response deleteMetadataType(final @WebParam(name = "id", targetNamespace = "") String id);
