@@ -241,7 +241,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             }
 
             // CHECK MetadataTypes PRIMARY_LOCATION
-            MetadataType metadataType = metadataWebService.getMetadataTypeById("PRIMARY_LOCATION");
+            MetadataType metadataType = metadataWebService.getMetadataType("PRIMARY_LOCATION");
             Assert.assertNotNull(metadataType);
 
         } catch (Throwable t) {

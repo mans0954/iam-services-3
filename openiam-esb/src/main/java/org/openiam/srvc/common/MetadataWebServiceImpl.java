@@ -20,29 +20,29 @@
  */
 package org.openiam.srvc.common;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.jws.WebService;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.request.BaseSearchServiceRequest;
+import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.response.data.MetadataElementResponse;
+import org.openiam.base.response.data.MetadataTypeResponse;
+import org.openiam.base.response.list.MetadataElementListResponse;
+import org.openiam.base.response.list.MetadataTypeListResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
+import org.openiam.mq.constants.api.common.MetadataAPI;
+import org.openiam.mq.constants.queue.common.MetadataQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +54,7 @@ import org.springframework.stereotype.Service;
  */
 @WebService(endpointInterface = "org.openiam.srvc.common.MetadataWebService", targetNamespace = "urn:idm.openiam.org/srvc/meta/service", portName = "MetadataWebServicePort", serviceName = "MetadataWebService")
 @Service("metadataWS")
-public class MetadataWebServiceImpl implements MetadataWebService {
+public class MetadataWebServiceImpl extends AbstractApiService implements MetadataWebService {
     @Autowired
     private MetadataService metadataService;
 
@@ -63,154 +63,62 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 
     private static final Log LOG = LogFactory.getLog(MetadataWebServiceImpl.class);
 
-    @Override
-    public MetadataElement getElementByAttrNameAndTypeId(String attrName, String typeId, final Language language) {
-        return metadataService.findElementByAttrNameAndTypeId(attrName, typeId, language);
-    }
-
-    @Override
-    public String getElementIdByAttrNameAndTypeId(String attrName, String typeId) {
-        MetadataElement element = metadataService.findElementByAttrNameAndTypeId(attrName, typeId, null);
-        return (element!=null)?element.getId():null;
-    }
-
-    @Override
-    public MetadataType getByNameGrouping(String name, MetadataTypeGrouping grouping, final Language language) {
-        return metadataService.findMetadataTypeByNameAndGrouping(name, grouping, language);
+    @Autowired
+    public MetadataWebServiceImpl(MetadataQueue queue) {
+        super(queue);
     }
 
     @Override
     public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
-        return metadataService.findBeans(searchBean, from, size, language);
+        return this.getValueList(MetadataAPI.FindElementBeans, new BaseSearchServiceRequest<>(searchBean, from, size, language),MetadataElementListResponse.class);
     }
 
     @Override
-    public MetadataElement getMetadataElementById(String id, Language language) {
-        return metadataService.findElementById(id, language);
+    public MetadataElement getMetadataElement(String id, Language language) {
+        IdServiceRequest request = new IdServiceRequest(id);
+        request.setLanguage(language);
+        return this.getValue(MetadataAPI.GetMetadataElement, request, MetadataElementResponse.class);
+    }
+    @Override
+    public int countElementBeans(final MetadataElementSearchBean searchBean) {
+        return this.getIntValue(MetadataAPI.CountElementBeans, new BaseSearchServiceRequest<>(searchBean));
     }
 
     @Override
-    public MetadataType getMetadataTypeById(String id) {
-        return metadataService.findById(id);
+    public MetadataType getMetadataType(String id) {
+        IdServiceRequest request = new IdServiceRequest(id);
+        return this.getValue(MetadataAPI.GetMetadataType, request, MetadataTypeResponse.class);
     }
-
     @Override
     public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
-        return metadataService.findBeans(searchBean, from, size, language);
+        return this.getValueList(MetadataAPI.FindTypeBeans, new BaseSearchServiceRequest<>(searchBean, from, size, language),MetadataTypeListResponse.class);
+    }
+    @Override
+    public int countTypeBeans(final MetadataTypeSearchBean searchBean) {
+        return this.getIntValue(MetadataAPI.CountTypeBeans, new BaseSearchServiceRequest<>(searchBean));
     }
 
     @Override
     public Response saveMetadataType(final MetadataType dto) {
-        final Response response = new Response();
-        try {
-            if (dto == null) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-            if (StringUtils.isBlank(dto.getName())) {
-                throw new BasicDataServiceException(ResponseCode.NO_NAME);
-            }
-            
-            if(MapUtils.isEmpty(dto.getDisplayNameMap())) {
-            	throw new BasicDataServiceException(ResponseCode.DISPLAY_NAME_REQUIRED);
-            }
-            
-            metadataService.save(dto);
-            response.setResponseValue(dto.getId());
-            response.succeed();
-        } catch (BasicDataServiceException e) {
-        	response.setResponseValue(e.getResponseValue());
-        	response.setErrorTokenList(e.getErrorTokenList());
-            response.setErrorCode(e.getCode());
-            response.fail();
-        } catch (Throwable e) {
-            LOG.error("Unknown Error", e);
-            response.fail();
-        }
-        return response;
+        return this.manageCrudApiRequest(MetadataAPI.SaveMetadataType, dto);
     }
 
     @Override
-    public Response saveMetadataEntity(final MetadataElement dto) {
-        final Response response = new Response();
-        try {
-            if (dto == null) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-
-            if (StringUtils.isBlank(dto.getAttributeName())) {
-                throw new BasicDataServiceException(ResponseCode.ATTRIBUTE_NAME_MISSING);
-            }
-
-            if (dto.getMetadataTypeId() == null) {
-                throw new BasicDataServiceException(ResponseCode.METADATA_TYPE_MISSING);
-            }
-
-            metadataService.save(dto);
-            response.setResponseValue(dto.getId());
-            response.setStatus(ResponseStatus.SUCCESS);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setResponseValue(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            LOG.error("Unknown Error", e);
-            response.setResponseValue(ResponseStatus.FAILURE);
-        }
-        return response;
+    public Response saveMetadataElement(final MetadataElement dto) {
+        return this.manageCrudApiRequest(MetadataAPI.SaveMetadataElement, dto);
     }
 
     @Override
     public Response deleteMetadataType(final String id) {
-        final Response response = new Response();
-        try {
-            if (StringUtils.isBlank(id)) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-            MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
-            Set<String> ids = new HashSet<String>();
-            ids.add(id);
-            searchBean.setTypeIdSet(ids);
-            List<MetadataElement> list = metadataService.findBeans(searchBean, -1, -1, null);
-            if (!CollectionUtils.isEmpty(list))
-                throw new BasicDataServiceException(ResponseCode.METATYPE_LINKED_WITH_METAELEMENT);
-            metadataService.deleteMetdataType(id);
-            response.setStatus(ResponseStatus.SUCCESS);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setResponseValue(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            LOG.error("Unknown Error", e);
-            response.setResponseValue(ResponseStatus.FAILURE);
-        }
-        return response;
+        MetadataType dto = new MetadataType();
+        dto.setId(id);
+        return this.manageCrudApiRequest(MetadataAPI.DeleteMetadataType, dto);
     }
 
     @Override
     public Response deleteMetadataElement(final String id) {
-        final Response response = new Response();
-        try {
-            if (StringUtils.isBlank(id)) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-
-            metadataService.deleteMetdataElement(id);
-            response.setStatus(ResponseStatus.SUCCESS);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setResponseValue(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            LOG.error("Unknown Error", e);
-            response.setResponseValue(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
-    @Override
-    public int countElementBeans(final MetadataElementSearchBean searchBean) {
-        return metadataService.count(searchBean);
-    }
-
-    @Override
-    public int countTypeBeans(final MetadataTypeSearchBean searchBean) {
-        return metadataService.count(searchBean);
+        MetadataElement dto = new MetadataElement();
+        dto.setId(id);
+        return this.manageCrudApiRequest(MetadataAPI.DeleteMetadataElement, dto);
     }
 }

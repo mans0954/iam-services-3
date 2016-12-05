@@ -11,9 +11,9 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
  */
 public interface MetadataElementDAO extends BaseDao<MetadataElementEntity, String> {
 
-    MetadataElementEntity findByAttrNameTypeId(String attrName, String typeId);
+//    MetadataElementEntity findByAttrNameTypeId(String attrName, String typeId);
 
-    String findIdByAttrNameTypeId(String attrName, String typeId);
+//    String findIdByAttrNameTypeId(String attrName, String typeId);
 
     List<MetadataElementEntity> getByResourceId(final String resourceId);
 }

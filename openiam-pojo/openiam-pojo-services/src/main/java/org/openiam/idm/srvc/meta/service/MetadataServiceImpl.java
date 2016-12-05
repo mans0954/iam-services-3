@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -89,9 +90,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Value("${org.openiam.resource.type.ui.widget}")
     private String uiWidgetResourceType;
 
-//    @Autowired
-//    private RedisTemplate<String, Object> redisTemplate;
-
 	@Autowired
 	private RabbitMQSender rabbitMQSender;
 
@@ -117,12 +115,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     @Override
     @Transactional(readOnly = true)
-    public String findElementIdByAttrNameAndTypeId(String attrName, String typeId) {
-        return metadataElementDao.findIdByAttrNameTypeId(attrName, typeId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     @LocalizedServiceGet
     public MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping, final Language language) {
         MetadataTypeEntity metadataTypeEntity = metadataTypeDao.findByNameGrouping(name, grouping);
@@ -138,14 +130,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     }
 
     @Override
-    @Transactional(readOnly=true)
-    @LocalizedServiceGet
-    public MetadataElement findElementByAttrNameAndTypeId(String attrName, String typeId, final Language language) {
-        MetadataElementEntity metadataElementEntity = metadataElementDao.findByAttrNameTypeId(attrName, typeId);
-        return metadataElementEntity != null ? metaDataElementDozerConverter.convertToDTO(metadataElementEntity, true) : null;
-    }
-
-    @Override
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
     @Cacheable(value="metadataElements",  key="{ #searchBean, #from, #size, #language}", condition="{#searchBean != null and #searchBean.findInCache}")
@@ -154,16 +138,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
         return (retVal != null) ? metaDataElementDozerConverter.convertToDTOList(retVal,true) : null;
 	}
 
-    @Override
-    @Transactional(readOnly=true)
-    /**
-     * Without localization loop
-     */
-    @Cacheable(value="metadataElements",  key="{ #searchBean, #from, #size }", condition="{#searchBean != null and #searchBean.findInCache}")
-    public List<MetadataElement> findBeans(MetadataElementSearchBean searchBean, int from, int size) {
-       return this.findBeans(searchBean, from, size, null);
-    }
-    
     @Override
     @Transactional(readOnly=true)
     @LocalizedServiceGet
@@ -245,57 +219,69 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
             @CacheKeyEvict("metadataElementEntities")
         }
     )
-	public void save(final MetadataElement element) {
-		if(element != null) {
-            MetadataElementEntity entity = metaDataElementDozerConverter.convertToEntity(element,true);
-			if(StringUtils.isBlank(entity.getId())) {
-				final ResourceEntity resource = new ResourceEntity();
-				resource.setName(String.format("%s_%s", entity.getAttributeName(), "" + System.currentTimeMillis()));
-	            resource.setResourceType(resourceTypeDAO.findById(uiWidgetResourceType));
-	            resource.setIsPublic(true); /* make public by default */
-	            resource.setCoorelatedName(entity.getAttributeName());
-	            resourceDAO.save(resource);
-	            entity.setResource(resource);
-				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getId()));
-				
-				entity.setTemplateSet(null);
-				if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
-					for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
-						validValue.setEntity(entity);
-					}
-				}
-				metadataElementDao.save(entity);
-			} else {
-				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
-				//entity.setValidValues(dbEntity.getValidValues());
-//				entity.setUserAttributes(dbEntity.getUserAttributes());
-				
-				mergeValidValues(entity, dbEntity);
+	public String save(final MetadataElement element) throws BasicDataServiceException {
+		if (element == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
 
-				/* don't let the caller update these */
-				entity.setMetadataType(dbEntity.getMetadataType());
-				entity.setTemplateSet(dbEntity.getTemplateSet());
-				entity.setResource(dbEntity.getResource());
-				if(entity.getResource() != null) {
-					entity.getResource().setCoorelatedName(entity.getAttributeName());
+		if (StringUtils.isBlank(element.getAttributeName())) {
+			throw new BasicDataServiceException(ResponseCode.ATTRIBUTE_NAME_MISSING);
+		}
+
+		if (element.getMetadataTypeId() == null) {
+			throw new BasicDataServiceException(ResponseCode.METADATA_TYPE_MISSING);
+		}
+
+		MetadataElementEntity entity = metaDataElementDozerConverter.convertToEntity(element,true);
+		if(StringUtils.isBlank(entity.getId())) {
+			final ResourceEntity resource = new ResourceEntity();
+			resource.setName(String.format("%s_%s", entity.getAttributeName(), "" + System.currentTimeMillis()));
+			resource.setResourceType(resourceTypeDAO.findById(uiWidgetResourceType));
+			resource.setIsPublic(true); /* make public by default */
+			resource.setCoorelatedName(entity.getAttributeName());
+			resourceDAO.save(resource);
+			entity.setResource(resource);
+			entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getId()));
+
+			entity.setTemplateSet(null);
+			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
+				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
+					validValue.setEntity(entity);
 				}
+			}
+			metadataElementDao.save(entity);
+		} else {
+			final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
+			//entity.setValidValues(dbEntity.getValidValues());
+//				entity.setUserAttributes(dbEntity.getUserAttributes());
+
+			mergeValidValues(entity, dbEntity);
+
+			/* don't let the caller update these */
+			entity.setMetadataType(dbEntity.getMetadataType());
+			entity.setTemplateSet(dbEntity.getTemplateSet());
+			entity.setResource(dbEntity.getResource());
+			if(entity.getResource() != null) {
+				entity.getResource().setCoorelatedName(entity.getAttributeName());
+			}
 //				  entity.setOrganizationAttributes(dbEntity.getOrganizationAttributes());
 //                entity.setGroupAttributes(dbEntity.getGroupAttributes());
 //                entity.setUserAttributes(dbEntity.getUserAttributes());
 //                entity.setResourceAttributes(dbEntity.getResourceAttributes());
-    			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
-    				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
-    					validValue.setEntity(entity);
-    					if(StringUtils.isEmpty(validValue.getId())) {
-    						validValueDAO.save(validValue);
-    					}
-    				}
-    			}
+			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
+				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
+					validValue.setEntity(entity);
+					if(StringUtils.isEmpty(validValue.getId())) {
+						validValueDAO.save(validValue);
+					}
+				}
 			}
-			metadataElementDao.merge(entity);
-            this.send(entity);
-			element.setId(entity.getId());
 		}
+		metadataElementDao.merge(entity);
+		this.send(entity);
+		element.setId(entity.getId());
+
+		return entity.getId();
 	}
 
     private void send(final MetadataElementEntity entity) {
@@ -397,35 +383,44 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
             @CacheKeyEvict("metadataTypeEntities")
         }
     )
-	public void save(final MetadataType dto) throws BasicDataServiceException {
-		if(dto!=null) {
-			final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
+	public String save(final MetadataType dto) throws BasicDataServiceException {
+		if (dto == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
+		if (StringUtils.isBlank(dto.getName())) {
+			throw new BasicDataServiceException(ResponseCode.NO_NAME);
+		}
+		if(MapUtils.isEmpty(dto.getDisplayNameMap())) {
+			throw new BasicDataServiceException(ResponseCode.DISPLAY_NAME_REQUIRED);
+		}
 
-			if (StringUtils.isNotBlank(entity.getId())) {
-				final MetadataTypeEntity dbEntity = metadataTypeDao.findById(entity.getId());
-				if (dbEntity != null) {
-					entity.setCategories(dbEntity.getCategories());
-					entity.setElementAttributes(dbEntity.getElementAttributes());
-				}
+		final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
+
+		if (StringUtils.isNotBlank(entity.getId())) {
+			final MetadataTypeEntity dbEntity = metadataTypeDao.findById(entity.getId());
+			if (dbEntity != null) {
+				entity.setCategories(dbEntity.getCategories());
+				entity.setElementAttributes(dbEntity.getElementAttributes());
 			}
-			if (StringUtils.isBlank(entity.getId())) {
-				metadataTypeDao.save(entity);
-			} else {
-				if (entity.isUsedForSMSOTP()) {
-					final List<MetadataType> phoneTypesWithOTP = getPhonesWithSMSOTPEnabled();
-					if (CollectionUtils.isNotEmpty(phoneTypesWithOTP)) {
-						for (final MetadataType phoneTypeWithOTP : phoneTypesWithOTP) {
-							if (!StringUtils.equals(phoneTypeWithOTP.getId(), entity.getId())) {
-								throw new BasicDataServiceException(ResponseCode.PHONE_MARKED_FOR_SMS_OTP, phoneTypeWithOTP.getName());
-							}
+		}
+		if (StringUtils.isBlank(entity.getId())) {
+			metadataTypeDao.save(entity);
+		} else {
+			if (entity.isUsedForSMSOTP()) {
+				final List<MetadataType> phoneTypesWithOTP = getPhonesWithSMSOTPEnabled();
+				if (CollectionUtils.isNotEmpty(phoneTypesWithOTP)) {
+					for (final MetadataType phoneTypeWithOTP : phoneTypesWithOTP) {
+						if (!StringUtils.equals(phoneTypeWithOTP.getId(), entity.getId())) {
+							throw new BasicDataServiceException(ResponseCode.PHONE_MARKED_FOR_SMS_OTP, phoneTypeWithOTP.getName());
 						}
 					}
 				}
-
-				metadataTypeDao.merge(entity);
 			}
-			dto.setId(entity.getId());
+
+			metadataTypeDao.merge(entity);
 		}
+		dto.setId(entity.getId());
+		return entity.getId();
 	}
 	
 	@Override
@@ -436,7 +431,11 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
             @CacheKeyEvict("metadataElementEntities")
         }
     )
-	public void deleteMetdataElement(final String id) {
+	public void deleteMetdataElement(final String id) throws BasicDataServiceException {
+		if (StringUtils.isBlank(id)) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
+
 		final MetadataElementEntity entity = metadataElementDao.findById(id);
 		if(entity != null) {
 			/*
@@ -465,7 +464,18 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
             @CacheKeyEvict("metadataTypeEntities")
         }
     )
-	public void deleteMetdataType(final String id) {
+	public void deleteMetdataType(final String id) throws BasicDataServiceException {
+		if (StringUtils.isBlank(id)) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
+		MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
+		Set<String> ids = new HashSet<String>();
+		ids.add(id);
+		searchBean.setTypeIdSet(ids);
+		List<MetadataElement> list = this.findBeans(searchBean, -1, -1, null);
+		if (!CollectionUtils.isEmpty(list))
+			throw new BasicDataServiceException(ResponseCode.METATYPE_LINKED_WITH_METAELEMENT);
+
 		final MetadataTypeEntity entity = metadataTypeDao.findById(id);
 		if(entity != null) {
 			metadataTypeDao.delete(entity);

@@ -32,15 +32,16 @@ public class MetadataElementDAOImpl extends OrderDaoImpl<MetadataElementEntity, 
         return true;
     }
 
-    @Override
-    public MetadataElementEntity findByAttrNameTypeId(String attrName, String typeId) {
-        return (MetadataElementEntity) getCriteria().setCacheable(cachable()).add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).uniqueResult();
-    }
+//    @Override
+//    public MetadataElementEntity findByAttrNameTypeId(String attrName, String typeId) {
+//        return (MetadataElementEntity) getCriteria().setCacheable(cachable())
+//                .add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).uniqueResult();
+//    }
 
-    @Override
-    public String findIdByAttrNameTypeId(String attrName, String typeId) {
-        return (String) getCriteria().setCacheable(cachable()).add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).setProjection(Projections.id()).uniqueResult();
-    }
+//    @Override
+//    public String findIdByAttrNameTypeId(String attrName, String typeId) {
+//        return (String) getCriteria().setCacheable(cachable()).add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).setProjection(Projections.id()).uniqueResult();
+//    }
 
     @Override
 	protected Criteria getExampleCriteria(final SearchBean searchBean) {
@@ -50,7 +51,9 @@ public class MetadataElementDAOImpl extends OrderDaoImpl<MetadataElementEntity, 
 			if(CollectionUtils.isNotEmpty(metaSearchBean.getKeySet())) {
 	            criteria.add(Restrictions.in(getPKfieldName(), metaSearchBean.getKeySet()));
 	        } else {
-				setAttributeNameCriteria(criteria, metaSearchBean.getAttributeName());	
+			    // set attribute name criteria
+				setAttributeNameCriteria(criteria, metaSearchBean.getAttributeName());
+
 				if(StringUtils.isNotBlank(metaSearchBean.getDataType())) {
 					criteria.add(Restrictions.eq("dataType", metaSearchBean.getDataType()));
 				}
