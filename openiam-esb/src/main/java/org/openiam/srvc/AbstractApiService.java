@@ -84,19 +84,22 @@ public abstract class AbstractApiService {
         return response.getList();
     }
 
-    protected <V extends KeyDTO, API extends OpenIAMAPI, ApiRequest extends BaseCrudServiceRequest<V>, ApiResponse extends BaseDataResponse> Response manageCrudApiRequest(API apiName, ApiRequest request, Class<ApiResponse> clazz){
-        ApiResponse response = getResponse(apiName, request, clazz);
-        return response.convertToBase();
+
+    protected <V extends KeyDTO, API extends OpenIAMAPI> Response manageCrudApiRequest(API apiName, V data){
+        return manageCrudApiRequest(apiName, new BaseCrudServiceRequest<V>(data));
     }
     protected <V extends KeyDTO, API extends OpenIAMAPI, ApiResponse extends BaseDataResponse> Response manageCrudApiRequest(API apiName, V data, Class<ApiResponse> clazz){
         return manageCrudApiRequest(apiName, new BaseCrudServiceRequest<V>(data), clazz);
     }
+
+
     protected <V extends KeyDTO, API extends OpenIAMAPI, ApiRequest extends BaseCrudServiceRequest<V>> Response manageCrudApiRequest(API apiName, ApiRequest request){
         Response response = getResponse(apiName, request, Response.class);
         return response.convertToBase();
     }
-    protected <V extends KeyDTO, API extends OpenIAMAPI> Response manageCrudApiRequest(API apiName, V data){
-        return manageCrudApiRequest(apiName, new BaseCrudServiceRequest<V>(data));
+    protected <V extends KeyDTO, API extends OpenIAMAPI, ApiRequest extends BaseCrudServiceRequest<V>, ApiResponse extends BaseDataResponse> Response manageCrudApiRequest(API apiName, ApiRequest request, Class<ApiResponse> clazz){
+        ApiResponse response = getResponse(apiName, request, clazz);
+        return response.convertToBase();
     }
 
     protected MqQueue getRabbitMqQueue() {

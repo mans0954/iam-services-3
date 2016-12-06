@@ -4,28 +4,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dozer.DozerBeanMapper;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
-import org.openiam.idm.srvc.property.converter.PropertyValueConverter;
-import org.openiam.property.domain.PropertyValueEntity;
 import org.openiam.property.dto.PropertyValue;
 import org.openiam.thread.Sweepable;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -41,9 +33,6 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
     @Autowired
 	private PropertyValueService propertyValueService;
     
-    @Autowired
-	private PropertyValueConverter converter;
-
     private Map<String, PropertyValue> valueCache = new HashMap<String, PropertyValue>();
 	
 	@Override
@@ -56,8 +45,8 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
 			@Override
 			public Void doInTransaction(TransactionStatus status) {
 				final Map<String, PropertyValue> tempValueCache = new HashMap<String, PropertyValue>();
-				final List<PropertyValueEntity> valueList = propertyValueService.getAll();
-				converter.convertToDTOList(valueList, true).forEach(dto -> {
+				final List<PropertyValue> valueList = propertyValueService.getAll();
+				valueList.forEach(dto -> {
 					tempValueCache.put(dto.getId(), dto);
 				});
 				valueCache = tempValueCache;
