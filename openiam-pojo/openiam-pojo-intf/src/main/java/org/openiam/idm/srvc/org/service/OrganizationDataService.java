@@ -3,7 +3,6 @@ package org.openiam.idm.srvc.org.service;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
-import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -13,6 +12,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
+import java.util.Set;
 
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationDataService")
@@ -235,7 +235,12 @@ public interface OrganizationDataService {
                                                         @WebParam(name = "size", targetNamespace = "") int size,
                                                         @WebParam(name = "requesterId", targetNamespace = "") final String requesterId,
                                                         @WebParam(name = "language", targetNamespace = "") final Language language);
+
     @WebMethod
     public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId);
 
+    @WebMethod
+    public List<Location> getLocationListByOrganizationId(@WebParam(name = "orgsId", targetNamespace = "") Set<String> orgsId,
+                                                          @WebParam(name = "from", targetNamespace = "") Integer from,
+                                                          @WebParam(name = "size", targetNamespace = "") Integer size);
 }

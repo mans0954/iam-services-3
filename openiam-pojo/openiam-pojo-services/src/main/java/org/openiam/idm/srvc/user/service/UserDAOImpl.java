@@ -8,18 +8,19 @@ import org.hibernate.criterion.*;
 import org.hibernate.type.IntegerType;
 import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.*;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
+import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.sysprop.dto.SystemPropertyDto;
 import org.openiam.idm.srvc.sysprop.service.SystemPropertyService;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
-import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
-import org.openiam.util.StringUtil;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,24 +70,56 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         Criteria criteria = getCriteria();
 
         if (delegationFilter != null) {
+            Criterion orgCriterion = null;
             if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
-                criteria.createAlias("organizationUser", "aff").add(Restrictions.in("aff.primaryKey.organization.id", delegationFilter.getOrganizationIdSet()));
+                criteria.createAlias("organizationUser", "aff", Criteria.LEFT_JOIN);
+                orgCriterion = Restrictions.in("aff.primaryKey.organization.id", delegationFilter.getOrganizationIdSet());
             }
 
+
+            Criterion groupsCriterion = null;
             if (CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
-                criteria.createAlias("groups", "g");
-                criteria.add(createInClauseForIds("g", "id", "GRP_ID", new ArrayList<>(delegationFilter.getGroupIdSet())));
+                criteria.createAlias("groups", "g", Criteria.LEFT_JOIN);
+                groupsCriterion = createInClauseForIds("g", "id", "GRP_ID", new ArrayList<>(delegationFilter.getGroupIdSet()));
             }
 
+            Criterion roleCriterion = null;
             if (CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
-                criteria.createAlias("roles", "r");
-                criteria.add(createInClauseForIds("r", "id", "ROLE_ID", new ArrayList<>(delegationFilter.getRoleIdSet())));
+                criteria.createAlias("roles", "r", Criteria.LEFT_JOIN);
+                roleCriterion = createInClauseForIds("r", "id", "ROLE_ID", new ArrayList<>(delegationFilter.getRoleIdSet()));
+            }
+            Criterion orCriterion = this.or(orgCriterion, groupsCriterion, roleCriterion);
+            if (orCriterion != null) {
+                criteria.add(orCriterion);
             }
         }
 
         criteria.add(Restrictions.eq(getPKfieldName(), userId));
 
         return (UserEntity) criteria.uniqueResult();
+    }
+
+    /**
+     * could return null
+     *
+     * @param criterions
+     * @return
+     */
+    private Criterion or(Criterion... criterions) {
+        if (criterions == null || criterions.length == 0) {
+            return null;
+        }
+        Criterion temp = null;
+        for (int i = 0; i < criterions.length; i++) {
+            if (criterions[i] != null) {
+                if (temp == null) {
+                    temp = criterions[i];
+                } else {
+                    temp = Restrictions.or(temp, criterions[i]);
+                }
+            }
+        }
+        return temp;
     }
 
     public List<UserEntity> findByDelegationProperties(DelegationFilterSearch search) {

@@ -1,7 +1,5 @@
 package org.openiam.idm.srvc.org.service;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
@@ -12,32 +10,22 @@ import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.dozer.converter.OrganizationUserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
-import org.openiam.idm.srvc.base.AbstractBaseService;
-import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 //import diamelle.common.continfo.*;
 //import diamelle.base.prop.*;
@@ -117,7 +105,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
     @Deprecated
     public List<Organization> findBeans(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size) {
-    	/* 
+        /*
     	 * Although we are backwards compatible, we pass in a null Language, in order to
     	 * maintain performance when calling this WS from groovy 
     	 */
@@ -520,6 +508,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         return organizationService.getLocationDtoList(organizationId, from, size);
     }
 
+
     @Override
     //@Transactional(readOnly = true)
     public List<Location> findLocationBeans(final LocationSearchBean searchBean, final int from, final int size) {
@@ -554,8 +543,18 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         return organizationService.getUserAffiliationsByType(userId, typeId, requesterId, from, size, languageConverter.convertToEntity(language, false));
     }
 
-    public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId){
+    public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId) {
         return organizationService.getOrgAttributesDtoList(orgId);
+    }
+
+    @Override
+    public List<Location> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size) {
+        List<LocationEntity> entities = organizationService.getLocationListByOrganizationId(orgsId, from, size);
+        if (entities != null) {
+            return locationDozerConverter.convertToDTOList(entities, false);
+        } else {
+            return null;
+        }
     }
 
 }
