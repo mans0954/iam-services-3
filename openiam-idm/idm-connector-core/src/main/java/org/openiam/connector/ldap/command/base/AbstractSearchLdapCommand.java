@@ -42,10 +42,10 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
 
         ManagedSystemObjectMatch matchObj = getMatchObject(searchRequest.getTargetID(), getObjectType());
         try {
-        	if(log.isDebugEnabled()) {
-        		log.debug("Search Filter=" + searchRequest.getSearchQuery());
-        		log.debug("Searching BaseDN=" + searchRequest.getBaseDN());
-        	}
+            if (log.isDebugEnabled()) {
+                log.debug("Search Filter=" + searchRequest.getSearchQuery());
+                log.debug("Searching BaseDN=" + searchRequest.getBaseDN());
+            }
 
             SearchControls searchControls = new SearchControls();
             ldapContext.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL)});
@@ -60,9 +60,9 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
             boolean found = false;
             do {
                 NamingEnumeration results = ldapContext.search(searchRequest.getBaseDN(), searchRequest.getSearchQuery(), searchControls);
-                if(log.isDebugEnabled()) {
-                	log.debug("Succesfully get from AD!");
-                	log.debug("mapping data");
+                if (log.isDebugEnabled()) {
+                    log.debug("Succesfully get from AD!");
+                    log.debug("mapping data");
                 }
                 while (results != null && results.hasMoreElements()) {
                     SearchResult sr = (SearchResult) results.next();
@@ -110,14 +110,14 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                                     addToList = true;
                                 }
                             }
-                            if (identityAttrName.equalsIgnoreCase(extAttr.getName().replaceAll(patternForCTRLCHAR, ""))) {
+                            if (!isMultivalued && identityAttrName.equalsIgnoreCase(extAttr.getName().replaceAll(patternForCTRLCHAR, ""))) {
                                 objectValue.setObjectIdentity(extAttr.getValue().replaceAll(patternForCTRLCHAR, ""));
                             }
                             if (addToList) {
-                            	if(log.isDebugEnabled()) {
-                            		log.debug("Add attribute to object value!!");
-                            		log.debug("Attribute=" + extAttr.getName() + " Value=" + extAttr.getValue());
-                            	}
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Add attribute to object value!!");
+                                    log.debug("Attribute=" + extAttr.getName() + " Value=" + extAttr.getValue());
+                                }
                                 objectValue.getAttributeList().add(extAttr);
                             }
                         }
@@ -139,16 +139,16 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                 }
                 ldapContext.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
             } while (cookie != null);
-            if(log.isDebugEnabled()) {
-            	log.debug("put object list to response");
+            if (log.isDebugEnabled()) {
+                log.debug("put object list to response");
             }
             searchResponse.setObjectList(objectValueList);
 
             if (!found) {
                 throw new ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
             }
-            if(log.isDebugEnabled()) {
-            	log.debug("Send with Mule!");
+            if (log.isDebugEnabled()) {
+                log.debug("Send with Mule!");
             }
             return searchResponse;
 
