@@ -106,7 +106,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Deprecated
     public List<Organization> findBeans(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size) {
         /*
-    	 * Although we are backwards compatible, we pass in a null Language, in order to
+         * Although we are backwards compatible, we pass in a null Language, in order to
     	 * maintain performance when calling this WS from groovy 
     	 */
         return this.findBeansLocalized(searchBean, requesterId, from, size, null);
@@ -555,6 +555,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public List<OrganizationAttribute> findAttributesDtoByOrgIdsAndAttributeName(final Set<String> ids, final String attrName) {
+        return organizationService.findAttributesDtoByOrgIdsAndAttributeName(ids, attrName);
     }
 
 }

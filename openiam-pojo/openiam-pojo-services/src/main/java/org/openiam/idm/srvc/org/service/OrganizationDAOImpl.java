@@ -3,7 +3,6 @@ package org.openiam.idm.srvc.org.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.criterion.*;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
@@ -14,13 +13,11 @@ import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
 import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.criteria.JoinType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -381,4 +378,16 @@ public class OrganizationDAOImpl extends
         }
         return ret;
     }
+
+    @Override
+    public List<OrganizationAttributeEntity> findAttributesByOrgIdsAndAttributeName(final Set<String> ids, final String attrName) {
+        List ret = new ArrayList<OrganizationAttributeEntity>();
+        if (StringUtils.isNotBlank(attrName) && CollectionUtils.isNotEmpty(ids)) {
+            // Can't use Criteria for @ElementCollection due to Hibernate bug
+            // (org.hibernate.MappingException: collection was not an association)
+            ret = getHibernateTemplate().find("from OrganizationAttributeEntity oae where oae.name = \'" + attrName + "\' and oae.organization.id in (\'" + StringUtils.join(ids, "\',\'") + "\')");
+        }
+        return ret;
+    }
+
 }

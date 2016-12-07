@@ -1554,9 +1554,26 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         return null;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrganizationAttribute> findAttributesDtoByOrgIdsAndAttributeName(final Set<String> ids, final String attrName) {
+        if (CollectionUtils.isNotEmpty(ids) && StringUtils.isNotBlank(attrName)) {
+            List<OrganizationAttribute> retVal = null;
+            List<OrganizationAttributeEntity> entities = orgDao.findAttributesByOrgIdsAndAttributeName(ids, attrName);
+            if (CollectionUtils.isNotEmpty(entities)) {
+                retVal = organizationAttributeDozerConverter.convertToDTOList(entities, false);
+            }
+            return retVal;
+        } else {
+            log.warn("Ids and AttrName must be specified");
+            return null;
+        }
+    }
+
     private OrganizationService getProxyService() {
         OrganizationService service = (OrganizationService) ac.getBean("organizationService");
         return service;
     }
+
 
 }
