@@ -50,8 +50,10 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -124,6 +126,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Autowired
     private KeyManagementService keyManagementService;
+
+    @Autowired
+    private MetadataService metadataService;
 
 
     @Override
@@ -1077,8 +1082,20 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
     //@Transactional(readOnly = true)
     public List<UserAttribute> getUserAttributesInternationalized(final String userId, final Language language) {
+        final List<UserAttribute> attributesValidated = new LinkedList<UserAttribute>();
         final List<UserAttribute> retval = userManager.getUserAttributeDtoList(userId, languageConverter.convertToEntity(language, false));
-        return retval;
+        for (final UserAttribute attribute : retval) {
+            String metadataId = attribute.getMetadataId();
+            MetadataElement me = metadataService.findElementById(metadataId, language);
+            if (me!=null) {
+                String description =  me.getLanguageMap().get(language.getId()).getValue();
+
+                attribute.setMetadataName(description);
+                attribute.setMetadataDescription(description);
+            }
+            attributesValidated.add(attribute);
+        }
+        return attributesValidated;
     }
 
     @Override
