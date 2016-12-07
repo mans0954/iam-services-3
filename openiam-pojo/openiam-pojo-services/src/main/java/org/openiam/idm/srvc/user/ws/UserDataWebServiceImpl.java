@@ -50,6 +50,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.service.LanguageDataService;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
@@ -129,6 +130,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Autowired
     private MetadataService metadataService;
+
+    @Autowired
+    protected LanguageDataService languageDataService;
 
 
     @Override
@@ -1086,9 +1090,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         final List<UserAttribute> retval = userManager.getUserAttributeDtoList(userId, languageConverter.convertToEntity(language, false));
         for (final UserAttribute attribute : retval) {
             String metadataId = attribute.getMetadataId();
-            MetadataElement me = metadataService.findElementById(metadataId, language);
+            MetadataElement me = metadataService.findElementById(metadataId, language != null ? language: languageDataService.getDefaultLanguage());
             if (me!=null) {
-                String description =  me.getLanguageMap().get(language.getId()).getValue();
+                String description =  me.getLanguageMap().get((language != null ? language: languageDataService.getDefaultLanguage()).getId()).getValue();
 
                 attribute.setMetadataName(description);
                 attribute.setMetadataDescription(description);
