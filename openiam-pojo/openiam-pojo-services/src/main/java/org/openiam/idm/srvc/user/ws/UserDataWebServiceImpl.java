@@ -50,6 +50,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageDataService;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
@@ -1092,10 +1093,21 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             String metadataId = attribute.getMetadataId();
             MetadataElement me = metadataService.findElementById(metadataId, language != null ? language: languageDataService.getDefaultLanguage());
             if (me!=null) {
-                String description =  me.getLanguageMap().get((language != null ? language: languageDataService.getDefaultLanguage()).getId()).getValue();
-
-                attribute.setMetadataName(description);
-                attribute.setMetadataDescription(description);
+                LanguageMapping lm = null;
+                if (language != null) {
+                    lm = me.getLanguageMap().get(language.getId());
+                }
+                if (lm == null) {
+                    lm = me.getLanguageMap().get(languageDataService.getDefaultLanguage().getId());
+                }
+                if (lm == null) {
+                    attribute.setMetadataName(me.getAttributeName());
+                    attribute.setMetadataDescription(me.getDescription());
+                } else {
+                    String description =  lm.getValue();
+                    attribute.setMetadataName(description == null ? "": description);
+                    attribute.setMetadataDescription(description == null ? "": description);
+                }
             }
             attributesValidated.add(attribute);
         }
