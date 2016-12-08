@@ -57,15 +57,17 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
 			String keyFieldValue = null;
 
 			final boolean isIdentityInDnFormat = matcher.matches();
-            if(isIdentityInDnFormat) {
-                String tmp = identity;
-                identity = matcher.group(1);
-                String CN = matchObj.getKeyField() + "=" + identity;
-                objectBaseDN =  tmp.substring(CN.length()+1);
+//            if(isIdentityInDnFormat) {
+//                String tmp = identity;
+//                identity = matcher.group(1);
+//                String CN = matchObj.getKeyField() + "=" + identity;
+//                objectBaseDN =  tmp.substring(CN.length()+1);
+//
+//            } else {
+//				objectBaseDN = matchObj.getBaseDn();
+//            }
 
-            } else {
-				objectBaseDN = matchObj.getBaseDn();
-            }
+            objectBaseDN = matchObj.getBaseDn();
 
             Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
             boolean groupMembershipEnabled = getResourceBoolean(rpSet, "GROUP_MEMBERSHIP_ENABLED", true);
