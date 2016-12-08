@@ -167,9 +167,9 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             	log.debug("ModifyAttribute array=" + mods);
             }
 
-			if (!isIdentityInDnFormat && StringUtils.isNotBlank(OU) && isLookupUserInOu) {
-				objectBaseDN = OU + "," + objectBaseDN;
-			}
+//			if (!isIdentityInDnFormat && StringUtils.isNotBlank(OU) && isLookupUserInOu) {
+//				objectBaseDN = OU + "," + objectBaseDN;
+//			}
 
             //Important!!! For save and modify we need to create DN format
 //            String identityDN = matchObj.getKeyField() + "=" + identity + "," + objectBaseDN;
