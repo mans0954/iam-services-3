@@ -243,4 +243,8 @@ public interface OrganizationDataService {
     public List<Location> getLocationListByOrganizationId(@WebParam(name = "orgsId", targetNamespace = "") Set<String> orgsId,
                                                           @WebParam(name = "from", targetNamespace = "") Integer from,
                                                           @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public List<OrganizationAttribute> findAttributesDtoByOrgIdsAndAttributeName(@WebParam(name = "ids", targetNamespace = "") final Set<String> ids,
+                                                                                 @WebParam(name = "attrName", targetNamespace = "") final String attrName);
 }
