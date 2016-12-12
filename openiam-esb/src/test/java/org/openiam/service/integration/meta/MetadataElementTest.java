@@ -40,7 +40,7 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 
 	@Override
 	protected Response save(MetadataElement t) {
-		return metadataServiceClient.saveMetadataEntity(t);
+		return metadataServiceClient.saveMetadataElement(t);
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 	
 	private MetadataElement createAndSave() {
 		MetadataElement entity = createBean();
-		final Response response = metadataServiceClient.saveMetadataEntity(entity);
+		final Response response = metadataServiceClient.saveMetadataElement(entity);
 		assertSuccess(response);
 		entity = get((String)response.getResponseValue());
 		Assert.assertNotNull(entity);

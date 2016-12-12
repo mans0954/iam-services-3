@@ -22,11 +22,6 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
  */
 
 public interface MetadataService {
-// new in 3.3.1
-    String findElementIdByAttrNameAndTypeId(String attrName, String typeId);
-
-    MetadataElement findElementByAttrNameAndTypeId(String attrName, String typeId, final Language language);
-// new in 3.3.1
     MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping, final Language language);
 
 	List<MetadataElement> findElementByName(final String name);
@@ -38,20 +33,19 @@ public interface MetadataService {
 	List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language);
 
 	List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
-	public List<MetadataElement> findBeans(MetadataElementSearchBean searchBean, int from, int size);
-		public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
-	public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
-		int count(final MetadataElementSearchBean searchBean);
-	    public List<MetadataType> findBeansNoLocalize(final MetadataTypeSearchBean searchBean, final int from, final int size);
+	List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
+	List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
+	int count(final MetadataElementSearchBean searchBean);
+	List<MetadataType> findBeansNoLocalize(final MetadataTypeSearchBean searchBean, final int from, final int size);
 	int count(final MetadataTypeSearchBean searchBean);
-	
-	void save(final MetadataElement entity);
 
-	void deleteMetdataElement(final String id);
+	String save(final MetadataElement entity) throws BasicDataServiceException;
+
+	void deleteMetdataElement(final String id) throws BasicDataServiceException;
 	
-	void save(final MetadataType entity) throws BasicDataServiceException;
+	String save(final MetadataType entity) throws BasicDataServiceException;
 	
-	void deleteMetdataType(final String id);
+	void deleteMetdataType(final String id) throws BasicDataServiceException;
 	
 	//public void save(final MetadataValidValueEntity entity);
 	void delteMetaValidValue(final String validValueId);

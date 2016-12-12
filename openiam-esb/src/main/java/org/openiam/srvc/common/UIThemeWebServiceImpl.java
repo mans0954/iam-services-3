@@ -7,6 +7,10 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.request.BaseSearchServiceRequest;
+import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.response.data.UIThemeResponse;
+import org.openiam.base.response.list.UIThemeListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -17,76 +21,43 @@ import org.openiam.idm.searchbeans.UIThemeSearchBean;
 import org.openiam.idm.srvc.ui.theme.UIThemeService;
 import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 import org.openiam.idm.srvc.ui.theme.dto.UITheme;
+import org.openiam.mq.constants.api.common.UIThemeAPI;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.common.UIThemeQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("uiThemeWS")
 @WebService(endpointInterface = "org.openiam.srvc.common.UIThemeWebService", targetNamespace = "urn:idm.openiam.org/srvc/ui/theme/service", portName = "UIThemeWebServiceServicePort", serviceName = "UIThemeWebService")
-public class UIThemeWebServiceImpl implements UIThemeWebService {
-
-	private static final Log log = LogFactory.getLog(UIThemeWebServiceImpl.class);
-	
+public class UIThemeWebServiceImpl extends AbstractApiService implements UIThemeWebService {
 	@Autowired
-	private UIThemeService uiThemeService;
-
-	@Autowired
-	private UIThemeDozerConverter dozerConverter;
-	
-	
+	public UIThemeWebServiceImpl(UIThemeQueue queue) {
+		super(queue);
+	}
 	@WebMethod
 	public Response save(final UITheme dto) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			final UIThemeEntity entity = dozerConverter.convertToEntity(dto, false);
-			uiThemeService.validateSave(entity);
-			uiThemeService.save(entity);
-			response.setResponseValue(entity.getId());
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-            response.setErrorTokenList(e.getErrorTokenList());
-		} catch(Throwable e) {
-			log.error("Can't perform operation", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
-            response.addErrorToken(new EsbErrorToken(e.getMessage()));
-		}
-		return response;
+		return this.manageCrudApiRequest(UIThemeAPI.Save, dto);
 	}
 	
 	@WebMethod
 	public Response delete(final String id) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			uiThemeService.validateDelete(id);
-			uiThemeService.delete(id);
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-            response.setErrorTokenList(e.getErrorTokenList());
-		} catch(Throwable e) {
-			log.error("Can't perform operation", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
-            response.addErrorToken(new EsbErrorToken(e.getMessage()));
-		}
-		return response;
+		UITheme dto = new UITheme();
+		dto.setId(id);
+
+		return this.manageCrudApiRequest(UIThemeAPI.Delete, dto);
 	}
 	
 	@WebMethod
-    @Transactional(readOnly = true)
 	public UITheme get(final String id) {
-		final UIThemeEntity entity = uiThemeService.get(id);
-		return dozerConverter.convertToDTO(entity, true);
+		IdServiceRequest request = new IdServiceRequest();
+		request.setId(id);
+		return this.getValue(UIThemeAPI.Get, request, UIThemeResponse.class);
 	}
 	
 	@WebMethod
-    @Transactional(readOnly = true)
 	public List<UITheme> findBeans(final UIThemeSearchBean searchBean, final int from, final int size) {
-		final List<UIThemeEntity> entityList = uiThemeService.findBeans(searchBean, from, size);
-		return dozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+		return this.getValueList(UIThemeAPI.FindBeans, new BaseSearchServiceRequest<>(searchBean, from, size), UIThemeListResponse.class);
 	}
 }

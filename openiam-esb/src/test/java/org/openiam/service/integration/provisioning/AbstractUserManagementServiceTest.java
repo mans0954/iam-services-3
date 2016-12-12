@@ -130,7 +130,7 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
 
         attr.setStaticDefaultValue(getRandomName());
 
-        Response wsResponse = metadataServiceClient.saveMetadataEntity(attr);
+        Response wsResponse = metadataServiceClient.saveMetadataElement(attr);
 
         Assert.assertTrue(wsResponse.isSuccess());
         Assert.assertNotNull(wsResponse.getResponseValue());
