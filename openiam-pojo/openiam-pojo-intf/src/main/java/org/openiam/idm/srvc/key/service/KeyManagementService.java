@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.openiam.core.domain.UserKey;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -19,17 +20,16 @@ public interface KeyManagementService {
 
     Set<UserKey> generateUserKeys(UserEntity user) throws Exception;
 
-    byte[] getCookieKey()throws Exception;
-    byte[] generateCookieKey()throws Exception;
-    byte[] getCommonKey() throws Exception;
-    byte[] generateCommonKey()throws Exception;
+    byte[] getCookieKey()throws BasicDataServiceException;
+    byte[] generateCookieKey()throws BasicDataServiceException;
 
-    void generateMasterKey() throws Exception;
-    void initKeyManagement() throws Exception;
-    void migrateData(String oldSecretKey)throws Exception;
+    void generateMasterKey() throws BasicDataServiceException;
+    void initKeyManagement() throws BasicDataServiceException;
+    void migrateData(String oldSecretKey)throws BasicDataServiceException;
 
-    String encryptData(String data)throws Exception;
-    String decryptData(String encryptedData)throws Exception;
+    String encryptData(String data)throws BasicDataServiceException;
+    String decryptData(String encryptedData)throws BasicDataServiceException;
+
     String encryptData(String userId, String data)throws Exception;
     String decryptData(String userId, String encryptedData)throws Exception;
 

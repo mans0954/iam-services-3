@@ -26,8 +26,4 @@ public interface KeyManagementWS {
     String encryptData(@WebParam(name = "data") String data);
     @WebMethod
     String decryptData(@WebParam(name = "encryptedData") String encryptedData);
-    @WebMethod
-    String encryptUserData(@WebParam(name = "userId") String userId, @WebParam(name = "data") String data);
-    @WebMethod
-    String decryptUserData(@WebParam(name = "userId") String userId, @WebParam(name = "encryptedData") String encryptedData);
 }
