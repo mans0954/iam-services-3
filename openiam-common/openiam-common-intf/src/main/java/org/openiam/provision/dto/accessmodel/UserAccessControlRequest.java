@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * Created by zaporozhec on 7/27/16.
  */
-@XmlType(propOrder = {"key", "filter", "namedTypes", "treeRepresentation"})
+@XmlType(propOrder = {"key", "filter", "namedTypes", "treeRepresentation", "ipAdress", "requesterId", "requesterLogin"})
 @XmlRootElement(name = "request")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class UserAccessControlRequest {
@@ -18,6 +18,25 @@ public class UserAccessControlRequest {
     private UserAccessControlFilter filter;
     private boolean namedTypes;
     private boolean treeRepresentation;
+    private String requesterId;
+    private String requesterLogin;
+    private String ipAdress;
+
+    public String getRequesterLogin() {
+        return requesterLogin;
+    }
+
+    public void setRequesterLogin(String requesterLogin) {
+        this.requesterLogin = requesterLogin;
+    }
+
+    public String getRequesterId() {
+        return requesterId;
+    }
+
+    public void setRequesterId(String requesterId) {
+        this.requesterId = requesterId;
+    }
 
     public UserSearchKey getKey() {
         return key;
@@ -49,5 +68,13 @@ public class UserAccessControlRequest {
 
     public void setTreeRepresentation(boolean treeRepresentation) {
         this.treeRepresentation = treeRepresentation;
+    }
+
+    public String getIpAdress() {
+        return ipAdress;
+    }
+
+    public void setIpAdress(String ipAdress) {
+        this.ipAdress = ipAdress;
     }
 }
