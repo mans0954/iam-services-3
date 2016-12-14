@@ -3,6 +3,7 @@ package org.openiam.provision.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
@@ -15,6 +16,9 @@ import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.access.service.AccessRightDataService;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditResult;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -74,10 +78,24 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
     @Autowired
     private AccessRightDataService accessRightDataService;
 
+    private final ObjectMapper mapper = new ObjectMapper();
+
     private final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH mm ss");
 
     @Override
     public UserAccessControlResponse getAccessControl(UserAccessControlRequest request) {
+        IdmAuditLog log = new IdmAuditLog();
+        log.setRequestorPrincipal(request.getRequesterLogin());
+        log.setRequestorUserId(request.getRequesterId());
+        log.setNodeIP(request.getIpAdress());
+
+        log.setAction(AuditAction.ACCESS_CONTROL_REQUEST.value());
+        try {
+            log.addCustomRecord("REQUEST", mapper.writeValueAsString(request));
+        } catch (Exception e) {
+            log.addWarning("Cound not parse request.");
+        }
+
         UserAccessControlResponse response = new UserAccessControlResponse();
         UserAccessControlBean controlBean = new UserAccessControlBean();
 
@@ -87,11 +105,17 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         } catch (Exception e) {
             response.setError("Can't get User" + e);
             response.setStatus(ResponseStatus.FAILURE);
+            log.setFailureReason("Can't find user:" + e.getMessage());
+            log.setResult(AuditResult.FAILURE.value());
+            auditLogService.enqueue(log);
             return response;
         }
         if (user == null) {
             response.setError("No such user");
             response.setStatus(ResponseStatus.FAILURE);
+            log.setFailureReason("No such user");
+            log.setResult(AuditResult.FAILURE.value());
+            auditLogService.enqueue(log);
             return response;
         }
 
@@ -109,6 +133,7 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         if (CollectionUtils.isNotEmpty(user.getPrincipalList())) {
             for (Login l : user.getPrincipalList()) {
                 if (sysConfiguration.getDefaultManagedSysId().equalsIgnoreCase(l.getManagedSysId())) {
+                    log.setTargetUser(user.getId(), l.getLogin());
                     controlBean.setLogin(l.getLogin());
                     controlBean.setLocked(l.getIsLocked() != 0);
                     if (l.getLastLogin() != null) {
@@ -168,17 +193,11 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
             }
 
             //process groups
-            if (groups != null) {
-                directSet.addAll(this.processGroups(groups, matrix.getGroupMap(), managedSystemFilter, groupsMdTypeFilter, groupFilter));
-            }
+            directSet.addAll(this.processGroups(groups, matrix.getGroupMap(), managedSystemFilter, groupsMdTypeFilter, groupFilter));
 //            //process roles
-            if (roles != null) {
-                directSet.addAll(this.processRoles(roles, matrix.getRoleMap(), managedSystemFilter, rolesMdTypeFilter, roleFilter));
-            }
+            directSet.addAll(this.processRoles(roles, matrix.getRoleMap(), managedSystemFilter, rolesMdTypeFilter, roleFilter));
             //process resources
-            if (resources != null) {
-                directSet.addAll(this.processResources(resources, matrix.getResourceMap(), resourceTypeFilter, resourceMdTypeFilter, resourceFilter));
-            }
+            directSet.addAll(this.processResources(resources, matrix.getResourceMap(), resourceTypeFilter, resourceMdTypeFilter, resourceFilter));
             // if named types is true we should change managed system id and metadata type id to it's names
 
             if (request.getNamedTypes()) {
@@ -207,6 +226,12 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         }
         response.setBean(controlBean);
         response.setStatus(ResponseStatus.SUCCESS);
+        try {
+            log.addCustomRecord("RESPONSE", mapper.writeValueAsString(response));
+        } catch (Exception e) {
+            log.addWarning("Couldn't parse response.");
+        }
+        auditLogService.enqueue(log);
         return response;
     }
 
