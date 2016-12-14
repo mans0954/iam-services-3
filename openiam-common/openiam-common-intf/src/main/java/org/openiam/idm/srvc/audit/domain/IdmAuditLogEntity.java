@@ -299,6 +299,9 @@ public class IdmAuditLogEntity implements Serializable {
         result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
         result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
         result = prime * result + ((correlationId == null) ? 0 : correlationId.hashCode());
+		for (IdmAuditLogCustomEntity customRecord : customRecords) {
+			result = prime * result + ((customRecord == null) ? 0 : customRecord.hashCode());
+		}
 
         return result;
     }

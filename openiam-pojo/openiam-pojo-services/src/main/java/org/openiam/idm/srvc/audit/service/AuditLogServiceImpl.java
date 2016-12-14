@@ -217,8 +217,6 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
 
     private void send(final IdmAuditLog log) {
-//         AuditSysLog auditSysLog = new AuditSysLog( "testSysLog", 0, AuditSysLog.LOG_INFO );
-//         auditSysLog.AuditSysLog(AuditSysLog.LOG_ERR, "Hello.My_test_log");
         try {
             if (auditSysLog.isEnable()) {
                 if (auditSysLog.hasAction(log.getAction())) {
