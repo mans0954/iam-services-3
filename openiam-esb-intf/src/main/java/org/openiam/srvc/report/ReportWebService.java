@@ -60,16 +60,7 @@ public interface ReportWebService {
 	GetReportParameterMetaTypesResponse getReportParameterMetaTypes();
 
 	@WebMethod
-	GetAllSubscribedReportsResponse getSubscribedReports();
-
-	@WebMethod
-	GetSubCriteriaParamReportResponse getSubscribedReportParametersByReportId(@WebParam(name = "reportId", targetNamespace = "") String reportId);
-
-	@WebMethod
 	GetAllSubCriteriaParamReportsResponse getSubCriteriaParamReports();
-
-	@WebMethod
-	Response createOrUpdateSubscribedReportInfo(@WebParam(name = "reportSubscriptionDto", targetNamespace = "") ReportSubscriptionDto reportSubscriptionDto, @WebParam(name = "parameters", targetNamespace = "") List<ReportSubCriteriaParamDto> parameters);
 
 	@WebMethod
 	GetReportInfoResponse getReportByName(@WebParam(name = "reportName", targetNamespace = "") String reportName) ;
@@ -81,17 +72,7 @@ public interface ReportWebService {
 	Response deleteReport(@WebParam(name = "reportId", targetNamespace = "") String reportId) ;
 
 	@WebMethod
-	Response deleteSubscribedReport(@WebParam(name = "reportId", targetNamespace = "") String reportId) ;
-
-	@WebMethod
-	Integer getSubscribedReportCount();
-
-
-	@WebMethod
 	Integer getSubCriteriaParamReportCount();
-
-	@WebMethod
-	GetSubscribedReportResponse getSubscribedReportById(@WebParam(name = "reportId", targetNamespace = "") String reportId) ;
 
 	@WebMethod
 	Response deleteSubCriteriaParamReport(@WebParam(name = "Id", targetNamespace = "") String reportId) ;
@@ -106,10 +87,5 @@ public interface ReportWebService {
 	@WebMethod
 	List<ReportCriteriaParamDto> getAllReportCriteriaParam();
 
-	@WebMethod
-	Response runSubscription(@WebParam(name = "reportId", targetNamespace = "") String reportId);
-
-	@WebMethod
-	Response runAllActiveSubscriptions();
 
 }

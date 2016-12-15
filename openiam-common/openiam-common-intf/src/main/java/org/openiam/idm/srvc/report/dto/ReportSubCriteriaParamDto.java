@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.report.dto;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity;
 
@@ -11,7 +12,6 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReportSubCriteriaParamDto", propOrder = {
 		"rscpId",
-        "id",
         "reportId",
         "name",
         "value",
@@ -19,10 +19,9 @@ import javax.xml.bind.annotation.XmlType;
         
 })
 @DozerDTOCorrespondence(ReportSubCriteriaParamEntity.class)
-public class ReportSubCriteriaParamDto {
+public class ReportSubCriteriaParamDto extends KeyDTO {
 
 	private String rscpId;
-    private String id;
     private String reportId;
     private String name;
     private String value;
@@ -33,7 +32,7 @@ public class ReportSubCriteriaParamDto {
     }
 
     public ReportSubCriteriaParamDto(String id, String type,String reportId, String name, String value) {
-    	this.id=id;
+    	this.setId(id);
     	this.type=type;
         this.reportId = reportId;
         this.name = name;
@@ -42,14 +41,6 @@ public class ReportSubCriteriaParamDto {
     }
     
     
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getReportId() {
         return reportId;

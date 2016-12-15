@@ -1,22 +1,26 @@
 package org.openiam.idm.srvc.report.service;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.utils.URIBuilder;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.*;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.ReportSearchBean;
 import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportParamMetaTypeEntity;
 import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
-import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
-import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.report.dto.*;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceService;
@@ -42,8 +46,6 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 	@Autowired
 	private ReportInfoDao reportDao;
 	@Autowired
-	private ReportSubscriptionDao reportSubscriptionDao;
-	@Autowired
 	private ReportCriteriaParamDao criteriaParamDao;
 	@Autowired
 	private ReportSubCriteriaParamDao subCriteriaParamDao;
@@ -53,8 +55,6 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 	private ReportParamMetaTypeDao reportParamMetaTypeDao;
 	@Autowired
 	private ReportInfoDozerConverter reportInfoDozerConverter;
-	@Autowired
-	private ReportSubscriptionDozerConverter reportSubscriptionDozerConverter;
 	@Autowired
 	private ReportCriteriaParamDozerConverter criteriaParamDozerConverter;
 	@Autowired
@@ -81,29 +81,76 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 	@Value("${org.openiam.upload.root}")
 	private String uploadRoot;
 
+	private static final String DEFAULT_REPORT_TASK = "frameset";
+	private static final String REPORT_PARAMETER_NAME = "__report";
+	private static final String LOCALE_PARAMETER_NAME = "__locale";
+
 	private static Map<String, Object> bindingMap = new HashMap<>(1);
 
 	@Override
 	@Transactional(readOnly = true)
-	public ReportDataDto getReportData(final ReportQueryDto reportQuery) throws ClassNotFoundException, ScriptEngineException, IOException {
-		ReportInfoEntity reportInfo = reportDao.findByName(reportQuery.getReportName());
-		if (reportInfo == null) {
-			throw new IllegalArgumentException("Invalid parameter list: report with name=" + reportQuery.getReportName() + " was not found in Database");
+	public ReportDataDto getReportData(final ReportQueryDto reportQuery) throws BasicDataServiceException {
+		if (StringUtils.isNotBlank(reportQuery.getReportName())) {
+			ReportInfoEntity reportInfo = reportDao.findByName(reportQuery.getReportName());
+			if (reportInfo == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Invalid parameter list: report with name=" + reportQuery.getReportName() + " was not found in Database");
+			}
+
+			final String dateFormatProp = propertyValueSweeper.getString("org.openiam.date.format");
+			bindingMap.put("dateFormat", new SimpleDateFormat(
+					StringUtils.isNotBlank(dateFormatProp) ? dateFormatProp : "MM/dd/yyyy")
+			);
+
+			final String dateTimeFormatProp = propertyValueSweeper.getString("org.openiam.date.time.format");
+			bindingMap.put("dateTimeFormat", new SimpleDateFormat(
+					StringUtils.isNotBlank(dateTimeFormatProp) ? dateTimeFormatProp : "MM/dd/yyyy HH:mm:ss")
+			);
+
+			try {
+				ReportDataSetBuilder dataSourceBuilder =  (ReportDataSetBuilder) scriptRunner.instantiateClass(bindingMap,
+                        uploadRoot + "/report/", reportInfo.getReportDataSource());
+				return dataSourceBuilder.getReportData(reportQuery);
+
+			} catch (IOException e) {
+				log.error("Error during instantiate of groovy class: " + e.getMessage(), e);
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, e.getMessage());
+			}
+
 		}
-		
-		final String dateFormatProp = propertyValueSweeper.getString("org.openiam.date.format");
-		bindingMap.put("dateFormat", new SimpleDateFormat(
-				StringUtils.isNotBlank(dateFormatProp) ? dateFormatProp : "MM/dd/yyyy")
-		);
-		
-		final String dateTimeFormatProp = propertyValueSweeper.getString("org.openiam.date.time.format");
-		bindingMap.put("dateTimeFormat", new SimpleDateFormat(
-				StringUtils.isNotBlank(dateTimeFormatProp) ? dateTimeFormatProp : "MM/dd/yyyy HH:mm:ss")
-		);
-		
-		ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) scriptRunner.instantiateClass(bindingMap,
-				uploadRoot+"/report/", reportInfo.getReportDataSource());
-		return dataSourceBuilder.getReportData(reportQuery);
+		throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Invalid parameter list: reportName=" + reportQuery.getReportName());
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public String getReportUrl(ReportQueryDto reportQuery, String taskName, String reportBaseUrl, String locale) throws BasicDataServiceException{
+		try {
+
+			ReportInfoDto report = this.getReportByName(reportQuery.getReportName());
+			if (report == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Invalid parameter list: report with name=" + reportQuery.getReportName() + " was not found in Database");
+			}
+
+			String taskPath = StringUtils.isNotBlank(taskName) ? taskName : DEFAULT_REPORT_TASK;
+			String reportDesignName = report.getReportUrl();
+			URIBuilder uriBuilder = new URIBuilder(reportBaseUrl);
+			uriBuilder.setPath(uriBuilder.getPath() + taskPath);
+			uriBuilder.setParameter(REPORT_PARAMETER_NAME, reportDesignName);
+			if (reportQuery.getQueryParams() != null) {
+				for (Map.Entry<String, List<String>> entry : reportQuery.getQueryParams().entrySet()  ) {
+					if (CollectionUtils.isNotEmpty(entry.getValue())) {
+						for(String value : entry.getValue()) {
+							uriBuilder.addParameter(entry.getKey(), value);
+						}
+					}
+				}
+			}
+			if (StringUtils.isNotBlank(locale)) {
+				uriBuilder.setParameter(LOCALE_PARAMETER_NAME, locale);
+			}
+			return uriBuilder.toString();
+		} catch (URISyntaxException ex) {
+			throw new BasicDataServiceException(ResponseCode.REPORT_URL_GENERATION_FAIL, ex.getMessage());
+		}
 	}
 
 	@Override
@@ -134,21 +181,30 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 
 	@Override
 	@Transactional(readOnly = true)
-	public ReportInfoDto getReportByName(String name) {
+	public ReportInfoDto getReportByName(String name) throws BasicDataServiceException {
+		if (StringUtils.isEmpty(name)) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Invalid parameter list: reportName=" + name);
+		}
 		final ReportInfoEntity reportInfoEntity = reportDao.findByName(name);
 		return reportInfoDozerConverter.convertToDTO(reportInfoEntity, true);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public ReportInfoDto getReport(String reportId) {
+	public ReportInfoDto getReport(String reportId) throws BasicDataServiceException{
+		if (StringUtils.isEmpty(reportId)) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Invalid parameter list: reportId=" + reportId);
+		}
 		ReportInfoEntity entity = reportDao.findById(reportId);
 		return reportInfoDozerConverter.convertToDTO(entity, true);
 	}
 
 	@Override
 	@Transactional
-	public void deleteReportParam(String reportParamId) {
+	public void deleteReportParam(String reportParamId) throws BasicDataServiceException{
+		if (StringUtils.isEmpty(reportParamId)) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Invalid parameter list: reportParamId=" + reportParamId);
+		}
 		log.info("In deleteReportParam, reportId=" + reportParamId);
 		ReportCriteriaParamEntity entity = criteriaParamDao.findById(reportParamId);
 		log.info("In deleteReportParam, entity=" + entity);
@@ -158,7 +214,9 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 
 	@Override
 	@Transactional
-	public void deleteReport(String reportId) {
+	public void deleteReport(String reportId) throws BasicDataServiceException{
+		validateDelete(reportId);
+
 		log.info("In deleteReport, reportId=" + reportId);
 		ReportInfoEntity entity = reportDao.findById(reportId);
 		log.info("In deleteReport, entity=" + entity);
@@ -166,10 +224,38 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 		log.info("Deleted");
 	}
 
+	@Transactional
+	private void validateDelete(String reportId) throws BasicDataServiceException{
+		ReportInfoDto report = this.getReport(reportId);
+		if (report == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Report does not exist");
+		}
+		if (report.getIsBuiltIn()) {
+			throw new BasicDataServiceException(ResponseCode.PERMISSION_EXCEPTION, "Built-in report can not be deleted");
+		}
+	}
+
 	@Override
 	@Transactional
-	public String createOrUpdateReportParamInfo(ReportCriteriaParamDto reportParam){
+	public String createOrUpdateReportParamInfo(ReportCriteriaParamDto reportParam) throws BasicDataServiceException{
+		if (StringUtils.isBlank(reportParam.getName())) {
+			throw new BasicDataServiceException(ResponseCode.REPORT_PARAM_NAME_NOT_SET, ResponseCode.REPORT_PARAM_NAME_NOT_SET.toString());
+		}
 
+		if (StringUtils.isBlank(reportParam.getTypeId())) {
+			throw new BasicDataServiceException(ResponseCode.REPORT_PARAM_TYPE_NOT_SET, ResponseCode.REPORT_PARAM_TYPE_NOT_SET.toString());
+		}
+
+		final ReportCriteriaParamDto found = this.getReportParameterByName(reportParam.getReportId(), reportParam.getName());
+		if (found != null) {
+			if (StringUtils.isBlank(reportParam.getId())) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, ResponseCode.NAME_TAKEN.toString());
+			}
+
+			if (StringUtils.isNotBlank(reportParam.getId()) && !reportParam.getId().equals(found.getId())) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, ResponseCode.NAME_TAKEN.toString());
+			}
+		}
 		ReportCriteriaParamEntity entity = criteriaParamDozerConverter.convertToEntity(reportParam, true);
 		if(log.isDebugEnabled()) {
 			log.debug("In createOrUpdateReportParamInfo, converted entity:" + entity);
@@ -204,7 +290,8 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 
 	@Override
 	@Transactional
-	public String createOrUpdateReportInfo(ReportInfoDto report) {
+	public String createOrUpdateReportInfo(ReportInfoDto report) throws BasicDataServiceException {
+		validateInternal(report);
 
 		ReportInfoEntity entity = reportInfoDozerConverter.convertToEntity(report, true);
 
@@ -228,11 +315,60 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 		entity = reportDao.merge(entity);
 		return entity.getReportId();
 	}
+	@Override
+	@Transactional
+	public void validate(ReportInfoDto report) throws BasicDataServiceException{
+		validateInternal(report);
+	}
+
+	@Transactional
+	private void validateInternal(ReportInfoDto report) throws BasicDataServiceException {
+
+		if (report == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Parameter 'report' is not defined");
+		}
+
+		if (StringUtils.isBlank(report.getReportName())) {
+			throw new BasicDataServiceException(ResponseCode.REPORT_NAME_NOT_SET);
+		}
+		if (StringUtils.isBlank(report.getReportDataSource())) {
+			throw new BasicDataServiceException(ResponseCode.REPORT_DATASOURCE_NOT_SET);
+		}
+		if (StringUtils.isBlank(report.getReportUrl())) {
+			throw new BasicDataServiceException(ResponseCode.REPORT_URL_NOT_SET);
+		}
+
+		// validate unique name
+		final ReportInfoDto found = this.getReportByName( report.getReportName() );
+		if (found != null && !found.getId().equals( report.getId() ) ) {
+			throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+		}
+
+		// validate built-in report name
+		if ( report.getId() != null ) {
+			final ReportInfoDto reportDto = this.getReport( report.getId() );
+			if (reportDto.getIsBuiltIn() && !reportDto.getReportName().equals(report.getReportName())) {
+				throw new BasicDataServiceException(ResponseCode.READONLY);
+			}
+		}
+	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<ReportCriteriaParamDto> getReportParametersByReportId(String reportId) {
+	public List<ReportCriteriaParamDto> getReportParametersByReportId(String reportId) throws BasicDataServiceException {
+		if (StringUtils.isEmpty(reportId)) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Invalid parameter list: reportId=" + reportId);
+		}
 		final List<ReportCriteriaParamEntity> params = criteriaParamDao.findByReportInfoId(reportId);
+		return criteriaParamDozerConverter.convertToDTOList(params, false);
+	}
+	@Override
+	@Transactional(readOnly = true)
+	public List<ReportCriteriaParamDto> getReportParametersByReportName(String reportName)throws BasicDataServiceException {
+		if (StringUtils.isEmpty(reportName)) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Invalid parameter list: reportId=" + reportName);
+		}
+		final List<ReportCriteriaParamEntity> params = criteriaParamDao.findByReportInfoName(reportName);
 		return criteriaParamDozerConverter.convertToDTOList(params, false);
 	}
 
@@ -252,20 +388,6 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<ReportCriteriaParamDto> getReportParametersByReportName(String reportName) {
-		final List<ReportCriteriaParamEntity> params = criteriaParamDao.findByReportInfoName(reportName);
-		return criteriaParamDozerConverter.convertToDTOList(params, false);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public List<ReportSubCriteriaParamDto> getSubReportParametersByReportId(String reportId) {
-		final List<ReportSubCriteriaParamEntity> entities = subCriteriaParamDao.findByReportInfoId(reportId);
-		return criteriaSubParamDozerConverter.convertToDTOList(entities, false);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
 	public List<ReportParamTypeDto> getReportParameterTypes() {
 		List<ReportParamTypeEntity> entities = reportParamTypeDao.findAll();
 		return paramTypeDozerConverter.convertToDTOList(entities, false);
@@ -278,68 +400,18 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 		return paramMetaTypeDozerConverter.convertToDTOList(entities, false);
 	}
 
-	@Override
-	@Transactional
-	public String createOrUpdateSubscribedReportInfo(ReportSubscriptionDto reportSubscriptionDto){
 
-		ReportSubscriptionEntity entity = reportSubscriptionDozerConverter
-				.convertToEntity(reportSubscriptionDto, true);
-		if (StringUtils.isBlank(entity.getReportId())) {
-			entity = reportSubscriptionDao.add(entity);
+
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<ReportSubCriteriaParamDto> getAllSubCriteriaParamReports(ReportSearchBean searchBean){
+		List<ReportSubCriteriaParamEntity> entities =null;
+		if(StringUtils.isNotBlank(searchBean.getKey())){
+			entities = subCriteriaParamDao.findByReportInfoId(searchBean.getKey());
 		} else {
-			entity = reportSubscriptionDao.merge(entity);
+			entities = subCriteriaParamDao.findAll();
 		}
-		return entity.getReportId();
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public List<ReportSubscriptionDto> getAllActiveSubscribedReports() {
-		final List<ReportSubscriptionEntity> entities = reportSubscriptionDao.getAllActiveSubscribedReports();
-		return reportSubscriptionDozerConverter.convertToDTOList(entities, true);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public List<ReportSubscriptionDto> getAllSubscribedReports() {
-		final List<ReportSubscriptionEntity> entities = reportSubscriptionDao.findAll();
-		return reportSubscriptionDozerConverter.convertToDTOList(entities, false);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public Integer getSubscribedReportCount() {
-		return reportSubscriptionDao.countAll().intValue();
-	}
-
-	@Override
-	@Transactional
-	public void deleteSubscribedReport(String reportId) {
-		log.info("In deleteSubscribedReport, reportId=" + reportId);
-		ReportSubscriptionEntity entity = reportSubscriptionDao.findById(reportId);
-		log.info("In deleteSubscribedReport, entity=" + entity);
-		reportSubscriptionDao.delete(entity);
-		log.info("Deleted");
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ReportSubscriptionDto getSubscriptionReportById(String reportId) {
-		final ReportSubscriptionEntity entity = reportSubscriptionDao.findById(reportId);
-		return reportSubscriptionDozerConverter.convertToDTO(entity, true);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public List<ReportSubCriteriaParamDto> getAllSubCriteriaParamReports() {
-		final List<ReportSubCriteriaParamEntity> entities = subCriteriaParamDao.findAll();
-		return criteriaSubParamDozerConverter.convertToDTOList(entities, false);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public List<ReportSubCriteriaParamDto> getAllSubCriteriaParamReport(String reportId) {
-		final List<ReportSubCriteriaParamEntity> entities = subCriteriaParamDao.findByReportInfoId(reportId);
 		return criteriaSubParamDozerConverter.convertToDTOList(entities, false);
 	}
 
@@ -349,16 +421,13 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 		return subCriteriaParamDao.countAll().intValue();
 	}
 
-	@Override
-	@Transactional(readOnly = true)
-	public ReportCriteriaParamDto getReportCriteriaParamById(String rcpId) {
-		ReportCriteriaParamEntity entity = criteriaParamDao.findById(rcpId);
-		return criteriaParamDozerConverter.convertToDTO(entity, false);
-	}
 
 	@Override
 	@Transactional
-	public void deleteSubCriteriaParamReport(String reportId) {
+	public void deleteSubCriteriaParamReport(String reportId)  throws BasicDataServiceException{
+		if (StringUtils.isEmpty(reportId)) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Invalid parameter list: reportId=" + reportId);
+		}
 		log.info("In deleteSubscribedReport, reportId=" + reportId);
 		ReportSubCriteriaParamEntity entity = subCriteriaParamDao.findById(reportId);
 		log.info("In deleteSubscribedReport, entity=" + entity);
@@ -368,10 +437,20 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 
 	@Override
 	@Transactional
-	public String createOrUpdateSubCriteriaParamReport(ReportSubCriteriaParamDto subCriteriaParamReport) {
+	public String createOrUpdateSubCriteriaParamReport(ReportSubCriteriaParamDto subCriteriaParamReport) throws BasicDataServiceException{
+		if (subCriteriaParamReport == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Parameter 'subCriteriaParamReport' is not defined");
+		}
+		if(StringUtils.isBlank(subCriteriaParamReport.getId())){
+			throw new BasicDataServiceException(ResponseCode.SUBSCRIBED_ID_NOT_SET, ResponseCode.SUBSCRIBED_ID_NOT_SET.toString());
+		}
 
-		ReportSubCriteriaParamEntity entity = criteriaSubParamDozerConverter.convertToEntity(
-				subCriteriaParamReport, true);
+		if(StringUtils.isBlank(subCriteriaParamReport.getValue())){
+			throw new BasicDataServiceException(ResponseCode.SUBSCRIBED_VALUE_NOT_SET, ResponseCode.SUBSCRIBED_VALUE_NOT_SET.toString());
+		}
+
+
+		ReportSubCriteriaParamEntity entity = criteriaSubParamDozerConverter.convertToEntity(subCriteriaParamReport, true);
 		if(log.isDebugEnabled()) {
 			log.debug("In createOrUpdateReportParamInfo, converted entity:" + entity);
 		}

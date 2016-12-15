@@ -6,6 +6,10 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.report.domain.ReportInfoEntity</class-a>
 		<class-b>org.openiam.idm.srvc.report.dto.ReportInfoDto</class-b>
+		<field>
+			<a>reportId</a>
+			<b>id</b>
+		</field>
 		<field-exclude>
 			<a>reportParams</a>
 			<b>reportParams</b>
