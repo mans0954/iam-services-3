@@ -21,6 +21,7 @@ import org.openiam.idm.srvc.audit.constant.AuditResult;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
@@ -28,9 +29,10 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceType;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.User;
@@ -39,10 +41,12 @@ import org.openiam.provision.dto.accessmodel.UserAccessControlBean;
 import org.openiam.provision.dto.accessmodel.UserAccessControlMemberBean;
 import org.openiam.provision.dto.accessmodel.UserAccessControlRequest;
 import org.openiam.provision.dto.accessmodel.UserAccessControlResponse;
+import org.openiam.provision.dto.srcadapter.UserSearchAttributeRequest;
 import org.openiam.provision.dto.srcadapter.UserSearchKey;
 import org.openiam.provision.dto.srcadapter.UserSearchKeyEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
 import java.text.SimpleDateFormat;
@@ -57,6 +61,8 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
     @Autowired
     private UserDataWebService userDataService;
     @Autowired
+    private LoginDataWebService loginDataWebService;
+    @Autowired
     protected SysConfiguration sysConfiguration;
     @Autowired
     protected AuditLogService auditLogService;
@@ -65,8 +71,9 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
     @Autowired
     protected MetadataService metadataService;
     @Autowired
+    protected ResourceService resourceService;
+    @Autowired
     protected ResourceDataService resourceDataService;
-
     @Autowired
     protected GroupDataWebService groupDataWebService;
 
@@ -83,6 +90,7 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
     private final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH mm ss");
 
     @Override
+    @Transactional(readOnly = true)
     public UserAccessControlResponse getAccessControl(UserAccessControlRequest request) {
         IdmAuditLog log = new IdmAuditLog();
         log.setRequestorPrincipal(request.getRequesterLogin());
@@ -130,14 +138,23 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         if (user.getLastDate() != null) {
             controlBean.setLastDate(sdf.format(user.getLastDate()));
         }
-        if (CollectionUtils.isNotEmpty(user.getPrincipalList())) {
-            for (Login l : user.getPrincipalList()) {
-                if (sysConfiguration.getDefaultManagedSysId().equalsIgnoreCase(l.getManagedSysId())) {
-                    log.setTargetUser(user.getId(), l.getLogin());
-                    controlBean.setLogin(l.getLogin());
-                    controlBean.setLocked(l.getIsLocked() != 0);
-                    if (l.getLastLogin() != null) {
-                        controlBean.setLastLoginTime(sdf.format(l.getLastLogin()));
+        Login l = loginDataWebService.getPrimaryIdentity(user.getId()).getPrincipal();
+        log.setTargetUser(user.getId(), l.getLogin());
+        controlBean.setLogin(l.getLogin());
+        controlBean.setLocked(l.getIsLocked() != 0);
+        if (l.getLastLogin() != null) {
+            controlBean.setLastLoginTime(sdf.format(l.getLastLogin()));
+        }
+        Map<String, String> attributesFilter = null;
+        if (request.getFilter() != null && request.getFilter().getSearchAttributes() != null) {
+            List<UserSearchAttributeRequest> userSearchAttributeRequests = request.getFilter().getSearchAttributes();
+            if (CollectionUtils.isNotEmpty(userSearchAttributeRequests)) {
+                for (UserSearchAttributeRequest attributeRequest : request.getFilter().getSearchAttributes()) {
+                    if (attributeRequest.getName() != null && attributeRequest.getValue() != null) {
+                        if (attributesFilter == null) {
+                            attributesFilter = new HashMap<String, String>();
+                        }
+                        attributesFilter.put(attributeRequest.getName(), attributeRequest.getValue());
                     }
                 }
             }
@@ -145,9 +162,14 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         Map<String, Set<String>> groups = new HashMap<>();
         Map<String, Set<String>> resources = new HashMap<>();
         Map<String, Set<String>> roles = new HashMap<>();
-        this.getResources(user.getResources(), user.getGroups(), user.getRoles(), resources);
-        this.getGroups(user.getGroups(), resources, groups);
-        this.getRoles(user.getRoles(), resources, roles);
+        //here add a filtering by attributes
+        user.setGroups(filterGroups(user.getId(), attributesFilter));
+        user.setResources(filterResources(user.getId(), attributesFilter));
+        user.setRoles(filterRoles(user.getId(), attributesFilter));
+//get deep tree
+        this.getResources(user.getResources(), user.getGroups(), user.getRoles(), resources, attributesFilter);
+        this.getGroups(user.getGroups(), resources, groups, attributesFilter);
+        this.getRoles(user.getRoles(), resources, roles, attributesFilter);
         UserEntitlementsMatrix matrix = adminService.getUserEntitlementsMatrix(user.getId());
         if (matrix != null) {
             Set<UserAccessControlMemberBean> directSet = new HashSet<UserAccessControlMemberBean>();
@@ -160,7 +182,6 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
             String roleFilter = null;
             String groupFilter = null;
             String resourceFilter = null;
-            String commonNameFilter = null;
             if (request.getFilter() != null && request.getFilter().getManagedSystemNames() != null) {
                 managedSystemFilter = request.getFilter().getManagedSystemNames();
             }
@@ -216,7 +237,10 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
                 metadataTypeSearchBean.setGrouping(MetadataTypeGrouping.RESOURCE_TYPE);
                 List<MetadataType> resourceMetadataTypes = metadataService.findBeans(metadataTypeSearchBean, -1, -1, null);
                 //fill managed systems
-                List<ResourceType> resourceTypes = resourceDataService.getAllResourceTypes(null);
+                ResourceTypeSearchBean resourceTypeSearchBean = new ResourceTypeSearchBean();
+                resourceTypeSearchBean.setDeepCopy(false);
+                resourceTypeSearchBean.setSearchable(true);
+                List<ResourceTypeEntity> resourceTypes = resourceService.findResourceTypes(resourceTypeSearchBean, -1, -1);
 //                this.fillNamedTypes(compiledSet, managedSysEntities, roleMetadataTypes, groupMetadataTypes, resourceMetadataTypes, resourceTypes, accessRights);
                 this.fillNamedTypes(directSet, managedSysEntities, roleMetadataTypes, groupMetadataTypes, resourceMetadataTypes, resourceTypes, accessRights);
             }
@@ -235,13 +259,46 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         return response;
     }
 
+    private void fillResourceSearchBeanWithAttributes(ResourceSearchBean searchBean, Map<String, String> attributesFilter) {
+        if (attributesFilter != null && searchBean != null) {
+            for (String attribute : attributesFilter.keySet()) {
+                if (attribute != null && attributesFilter.get(attribute) != null) {
+                    searchBean.addAttribute(attribute, attributesFilter.get(attribute));
+                }
+            }
+        }
+    }
 
-    private void getResources(Set<Resource> resources, Set<Group> groups, Set<Role> roles, Map<String, Set<String>> resultResources) {
+    private void fillRoleSearchBeanWithAttributes(RoleSearchBean searchBean, Map<String, String> attributesFilter) {
+        if (attributesFilter != null && searchBean != null) {
+            for (String attribute : attributesFilter.keySet()) {
+                if (attribute != null && attributesFilter.get(attribute) != null) {
+                    searchBean.addAttribute(attribute, attributesFilter.get(attribute));
+                }
+            }
+        }
+    }
+
+    private void fillGroupSearchBeanWithAttributes(GroupSearchBean searchBean, Map<String, String> attributesFilter) {
+        if (attributesFilter != null && searchBean != null) {
+            for (String attribute : attributesFilter.keySet()) {
+                if (attribute != null && attributesFilter.get(attribute) != null) {
+                    searchBean.addAttribute(attribute, attributesFilter.get(attribute));
+                }
+            }
+        }
+    }
+
+    private void getResources(Set<Resource> resources, Set<Group> groups, Set<Role> roles, Map<String, Set<String>> resultResources, Map<String, String> attributesFilter) {
         Map<String, Set<String>> retVal = new HashMap<>();
         if (CollectionUtils.isNotEmpty(groups)) {
             ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
-            resourceSearchBean.setDeepCopy(true);
+            resourceSearchBean.addExcludeResourceType("MENU_ITEM");
+            resourceSearchBean.addExcludeResourceType("URL_PATTERN");
+            resourceSearchBean.addExcludeResourceType("ADMIN_RESOURCE");
+            resourceSearchBean.setDeepCopy(false);
             resourceSearchBean.setIncludeAccessRights(true);
+            fillResourceSearchBeanWithAttributes(resourceSearchBean, attributesFilter);
             //collect group ids
             for (Group g : groups) {
                 resourceSearchBean.setGroupIdSet(null);
@@ -252,7 +309,11 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
 
         if (CollectionUtils.isNotEmpty(roles)) {
             ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
-            resourceSearchBean.setDeepCopy(true);
+            resourceSearchBean.setDeepCopy(false);
+            resourceSearchBean.addExcludeResourceType("MENU_ITEM");
+            resourceSearchBean.addExcludeResourceType("URL_PATTERN");
+            resourceSearchBean.addExcludeResourceType("ADMIN_RESOURCE");
+            fillResourceSearchBeanWithAttributes(resourceSearchBean, attributesFilter);
             resourceSearchBean.setIncludeAccessRights(true);
             //collect group ids
             for (Role r : roles) {
@@ -260,7 +321,6 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
                 resourceSearchBean.addRoleId(r.getId());
                 retVal.putAll(this.getResourceIds(resourceDataService.findBeans(resourceSearchBean, -1, -1, null)));
             }
-
         }
 
         if (CollectionUtils.isNotEmpty(resources)) {
@@ -269,67 +329,122 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
                 retVal.put(r.getId(), null);
             }
         }
-        retVal.putAll(processParentResources(retVal));
+        retVal.putAll(processParentResources(retVal, attributesFilter));
         resultResources.putAll(retVal);
     }
 
-    private Map<String, Set<String>> processParentGroups(Map<String, Set<String>> childIds, Map<String, Set<String>> resultResources) {
+    private Map<String, Set<String>> processParentGroups(Map<String, Set<String>> childIds, Map<String, Set<String>> resultResources, Map<String, String> attributesFilter) {
         Map<String, Set<String>> retVal = new HashMap<>();
         if (MapUtils.isNotEmpty(childIds)) {
-            GroupSearchBean resourceSearchBean = new GroupSearchBean();
-            resourceSearchBean.setIncludeAccessRights(true);
-            resourceSearchBean.setDeepCopy(true);
+            GroupSearchBean groupSearchBean = new GroupSearchBean();
+            groupSearchBean.setIncludeAccessRights(true);
+            groupSearchBean.setDeepCopy(true);
             for (String s : childIds.keySet()) {
-                resourceSearchBean.setChildIdSet(null);
-                resourceSearchBean.addChildId(s);
-                List<Group> groupList = groupDataWebService.findBeans(resourceSearchBean, null, -1, -1);
+                groupSearchBean.setChildIdSet(null);
+                groupSearchBean.addChildId(s);
+                fillGroupSearchBeanWithAttributes(groupSearchBean, attributesFilter);
+                List<Group> groupList = groupDataWebService.findBeans(groupSearchBean, null, -1, -1);
                 retVal.putAll(this.getGroupIds(groupList));
                 if (CollectionUtils.isNotEmpty(groupList)) {
-                    this.getResources(null, new HashSet<Group>(groupList), null, resultResources);
+                    this.getResources(null, new HashSet<Group>(groupList), null, resultResources, attributesFilter);
                 }
             }
-            retVal.putAll(this.processParentGroups(retVal, resultResources));
+            retVal.putAll(this.processParentGroups(retVal, resultResources, attributesFilter));
         }
         return retVal;
     }
 
-    private Map<String, Set<String>> processParentRoles(Map<String, Set<String>> childIds, Map<String, Set<String>> resultResources) {
+    private Map<String, Set<String>> processParentRoles(Map<String, Set<String>> childIds, Map<String, Set<String>> resultResources, Map<String, String> attributesFilter) {
         Map<String, Set<String>> retVal = new HashMap<>();
         if (MapUtils.isNotEmpty(childIds)) {
-            RoleSearchBean resourceSearchBean = new RoleSearchBean();
-            resourceSearchBean.setIncludeAccessRights(true);
-            resourceSearchBean.setDeepCopy(true);
+            RoleSearchBean roleSearchBean = new RoleSearchBean();
+            roleSearchBean.setIncludeAccessRights(true);
+            roleSearchBean.setDeepCopy(true);
+            fillRoleSearchBeanWithAttributes(roleSearchBean, attributesFilter);
             for (String s : childIds.keySet()) {
-                resourceSearchBean.setChildIdSet(null);
-                resourceSearchBean.addChildId(s);
-                List<Role> groupList = roleDataService.findBeansDto(resourceSearchBean, null, -1, -1);
+                roleSearchBean.setChildIdSet(null);
+                roleSearchBean.addChildId(s);
+                List<Role> groupList = roleDataService.findBeansDto(roleSearchBean, null, -1, -1);
                 retVal.putAll(this.getRoleIds(groupList));
                 if (CollectionUtils.isNotEmpty(groupList)) {
-                    this.getResources(null, null, new HashSet<Role>(groupList), resultResources);
+                    this.getResources(null, null, new HashSet<Role>(groupList), resultResources, attributesFilter);
                 }
             }
-            retVal.putAll(this.processParentGroups(retVal, resultResources));
+            retVal.putAll(this.processParentRoles(retVal, resultResources, attributesFilter));
         }
         return retVal;
     }
 
-    private Map<String, Set<String>> processParentResources(Map<String, Set<String>> childIds) {
+    private Map<String, Set<String>> processParentResources(Map<String, Set<String>> childIds, Map<String, String> attributesFilter) {
         Map<String, Set<String>> retVal = new HashMap<>();
         if (MapUtils.isNotEmpty(childIds)) {
             ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
             resourceSearchBean.setIncludeAccessRights(true);
-            resourceSearchBean.setDeepCopy(true);
+            resourceSearchBean.setDeepCopy(false);
+            resourceSearchBean.addExcludeResourceType("MENU_ITEM");
+            resourceSearchBean.addExcludeResourceType("URL_PATTERN");
+            resourceSearchBean.addExcludeResourceType("ADMIN_RESOURCE");
+            fillResourceSearchBeanWithAttributes(resourceSearchBean, attributesFilter);
             for (String s : childIds.keySet()) {
                 resourceSearchBean.setChildIdSet(null);
                 resourceSearchBean.addChildId(s);
                 retVal.putAll(this.getResourceIds(resourceDataService.findBeans(resourceSearchBean, -1, -1, null)));
             }
-            retVal.putAll(this.processParentResources(retVal));
+            retVal.putAll(this.processParentResources(retVal, attributesFilter));
         }
         return retVal;
     }
 
-    private void getGroups(Set<Group> groups, Map<String, Set<String>> resultResources, Map<String, Set<String>> resultGroups) {
+    private Set<Role> filterRoles(String userId, Map<String, String> attributesFilter) {
+        if (StringUtils.isEmpty(userId)) {
+            return new HashSet<>();
+        }
+        RoleSearchBean roleSearchBean = new RoleSearchBean();
+        roleSearchBean.setDeepCopy(false);
+        roleSearchBean.addUserId(userId);
+        fillRoleSearchBeanWithAttributes(roleSearchBean, attributesFilter);
+        List<Role> roleList = roleDataService.findBeansDto(roleSearchBean, null, 0, Integer.MAX_VALUE);
+        if (CollectionUtils.isEmpty(roleList)) {
+            return new HashSet<>();
+        } else {
+            return new HashSet<>(roleList);
+        }
+    }
+
+
+    private Set<Resource> filterResources(String userId, Map<String, String> attributesFilter) {
+        if (StringUtils.isEmpty(userId)) {
+            return new HashSet<>();
+        }
+        ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
+        resourceSearchBean.addUserId(userId);
+        resourceSearchBean.setDeepCopy(false);
+        fillResourceSearchBeanWithAttributes(resourceSearchBean, attributesFilter);
+        List<Resource> groupList = resourceDataService.findBeans(resourceSearchBean, 0, Integer.MAX_VALUE, null);
+        if (CollectionUtils.isEmpty(groupList)) {
+            return new HashSet<>();
+        } else {
+            return new HashSet<>(groupList);
+        }
+    }
+
+    private Set<Group> filterGroups(String userId, Map<String, String> attributesFilter) {
+        if (StringUtils.isEmpty(userId)) {
+            return new HashSet<>();
+        }
+        GroupSearchBean groupSearchBean = new GroupSearchBean();
+        groupSearchBean.addUserId(userId);
+        groupSearchBean.setDeepCopy(false);
+        fillGroupSearchBeanWithAttributes(groupSearchBean, attributesFilter);
+        List<Group> groupList = groupDataWebService.findBeans(groupSearchBean, null, 0, Integer.MAX_VALUE);
+        if (CollectionUtils.isEmpty(groupList)) {
+            return new HashSet<>();
+        } else {
+            return new HashSet<>(groupList);
+        }
+    }
+
+    private void getGroups(Set<Group> groups, Map<String, Set<String>> resultResources, Map<String, Set<String>> resultGroups, Map<String, String> attributesFilter) {
         Map<String, Set<String>> retVal = new HashMap<>();
         if (CollectionUtils.isNotEmpty(groups)) {
             //collect group ids
@@ -337,11 +452,11 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
                 retVal.put(r.getId(), null);
             }
         }
-        retVal.putAll(processParentGroups(retVal, resultResources));
+        retVal.putAll(processParentGroups(retVal, resultResources, attributesFilter));
         resultGroups.putAll(retVal);
     }
 
-    private void getRoles(Set<Role> roles, Map<String, Set<String>> resultResources, Map<String, Set<String>> resultRoles) {
+    private void getRoles(Set<Role> roles, Map<String, Set<String>> resultResources, Map<String, Set<String>> resultRoles, Map<String, String> attributeFilter) {
         Map<String, Set<String>> retVal = new HashMap<>();
         if (CollectionUtils.isNotEmpty(roles)) {
             //collect group ids
@@ -349,7 +464,7 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
                 retVal.put(r.getId(), null);
             }
         }
-        retVal.putAll(processParentGroups(retVal, resultResources));
+        retVal.putAll(processParentRoles(retVal, resultResources, attributeFilter));
         resultRoles.putAll(retVal);
     }
 
@@ -397,10 +512,10 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         return retVal;
     }
 
-    private String getResourceTypeName(String id, List<ResourceType> managedSysEntityList) {
+    private String getResourceTypeName(String id, List<ResourceTypeEntity> managedSysEntityList) {
         String retVal = null;
         if (id != null && managedSysEntityList != null) {
-            for (ResourceType e : managedSysEntityList) {
+            for (ResourceTypeEntity e : managedSysEntityList) {
                 if (e.getId().equals(id)) {
                     retVal = e.getDescription();
                     break;
@@ -437,7 +552,7 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
     }
 
 
-    private void fillNamedTypes(Set<UserAccessControlMemberBean> entitlements, List<ManagedSysEntity> managedSysEntities, List<MetadataType> roleMetadataTypes, List<MetadataType> groupMetadataTypes, List<MetadataType> resourceMetadataTypes, List<ResourceType> resourceTypes, List<AccessRight> accessRights) {
+    private void fillNamedTypes(Set<UserAccessControlMemberBean> entitlements, List<ManagedSysEntity> managedSysEntities, List<MetadataType> roleMetadataTypes, List<MetadataType> groupMetadataTypes, List<MetadataType> resourceMetadataTypes, List<ResourceTypeEntity> resourceTypes, List<AccessRight> accessRights) {
 //TODO
         if (CollectionUtils.isNotEmpty(entitlements)) {
             for (UserAccessControlMemberBean bean : entitlements) {
@@ -488,7 +603,7 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
             if (!processNameFilter(group.getName(), nameFilter)) {
                 continue;
             }
-            if (group != null && filtered(managedSystemFilter, group.getManagedSysId()) && filtered(metadataTypeFilter, group.getMetadataTypeId())) {
+            if (filtered(managedSystemFilter, group.getManagedSysId()) && filtered(metadataTypeFilter, group.getMetadataTypeId())) {
                 UserAccessControlMemberBean bean = new UserAccessControlMemberBean();
                 bean.setObjectType("group");
                 bean.setManagedSystem(group.getManagedSysId());
@@ -549,6 +664,11 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
             if (!processNameFilter(resource.getName(), nameFilter)) {
                 continue;
             }
+            if ("MENU_ITEM".equalsIgnoreCase(resource.getResourceTypeId()) ||
+                    "URL_PATTERN".equalsIgnoreCase(resource.getResourceTypeId()) ||
+                    "ADMIN_RESOURCE".equalsIgnoreCase(resource.getResourceTypeId())) {
+                continue;
+            }
             if (resource != null &&
                     filtered(resourceTypeFilter, resource.getResourceTypeId()) && filtered(metadataTypeFilter, resource.getMetadataTypeId())) {
                 UserAccessControlMemberBean bean = new UserAccessControlMemberBean();
@@ -593,7 +713,7 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
         } else if (UserSearchKeyEnum.EMPLOYEE_ID.equals(matchAttrName)) {
             searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         }
-        searchBean.setDeepCopy(true);
+        searchBean.setDeepCopy(false);
         List<User> userList = userDataService.findBeans(searchBean, 0, Integer.MAX_VALUE);
         if (CollectionUtils.isNotEmpty(userList)) {
             if (userList.size() > 1) {
