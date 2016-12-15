@@ -12,7 +12,7 @@ import java.util.List;
 
 @XmlType(propOrder = {"name", "newName", "value", "values", "operation"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterAttributeRequest  implements Serializable {
+public class UserSearchAttributeRequest implements Serializable {
     private String name;
     private String newName;
     private String value;

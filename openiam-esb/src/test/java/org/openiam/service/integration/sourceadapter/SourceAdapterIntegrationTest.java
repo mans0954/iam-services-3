@@ -9,7 +9,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
-import org.openiam.provision.dto.srcadapter.SourceAdapterAttributeRequest;
+import org.openiam.provision.dto.srcadapter.UserSearchAttributeRequest;
 import org.openiam.provision.dto.srcadapter.UserSearchKey;
 import org.openiam.provision.dto.srcadapter.UserSearchKeyEnum;
 import org.openiam.provision.dto.srcadapter.SourceAdapterMemberhipKey;
@@ -56,9 +56,9 @@ public class SourceAdapterIntegrationTest extends AbstractServiceTest {
 		supervisors.add(supervisor);
 		request.setSupervisors(supervisors);
 		
-		final Set<SourceAdapterAttributeRequest> userAttributes = new HashSet<SourceAdapterAttributeRequest>();
+		final Set<UserSearchAttributeRequest> userAttributes = new HashSet<UserSearchAttributeRequest>();
 		for(int i = 0; i < 3; i++) {
-			final SourceAdapterAttributeRequest attribute = new SourceAdapterAttributeRequest();
+			final UserSearchAttributeRequest attribute = new UserSearchAttributeRequest();
 			attribute.setName(getRandomName());
 			attribute.setValue(getRandomName());
 			userAttributes.add(attribute);
