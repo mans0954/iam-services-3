@@ -14,6 +14,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.idm.srvc.cert.service.CertDataService;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,8 +28,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
-import javax.security.cert.X509Certificate;
 import java.io.ByteArrayInputStream;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,7 +61,12 @@ public class URIFederationRestController {
 	@Autowired
 	private AuthProviderService authProviderService;
 
+	@Autowired
+	@Qualifier("certManager")
+	protected CertDataService certManager;
+
 	private Map<String, HttpMethod> httpMethodMap = new HashMap<String, HttpMethod>();
+
 
 	@PostConstruct
 	public void init() {
@@ -103,12 +110,12 @@ public class URIFederationRestController {
 			X509Certificate caCert = null;
 			if ((provider.getCaCert() != null) && (provider.getCaCert().length > 0)) {
 				try {
-					caCert = X509Certificate.getInstance(new ByteArrayInputStream(provider.getCaCert()));
+					caCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(provider.getCaCert()));
 				} catch (Exception ex) {
 					throw new BasicDataServiceException(ResponseCode.CERT_CA_INVALID, "Can not parse CA Cert");
 				}
 			}
-			final X509Certificate clientCert = X509Certificate.getInstance(new ByteArrayInputStream(certContents.getBytes()));
+			final X509Certificate clientCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(certContents.getBytes()));
 
 			DefaultCertToIdentityConverter certToIdentityConverter;
 			if(regex != null) {
