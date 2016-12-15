@@ -13,8 +13,10 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.core.domain.UserKey;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
@@ -223,59 +225,68 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         }
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    public void initKeyManagement() throws Exception{
-        this.generateMasterKey();
-        this.generateCookieKey();
-        this.generateCommonKey();
+    @Transactional(rollbackFor = BasicDataServiceException.class)
+    public void initKeyManagement() throws BasicDataServiceException {
+        try{
+            this.generateMasterKey();
+            this.generateCookieKey();
+            this.generateCommonKey();
 
-        /* notifies other nodes that the JKS file has been created/modified */
-        final IMap<String, byte[]> keyMap = hazelcastConfiguration.getMap("keyManagementCache");
-        final byte[] fileTypes = FileUtils.readFileToByteArray(new File(jksFile));
-        keyMap.put("jksFileKey", fileTypes);
+            /* notifies other nodes that the JKS file has been created/modified */
+            final IMap<String, byte[]> keyMap = hazelcastConfiguration.getMap("keyManagementCache");
+            final byte[] fileTypes = FileUtils.readFileToByteArray(new File(jksFile));
+            keyMap.put("jksFileKey", fileTypes);
+        } catch (Exception e) {
+            log.error("ERROR: " + e.getMessage(), e);
+            throw new BasicDataServiceException(ResponseCode.KEY_GENERATION_ERROR, e);
+        }
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void generateMasterKey() throws Exception {
-        log.warn("Start generating new master key...");
+    @Transactional(rollbackFor = BasicDataServiceException.class)
+    public void generateMasterKey() throws BasicDataServiceException {
+        try{
+            log.trace("Start generating new master key...");
 
-        log.warn("Loading user data ...");
+            log.trace("Loading user data ...");
 
-        HashMap<String, UserSecurityWrapper> userSecurityMap = getSecurityMap();
-        List<UserKey> newUserKeyList = new ArrayList<UserKey>();
+            HashMap<String, UserSecurityWrapper> userSecurityMap = getSecurityMap();
+            List<UserKey> newUserKeyList = new ArrayList<UserKey>();
 
-        log.warn("Try to get old salt ...");
-        byte[] oldMasterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
-        if (oldMasterKey != null && oldMasterKey.length > 0) {
-            log.warn("OLD MASTER KEY IS: " + jksManager.encodeKey(oldMasterKey));
-            log.warn("Decrypting user data ...");
-            decryptData(oldMasterKey, userSecurityMap);
-            log.warn("Decrypting user data finished successfully");
-        } else {
-            log.warn("OLD MASTER KEY IS NULL");
+            log.trace("Try to get old salt ...");
+            byte[] oldMasterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
+            if (oldMasterKey != null && oldMasterKey.length > 0) {
+                log.trace("OLD MASTER KEY IS: " + jksManager.encodeKey(oldMasterKey));
+                log.trace("Decrypting user data ...");
+                decryptData(oldMasterKey, userSecurityMap);
+                log.trace("Decrypting user data finished successfully");
+            } else {
+                log.trace("OLD MASTER KEY IS NULL");
+            }
+
+            log.trace(" Generation of new master key ...");
+    //        jksManager.generateMasterKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
+    //
+    //        byte[] masterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
+            byte[] masterKey = generateJKSKey(this.keyPassword, JksManager.KEYSTORE_ALIAS);
+            if (masterKey == null || masterKey.length == 0) {
+                throw new NullPointerException("Cannot get master key to encrypt user keys");
+            }
+
+            log.trace("NEW MASTER KEY IS: " + jksManager.encodeKey(masterKey));
+
+            log.trace("Ecrypting user data ...");
+            encryptData(masterKey, userSecurityMap, newUserKeyList);
+            log.trace("Ecrypting user data finished successfully");
+
+            log.trace("Refreshing user keys...");
+            userKeyDao.deleteAll();
+            addUserKeys(newUserKeyList);
+            log.trace("End generating new master key...");
+        } catch (Exception e) {
+            log.error("ERROR: " + e.getMessage(), e);
+            throw new BasicDataServiceException(ResponseCode.KEY_GENERATION_ERROR, e);
         }
-
-        log.warn(" Generation of new master key ...");
-//        jksManager.generateMasterKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
-//
-//        byte[] masterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
-        byte[] masterKey = generateJKSKey(this.keyPassword, JksManager.KEYSTORE_ALIAS);
-        if (masterKey == null || masterKey.length == 0) {
-            throw new NullPointerException("Cannot get master key to encrypt user keys");
-        }
-
-        log.warn("NEW MASTER KEY IS: " + jksManager.encodeKey(masterKey));
-
-        log.warn("Ecrypting user data ...");
-        encryptData(masterKey, userSecurityMap, newUserKeyList);
-        log.warn("Ecrypting user data finished successfully");
-
-        log.warn("Refreshing user keys...");
-        userKeyDao.deleteAll();
-        addUserKeys(newUserKeyList);
-        log.warn("End generating new master key...");
-
     }
 
     @Override
@@ -319,34 +330,38 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void migrateData(String oldSecretKey) throws Exception {
+    @Transactional(rollbackFor = BasicDataServiceException.class)
+    public void migrateData(String oldSecretKey) throws BasicDataServiceException {
+        try{
+            HashMap<String, UserSecurityWrapper> userSecurityMap = getSecurityMap();
+            List<UserKey> newUserKeyList = new ArrayList<UserKey>();
 
-        HashMap<String, UserSecurityWrapper> userSecurityMap = getSecurityMap();
-        List<UserKey> newUserKeyList = new ArrayList<UserKey>();
+            jksManager.generateMasterKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
 
-        jksManager.generateMasterKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
-
-        byte[] masterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
-        if (masterKey == null || masterKey.length == 0) {
-            throw new NullPointerException("Cannot generate master key to encrypt user keys");
-        }
-
-        if (userSecurityMap != null && !userSecurityMap.isEmpty()) {
-            for (String userId : userSecurityMap.keySet()) {
-                // decrypt user data
-                if (!"0001".equals(userId)) {
-                    decryptOldData(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
-                    //  decryptSecurityDataForUser(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
-                }
-                // reencrypt user data
-                encryptUserData(masterKey, userSecurityMap.get(userId), newUserKeyList);
-
+            byte[] masterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
+            if (masterKey == null || masterKey.length == 0) {
+                throw new NullPointerException("Cannot generate master key to encrypt user keys");
             }
+
+            if (userSecurityMap != null && !userSecurityMap.isEmpty()) {
+                for (String userId : userSecurityMap.keySet()) {
+                    // decrypt user data
+                    if (!"0001".equals(userId)) {
+                        decryptOldData(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
+                        //  decryptSecurityDataForUser(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
+                    }
+                    // reencrypt user data
+                    encryptUserData(masterKey, userSecurityMap.get(userId), newUserKeyList);
+
+                }
+            }
+            // replace user key for given user
+            userKeyDao.deleteAll();
+            addUserKeys(newUserKeyList);
+        } catch (Exception e) {
+            log.error("ERROR: " + e.getMessage(), e);
+            throw new BasicDataServiceException(ResponseCode.KEY_GENERATION_ERROR, e);
         }
-        // replace user key for given user
-        userKeyDao.deleteAll();
-        addUserKeys(newUserKeyList);
     }
 
     private void decryptOldData(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
@@ -354,41 +369,70 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
     }
 
     @Override
-    public byte[] getCookieKey() throws Exception {
-        byte[] key = this.getPrimaryKey(JksManager.KEYSTORE_COOKIE_ALIAS, this.cookieKeyPassword);
-        if (key == null || key.length == 0) {
-            return generateCookieKey();
+    public byte[] getCookieKey() throws BasicDataServiceException {
+        try {
+            byte[]key = this.getPrimaryKey(JksManager.KEYSTORE_COOKIE_ALIAS, this.cookieKeyPassword);
+
+            if (key == null || key.length == 0) {
+                return generateCookieKey();
+            }
+            return key;
+        } catch (Exception e) {
+            log.error("ERROR: " + e.getMessage(), e);
+            throw new BasicDataServiceException(ResponseCode.KEY_LOOKUP_ERROR, e);
         }
-        return key;
     }
 
     @Override
-    public byte[] generateCookieKey() throws Exception {
-        return generateJKSKey(this.cookieKeyPassword, JksManager.KEYSTORE_COOKIE_ALIAS);
-    }
-
-    @Override
-    public byte[] getCommonKey() throws Exception {
-        byte[] key = this.getPrimaryKey(JksManager.KEYSTORE_COMMON_ALIAS, this.commonKeyPassword);
-        if (key == null || key.length == 0) {
-            return generateCommonKey();
+    public byte[] generateCookieKey() throws BasicDataServiceException {
+        try {
+            return generateJKSKey(this.cookieKeyPassword, JksManager.KEYSTORE_COOKIE_ALIAS);
+        } catch (Exception e) {
+            log.error("ERROR: " + e.getMessage(), e);
+            throw new BasicDataServiceException(ResponseCode.KEY_GENERATION_ERROR, e);
         }
-        return key;
+    }
+
+    private byte[] getCommonKey() throws BasicDataServiceException {
+        try {
+            byte[] key = this.getPrimaryKey(JksManager.KEYSTORE_COMMON_ALIAS, this.commonKeyPassword);
+            if (key == null || key.length == 0) {
+                return generateCommonKey();
+            }
+            return key;
+        } catch (Exception e) {
+            log.error("ERROR: " + e.getMessage(), e);
+            throw new BasicDataServiceException(ResponseCode.KEY_GENERATION_ERROR, e);
+        }
+    }
+
+    private byte[] generateCommonKey() throws BasicDataServiceException {
+        try {
+            return generateJKSKey(this.commonKeyPassword, JksManager.KEYSTORE_COMMON_ALIAS);
+        } catch (Exception e) {
+            log.error("ERROR: " + e.getMessage(), e);
+            throw new BasicDataServiceException(ResponseCode.KEY_GENERATION_ERROR, e);
+        }
     }
 
     @Override
-    public byte[] generateCommonKey() throws Exception {
-        return generateJKSKey(this.commonKeyPassword, JksManager.KEYSTORE_COMMON_ALIAS);
-    }
-
-    @Override
-    public String encryptData(String data)throws Exception{
-        return encryptData(null, data);
+    public String encryptData(String data)throws BasicDataServiceException{
+        try {
+            return encryptData(null, data);
+        } catch (Exception e) {
+            log.error("ERROR: " + e.getMessage(), e);
+            throw new BasicDataServiceException(ResponseCode.DATA_ENCRYPTION_ERROR, e);
+        }
     }
     
     @Override
-    public String decryptData(String encryptedData)throws Exception{
-        return decryptData(null, encryptedData);
+    public String decryptData(String encryptedData)throws BasicDataServiceException{
+        try {
+            return decryptData(null, encryptedData);
+        } catch (Exception e) {
+            log.error("ERROR: " + e.getMessage(), e);
+            throw new BasicDataServiceException(ResponseCode.DATA_DECRYPTION_ERROR, e);
+        }
     }
     
     @Override

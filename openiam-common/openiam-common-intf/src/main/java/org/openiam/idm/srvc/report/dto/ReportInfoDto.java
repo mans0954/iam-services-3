@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.report.dto;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
 
@@ -18,7 +19,6 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReportInfoDto", propOrder = {
-        "reportId",
         "reportName",
         "reportDataSource",
         "reportUrl",
@@ -28,8 +28,7 @@ import javax.xml.bind.annotation.XmlType;
 		"resourceId"
 })
 @DozerDTOCorrespondence(ReportInfoEntity.class)
-public class ReportInfoDto {
-    private String reportId;
+public class ReportInfoDto extends KeyDTO{
     private String reportName;
     private String reportDataSource;
     private String reportUrl;
@@ -47,14 +46,6 @@ public class ReportInfoDto {
 
     public void setReportName(String reportName) {
         this.reportName = reportName;
-    }
-
-    public String getReportId() {
-        return reportId;
-    }
-
-    public void setReportId(String reportId) {
-        this.reportId = reportId;
     }
 
     public String getReportDataSource() {
@@ -106,7 +97,7 @@ public class ReportInfoDto {
 
         if (reportDataSource != null ? !reportDataSource.equals(reportDto.reportDataSource) : reportDto.reportDataSource != null)
             return false;
-        if (reportId != null ? !reportId.equals(reportDto.reportId) : reportDto.reportId != null) return false;
+        if (getId() != null ? !getId().equals(reportDto.getId()) : reportDto.getId() != null) return false;
         if (reportName != null ? !reportName.equals(reportDto.reportName) : reportDto.reportName != null) return false;
         if (reportUrl != null ? !reportUrl.equals(reportDto.reportUrl) : reportDto.reportUrl != null) return false;
         if (isBuiltIn != reportDto.isBuiltIn) return false;
@@ -116,7 +107,7 @@ public class ReportInfoDto {
 
     @Override
     public int hashCode() {
-        int result = reportId != null ? reportId.hashCode() : 0;
+        int result = getId() != null ? getId().hashCode() : 0;
         result = 31 * result + (reportName != null ? reportName.hashCode() : 0);
         result = 31 * result + (reportDataSource != null ? reportDataSource.hashCode() : 0);
         result = 31 * result + (reportUrl != null ? reportUrl.hashCode() : 0);
@@ -127,7 +118,7 @@ public class ReportInfoDto {
 
     @Override
 	public String toString() {
-		return "ReportInfoDto [reportId=" + reportId + ", reportName="
+		return "ReportInfoDto [reportId=" + getId() + ", reportName="
 				+ reportName + ", reportDataSource=" + reportDataSource
 				+ ", reportUrl=" + reportUrl + "]";
 	}
