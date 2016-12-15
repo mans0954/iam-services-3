@@ -27,8 +27,12 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableWebMvc
 //@EnableCaching
 @EnableAutoConfiguration(exclude={DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class, VelocityAutoConfiguration.class})
-@Import(value={BasePojoConfiguration.class,  BaseAuthManagerConfiguration.class,
-		BaseActivitiConfiguration.class, BaseAccessManagerConfig.class, OpeniamCacheConfiguration.class})
+@Import(value={BasePojoConfiguration.class,  
+			   BaseAuthManagerConfiguration.class,
+			   BaseActivitiConfiguration.class, 
+			   BaseAccessManagerConfig.class, 
+			   OpeniamCacheConfiguration.class,
+			   SpringSecurityConfiguration.class})
 public class Application {
 
 	public static void main(final String[] args) {

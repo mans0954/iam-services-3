@@ -76,9 +76,6 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
     @Autowired
     @Qualifier("authManagerCompilationPool")
     private ThreadPoolTaskExecutor authManagerCompilationPool;
-    
-    @Autowired
-    private HazelcastConfiguration hazelcastConfiguration;
 	
 	/*
 	private boolean forceThreadShutdown = false;
@@ -116,20 +113,6 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	@Autowired
 	private MembershipDAO membershipDAO;
 	
-	@Autowired
-	private org.openiam.idm.srvc.org.service.OrganizationDAO hibernateOrgDAO;
-	
-	@Autowired
-	private org.openiam.idm.srvc.role.service.RoleDAO hibernateRoleDAO;
-	
-	@Autowired
-	private org.openiam.idm.srvc.grp.service.GroupDAO hibernateGroupDAO;
-	
-	@Autowired
-	private org.openiam.idm.srvc.res.service.ResourceDAO hibernateResourceDAO;
-	
-	@Autowired
-	private org.openiam.idm.srvc.access.service.AccessRightDAO hibernateAccessRightDAO;
 	
 	@Autowired
 	private org.openiam.idm.srvc.user.service.UserDAO hbmUserDAO;
@@ -291,10 +274,6 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 		}
 	}
 	
-	private String createLoginIdKey(final String login, final String managedSysId) {
-		return createLoginIdKey(new AuthorizationManagerLoginId(login, managedSysId));
-	}
-	
 	private String createLoginIdKey(final AuthorizationManagerLoginId loginId) {
 		clean(loginId);
 		return String.format("%s:%s", loginId.getLogin(), loginId.getManagedSysId());
@@ -308,33 +287,6 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	@Override
 	public void setApplicationContext(ApplicationContext ctx) throws BeansException {
 		this.ctx = ctx;
-	}
-	
-	@ManagedOperation
-	public String fetchUserJMX(final String userId) {
-		final AuthorizationUser user = fetchUser(userId);
-		return (user != null) ? user.toString() : null;
-	}
-	
-	@ManagedOperation
-	public void purgeUser(final String userId) {
-		userCache.remove(userId);
-	}
-	
-	@ManagedOperation
-	public String getCachedUserContents() {
-		final String lineSeparator = System.getProperty("line.separator");
-		final StringBuilder sb = new StringBuilder();
-		
-		sb.append("User Cache:").append(lineSeparator);
-		for(final Object key : userCache.getKeys()) {
-			sb.append(key).append("=>").append(userCache.get(key).getValue()).append(lineSeparator);
-		}
-		
-		sb.append(lineSeparator);
-		sb.append(lineSeparator);
-		sb.append("Done...");
-		return sb.toString();
 	}
 	
 	private AuthorizationUser fetchUser(final String userId) {

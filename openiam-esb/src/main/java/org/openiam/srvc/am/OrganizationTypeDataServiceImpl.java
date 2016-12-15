@@ -14,7 +14,10 @@ import org.openiam.mq.constants.api.OrganizationTypeAPI;
 import org.openiam.mq.constants.queue.am.OrganizationTypeQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import com.hazelcast.security.SecurityContext;
 
 import javax.jws.WebService;
 
