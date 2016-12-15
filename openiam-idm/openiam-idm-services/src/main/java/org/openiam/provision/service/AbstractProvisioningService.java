@@ -1705,7 +1705,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------
             if (log.isDebugEnabled()) {
-                log.debug("LastName old=" + loginPrevAltContact.getLogin() + "; new=" + loginNewAltContact.getLogin());
+                log.debug("AlternateContact old=" + loginPrevAltContact.getLogin() + "; new=" + loginNewAltContact.getLogin());
             }
 
 
@@ -2802,8 +2802,21 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("EmployeeType New=" + metadataType.getDescription());
             }
-
-
+        }
+        if (StringUtils.isNotEmpty(pUser.getMdTypeId())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(requestorId);
+            auditLog.setRequestorPrincipal(requestorPrincipal);
+            auditLog.setTargetUser(tgId, strLogin + " [UserMdType]");
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getMdTypeId());
+            auditLog.addCustomRecord("UserMdType", "New=" + metadataType.getDescription());
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+            if (log.isDebugEnabled()) {
+                log.debug("EmployeeType New=" + metadataType.getDescription());
+            }
         }
         if (StringUtils.isNotEmpty(pUser.getUserTypeInd())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -2818,8 +2831,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             if (log.isDebugEnabled()) {
                 log.debug("UserType New=" + pUser.getUserTypeInd());
             }
-
-
         }
         if (userEntity.getJobCode() != null && StringUtils.isNotEmpty(pUser.getJobCodeId())) {
             // Audit Log -----------------------------------------------------------------------------------
@@ -3015,6 +3026,28 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                 log.debug("Preffix Partner Name New=" + pUser.getPrefixPartnerName());
             }
 
+        }
+
+        if (StringUtils.isNotEmpty(pUser.getAlternateContactId())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(requestorId);
+            auditLog.setRequestorPrincipal(requestorPrincipal);
+            auditLog.setTargetUser(tgId, strLogin + " [Alternate Contact]");
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+
+            Login loginNewAltContact = null;
+            User usrTmp = userMgr.getUserDto(pUser.getAlternateContactId());
+            if (usrTmp != null) {
+                loginNewAltContact = UserUtils.getUserManagedSysIdentity(sysConfiguration.getDefaultManagedSysId(), usrTmp.getPrincipalList());
+            }
+
+            auditLog.addCustomRecord("AlternateContactId", "new=" + (loginNewAltContact != null ? loginNewAltContact.getLogin() : ""));
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+            if (log.isDebugEnabled()) {
+                log.debug("AlternateContactId  New=" + loginNewAltContact.getLogin());
+            }
         }
     }
 
