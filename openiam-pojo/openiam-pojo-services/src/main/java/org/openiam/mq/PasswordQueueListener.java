@@ -9,8 +9,8 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.mq.constants.MQConstant;
-import org.openiam.mq.constants.api.common.PasswordAPI;
-import org.openiam.mq.constants.queue.common.PasswordQueue;
+import org.openiam.mq.constants.api.user.PasswordAPI;
+import org.openiam.mq.constants.queue.user.PasswordQueue;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ import org.openiam.mq.listener.AbstractListener;
 @Component
 @RabbitListener(id = "PasswordQueueListener",
         queues = "#{PasswordQueue.name}",
-        containerFactory = "commonRabbitListenerContainerFactory")
+        containerFactory = "userRabbitListenerContainerFactory")
 public class PasswordQueueListener extends AbstractListener<PasswordAPI> {
     @Autowired
     private PasswordService passwordDS;

@@ -1,4 +1,4 @@
-package org.openiam.mq.constants.api.common;
+package org.openiam.mq.constants.api.user;
 
 import org.openiam.mq.constants.api.OpenIAMAPI;
 

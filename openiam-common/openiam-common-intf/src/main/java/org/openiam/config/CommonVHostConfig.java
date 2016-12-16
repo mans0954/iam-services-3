@@ -2,6 +2,7 @@ package org.openiam.config;
 
 import org.openiam.mq.constants.RabbitMQVHosts;
 import org.openiam.mq.constants.queue.common.*;
+import org.openiam.mq.constants.queue.common.PolicyQueue;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -106,12 +107,6 @@ public class CommonVHostConfig extends BaseVHostConfig{
     @Bean
     public ReportQueue ReportQueue() {
         ReportQueue queue =  new ReportQueue();
-        bindQueue(commonAmqpAdmin(), queue);
-        return queue;
-    }
-    @Bean
-    public PasswordQueue PasswordQueue() {
-        PasswordQueue queue =  new PasswordQueue();
         bindQueue(commonAmqpAdmin(), queue);
         return queue;
     }
