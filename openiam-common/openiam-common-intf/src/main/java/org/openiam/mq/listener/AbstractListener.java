@@ -3,6 +3,7 @@ package org.openiam.mq.listener;
 import com.rabbitmq.client.Channel;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.request.*;
+import org.openiam.base.response.PasswordValidationResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -60,7 +61,11 @@ public abstract class AbstractListener<API extends OpenIAMAPI> {
 
             apiResponse = processor.doProcess(api, request);
 
-            apiResponse.succeed();
+            if(!(apiResponse instanceof PasswordValidationResponse)){
+                // do not need to change status of response because it is already set in service.
+                apiResponse.succeed();
+            }
+
             auditEvent.succeed();
         } catch (PageTemplateException e) {
             processor.handleTemplateException(e, apiResponse);
