@@ -39,18 +39,7 @@ public class CertDataServiceImpl implements CertDataService {
 
     private static final Log log = LogFactory.getLog(CertDataServiceImpl.class);
 
-    @Value("${org.openiam.cert.crl.path}")
-    private String crlPath;
-
     public CertDataServiceImpl() {}
-
-    public String getCrlPath() {
-        return this.crlPath;
-    }
-
-    public boolean isCrlPath() {
-        return (this.crlPath == null && StringUtils.isEmpty(this.crlPath)) ? false : true;
-    }
 
     public List<String> getCrlDistributionPoints(X509Certificate cert) throws BasicDataServiceException {
         try {

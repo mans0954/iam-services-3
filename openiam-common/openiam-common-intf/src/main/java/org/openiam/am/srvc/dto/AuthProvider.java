@@ -34,7 +34,8 @@ import java.util.Set;
         "certRegex",
         "certGroovyScript",
         "caValidateGroovyScript",
-        "caCert"
+        "caCert",
+        "derPath"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider implements Serializable {
@@ -59,6 +60,7 @@ public class AuthProvider implements Serializable {
     private String certGroovyScript;
     private String caValidateGroovyScript;
     private byte[] caCert;
+    private String derPath;
 
     @XmlTransient
     private Map<String, AuthProviderAttribute> providerAttributeMap=null;
@@ -232,6 +234,14 @@ public class AuthProvider implements Serializable {
         this.certGroovyScript = certGroovyScript;
     }
 
+    public String getDerPath() {
+        return derPath;
+    }
+
+    public void setDerPath(String derPath) {
+        this.derPath = derPath;
+    }
+
     public String getCaValidateGroovyScript() {
         return caValidateGroovyScript;
     }
@@ -269,6 +279,11 @@ public class AuthProvider implements Serializable {
                 return false;
         } else if (!certGroovyScript.equals(that.certGroovyScript))
             return false;
+        if (derPath == null) {
+            if (that.derPath != null)
+                return false;
+        } else if (!derPath.equals(that.derPath))
+            return false;
         if (caValidateGroovyScript == null) {
             if (that.caValidateGroovyScript != null)
                 return false;
@@ -302,6 +317,7 @@ public class AuthProvider implements Serializable {
         result = 31 * result + (resource != null ? resource.hashCode() : 0);
         result = 31 * result + (providerAttributeMap != null ? providerAttributeMap.hashCode() : 0);
         result = 31 * result + ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+        result = 31 * result + ((derPath == null) ? 0 : derPath.hashCode());
         result = 31 * result + ((caValidateGroovyScript == null) ? 0 : caValidateGroovyScript.hashCode());
         result = 31 * result + ((certRegex == null) ? 0 : certRegex.hashCode());
         return result;

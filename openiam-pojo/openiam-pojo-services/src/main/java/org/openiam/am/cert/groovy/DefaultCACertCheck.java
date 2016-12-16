@@ -1,14 +1,12 @@
 package org.openiam.am.cert.groovy;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.cert.X509CRLHolder;
-import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.cert.service.CertDataService;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,6 +23,8 @@ public class DefaultCACertCheck {
 	protected X509Certificate clientCert;
 
 	protected X509Certificate caCert;
+
+	protected String crlPath;
 
 	@Autowired
 	@Qualifier("certManager")
@@ -46,13 +46,17 @@ public class DefaultCACertCheck {
 	public void setCACert(final X509Certificate caCert) {
 		this.caCert = caCert;
 	}
-	
+
+	public void setCrlPath(String crlPath) {
+		this.crlPath = crlPath;
+	}
+
 	/**
 	 * Returns the Login associated with the X509Certificate
 	 * @return
 	 */
 	public Boolean resolve() throws BasicDataServiceException {
-	/*
+/*
 		if (caCert != null) {
 			try {
 				caCert.checkValidity();
@@ -71,17 +75,17 @@ public class DefaultCACertCheck {
 					throw new BasicDataServiceException(ResponseCode.CERT_INVALID_VERIFY_WITH_CA, ex.getMessage());
 				}
 
-				if (!certManager.isCrlPath()) {
+				if (StringUtils.isBlank(crlPath)) {
 					certManager.verifyCertificateNotRevoked(caCert, clientCert);
 				} else {
 					List<X509CRLHolder> crlList = new ArrayList<X509CRLHolder>();
 					// "file://crl.der"    "https://lnx1.openiamdemo.com/crl"
-					crlList.add(certManager.downloadCRL(certManager.getCrlPath()));
+					crlList.add(certManager.downloadCRL(crlPath));
 					certManager.verifyCertificateNotRevoked(crlList, caCert, clientCert);
 				}
 			}
 		}
-	*/
+*/
 		return true;
 	}
 }

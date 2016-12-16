@@ -115,7 +115,13 @@ public class URIFederationRestController {
 					throw new BasicDataServiceException(ResponseCode.CERT_CA_INVALID, "Can not parse CA Cert");
 				}
 			}
-			final X509Certificate clientCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(certContents.getBytes()));
+
+			X509Certificate clientCert;
+			try {
+				clientCert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(certContents.getBytes()));
+			} catch (Exception ex) {
+				throw new BasicDataServiceException(ResponseCode.CERT_CLIENT_INVALID, "Could not parse certificate");
+			}
 
 			DefaultCertToIdentityConverter certToIdentityConverter;
 			if(regex != null) {
@@ -146,6 +152,7 @@ public class URIFederationRestController {
 					caCertCheck.setCACert(caCert);
 				}
 				caCertCheck.setCertficiate(clientCert);
+				caCertCheck.setCrlPath(provider.getDerPath());
 				caCertCheck.init();
 				if (!caCertCheck.resolve()) {
 					throw new BasicDataServiceException(ResponseCode.CERT_INVALID_VERIFY_WITH_CA);

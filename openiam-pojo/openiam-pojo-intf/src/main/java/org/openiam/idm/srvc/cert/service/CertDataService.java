@@ -8,10 +8,6 @@ import java.util.List;
 
 public interface CertDataService {
 
-    public String getCrlPath();
-
-    public boolean isCrlPath();
-
     public List<String> getCrlDistributionPoints(X509Certificate cert) throws BasicDataServiceException;
 
     public List<X509CRLHolder> getAllCRLs(X509Certificate cert) throws BasicDataServiceException;
