@@ -77,6 +77,7 @@ import org.openiam.mq.constants.queue.user.UserServiceQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.common.MailService;
 import org.openiam.util.AuditLogHelper;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -531,15 +532,15 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     }
 
     @Override
-    public Response addSuperior(String superiorId, String suborinateId, String requesterId) {
+    public Response addSuperior(String superiorId, String suborinateId) {
 
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (StringUtils.equals(superiorId, suborinateId)) {
                 throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
             }
-            User superior = getUserWithDependent(superiorId, null, true);
-            User subordinate = getUserWithDependent(suborinateId, requesterId, true);
+            User superior = getUserWithDependent(superiorId, true);
+            User subordinate = getUserWithDependent(suborinateId, true);
             if (superior == null || subordinate == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
@@ -588,8 +589,8 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
 
     @Override
     //@Transactional(readOnly = true)
-    public User getUserWithDependent(String id, String requestorId, boolean dependants) {
-        final User user = userManager.getUserDto(id, requestorId, dependants);
+    public User getUserWithDependent(String id, boolean dependants) {
+        final User user = userManager.getUserDto(id, dependants);
         return user;
     }
 
@@ -934,8 +935,8 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
 
     @Override
     //@Transactional(readOnly = true)
-    public List<User> getUsersForResource(final String resourceId, String requesterId, final int from, final int size) {
-        return userManager.getUsersDtoForResource(resourceId, requesterId, from, size);
+    public List<User> getUsersForResource(final String resourceId, final int from, final int size) {
+        return userManager.getUsersDtoForResource(resourceId, from, size);
     }
 
     @Override
@@ -947,7 +948,7 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
 
     @Override
     @Deprecated
-    public int getNumOfUsersForResource(final String resourceId, String requesterId) {
+    public int getNumOfUsersForResource(final String resourceId) {
         final UserSearchBean sb = new UserSearchBean();
         sb.addResourceId(resourceId);
         sb.setDeepCopy(false);
@@ -955,26 +956,26 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
 
     @Override
     //@Transactional(readOnly = true)
-    public List<User> getUsersForGroup(final String groupId, String requesterId, final int from, final int size) {
-        return userManager.getUsersDtoForGroup(groupId, requesterId, from, size);
+    public List<User> getUsersForGroup(final String groupId,final int from, final int size) {
+        return userManager.getUsersDtoForGroup(groupId, from, size);
     }
 
     @Override
     @Deprecated
-    public int getNumOfUsersForGroup(final String groupId, String requesterId) {
-        return userManager.getNumOfUsersForGroup(groupId, requesterId);
+    public int getNumOfUsersForGroup(final String groupId) {
+        return userManager.getNumOfUsersForGroup(groupId);
     }
 
     @Override
     //@Transactional(readOnly = true)
-    public List<User> getUsersForRole(final String roleId, String requesterId, final int from, final int size) {
-        return userManager.getUsersDtoForRole(roleId, requesterId, from, size);
+    public List<User> getUsersForRole(final String roleId, final int from, final int size) {
+        return userManager.getUsersDtoForRole(roleId, from, size);
     }
 
     @Override
     @Deprecated
-    public int getNumOfUsersForRole(final String roleId, String requesterId) {
-        return userManager.getNumOfUsersForRole(roleId, requesterId);
+    public int getNumOfUsersForRole(final String roleId) {
+        return userManager.getNumOfUsersForRole(roleId);
     }
 
     @Override
@@ -1189,21 +1190,21 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     }
 
     @Override
-    public ProfilePicture getProfilePictureById(String picId, String requesterId) {
+    public ProfilePicture getProfilePictureById(String picId) {
         return userProfileService.getProfilePictureById(picId);
     }
 
     @Override
-    public ProfilePicture getProfilePictureByUserId(String userId, String requesterId) {
+    public ProfilePicture getProfilePictureByUserId(String userId) {
         return profilePictureDozerConverter.convertToDTO(userProfileService.getProfilePictureByUserId(userId), false);
     }
 
     @Override
-    public Response saveProfilePicture(ProfilePicture pic, String requesterId) {
+    public Response saveProfilePicture(ProfilePicture pic) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         if (StringUtils.isBlank(pic.getId())) {
             idmAuditLog.setAction(AuditAction.ADD_PROFILE_PICTURE_FOR_USER.value());
         } else {
@@ -1241,11 +1242,11 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     }
 
     @Override
-    public Response deleteProfilePictureById(String picId, String requesterId) {
+    public Response deleteProfilePictureById(String picId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         idmAuditLog.setAction(AuditAction.DELETE_PROFILE_PICTURE_FOR_USER.value());
         idmAuditLog.setAuditDescription(String.format("Delete profile picture with id: %s", picId));
 
@@ -1275,11 +1276,11 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     }
 
     @Override
-    public Response deleteProfilePictureByUserId(String userId, String requesterId) {
+    public Response deleteProfilePictureByUserId(String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         idmAuditLog.setAction(AuditAction.DELETE_PROFILE_PICTURE_FOR_USER.value());
         UserEntity user = userDataService.getUser(userId);
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
@@ -1341,7 +1342,7 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     public Response acceptITPolicy(final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            final UserEntity user = userManager.getUser(userId, null);
+            final UserEntity user = userManager.getUser(userId);
             if (user == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }

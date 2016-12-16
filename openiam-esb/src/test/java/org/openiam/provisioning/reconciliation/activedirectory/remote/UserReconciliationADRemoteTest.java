@@ -322,18 +322,18 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             Assert.assertNotNull(loginADResponse);
             Assert.assertNotNull(loginADResponse.getPrincipal());
             Assert.assertEquals(loginADResponse.getPrincipal().getLogin(), TestUserSamAccountName);
-            User user = userServiceClient.getUserWithDependent(loginADResponse.getPrincipal().getUserId(), null, false);
+            User user = userServiceClient.getUserWithDependent(loginADResponse.getPrincipal().getUserId(), false);
             // Check user last name after initial reconciliation => should be the same as in AD = "Test"
             Assert.assertEquals(user.getLastName(),"Test");
             user.setLastName("Test123");
             userServiceClient.saveUserInfo(user, null);
-            User userUpdated = userServiceClient.getUserWithDependent(loginADResponse.getPrincipal().getUserId(), null, false);
+            User userUpdated = userServiceClient.getUserWithDependent(loginADResponse.getPrincipal().getUserId(), false);
             // Change user last name in OpenIAM DB = "Test123"
             Assert.assertEquals(userUpdated.getLastName(),"Test123");
             // SET Timeout for waiting WS response
             setWSClientTimeout(reconciliationWebService, 600000L);
             reconciliationWebService.startReconciliation(reconciliationConfig);
-            User userAfterReconciliation = userServiceClient.getUserWithDependent(loginADResponse.getPrincipal().getUserId(), null, false);
+            User userAfterReconciliation = userServiceClient.getUserWithDependent(loginADResponse.getPrincipal().getUserId(), false);
             // Last name should be reverted to AD values
             Assert.assertEquals(userAfterReconciliation.getLastName(),"Test");
 

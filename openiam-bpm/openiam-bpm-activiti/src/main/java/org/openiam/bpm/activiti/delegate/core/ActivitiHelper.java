@@ -47,13 +47,13 @@ public class ActivitiHelper {
                 if (StringUtils.isNotEmpty(id)) {
                     switch (type) {
                         case GROUP:
-                            final List<String> groupUsers = userManager.getUserIdsInGroup(id, null);
+                            final List<String> groupUsers = userManager.getUserIdsInGroup(id);
                             if (CollectionUtils.isNotEmpty(groupUsers)) {
                                 userIds.addAll(groupUsers);
                             }
                             break;
                         case ROLE:
-                            final List<String> roleUsers = userManager.getUserIdsInRole(id, null);
+                            final List<String> roleUsers = userManager.getUserIdsInRole(id);
                             if (CollectionUtils.isNotEmpty(roleUsers)) {
                                 userIds.addAll(roleUsers);
                             }
@@ -100,13 +100,13 @@ public class ActivitiHelper {
                 if (StringUtils.isNotEmpty(id)) {
                     switch (type) {
                         case GROUP:
-                            final List<String> groupUsers = userManager.getUserIdsInGroup(id, null);
+                            final List<String> groupUsers = userManager.getUserIdsInGroup(id);
                             if (CollectionUtils.isNotEmpty(groupUsers)) {
                                 userIds.addAll(groupUsers);
                             }
                             break;
                         case ROLE:
-                            final List<String> roleUsers = userManager.getUserIdsInRole(id, null);
+                            final List<String> roleUsers = userManager.getUserIdsInRole(id);
                             if (CollectionUtils.isNotEmpty(roleUsers)) {
                                 userIds.addAll(roleUsers);
                             }
@@ -171,13 +171,13 @@ public class ActivitiHelper {
                 final String approverId = associationEntity.getApproverEntityId();
                 switch (associationEntity.getApproverEntityType()) {
                     case GROUP:
-                        final List<String> groupUsers = userManager.getUserIdsInGroup(approverId, null);
+                        final List<String> groupUsers = userManager.getUserIdsInGroup(approverId);
                         if (CollectionUtils.isNotEmpty(groupUsers)) {
                             candidateUsersIds.addAll(groupUsers);
                         }
                         break;
                     case ROLE:
-                        final List<String> roleUsers = userManager.getUserIdsInRole(approverId, null);
+                        final List<String> roleUsers = userManager.getUserIdsInRole(approverId);
                         if (CollectionUtils.isNotEmpty(roleUsers)) {
                             candidateUsersIds.addAll(roleUsers);
                         }

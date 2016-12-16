@@ -84,6 +84,7 @@ import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -224,27 +225,21 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public UserEntity getUser(String id) {
-        return this.getUser(id, null);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public User getUserDto(String id) {
-        return userDozerConverter.convertToDTO(this.getUser(id, null), true);
+        return userDozerConverter.convertToDTO(this.getUser(id), true);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserEntity getUser(String id, String requestorId) {
-        return userDao.findByIdDelFlt(id, getDelegationFilterForUserSearch(requestorId));
+    public UserEntity getUser(String id) {
+        return userDao.findByIdDelFlt(id, getDelegationFilterForUserSearch());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public User getUserDto(String id, String requestorId, Boolean isDeep) {
+    public User getUserDto(String id, Boolean isDeep) {
         //UserEntity userEntity = userDao.findByIdDelFlt(id, getDelegationFilterForUserSearch(requestorId));
-        UserEntity userEntity = this.getProxyService().getUser(id, requestorId);
+        UserEntity userEntity = this.getProxyService().getUser(id);
         return userDozerConverter.convertToDTO(userEntity, isDeep);
     }
 
@@ -255,7 +250,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         if (login == null) {
             return null;
         }
-        return getUser(login.getUserId(), null);
+        return getUser(login.getUserId());
 
     }
 
@@ -617,9 +612,9 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         boolean isRoleFilterSet = false;
         boolean isMngReportFilterSet = false;
 
-        if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
+        if (StringUtils.isNotBlank(SpringSecurityHelper.getRequestorUserId())) {
             // check and add delegation filter if necessary
-            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
+            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(SpringSecurityHelper.getRequestorUserId());
 
             validateSearchBean(searchBean,  requesterAttributes);
 
@@ -645,8 +640,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             }
 
             if(isMngReportFilterSet){
-                List<String> subordinariesList = userDao.getSubordinatesIds(searchBean.getRequesterId());
-                subordinariesList.add(searchBean.getRequesterId());
+                List<String> subordinariesList = userDao.getSubordinatesIds(SpringSecurityHelper.getRequestorUserId());
+                subordinariesList.add(SpringSecurityHelper.getRequestorUserId());
                 nonEmptyListOfLists.add(subordinariesList);
             }
         }
@@ -873,11 +868,10 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUsersDtoForResource(String resourceId, String requesterId, int from, int size) {
+    public List<User> getUsersDtoForResource(String resourceId, int from, int size) {
 //        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
 //        return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
         UserSearchBean userSearchBean = new UserSearchBean();
-        userSearchBean.setRequesterId(requesterId);
         userSearchBean.addResourceId(resourceId);
 
         List<SortParam> sortParamList = new ArrayList<>();
@@ -892,7 +886,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(userSearchBean.getRequesterId());
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch();
 
         String resourceId = userSearchBean.getResourceIdSet().iterator().next();
 
@@ -901,8 +895,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUsersDtoForGroup(String groupId, String requesterId, int from, int size) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+    public List<User> getUsersDtoForGroup(String groupId, int from, int size) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch();
         if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
             List<UserEntity> userEntityList = userDao.getUsersForGroup(groupId, delegationFilter, from, size);
             return userDozerConverter.convertToDTOList(userEntityList, false);
@@ -912,8 +906,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUsersDtoForRole(String roleId, String requesterId, int from, int size) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+    public List<User> getUsersDtoForRole(String roleId, int from, int size) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch();
         if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
             List<UserEntity> userEntityList = userDao.getUsersForRole(roleId, delegationFilter, from, size);
             return userDozerConverter.convertToDTOList(userEntityList, false);
@@ -931,8 +925,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public int getNumOfUsersForRole(String roleId, String requesterId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+    public int getNumOfUsersForRole(String roleId) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch();
         if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
             return userDao.getNumOfUsersForRole(roleId, delegationFilter);
         }
@@ -1848,8 +1842,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public int getNumOfUsersForGroup(String groupId, String requesterId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+    public int getNumOfUsersForGroup(String groupId) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch();
         if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
             return userDao.getNumOfUsersForGroup(groupId, delegationFilter);
         }
@@ -1862,7 +1856,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         String userId = newUserEntity.getId();
         if (newUserEntity.getId() != null) {
             // update, need to merge user objects
-            UserEntity origUser = this.getUser(newUserEntity.getId(), null);
+            UserEntity origUser = this.getUser(newUserEntity.getId());
             this.mergeUserFields(origUser, newUserEntity);
             setMetadataTypes(origUser);
             userDao.update(origUser);
@@ -1989,7 +1983,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         }
         // Turning off the primary identity - change the status on the user
         if (userId != null) {
-            UserEntity usr = this.getUser(userId, null);
+            UserEntity usr = this.getUser(userId);
             usr.setStatus(UserStatusEnum.DELETED);
             userDao.update(usr);
         }
@@ -1997,7 +1991,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Transactional
     public void setSecondaryStatus(String userId, UserStatusEnum secondaryStatus) {
-        UserEntity user = this.getUser(userId, null);
+        UserEntity user = this.getUser(userId);
         if (user == null) {
             log.error("UserId " + userId + " not found");
             throw new NullPointerException("UserId " + userId + " not found");
@@ -2008,7 +2002,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Transactional
     public void activateUser(String userId) {
-        UserEntity user = this.getUser(userId, null);
+        UserEntity user = this.getUser(userId);
         if (user == null) {
             log.error("UserId " + userId + " not found");
             throw new NullPointerException("UserId " + userId + " not found");
@@ -2031,7 +2025,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Transactional
     public void resetUser(String userId) {
-        UserEntity user = this.getUser(userId, null);
+        UserEntity user = this.getUser(userId);
         if (user == null) {
             log.error("UserId " + userId + " not found");
             throw new NullPointerException("UserId " + userId + " not found");
@@ -2333,9 +2327,9 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> getUserIdsInRole(String roleId, String requesterId) {
+    public List<String> getUserIdsInRole(String roleId) {
         LinkedList<String> userIds = new LinkedList<String>();
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch();
         if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
             List<UserEntity> users = userDao.getUsersForRole(roleId, delegationFilter, 0, Integer.MAX_VALUE);
             for (UserEntity userEntity : users) {
@@ -2347,9 +2341,9 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> getUserIdsInGroup(String groupId, String requesterId) {
+    public List<String> getUserIdsInGroup(String groupId) {
         LinkedList<String> userIds = new LinkedList<String>();
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch();
         if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getRoleIdSet())) {
             List<UserEntity> users = userDao.getUsersForGroup(groupId, delegationFilter, 0, Integer.MAX_VALUE);
             for (UserEntity userEntity : users) {
@@ -2426,11 +2420,11 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return null;
     }
 
-    private DelegationFilterSearchBean getDelegationFilterForUserSearch(String requestorId) {
+    private DelegationFilterSearchBean getDelegationFilterForUserSearch() {
         DelegationFilterSearchBean filter = new DelegationFilterSearchBean();
 
-        if (StringUtils.isNotBlank(requestorId)) {
-            Map<String, UserAttribute> requestorAttributes = this.getUserAttributesDto(requestorId);
+        if (StringUtils.isNotBlank(SpringSecurityHelper.getRequestorUserId())) {
+            Map<String, UserAttribute> requestorAttributes = this.getUserAttributesDto(SpringSecurityHelper.getRequestorUserId());
 
             if (DelegationFilterHelper.isOrgFilterSet(requestorAttributes)) {
                 filter.setOrganizationIdSet(new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requestorAttributes)));
@@ -2593,8 +2587,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public boolean validateSearchBean(UserSearchBean searchBean) throws BasicDataServiceException {
-        if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
-            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
+        if (StringUtils.isNotBlank(SpringSecurityHelper.getRequestorUserId())) {
+            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(SpringSecurityHelper.getRequestorUserId());
             return  validateSearchBean(searchBean, requesterAttributes);
         }
         return true;

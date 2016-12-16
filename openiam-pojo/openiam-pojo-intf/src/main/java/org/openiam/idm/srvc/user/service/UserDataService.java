@@ -239,15 +239,13 @@ public interface UserDataService {
 
     public User getUserDto(String id);
 
-    public UserEntity getUser(String id, String requestorId);
-
-    public User getUserDto(String id, String requestorId, Boolean isDeep);
+    public User getUserDto(String id, Boolean isDeep);
 
     public Map<String, UserAttributeEntity> getAllAttributes(String userId);
 
     //public List<UserEntity> getUsersForResource(final String resourceId, String requesterId, final int from, final int size);
 
-    public List<User> getUsersDtoForResource(String resourceId, String requesterId, int from, int size);
+    public List<User> getUsersDtoForResource(String resourceId, int from, int size);
 
     public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size);
 
@@ -257,15 +255,15 @@ public interface UserDataService {
 
     //public List<UserEntity> getUsersForGroup(final String groupId, String requesterId, final int from, final int size);
 
-    public List<User> getUsersDtoForGroup(String groupId, String requesterId, int from, int size);
+    public List<User> getUsersDtoForGroup(String groupId, int from, int size);
 
-    public int getNumOfUsersForGroup(final String groupId, String requesterId);
+    public int getNumOfUsersForGroup(final String groupId);
 
     //public List<UserEntity> getUsersForRole(final String roleId, String requesterId, final int from, final int size);
 
-    public List<User> getUsersDtoForRole(String roleId, String requesterId, int from, int size);
+    public List<User> getUsersDtoForRole(String roleId, int from, int size);
 
-    public int getNumOfUsersForRole(final String roleId, String requesterId);
+    public int getNumOfUsersForRole(final String roleId);
 
     public String saveUserInfo(UserEntity userEntity, String supervisorId) throws Exception;
 
@@ -301,9 +299,9 @@ public interface UserDataService {
 
     //boolean isRoleInUser(String userId, String roleId);
 
-    List<String> getUserIdsInRole(String roleId, String requestrId);
+    List<String> getUserIdsInRole(String roleId);
 
-    List<String> getUserIdsInGroup(String groupId, String requestrId);
+    List<String> getUserIdsInGroup(String groupId);
 
     void addUserToGroup(String userId, String groupId, Set<String> rightIds, final Date startDate, final Date endDate);
 

@@ -55,7 +55,7 @@ public class AttestationInitializer {
 		final Set<String> employeeIds = supervisorDAO.getUniqueEmployeeIds();
 		if(CollectionUtils.isNotEmpty(employeeIds)) {
 			for(final String employeeId : employeeIds) {
-				final User user = userManager.getUserDto(employeeId, systemUserId, false);
+				final User user = userManager.getUserDto(employeeId, false);
 				final List<User> supervisords = userManager.getSuperiorsDto(employeeId, 0, Integer.MAX_VALUE);
 				final Set<String> supervisorIds = new HashSet<String>();
 				if(CollectionUtils.isEmpty(supervisords)) {

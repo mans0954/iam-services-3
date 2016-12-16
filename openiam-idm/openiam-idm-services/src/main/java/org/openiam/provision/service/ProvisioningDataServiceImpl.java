@@ -2758,7 +2758,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            if ((group.getMaxUserNumber() == null) || (userMgr.getNumOfUsersForGroup(group.getId(), requestorId) < group.getMaxUserNumber())) {
+                                            if ((group.getMaxUserNumber() == null) || (userMgr.getNumOfUsersForGroup(group.getId()) < group.getMaxUserNumber())) {
                                                 existingGroups.add(group.getId());
                                                 group.setOperation(AttributeOperationEnum.ADD);
                                                 auditAction = AuditAction.ADD_USER_TO_GROUP;

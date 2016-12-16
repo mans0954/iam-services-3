@@ -101,7 +101,7 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 
 	@Override
 	protected User getChildById(User child) {
-		return userServiceClient.getUserWithDependent(child.getId(), "3000", false);
+		return userServiceClient.getUserWithDependent(child.getId(), false);
 	}
 	
 	@Test

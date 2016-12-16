@@ -373,7 +373,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		
 		final UserResponse userResponse = userServiceClient.saveUserInfo(user, null);
 		Assert.assertTrue(userResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", user, userResponse));
-		return userServiceClient.getUserWithDependent(userResponse.getUser().getId(), null, true);
+		return userServiceClient.getUserWithDependent(userResponse.getUser().getId(), true);
 	}
 	
 	protected Language getDefaultLanguage() {

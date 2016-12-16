@@ -40,8 +40,6 @@ public interface UserDataWebService {
      * 
      * @param id
      *            - the internal user ID of the user being requested
-     * @param requestorId
-     *            - the user ID of the person making this call
      * @param dependants
      *            - if set to true, the User is returned with all of his
      *            collections
@@ -49,7 +47,6 @@ public interface UserDataWebService {
      */
     @WebMethod
     public User getUserWithDependent(@WebParam(name = "id", targetNamespace = "") String id,
-                                     @WebParam(name = "requestorId", targetNamespace = "") String requestorId,
                                      @WebParam(name = "dependants", targetNamespace = "") boolean dependants);
 
     /**
@@ -561,14 +558,11 @@ public interface UserDataWebService {
      *            - the superior's User ID
      * @param suborinateId
      *            - the subordinate's User ID
-     * @param requesterId
-     *            - ID of the requestor
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
     public Response addSuperior(@WebParam(name = "superiorId", targetNamespace = "") String superiorId,
-                                @WebParam(name = "suborinateId", targetNamespace = "") String suborinateId,
-                                @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+                                @WebParam(name = "suborinateId", targetNamespace = "") String suborinateId);
 
     /**
      * Removes the User specified by superiorId from being a Superior of the
@@ -590,8 +584,6 @@ public interface UserDataWebService {
      * 
      * @param resourceId
      *            - the Resource ID
-     * @param requesterId
-     *            - ID of the requestor
      * @param from
      *            - where to start in the paged list
      * @param size
@@ -602,7 +594,6 @@ public interface UserDataWebService {
     @WebMethod
     @Deprecated
     public List<User> getUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-                                          @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                           @WebParam(name = "from", targetNamespace = "") final int from,
                                           @WebParam(name = "size", targetNamespace = "") final int size);
 
@@ -628,22 +619,17 @@ public interface UserDataWebService {
      * 
      * @param resourceId
      *            - the Resource ID
-     * @param requesterId
-     *            - ID of the requestor
      * @return the number of Users directly entitled to this Resource
      */
     @WebMethod
     @Deprecated
-    public int getNumOfUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-                                        @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public int getNumOfUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
 
     /**
      * Gets a paged List of Users that are direct members of this Group
      * 
      * @param groupId
      *            - the Group ID
-     * @param requesterId
-     *            - the requestor ID
      * @param from
      *            - where to start in the List
      * @param size
@@ -653,7 +639,6 @@ public interface UserDataWebService {
     @WebMethod
     @Deprecated
     public List<User> getUsersForGroup(@WebParam(name = "groupId", targetNamespace = "") final String groupId,
-                                       @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                        @WebParam(name = "from", targetNamespace = "") final int from,
                                        @WebParam(name = "size", targetNamespace = "") final int size);
 
@@ -662,22 +647,17 @@ public interface UserDataWebService {
      * 
      * @param groupId
      *            - the Group ID
-     * @param requesterId
-     *            - the requestor ID
      * @return the number of Users that are direct members of this Group
      */
     @WebMethod
     @Deprecated
-    public int getNumOfUsersForGroup(@WebParam(name = "groupId", targetNamespace = "") final String groupId,
-                                     @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public int getNumOfUsersForGroup(@WebParam(name = "groupId", targetNamespace = "") final String groupId);
 
     /**
      * Gets a Paged List of Users that are direct members of this Role
      * 
      * @param roleId
      *            - the Role ID
-     * @param requesterId
-     *            - ID of the user making this request
      * @param from
      *            - where to start in the list
      * @param size
@@ -687,7 +667,6 @@ public interface UserDataWebService {
     @WebMethod
     @Deprecated
     public List<User> getUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId,
-                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                       @WebParam(name = "from", targetNamespace = "") final int from,
                                       @WebParam(name = "size", targetNamespace = "") final int size);
 
@@ -696,14 +675,11 @@ public interface UserDataWebService {
      * 
      * @param roleId
      *            - the Role ID
-     * @param requesterId
-     *            - ID of the User making this request
      * @return the number of Users that are direct members of this Role
      */
     @WebMethod
     @Deprecated
-    public int getNumOfUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId,
-                                    @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public int getNumOfUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId);
 
     /**
      * Saves a User Object, with an optional Supervisor
@@ -810,8 +786,7 @@ public interface UserDataWebService {
      */
     @WebMethod
     ProfilePicture getProfilePictureById(
-            @WebParam(name = "picId", targetNamespace = "") String picId,
-            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+            @WebParam(name = "picId", targetNamespace = "") String picId);
 
     /**
      * Returns Profile picture for User by his ID
@@ -821,8 +796,7 @@ public interface UserDataWebService {
      */
     @WebMethod
     ProfilePicture getProfilePictureByUserId(
-            @WebParam(name = "userId", targetNamespace = "") String userId,
-            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+            @WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Saves Profile picture
@@ -832,8 +806,7 @@ public interface UserDataWebService {
      */
     @WebMethod
     Response saveProfilePicture(
-            @WebParam(name = "pic", targetNamespace = "") ProfilePicture pic,
-            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+            @WebParam(name = "pic", targetNamespace = "") ProfilePicture pic);
 
     /**
      * Deletes Profile picture by it's ID
@@ -843,8 +816,7 @@ public interface UserDataWebService {
      */
     @WebMethod
     Response deleteProfilePictureById(
-            @WebParam(name = "picId", targetNamespace = "") String picId,
-            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+            @WebParam(name = "picId", targetNamespace = "") String picId);
 
     /**
      * Deletes Profile picture for User by his ID
@@ -853,8 +825,7 @@ public interface UserDataWebService {
      */
     @WebMethod
     Response deleteProfilePictureByUserId(
-            @WebParam(name = "userId", targetNamespace = "") String userId,
-            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+            @WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Accept an IT policy
