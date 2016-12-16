@@ -109,5 +109,11 @@ public class CommonVHostConfig extends BaseVHostConfig{
         bindQueue(commonAmqpAdmin(), queue);
         return queue;
     }
+    @Bean
+    public PasswordQueue PasswordQueue() {
+        PasswordQueue queue =  new PasswordQueue();
+        bindQueue(commonAmqpAdmin(), queue);
+        return queue;
+    }
 
 }

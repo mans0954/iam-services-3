@@ -23,15 +23,21 @@ package org.openiam.srvc.user;
 
 import javax.jws.WebService;
 
-import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.base.request.BaseSearchServiceRequest;
+import org.openiam.base.request.PasswordRequest;
+import org.openiam.base.request.StringDataRequest;
+import org.openiam.base.response.data.PolicyResponse;
+import org.openiam.base.response.data.StringResponse;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.base.request.PasswordResetTokenRequest;
 import org.openiam.base.response.PasswordResetTokenResponse;
 import org.openiam.base.response.PasswordValidationResponse;
-import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.base.response.ValidatePasswordResetTokenResponse;
+import org.openiam.mq.constants.api.common.PasswordAPI;
+import org.openiam.mq.constants.queue.common.PasswordQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,32 +48,38 @@ import org.springframework.stereotype.Service;
  */
 @Service("passwordWS")
 @WebService(endpointInterface = "org.openiam.srvc.user.PasswordWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "PasswordWebServicePort", serviceName = "PasswordWebService")
-public class PasswordWebServiceImpl implements PasswordWebService {
+public class PasswordWebServiceImpl extends AbstractApiService implements PasswordWebService {
 
     @Autowired
-    private PasswordService passwordDS;
+    public PasswordWebServiceImpl(PasswordQueue queue) {
+        super(queue);
+    }
 
     public PasswordValidationResponse isPasswordValid(Password pswd) {
-        return passwordDS.isPasswordValid(pswd);
+        PasswordRequest request = new PasswordRequest();
+        request.setPassword(pswd);
+        return this.getResponse(PasswordAPI.Validate, request, PasswordValidationResponse.class);
     }
 
     @Override
     public PasswordResetTokenResponse generatePasswordResetToken(PasswordResetTokenRequest request) {
-        return passwordDS.generatePasswordResetToken(request);
+        return this.getResponse(PasswordAPI.GeneratePasswordResetToken, request, PasswordResetTokenResponse.class);
     }
 
     @Override
     public ValidatePasswordResetTokenResponse validatePasswordResetToken(String token) {
-        return passwordDS.validatePasswordResetToken(token);
+        StringDataRequest request = new StringDataRequest();
+        request.setData(token);
+        return this.getResponse(PasswordAPI.ValidateResetToken, request, ValidatePasswordResetTokenResponse.class);
     }
 
 	@Override
 	public String getPasswordResetToken(PasswordResetTokenRequest request) {
-		return passwordDS.getPasswordResetToken(request);
+        return this.getValue(PasswordAPI.GetPasswordResetToken, request, StringResponse.class);
 	}
 
 	@Override
 	public Policy getPasswordPolicy(final PasswordPolicyAssocSearchBean searchBean) {
-		return passwordDS.getPasswordPolicy(searchBean);
+        return this.getValue(PasswordAPI.GetPasswordPolicy, new BaseSearchServiceRequest<>(searchBean), PolicyResponse.class);
 	}
 }

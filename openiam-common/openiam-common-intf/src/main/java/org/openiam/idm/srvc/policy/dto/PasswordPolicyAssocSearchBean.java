@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.policy.dto;
 
+import org.openiam.idm.searchbeans.AbstractSearchBean;
+
 import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -17,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
         "managedSysId",
         "principal"
 })
-public class PasswordPolicyAssocSearchBean implements Serializable {
+public class PasswordPolicyAssocSearchBean extends AbstractSearchBean implements Serializable {
 
     private static final long serialVersionUID = 5733143745301294956L;
     private String userId;
