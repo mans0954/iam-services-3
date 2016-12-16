@@ -37,6 +37,7 @@ import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.mq.constants.api.RoleAPI;
 import org.openiam.mq.constants.queue.am.RoleQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,11 +74,11 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
     }
 
     @Override
-    public Role getRoleLocalized(String roleId, String requesterId, Language language) {
+    public Role getRoleLocalized(String roleId, Language language) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(roleId);
         request.setLanguage(language);
-        request.setRequesterId(requesterId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         return this.getValue(RoleAPI.GetRoleLocalized, request, RoleResponse.class);
     }
 
@@ -89,30 +90,30 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
     }
 
     @Override
-    public Response saveRole(Role role, String requesterId) {
+    public Response saveRole(Role role) {
         BaseCrudServiceRequest<Role> request = new BaseCrudServiceRequest<>(role);
-        request.setRequesterId(requesterId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         return this.manageCrudApiRequest(RoleAPI.SaveRole, request);
     }
 
     @Override
-    public Response removeRole(String roleId, String requesterId) {
+    public Response removeRole(String roleId) {
         Role obj = new Role();
         obj.setId(roleId);
         BaseCrudServiceRequest<Role> request = new BaseCrudServiceRequest<>(obj);
-        request.setRequesterId(requesterId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         return this.manageApiRequest(RoleAPI.RemoveRole, request, Response.class);
     }
 
     @Override
-    public Role getRole(String roleId, String requesterId) {
-        return this.getRoleLocalized(roleId, requesterId, null);
+    public Role getRole(String roleId) {
+        return this.getRoleLocalized(roleId, null);
     }
 
     @Override
-    public Response addGroupToRole(String roleId, String groupId, String requesterId, Set<String> rightIds, Date startDate, Date endDate) {
+    public Response addGroupToRole(String roleId, String groupId, Set<String> rightIds, Date startDate, Date endDate) {
         MembershipRequest request = new MembershipRequest();
-        request.setRequesterId(requesterId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         request.setObjectId(roleId);
         request.setLinkedObjectId(groupId);
         request.setRightIds(rightIds);
@@ -130,67 +131,67 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
     }
 
     @Override
-    public Response removeGroupFromRole(String roleId, String groupId, String requesterId) {
+    public Response removeGroupFromRole(String roleId, String groupId) {
         MembershipRequest request = new MembershipRequest();
         request.setObjectId(roleId);
         request.setLinkedObjectId(groupId);
-        request.setRequesterId(requesterId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         return this.manageApiRequest(RoleAPI.RemoveGroupFromRole, request, BooleanResponse.class).convertToBase();
 
     }
 
     @Override
-    public Response addUserToRole(String roleId, String userId, String requesterId, Set<String> rightIds, Date startDate, Date endDate) {
+    public Response addUserToRole(String roleId, String userId, Set<String> rightIds, Date startDate, Date endDate) {
         MembershipRequest request = new MembershipRequest();
         request.setObjectId(roleId);
         request.setLinkedObjectId(userId);
         request.setRightIds(rightIds);
         request.setStartDate(startDate);
         request.setEndDate(endDate);
-        request.setRequesterId(requesterId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         return this.manageApiRequest(RoleAPI.AddUserToRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
-    public Response removeUserFromRole(String roleId, String userId, String requesterId) {
+    public Response removeUserFromRole(String roleId, String userId) {
         MembershipRequest request = new MembershipRequest();
         request.setObjectId(roleId);
         request.setLinkedObjectId(userId);
-        request.setRequesterId(requesterId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         return this.manageApiRequest(RoleAPI.RemoveUserFromRole, request, BooleanResponse.class).convertToBase();
     }
 
     @Override
-    public List<Role> findBeans(RoleSearchBean searchBean, String requesterId, int from, int size) {
+    public List<Role> findBeans(RoleSearchBean searchBean, int from, int size) {
         return this.getValueList(RoleAPI.FindBeans, new BaseSearchServiceRequest<>(searchBean, from, size),
                 RoleListResponse.class);
     }
 
     @Override
-    public int countBeans(RoleSearchBean searchBean, String requesterId) {
+    public int countBeans(RoleSearchBean searchBean) {
         BaseSearchServiceRequest<RoleSearchBean> request = new BaseSearchServiceRequest<>(searchBean);
         return this.getValue(RoleAPI.CountBeans, request, IntResponse.class);
     }
 
     @Override
-    public List<Role> getParentRoles(String roleId, String requesterId, int from, int size) {
+    public List<Role> getParentRoles(String roleId, int from, int size) {
         GetParentsRequest request = new GetParentsRequest();
         request.setId(roleId);
-        request.setRequesterId(requesterId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         request.setFrom(from);
         request.setSize(size);
         return this.getValueList(RoleAPI.GetParentRoles, request, RoleListResponse.class);
     }
 
     @Override
-    public Response addChildRole(String roleId, String childRoleId, String requesterId, Set<String> rights, Date startDate, Date endDate) {
+    public Response addChildRole(String roleId, String childRoleId, Set<String> rights, Date startDate, Date endDate) {
         MembershipRequest request = new MembershipRequest();
         request.setObjectId(roleId);
         request.setLinkedObjectId(childRoleId);
         request.setRightIds(rights);
         request.setStartDate(startDate);
         request.setEndDate(endDate);
-        request.setRequesterId(requesterId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         return this.manageApiRequest(RoleAPI.AddChildRole, request, BooleanResponse.class).convertToBase();
     }
 
@@ -206,7 +207,7 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
     }
 
     @Override
-    public Response removeChildRole(String roleId, String childRoleId, String requesterId) {
+    public Response removeChildRole(String roleId, String childRoleId) {
         MembershipRequest request = new MembershipRequest();
         request.setObjectId(roleId);
         request.setLinkedObjectId(childRoleId);
@@ -230,10 +231,10 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
     }
 
     @Override
-    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
+    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds) {
         IdsServiceRequest request = new IdsServiceRequest();
         request.setIds(roleIds);
-        request.setRequesterId(requesterId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         return this.manageApiRequest(RoleAPI.GetRolesWithSubRolesIds, request, TreeObjectIdListServiceResponse.class).getTreeObjectIds();
     }
 

@@ -24,24 +24,18 @@ import java.util.Set;
  */
 public interface RoleDataService {
 
-
     @Deprecated
     public RoleEntity getRole(String roleId);
 
-    @Deprecated
-    public RoleEntity getRole(String roleId, String requesterId);
-
     public RoleEntity getRoleByNameAndManagedSysId(final String roleName, final String managedSysId);
 
-    public RoleEntity getRoleLocalized(final String roleId, final String requestorId, final Language language);
+    public RoleEntity getRoleLocalized(final String roleId, final Language language);
 
-    public Role getRoleDtoLocalized(final String roleId, final String requesterId, final Language language);
+    public Role getRoleDtoLocalized(final String roleId, final Language language);
 
-    public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException;
+    public void saveRole(final RoleEntity role) throws BasicDataServiceException;
 
     public void addRequiredAttributes(RoleEntity role);
-
-    public void removeRole(String roleId);
 
     /*public void savePolicy(RolePolicyEntity rPolicy);*/
 
@@ -88,11 +82,11 @@ public interface RoleDataService {
      * @param groupId
      * @return
      */
-    public List<RoleEntity> getRolesInGroup(String groupId, String requesterId, final int from, final int size);
+    public List<RoleEntity> getRolesInGroup(String groupId, final int from, final int size);
 
-    public List<Role> getRolesDtoInGroup(final String groupId, final String requesterId, int from, int size);
+    public List<Role> getRolesDtoInGroup(final String groupId, int from, int size);
 
-    public int getNumOfRolesForGroup(final String groupId, String requesterId);
+    public int getNumOfRolesForGroup(final String groupId);
 
 
     /**
@@ -106,7 +100,7 @@ public interface RoleDataService {
      * @param groupId The group for which the roleId is to be added .
      * @param roleId  The roleId which is to be added to the group.
      */
-    public void addGroupToRole(String roleId, String groupId, Set<String> rightIds, final Date startDate, final Date endDate);
+    public void addGroupToRole(String roleId, String groupId, Set<String> rightIds, final Date startDate, final Date endDate) throws BasicDataServiceException;
 
     public void validateGroup2RoleAddition(String roleId, String groupId) throws BasicDataServiceException;
 
@@ -116,14 +110,14 @@ public interface RoleDataService {
      * @param roleId
      * @param groupId
      */
-    public void removeGroupFromRole(String roleId, String groupId);
+    public void removeGroupFromRole(String roleId, String groupId) throws BasicDataServiceException;
 
 
-    public List<RoleEntity> getRolesForUser(final String userId, String requesterId, final int from, final int size);
+    public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size);
 
-    public List<Role> getRolesDtoForUser(final String userId, String requesterId, final int from, final int size);
+    public List<Role> getRolesDtoForUser(final String userId, final int from, final int size);
 
-    public int getNumOfRolesForUser(final String userId, String requesterId);
+    public int getNumOfRolesForUser(final String userId);
 
     public void canAddUserToRole(String userId, String roleId) throws BasicDataServiceException;
 
@@ -144,7 +138,7 @@ public interface RoleDataService {
      * @param roleId The roleId to which the user will be associated.
      * @param userId The userId to which the roleId is to be added .
      */
-    public void addUserToRole(String roleId, String userId, Set<String> rightIds, final Date startDate, final Date endDate);
+    public void addUserToRole(String roleId, String userId, Set<String> rightIds, final Date startDate, final Date endDate) throws BasicDataServiceException;
 
     /**
      * This method removes a particular user directly to a role.
@@ -152,7 +146,7 @@ public interface RoleDataService {
      * @param roleId
      * @param userId
      */
-    public void removeUserFromRole(String roleId, String userId);
+    public void removeUserFromRole(String roleId, String userId) throws BasicDataServiceException;
 
 //    /**
 //     * Return an array of users that are in a particular role
@@ -160,7 +154,7 @@ public interface RoleDataService {
 //     * @param roleId
 //     * @return
 //     */
-//    public List<UserEntity> getUsersInRole(final String roleId, final String requesterId, final int from, final int size);
+//    public List<UserEntity> getUsersInRole(final String roleId, final int from, final int size);
 
     /**
      * Returns an array of Role objects that indicate the Roles a user is
@@ -169,7 +163,7 @@ public interface RoleDataService {
      * @param userId
      * @return
      */
-    public List<RoleEntity> getUserRoles(final String userId, String requesterId, final int from, final int size);
+    public List<RoleEntity> getUserRoles(final String userId, final int from, final int size);
 
     /**
      * Returns a list of roles that a user belongs to. Roles can be hierarchical and this operation traverses the tree to roles that are in the
@@ -180,11 +174,11 @@ public interface RoleDataService {
      */
     public List<Role> getUserRolesAsFlatList(final String userId);
 
-    public List<RoleEntity> findBeans(final RoleSearchBean searchBean, final String requesterId, final int from, final int size);
+    public List<RoleEntity> findBeans(final RoleSearchBean searchBean, final int from, final int size);
 
-    public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size);
+    public List<Role> findBeansDto(RoleSearchBean searchBean, int from, int size);
 
-    public int countBeans(final RoleSearchBean searchBean, final String requesterId);
+    public int countBeans(final RoleSearchBean searchBean);
 
     public boolean validateEdit(Role role) throws BasicDataServiceException;
 
@@ -194,27 +188,27 @@ public interface RoleDataService {
 
     public void addChildRole(final String roleId, final String childRoleId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException;
 
-    public void removeChildRole(final String roleId, final String childRoleId);
+    public void removeChildRole(final String roleId, final String childRoleId) throws BasicDataServiceException;
 
     public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException;
 
-    public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size);
+    public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size);
 
-    public List<Role> getRolesDtoForResource(final String resourceId, final String requesterId, final int from, final int size);
+    public List<Role> getRolesDtoForResource(final String resourceId, final int from, final int size);
 
-    public int getNumOfRolesForResource(final String resourceId, final String requesterId);
+    public int getNumOfRolesForResource(final String resourceId);
 
-    public List<RoleEntity> getChildRoles(final String roleId, final String requesterId, final int from, final int size);
+    public List<RoleEntity> getChildRoles(final String roleId, final int from, final int size);
 
-    public List<Role> getChildRolesDto(final String id, final String requesterId, int from, int size);
+    public List<Role> getChildRolesDto(final String id, int from, int size);
 
-    public int getNumOfChildRoles(final String roleId, final String requesterId);
+    public int getNumOfChildRoles(final String roleId);
 
-    public List<RoleEntity> getParentRoles(final String roleId, final String requesterId, final int from, final int size);
+    public List<RoleEntity> getParentRoles(final String roleId, final int from, final int size);
 
-    public List<Role> getParentRolesDto(final String id, final String requesterId, int from, int size);
+    public List<Role> getParentRolesDto(final String id, int from, int size);
 
-    public int getNumOfParentRoles(final String roleId, final String requesterId);
+    public int getNumOfParentRoles(final String roleId);
 
     //public void validateRole2RoleAddition(final String parentId, final String memberId) throws BasicDataServiceException;
 
@@ -227,42 +221,15 @@ public interface RoleDataService {
     public void updateAttribute(RoleAttributeEntity attribute) throws BasicDataServiceException;
 
 
-    List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, final String requesterId);
+    List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds);
 
     void rebuildRoleHierarchyCache();
 
     public boolean hasChildEntities(String roleId);
 
-    public Response removeRole(String roleId, String requesterId) throws BasicDataServiceException;
+    public Response removeRole(String roleId) throws BasicDataServiceException;
 
-    public String saveRole(Role role, final String requesterId) throws BasicDataServiceException;
-
-    public void addGroupToRole(final String roleId,
-                               final String groupId,
-                               final String requesterId,
-                               final Set<String> rightIds,
-                               final Date startDate,
-                               final Date endDate) throws BasicDataServiceException;
-
-    public void addUserToRole(final String roleId,
-                              final String userId,
-                              final String requesterId,
-                              final Set<String> rightIds,
-                              final Date startDate,
-                              final Date endDate) throws BasicDataServiceException;
-
-    public void removeGroupFromRole(String roleId, String groupId, String requesterId) throws BasicDataServiceException;
-
-    public void removeUserFromRole(String roleId, String userId, String requesterId) throws BasicDataServiceException;
-
-    public void addChildRole(final String roleId,
-                             final String childRoleId,
-                             final String requesterId,
-                             final Set<String> rights,
-                             final Date startDate,
-                             final Date endDate) throws BasicDataServiceException;
-
-    public void removeChildRole(final String roleId, final String childRoleId, String requesterId) throws BasicDataServiceException;
+    public String saveRole(Role role) throws BasicDataServiceException;
 
     public boolean validateDelete(String roleId) throws BasicDataServiceException;
 }

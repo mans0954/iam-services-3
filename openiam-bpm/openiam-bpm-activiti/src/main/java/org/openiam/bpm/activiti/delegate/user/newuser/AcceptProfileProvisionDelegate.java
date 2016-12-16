@@ -28,7 +28,7 @@ public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDe
     }
 
     @Override
-    public void execute(final DelegateExecution execution) throws Exception {
+    public void doExecute(final DelegateExecution execution) throws Exception {
         final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
         try {

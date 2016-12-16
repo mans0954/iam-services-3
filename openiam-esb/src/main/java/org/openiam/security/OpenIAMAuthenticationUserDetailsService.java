@@ -2,6 +2,7 @@ package org.openiam.security;
 
 import java.util.Collection;
 
+import org.openiam.util.CXFAuthentication;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;

@@ -29,7 +29,7 @@ public abstract class AbstractCandidateTaskListener extends AbstractActivitiJob 
 		SpringContextProvider.autowire(this);
 	}
 	
-	public void notify(DelegateTask delegateTask, final List<String> supervisorIds) {
+	protected void notifyCandidates(DelegateTask delegateTask, final List<String> supervisorIds) {
 		final DelegateExecution execution = delegateTask.getExecution();
 		
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(delegateTask);

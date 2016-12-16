@@ -141,7 +141,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 			Assert.assertTrue(wsResponse.isSuccess());
 		}
 		if(role!=null){
-			final Response wsResponse = roleServiceClient.removeRole(role.getId(), "3000");
+			final Response wsResponse = roleServiceClient.removeRole(role.getId());
 			Assert.assertNotNull(wsResponse);
 			Assert.assertTrue(wsResponse.isSuccess());
 		}

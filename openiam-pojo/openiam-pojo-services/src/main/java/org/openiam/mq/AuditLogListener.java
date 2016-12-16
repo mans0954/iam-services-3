@@ -100,31 +100,33 @@ public class AuditLogListener extends AbstractListener<AuditLogAPI> {
     }
 
     private IdmAuditLogEntity doInProcess(IdmAuditLogEntity event){
-        if (StringUtils.isNotEmpty(event.getId())) {
-            final IdmAuditLogEntity srcLog = auditLogService.findById(event.getId());
-            if (srcLog != null) {
-
-                for(IdmAuditLogCustomEntity customLog : event.getCustomRecords()) {
-                    if(!srcLog.getCustomRecords().contains(customLog)){
-                        srcLog.addCustomRecord(customLog.getKey(),customLog.getValue());
-                    }
-                }
-                for(IdmAuditLogEntity newChildren : event.getChildLogs()) {
-                    if(!srcLog.getChildLogs().contains(newChildren)) {
-                        srcLog.addChild(newChildren);
-                    }
-                }
-                for(AuditLogTargetEntity newTarget : event.getTargets()) {
-                    if(!srcLog.getTargets().contains(newTarget)) {
-                        srcLog.addTarget(newTarget.getId(), newTarget.getTargetType(), newTarget.getObjectPrincipal());
-                    }
-                }
-
-                event =auditLogService.save(srcLog);
-            }
-        } else {
-            event =auditLogService.save(event);
-        }
+    	if(event != null) {
+	        if (StringUtils.isNotEmpty(event.getId())) {
+	            final IdmAuditLogEntity srcLog = auditLogService.findById(event.getId());
+	            if (srcLog != null) {
+	
+	                for(IdmAuditLogCustomEntity customLog : event.getCustomRecords()) {
+	                    if(!srcLog.getCustomRecords().contains(customLog)){
+	                        srcLog.addCustomRecord(customLog.getKey(),customLog.getValue());
+	                    }
+	                }
+	                for(IdmAuditLogEntity newChildren : event.getChildLogs()) {
+	                    if(!srcLog.getChildLogs().contains(newChildren)) {
+	                        srcLog.addChild(newChildren);
+	                    }
+	                }
+	                for(AuditLogTargetEntity newTarget : event.getTargets()) {
+	                    if(!srcLog.getTargets().contains(newTarget)) {
+	                        srcLog.addTarget(newTarget.getId(), newTarget.getTargetType(), newTarget.getObjectPrincipal());
+	                    }
+	                }
+	
+	                event =auditLogService.save(srcLog);
+	            }
+	        } else {
+	            event =auditLogService.save(event);
+	        }
+    	}
         return event;
     }
 

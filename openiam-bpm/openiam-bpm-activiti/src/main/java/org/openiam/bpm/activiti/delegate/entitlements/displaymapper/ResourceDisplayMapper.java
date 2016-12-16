@@ -23,7 +23,7 @@ public class ResourceDisplayMapper extends AbstractActivitiJob {
 	}
 
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final LinkedHashMap<String, String> metadataMap = new LinkedHashMap<String, String>();
 		final Resource resource = getObjectVariable(execution, ActivitiConstants.RESOURCE, Resource.class);
 		if(StringUtils.isNotBlank(resource.getName())) {

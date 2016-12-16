@@ -1,4 +1,4 @@
-package org.openiam.security;
+package org.openiam.util;
 
 public class CXFAuthentication {
 	

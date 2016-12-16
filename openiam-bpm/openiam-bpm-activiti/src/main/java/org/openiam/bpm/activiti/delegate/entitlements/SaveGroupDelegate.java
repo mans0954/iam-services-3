@@ -28,7 +28,7 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final GroupRequestModel groupRequestModel = getObjectVariable(execution, ActivitiConstants.GROUP, GroupRequestModel.class);
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         boolean isNew = false;

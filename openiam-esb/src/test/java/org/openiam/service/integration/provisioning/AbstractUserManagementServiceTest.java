@@ -103,7 +103,7 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
             while(!groupIdList.isEmpty()){
                 try {
                     String roleId = roleIdList.get(0);
-                    roleServiceClient.removeRole(roleId, REQUESTER_ID);
+                    roleServiceClient.removeRole(roleId);
                 } catch (Exception e) {}
             }
         }

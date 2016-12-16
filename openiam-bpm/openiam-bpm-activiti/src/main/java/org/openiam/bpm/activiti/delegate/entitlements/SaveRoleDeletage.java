@@ -2,9 +2,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -23,7 +21,7 @@ public class SaveRoleDeletage extends AbstractActivitiJob {
     }
 
     @Override
-    public void execute(DelegateExecution execution) throws Exception {
+    protected void doExecute(DelegateExecution execution) throws Exception {
         final Role role = getObjectVariable(execution, ActivitiConstants.ROLE, Role.class);
         final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         if (role.getId() == null) {
@@ -34,7 +32,7 @@ public class SaveRoleDeletage extends AbstractActivitiJob {
             idmAuditLog.setAuditDescription("Edit role");
         }
         try {
-            final String id = roleService.saveRole(role, getRequestorId(execution));
+            final String id = roleService.saveRole(role);
             if (StringUtils.isNotBlank(id)) {
                 idmAuditLog.setTargetRole(id, role.getName());
                 idmAuditLog.succeed();

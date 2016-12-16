@@ -20,7 +20,7 @@ public class DeleteRoleDelegate extends AbstractActivitiJob {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		Response wsResponse = null;
 		final Role role = getObjectVariable(execution, ActivitiConstants.ROLE, Role.class);
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
@@ -28,7 +28,7 @@ public class DeleteRoleDelegate extends AbstractActivitiJob {
 		try {
 	        if(role != null) {
 	        	idmAuditLog.setTargetRole(role.getId(), role.getName());
-                wsResponse = roleService.removeRole(role.getId(), systemUserId);
+                wsResponse = roleService.removeRole(role.getId());
                 if (wsResponse.isSuccess()) {
                     idmAuditLog.succeed();
                 } else {

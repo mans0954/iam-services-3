@@ -20,7 +20,7 @@ public class DeleteGroupDelegate extends AbstractActivitiJob {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		Response wsResponse = null;
 		final Group group = getObjectVariable(execution, ActivitiConstants.GROUP, Group.class);
 

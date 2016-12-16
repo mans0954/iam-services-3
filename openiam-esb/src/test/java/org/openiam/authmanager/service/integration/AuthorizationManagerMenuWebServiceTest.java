@@ -237,7 +237,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				userServiceClient.removeUser(user.getId());
 			}
 			if(role != null) {
-				roleServiceClient.removeRole(role.getId(), null);
+				roleServiceClient.removeRole(role.getId());
 			}
 			if(organization != null) {
 				organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId());
@@ -306,8 +306,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			role = super.createRole();
 			child = super.createRole();
-			roleServiceClient.addUserToRole(child.getId(), user.getId(), null, null, startDate, endDate);
-			roleServiceClient.addChildRole(role.getId(), child.getId(), null, null, startDate, endDate);
+			roleServiceClient.addUserToRole(child.getId(), user.getId(), null, startDate, endDate);
+			roleServiceClient.addChildRole(role.getId(), child.getId(), null, startDate, endDate);
 			assertAccessIndirect(role, child);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -317,10 +317,10 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				userServiceClient.removeUser(user.getId());
 			}
 			if(role != null) {
-				roleServiceClient.removeRole(role.getId(), null);
+				roleServiceClient.removeRole(role.getId());
 			}
 			if(child != null) {
-				roleServiceClient.removeRole(child.getId(), null);
+				roleServiceClient.removeRole(child.getId());
 			}
 		}
 	}
@@ -346,8 +346,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			role = super.createRole();
 			group = super.createGroup();
-			roleServiceClient.addUserToRole(role.getId(), user.getId(), null, null, startDate, endDate);
-			roleServiceClient.addGroupToRole(role.getId(), group.getId(), null, null, startDate, endDate);
+			roleServiceClient.addUserToRole(role.getId(), user.getId(), null, startDate, endDate);
+			roleServiceClient.addGroupToRole(role.getId(), group.getId(), null, startDate, endDate);
 			assertAccessIndirect(group, role);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -360,7 +360,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				groupServiceClient.deleteGroup(group.getId(), null);
 			}
 			if(role != null) {
-				roleServiceClient.removeRole(role.getId(), null);
+				roleServiceClient.removeRole(role.getId());
 			}
 		}
 	}
@@ -424,7 +424,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 		try {
 			user = super.createUser();
 			entity = super.createRole();
-			roleServiceClient.addUserToRole(entity.getId(), user.getId(), getRequestorId(), null, startDate, endDate);
+			roleServiceClient.addUserToRole(entity.getId(), user.getId(), null, startDate, endDate);
 			assertAccess(entity.getId(), "role", user);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -434,7 +434,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				userServiceClient.removeUser(user.getId());
 			}
 			if(entity != null) {
-				roleServiceClient.removeRole(entity.getId(), null);
+				roleServiceClient.removeRole(entity.getId());
 			}
 		}
 	}
@@ -468,7 +468,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				userServiceClient.removeUser(user.getId());
 			}
 			if(entity != null) {
-				roleServiceClient.removeRole(entity.getId(), null);
+				roleServiceClient.removeRole(entity.getId());
 			}
 		}
 	}

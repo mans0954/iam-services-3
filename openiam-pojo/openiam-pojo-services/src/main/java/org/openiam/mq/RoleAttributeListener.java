@@ -37,7 +37,7 @@ public class RoleAttributeListener extends AbstractAttributeListener {
     protected void process(UpdateAttributeByMetadataRequest request) {
         RoleSearchBean searchBean = new RoleSearchBean();
         searchBean.setMetadataType(request.getMetadataTypeId());
-        List<RoleEntity> roleList = roleDataService.findBeans(searchBean, null, -1, -1);
+        List<RoleEntity> roleList = roleDataService.findBeans(searchBean, -1, -1);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (RoleEntity role : roleList) {
                 Set<RoleAttributeEntity> roleAttributes = role.getRoleAttributes();

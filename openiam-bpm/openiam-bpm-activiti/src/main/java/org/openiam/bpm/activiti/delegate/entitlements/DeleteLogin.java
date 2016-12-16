@@ -8,8 +8,6 @@ import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -27,7 +25,7 @@ public class DeleteLogin extends AbstractActivitiJob {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final Login loginObj = getObjectVariable(execution, ActivitiConstants.LOGIN, Login.class);
 		final String loginId = loginObj.getId();
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);

@@ -42,6 +42,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.provision.service.ProvisioningDataService;
 import org.openiam.util.SpringContextProvider;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,14 +113,31 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	@Qualifier("userManager")
 	private UserDataService userManager;
 	
-	@Override
-	public void notify(DelegateTask delegateTask) {
-		throw new RuntimeException("notify() not overridden");
+	protected void doNotify(final DelegateTask delegateTask) {
+		throw new RuntimeException("doNotify must be overridden");
+	}
+	protected void doExecute(final DelegateExecution delegateTask) throws Exception {
+		throw new RuntimeException("doExecute must be overridden");
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
-		throw new RuntimeException("execute() not overridden");
+	public final void notify(DelegateTask delegateTask) {
+		try {
+			SpringSecurityHelper.setRequesterUserId(getRequestorId(delegateTask.getExecution()));
+			doNotify(delegateTask);
+		} finally {
+			SpringSecurityHelper.clearContext();
+		}
+	}
+	
+	@Override
+	public final void execute(DelegateExecution execution) throws Exception {
+		try {
+			doExecute(execution);
+			SpringSecurityHelper.setRequesterUserId(getRequestorId(execution));
+		} finally {
+			SpringSecurityHelper.clearContext();
+		}
 	}
 	
 	protected AbstractActivitiJob() {
@@ -137,7 +155,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	}
 	
 	protected Role getRole(final String roleId) {
-		return roleDataService.getRoleDtoLocalized(roleId, null, null);
+		return roleDataService.getRoleDtoLocalized(roleId, null);
 	}
 	
 	protected Group getGroup(final String groupId) {

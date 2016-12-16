@@ -47,7 +47,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
         Role role = new Role();
         role.setName(roleSameName);
         role.setManagedSysId(adMngSysId);
-        Response res = roleServiceClient.saveRole(role, REQUESTER_ID);
+        Response res = roleServiceClient.saveRole(role);
         Assert.assertNotNull(res);
         String groupId = (String)res.getResponseValue();
         sameRoleIds.add(groupId);
@@ -55,7 +55,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
         Role newRole = new Role();
         newRole.setName(roleSameName);
         newRole.setManagedSysId(ldapMngSysId);
-        Response newRes = roleServiceClient.saveRole(newRole, REQUESTER_ID);
+        Response newRes = roleServiceClient.saveRole(newRole);
         Assert.assertNotNull(newRes);
         String newGroupId = (String)newRes.getResponseValue();
         sameRoleIds.add(newGroupId);
@@ -73,7 +73,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
         Role role = new Role();
         role.setName(roleSameName1);
         role.setManagedSysId(adMngSysId);
-        Response res = roleServiceClient.saveRole(role, REQUESTER_ID);
+        Response res = roleServiceClient.saveRole(role);
         Assert.assertNotNull(res);
         String groupId = (String)res.getResponseValue();
         sameRoleIds.add(groupId);
@@ -81,7 +81,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
         Role newRole = new Role();
         newRole.setName(roleSameName1);
         newRole.setManagedSysId(adMngSysId);
-        Response newRes = roleServiceClient.saveRole(newRole, REQUESTER_ID);
+        Response newRes = roleServiceClient.saveRole(newRole);
         Assert.assertNotNull(newRes);
         String newGroupId = (String)newRes.getResponseValue();
         sameRoleIds.add(newGroupId);
@@ -98,7 +98,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
         Role role = new Role();
         role.setName(roleSameName2);
         role.setManagedSysId(null);
-        Response res = roleServiceClient.saveRole(role, REQUESTER_ID);
+        Response res = roleServiceClient.saveRole(role);
         Assert.assertNotNull(res);
         String groupId = (String)res.getResponseValue();
         sameRoleIds.add(groupId);
@@ -106,7 +106,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
         Role newRole = new Role();
         newRole.setName(roleSameName2);
         newRole.setManagedSysId(null);
-        Response newRes = roleServiceClient.saveRole(newRole, REQUESTER_ID);
+        Response newRes = roleServiceClient.saveRole(newRole);
         Assert.assertNotNull(newRes);
         String newGroupId = (String)newRes.getResponseValue();
         sameRoleIds.add(newGroupId);
@@ -124,7 +124,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
             String firstRoleName = sameRoleIds.get(0);
             Response resFirst = roleServiceClient.validateDelete(firstRoleName);
             if (resFirst.isSuccess()) {
-                roleServiceClient.removeRole(firstRoleName, REQUESTER_ID);
+                roleServiceClient.removeRole(firstRoleName);
             }
         }
 
@@ -132,7 +132,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
             String secondRoleName = sameRoleIds.get(1);
             Response resSecond = roleServiceClient.validateDelete(secondRoleName);
             if (resSecond.isSuccess()) {
-                roleServiceClient.removeRole(secondRoleName, REQUESTER_ID);
+                roleServiceClient.removeRole(secondRoleName);
             }
         }
 
@@ -141,7 +141,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
             String firstRoleName = sameRoleIds.get(2);
             Response resFirst = roleServiceClient.validateDelete(firstRoleName);
             if (resFirst.isSuccess()) {
-                roleServiceClient.removeRole(firstRoleName, REQUESTER_ID);
+                roleServiceClient.removeRole(firstRoleName);
             }
         }
 
@@ -149,7 +149,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
             String secondRoleName = sameRoleIds.get(3);
             Response resSecond = roleServiceClient.validateDelete(secondRoleName);
             if (resSecond.isSuccess()) {
-                roleServiceClient.removeRole(secondRoleName, REQUESTER_ID);
+                roleServiceClient.removeRole(secondRoleName);
             }
         }
 
@@ -158,7 +158,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
             String firstRoleName = sameRoleIds.get(4);
             Response resFirst = roleServiceClient.validateDelete(firstRoleName);
             if (resFirst.isSuccess()) {
-                roleServiceClient.removeRole(firstRoleName, REQUESTER_ID);
+                roleServiceClient.removeRole(firstRoleName);
             }
         }
 
@@ -166,7 +166,7 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
             String secondRoleName = sameRoleIds.get(5);
             Response resSecond = roleServiceClient.validateDelete(secondRoleName);
             if (resSecond.isSuccess()) {
-                roleServiceClient.removeRole(secondRoleName, REQUESTER_ID);
+                roleServiceClient.removeRole(secondRoleName);
             }
         }
 

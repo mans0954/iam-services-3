@@ -40,17 +40,17 @@ public abstract class AbstractAdminAuthorizationManagerTest extends AbstractAuth
 	
 	@Override
 	protected Response doAddUserToRole(final String roleId, final String userId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return roleServiceClient.addUserToRole(roleId, userId, requestorId, rightIds, startDate, endDate);
+		return roleServiceClient.addUserToRole(roleId, userId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doAddChildRole(final String roleId, final String childRoleId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return roleServiceClient.addChildRole(roleId, childRoleId, requestorId, rightIds, startDate, endDate);
+		return roleServiceClient.addChildRole(roleId, childRoleId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doRemoveUserFromRole(final String roleId, final String userId, final String requestorId) {
-		return roleServiceClient.removeUserFromRole(roleId, userId, requestorId);
+		return roleServiceClient.removeUserFromRole(roleId, userId);
 	}
 	
 	@Override
@@ -80,12 +80,12 @@ public abstract class AbstractAdminAuthorizationManagerTest extends AbstractAuth
 	
 	@Override
 	protected Response doAddGroupToRole(final String roleId, final String groupId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return roleServiceClient.addGroupToRole(roleId, groupId, requestorId, rightIds, startDate, endDate);
+		return roleServiceClient.addGroupToRole(roleId, groupId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doRemoveGroupFromRole(final String roleId, final String groupId, final String requestorId) {
-		return roleServiceClient.removeGroupFromRole(roleId, groupId, requestorId);
+		return roleServiceClient.removeGroupFromRole(roleId, groupId);
 	}
 	
 	@Override
@@ -110,7 +110,7 @@ public abstract class AbstractAdminAuthorizationManagerTest extends AbstractAuth
 	
 	@Override
 	protected Response doRemoveRole(final Role role, final String requestorId) {
-		return roleServiceClient.removeRole(role.getId(), requestorId);
+		return roleServiceClient.removeRole(role.getId());
 	}
 	
 	@Override

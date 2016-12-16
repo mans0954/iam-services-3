@@ -168,7 +168,7 @@ public class ProvisioningAuthorizationManagerWebServiceTest extends AbstractAuth
 	protected Response doAddChildRole(String roleId, String childRoleId,
 			String requestorId, Set<String> rightIds, Date startDate,
 			Date endDate) {
-		return roleServiceClient.addChildRole(roleId, childRoleId, requestorId, rightIds, startDate, endDate);
+		return roleServiceClient.addChildRole(roleId, childRoleId, rightIds, startDate, endDate);
 	}
 
 	@Override
@@ -194,13 +194,13 @@ public class ProvisioningAuthorizationManagerWebServiceTest extends AbstractAuth
 	protected Response doAddGroupToRole(String roleId, String groupId,
 			String requestorId, Set<String> rightIds, Date startDate,
 			Date endDate) {
-		return roleServiceClient.addGroupToRole(roleId, groupId, requestorId, rightIds, startDate, endDate);
+		return roleServiceClient.addGroupToRole(roleId, groupId, rightIds, startDate, endDate);
 	}
 
 	@Override
 	protected Response doRemoveGroupFromRole(String roleId, String groupId,
 			String requestorId) {
-		return roleServiceClient.removeGroupFromRole(roleId, groupId, requestorId);
+		return roleServiceClient.removeGroupFromRole(roleId, groupId);
 	}
 
 	@Override
@@ -217,7 +217,7 @@ public class ProvisioningAuthorizationManagerWebServiceTest extends AbstractAuth
 
 	@Override
 	protected Response doRemoveRole(Role role, String requestorId) {
-		return roleServiceClient.removeRole(role.getId(), requestorId);
+		return roleServiceClient.removeRole(role.getId());
 	}
 
 	@Override

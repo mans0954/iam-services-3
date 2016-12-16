@@ -11,8 +11,8 @@ public class AddAttestationCandidateUsersTaskListener extends AbstractCandidateT
 	}
 
 	@Override
-	public void notify(DelegateTask delegateTask) {
-		super.notify(delegateTask, null);
+	public void doNotify(DelegateTask delegateTask) {
+		super.doNotify(delegateTask);
 	}
 	
 	 @Override

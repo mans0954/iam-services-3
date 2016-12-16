@@ -94,8 +94,8 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			assertSuccess(organizationServiceClient.addRoleToOrganization(organizationId, roleId, getRequestorId(), rightIds, startDate, endDate));
 			assertSuccess(organizationServiceClient.addResourceToOrganization(organizationId, resourceId, getRequestorId(), rightIds, startDate, endDate));
 			
-			assertSuccess(roleServiceClient.addGroupToRole(roleId, groupId, requesterId, rightIds, startDate, endDate));
-			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(roleServiceClient.addGroupToRole(roleId, groupId, rightIds, startDate, endDate));
+			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, rightIds, startDate, endDate));
 			
 			assertSuccess(groupServiceClient.addUserToGroup(groupId, userId, requesterId, rightIds, startDate, endDate));
 			
@@ -105,7 +105,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 
 			assertSuccess(resourceDataService.addChildResource(resourceId, childResourceId, requesterId, rightIds, startDate, endDate));
 			assertSuccess(groupServiceClient.addChildGroup(groupId, childGroupId, requesterId, rightIds, startDate, endDate));
-			assertSuccess(roleServiceClient.addChildRole(roleId, childRoleId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(roleServiceClient.addChildRole(roleId, childRoleId, rightIds, startDate, endDate));
 
 			final UserEntitlementsMatrix matrix = authMangerAdminClient.getUserEntitlementsMatrix(user.getId(), getMiddleDate(startDate, endDate));
 			Assert.assertNotNull(matrix);
@@ -164,7 +164,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId()));
 			}
 			if(role != null) {
-				assertSuccess(roleServiceClient.removeRole(role.getId(), null));
+				assertSuccess(roleServiceClient.removeRole(role.getId()));
 			}
 			if(group != null) {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId(), null));
@@ -235,7 +235,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId()));
 			}
 			if(role != null) {
-				assertSuccess(roleServiceClient.removeRole(role.getId(), getRequestorId()));
+				assertSuccess(roleServiceClient.removeRole(role.getId()));
 			}
 			if(group != null) {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId(), getRequestorId()));
@@ -307,7 +307,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId()));
 			}
 			if(role != null) {
-				assertSuccess(roleServiceClient.removeRole(role.getId(), null));
+				assertSuccess(roleServiceClient.removeRole(role.getId()));
 			}
 			if(group != null) {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId(), null));
@@ -366,7 +366,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String requesterId = null;
 			
 			assertSuccess(resourceDataService.addRoleToResource(resourceId, roleId, requesterId, rightIds, startDate, endDate));
-			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, requesterId, null, startDate, endDate));
+			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, null, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resourceId, getMiddleDate(startDate, endDate));
 			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
@@ -379,7 +379,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId()));
 			}
 			if(role != null) {
-				assertSuccess(roleServiceClient.removeRole(role.getId(), getRequestorId()));
+				assertSuccess(roleServiceClient.removeRole(role.getId()));
 			}
 			if(group != null) {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId(), getRequestorId()));
@@ -451,7 +451,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId()));
 			}
 			if(role != null) {
-				assertSuccess(roleServiceClient.removeRole(role.getId(), getRequestorId()));
+				assertSuccess(roleServiceClient.removeRole(role.getId()));
 			}
 			if(group != null) {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId(), getRequestorId()));
@@ -626,8 +626,8 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String requesterId = null;
 			
 			assertSuccess(resourceDataService.addRoleToResource(resource.getId(), parent.getId(), requesterId, rightIds, startDate, endDate));
-			assertSuccess(roleServiceClient.addChildRole(parent.getId(), child.getId(), requesterId, null, startDate, endDate));
-			assertSuccess(roleServiceClient.addUserToRole(child.getId(), userId, requesterId, null, startDate, endDate));
+			assertSuccess(roleServiceClient.addChildRole(parent.getId(), child.getId(), null, startDate, endDate));
+			assertSuccess(roleServiceClient.addUserToRole(child.getId(), userId, null, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resource.getId(), getMiddleDate(startDate, endDate));
 			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
@@ -637,10 +637,10 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(userServiceClient.removeUser(user.getId()));
 			}
 			if(child != null) {
-				assertSuccess(roleServiceClient.removeRole(child.getId(), null));
+				assertSuccess(roleServiceClient.removeRole(child.getId()));
 			}
 			if(parent != null) {
-				assertSuccess(roleServiceClient.removeRole(parent.getId(), null));
+				assertSuccess(roleServiceClient.removeRole(parent.getId()));
 			}
 			if(resource != null) {
 				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
@@ -756,8 +756,8 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String roleId = role.getId();
 			final String resourceId = resource.getId();
 			
-			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, requesterId, null, startDate, endDate));
-			assertSuccess(roleServiceClient.addGroupToRole(roleId, groupId, requesterId, null, startDate, endDate));
+			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, null, startDate, endDate));
+			assertSuccess(roleServiceClient.addGroupToRole(roleId, groupId, null, startDate, endDate));
 			assertSuccess(resourceDataService.addGroupToResource(resourceId, groupId, requesterId, rightIds, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resource.getId(), getMiddleDate(startDate, endDate));
@@ -771,7 +771,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId(), null));
 			}
 			if(role != null) {
-				assertSuccess(roleServiceClient.removeRole(role.getId(), null));
+				assertSuccess(roleServiceClient.removeRole(role.getId()));
 			}
 			if(resource != null) {
 				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
@@ -902,7 +902,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(userServiceClient.removeUser(user.getId()));
 			}
 			if(role != null) {
-				assertSuccess(roleServiceClient.removeRole(role.getId(), getRequestorId()));
+				assertSuccess(roleServiceClient.removeRole(role.getId()));
 			}
 			if(organization != null) {
 				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId()));
@@ -1065,8 +1065,8 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String requesterId = null;
 			final String roleId = role.getId();
 			
-			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, requesterId, null, startDate, endDate));
-			assertSuccess(roleServiceClient.addGroupToRole(roleId, groupId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, null, startDate, endDate));
+			assertSuccess(roleServiceClient.addGroupToRole(roleId, groupId, rightIds, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForGroup(groupId, getMiddleDate(startDate, endDate));
 			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
@@ -1079,7 +1079,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId(), null));
 			}
 			if(role != null) {
-				assertSuccess(roleServiceClient.removeRole(role.getId(), null));
+				assertSuccess(roleServiceClient.removeRole(role.getId()));
 			}
 		}
 	}
@@ -1190,7 +1190,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			
 			assertSuccess(organizationServiceClient.addUserToOrg(organizationId, userId, requesterId, null, startDate, endDate));
 			assertSuccess(organizationServiceClient.addRoleToOrganization(organizationId, roleId, requesterId, null, startDate, endDate));
-			assertSuccess(roleServiceClient.addGroupToRole(roleId, groupId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(roleServiceClient.addGroupToRole(roleId, groupId, rightIds, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForGroup(groupId, getMiddleDate(startDate, endDate));
 			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
@@ -1203,7 +1203,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId(), null));
 			}
 			if(role != null) {
-				assertSuccess(roleServiceClient.removeRole(role.getId(), null));
+				assertSuccess(roleServiceClient.removeRole(role.getId()));
 			}
 			if(organization != null) {
 				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId()));

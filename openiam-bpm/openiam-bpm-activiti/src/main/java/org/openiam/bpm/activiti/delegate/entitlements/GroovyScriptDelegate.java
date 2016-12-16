@@ -27,7 +27,7 @@ public class GroovyScriptDelegate extends AbstractActivitiJob {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
 		idmAuditLog.setAction(AuditAction.ACTIVITI_GROOVY_SCRIPT.value());
 		try {

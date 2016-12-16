@@ -15,8 +15,8 @@ public class SendEditUserRequestDelegate extends AbstractEntitlementsDelegate {
     }
 
     @Override
-    public void execute(DelegateExecution execution) throws Exception {
-        super.execute(execution);
+    protected void doExecute(DelegateExecution execution) throws Exception {
+        super.doExecute(execution);
     }
 
     @Override

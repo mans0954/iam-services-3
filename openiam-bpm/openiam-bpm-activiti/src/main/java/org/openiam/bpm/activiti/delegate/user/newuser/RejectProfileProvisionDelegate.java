@@ -9,13 +9,13 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.request.NotificationParam;
+import org.openiam.base.request.NotificationRequest;
 import org.openiam.bpm.activiti.delegate.entitlements.RejectEntitlementsNotifierDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.base.request.NotificationParam;
-import org.openiam.base.request.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
@@ -29,7 +29,7 @@ public class RejectProfileProvisionDelegate extends RejectEntitlementsNotifierDe
      }
      
      @Override
-     public void execute(DelegateExecution execution) throws Exception {
+     protected void doExecute(DelegateExecution execution) throws Exception {
     	final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
  		try {

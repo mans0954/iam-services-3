@@ -4,10 +4,6 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.DelegateTask;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import com.thoughtworks.xstream.XStream;
 
 public class NewUserCandidateTaskListener extends AbstractCandidateTaskListener {
 	
@@ -16,10 +12,10 @@ public class NewUserCandidateTaskListener extends AbstractCandidateTaskListener 
 	}
 
 	@Override
-	public void notify(DelegateTask delegateTask) {
+	protected void doNotify(DelegateTask delegateTask) {
 		final NewUserProfileRequestModel profileModel = getObjectVariable(delegateTask.getExecution(), ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 		
-		super.notify(delegateTask, profileModel.getSupervisorIds());
+		super.notifyCandidates(delegateTask, profileModel.getSupervisorIds());
 	}
 
 	@Override

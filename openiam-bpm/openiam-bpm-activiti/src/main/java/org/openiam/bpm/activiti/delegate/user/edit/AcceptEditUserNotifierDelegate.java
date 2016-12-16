@@ -19,7 +19,7 @@ public class AcceptEditUserNotifierDelegate extends AcceptEntitlementsNotifierDe
 	}
 
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	public void doExecute(DelegateExecution execution) throws Exception {
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
 		try {

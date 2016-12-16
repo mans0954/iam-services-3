@@ -22,7 +22,7 @@ public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final NewUserProfileRequestModel request = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 		
 		final LinkedHashMap<String, String> metadataMap = getMetadataMap(request, execution);

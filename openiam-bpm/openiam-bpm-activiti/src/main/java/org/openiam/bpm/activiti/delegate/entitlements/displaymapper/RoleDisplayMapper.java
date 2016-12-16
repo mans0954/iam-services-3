@@ -23,7 +23,7 @@ public class RoleDisplayMapper extends AbstractActivitiJob {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final LinkedHashMap<String, String> metadataMap = new LinkedHashMap<String, String>();
 		final Role role = getObjectVariable(execution, ActivitiConstants.ROLE, Role.class);
 		if(StringUtils.isNotBlank(role.getName())) {

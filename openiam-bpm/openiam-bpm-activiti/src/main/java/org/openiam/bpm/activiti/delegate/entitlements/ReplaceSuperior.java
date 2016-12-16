@@ -27,7 +27,7 @@ public class ReplaceSuperior extends AbstractActivitiJob {
     }
 
     @Override
-    public void execute(DelegateExecution execution) throws Exception {
+    protected void doExecute(DelegateExecution execution) throws Exception {
 
         final String currSuperiorId = (String)execution.getVariable("CurrentSuperiorID");
         final String newSuperiorId = (String)execution.getVariable("NewSuperiorID");

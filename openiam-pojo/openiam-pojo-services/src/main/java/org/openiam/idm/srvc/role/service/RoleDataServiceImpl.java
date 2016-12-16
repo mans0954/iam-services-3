@@ -57,6 +57,7 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
 import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringContextProvider;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
@@ -154,14 +155,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Override
     @Transactional(readOnly = true)
     public RoleEntity getRole(String roleId) {
-        return getRole(roleId, null);
-    }
-
-    @Deprecated
-    @Override
-    @Transactional(readOnly = true)
-    public RoleEntity getRole(String roleId, final String requesterId) {
-        if (DelegationFilterHelper.isAllowed(roleId, getDelegationFilter(requesterId))) {
+        if (DelegationFilterHelper.isAllowed(roleId, getDelegationFilter())) {
             return roleDao.findById(roleId);
         }
         return null;
@@ -170,8 +164,8 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public RoleEntity getRoleLocalized(final String roleId, final String requesterId, final Language language) {
-        if (DelegationFilterHelper.isAllowed(roleId, getDelegationFilter(requesterId))) {
+    public RoleEntity getRoleLocalized(final String roleId, final Language language) {
+        if (DelegationFilterHelper.isAllowed(roleId, getDelegationFilter())) {
             return roleDao.findById(roleId);
         }
         return null;
@@ -180,60 +174,12 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public Role getRoleDtoLocalized(final String roleId, final String requesterId, final Language language) {
-        RoleEntity roleEntity = this.getProxyService().getRoleLocalized(roleId, requesterId, language);
+    public Role getRoleDtoLocalized(final String roleId, final Language language) {
+        RoleEntity roleEntity = this.getProxyService().getRoleLocalized(roleId, language);
         if (roleEntity != null) {
             return roleDozerConverter.convertToDTO(roleEntity, true);
         }
         return null;
-    }
-
-    @Override
-    @Transactional
-    @CacheKeyEviction(
-            evictions = {
-                    @CacheKeyEvict("roleEntities")
-            }
-    )
-    public void removeRole(final String roleId) {
-        if (roleId != null) {
-            final RoleEntity roleEntity = roleDao.findById(roleId);
-            if (roleEntity != null) {
-                roleDao.delete(roleEntity);
-            }
-        }
-    }
-
-    @Override
-    @Transactional
-    public void addGroupToRole(final String roleId,
-                               final String groupId,
-                               final Set<String> rightIds,
-                               final Date startDate,
-                               final Date endDate) {
-        if (roleId != null && groupId != null) {
-            final RoleEntity role = roleDao.findById(roleId);
-            final GroupEntity group = groupDAO.findById(groupId);
-            if (role != null && group != null) {
-                role.addGroup(group, accessRightDAO.findByIds(rightIds), startDate, endDate);
-            }
-            roleDao.merge(role);
-        }
-    }
-
-    @Override
-    @Transactional
-    public void removeGroupFromRole(String roleId, String groupId) {
-        if (roleId != null && groupId != null) {
-            final RoleEntity role = roleDao.findById(roleId);
-            final GroupEntity group = groupDAO.findById(groupId);
-            if (role != null && group != null) {
-                role.removeGroup(group);
-                //roleDao.update(role);
-                roleDao.merge(role);
-            }
-        }
-
     }
 
     /**
@@ -267,32 +213,6 @@ public class RoleDataServiceImpl implements RoleDataService {
         }
     }
 
-    @Override
-    @Transactional
-    public void addUserToRole(final String roleId,
-                              final String userId,
-                              final Set<String> rightIds,
-                              final Date startDate,
-                              final Date endDate) {
-        final UserEntity user = userDAO.findById(userId);
-        final RoleEntity role = roleDao.findById(roleId);
-        if (user != null && role != null) {
-            user.addRole(role, accessRightDAO.findByIds(rightIds), startDate, endDate);
-        }
-        userDAO.save(user);
-    }
-
-    @Override
-    @Transactional
-    public void removeUserFromRole(String roleId, String userId) {
-        final UserEntity user = userDAO.findById(userId);
-        final RoleEntity role = roleDao.findById(roleId);
-        if (user != null && role != null) {
-            user.removeRole(role);
-        }
-        userDAO.save(user);
-    }
-
     private void visitChildRoles(final String id, final Set<RoleEntity> visitedSet) {
         if (id != null) {
             if (visitedSet != null) {
@@ -318,7 +238,8 @@ public class RoleDataServiceImpl implements RoleDataService {
                     @CacheKeyEvict("roleEntities")
             }
     )
-    public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
+    public void saveRole(final RoleEntity role) throws BasicDataServiceException {
+    	final String requestorId = SpringSecurityHelper.getRequestorUserId();
         if (role != null && entityValidator.isValid(role)) {
             if (role.getManagedSystem() != null && role.getManagedSystem().getId() != null) {
                 role.setManagedSystem(managedSysDAO.findById(role.getManagedSystem().getId()));
@@ -340,7 +261,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 
             if (StringUtils.isBlank(role.getId())) {
                 roleDao.save(role);
-                role.addApproverAssociation(createDefaultApproverAssociations(role, requestorId));
+                role.addApproverAssociation(createDefaultApproverAssociations(role));
                 role.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId), null, null);
                 addRequiredAttributes(role);
             } else {
@@ -456,13 +377,13 @@ public class RoleDataServiceImpl implements RoleDataService {
         auditLogHelper.enqueue(auditLog);
     }
 
-    private ApproverAssociationEntity createDefaultApproverAssociations(final RoleEntity entity, final String requestorId) {
-        if (requestorId != null) {
+    private ApproverAssociationEntity createDefaultApproverAssociations(final RoleEntity entity) {
+        if (SpringSecurityHelper.getRequestorUserId() != null) {
             final ApproverAssociationEntity association = new ApproverAssociationEntity();
             association.setAssociationEntityId(entity.getId());
             association.setAssociationType(AssociationType.ROLE);
             association.setApproverLevel(Integer.valueOf(0));
-            association.setApproverEntityId(requestorId);
+            association.setApproverEntityId(SpringSecurityHelper.getRequestorUserId());
             association.setApproverEntityType(AssociationType.USER);
             return association;
         } else {
@@ -472,22 +393,22 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleEntity> getRolesInGroup(final String groupId, final String requesterId, int from, int size) {
-        return roleDao.getRolesForGroup(groupId, getDelegationFilter(requesterId), from, size);
+    public List<RoleEntity> getRolesInGroup(final String groupId, int from, int size) {
+        return roleDao.getRolesForGroup(groupId, getDelegationFilter(), from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Role> getRolesDtoInGroup(final String groupId, final String requesterId, int from, int size) {
-        List<RoleEntity> roleEntityList = roleDao.getRolesForGroup(groupId, getDelegationFilter(requesterId), from, size);
+    public List<Role> getRolesDtoInGroup(final String groupId, int from, int size) {
+        List<RoleEntity> roleEntityList = roleDao.getRolesForGroup(groupId, getDelegationFilter(), from, size);
         return roleDozerConverter.convertToDTOList(roleEntityList, false);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Role> getRolesDtoForUser(String userId, String requesterId, int from, int size) {
+    public List<Role> getRolesDtoForUser(String userId, int from, int size) {
         //final List<RoleEntity> entityList = getRolesForUser(userId, requesterId, from, size);
-        final List<RoleEntity> entityList = this.getProxyService().getRolesForUser(userId, requesterId, from, size);
+        final List<RoleEntity> entityList = this.getProxyService().getRolesForUser(userId, from, size);
         return roleDozerConverter.convertToDTOList(entityList, false);
     }
 
@@ -513,8 +434,8 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
-        Set<String> filter = getDelegationFilter(requesterId);
+    public List<RoleEntity> findBeans(RoleSearchBean searchBean, int from, int size) {
+        Set<String> filter = getDelegationFilter();
         if (CollectionUtils.isEmpty(searchBean.getKeySet())) {
             searchBean.setKeySet(filter);
         } else if (!DelegationFilterHelper.isAllowed(searchBean.getKeySet(), filter)) {
@@ -538,8 +459,8 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size) {
-        List<RoleEntity> roleEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size);
+    public List<Role> findBeansDto(RoleSearchBean searchBean, int from, int size) {
+        List<RoleEntity> roleEntityList = this.getProxyService().findBeans(searchBean, from, size);
         List<Role> dtoList = roleDozerConverter.convertToDTOList(roleEntityList, searchBean.isDeepCopy());
         accessRightProcessor.process(searchBean, dtoList, roleEntityList);
         return dtoList;
@@ -547,8 +468,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public int countBeans(RoleSearchBean searchBean, final String requesterId) {
-        Set<String> filter = getDelegationFilter(requesterId);
+    public int countBeans(RoleSearchBean searchBean) {
+        Set<String> filter = getDelegationFilter();
         if (CollectionUtils.isEmpty(searchBean.getKeySet())) {
             searchBean.setKeySet(filter);
         } else if (!DelegationFilterHelper.isAllowed(searchBean.getKeySet(), filter)) {
@@ -613,115 +534,84 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size) {
-        return roleDao.getRolesForResource(resourceId, getDelegationFilter(requesterId), from, size);
+    public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size) {
+        return roleDao.getRolesForResource(resourceId, getDelegationFilter(), from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Role> getRolesDtoForResource(final String resourceId, final String requesterId, final int from, final int size) {
-        List<RoleEntity> roleEntityList = roleDao.getRolesForResource(requesterId, getDelegationFilter(requesterId), from, size);
+    public List<Role> getRolesDtoForResource(final String resourceId, final int from, final int size) {
+        List<RoleEntity> roleEntityList = roleDao.getRolesForResource(resourceId, getDelegationFilter(), from, size);
         return roleDozerConverter.convertToDTOList(roleEntityList, false);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public int getNumOfRolesForResource(final String resourceId, final String requesterId) {
-        return roleDao.getNumOfRolesForResource(resourceId, getDelegationFilter(requesterId));
+    public int getNumOfRolesForResource(final String resourceId) {
+        return roleDao.getNumOfRolesForResource(resourceId, getDelegationFilter());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleEntity> getChildRoles(final String id, final String requesterId, int from, int size) {
-        return roleDao.getChildRoles(id, getDelegationFilter(requesterId), from, size);
+    public List<RoleEntity> getChildRoles(final String id, int from, int size) {
+        return roleDao.getChildRoles(id, getDelegationFilter(), from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Role> getChildRolesDto(final String id, final String requesterId, int from, int size) {
-        List<RoleEntity> roleEntityList = roleDao.getChildRoles(id, getDelegationFilter(requesterId), from, size);
+    public List<Role> getChildRolesDto(final String id, int from, int size) {
+        List<RoleEntity> roleEntityList = roleDao.getChildRoles(id, getDelegationFilter(), from, size);
         return roleDozerConverter.convertToDTOList(roleEntityList, false);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public int getNumOfChildRoles(final String id, final String requesterId) {
-        return roleDao.getNumOfChildRoles(id, getDelegationFilter(requesterId));
+    public int getNumOfChildRoles(final String id) {
+        return roleDao.getNumOfChildRoles(id, getDelegationFilter());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleEntity> getParentRoles(final String id, final String requesterId, int from, int size) {
-        return roleDao.getParentRoles(id, getDelegationFilter(requesterId), from, size);
+    public List<RoleEntity> getParentRoles(final String id, int from, int size) {
+        return roleDao.getParentRoles(id, getDelegationFilter(), from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Role> getParentRolesDto(final String id, final String requesterId, int from, int size) {
-        List<RoleEntity> roleEntityList = roleDao.getParentRoles(id, getDelegationFilter(requesterId), from, size);
+    public List<Role> getParentRolesDto(final String id, int from, int size) {
+        List<RoleEntity> roleEntityList = roleDao.getParentRoles(id, getDelegationFilter(), from, size);
         return roleDozerConverter.convertToDTOList(roleEntityList, false);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public int getNumOfParentRoles(final String id, final String requesterId) {
-        return roleDao.getNumOfParentRoles(id, getDelegationFilter(requesterId));
-    }
-
-    @Override
-    @Transactional
-    public void addChildRole(final String id,
-                             final String childRoleId,
-                             final Set<String> rights,
-                             final Date startDate,
-                             final Date endDate) throws BasicDataServiceException{
-        if (id != null && childRoleId != null && !id.equals(childRoleId)) {
-            final RoleEntity child = roleDao.findById(childRoleId);
-            final RoleEntity parent = roleDao.findById(id);
-            if (parent != null && child != null) {
-                parent.addChild(child, accessRightDAO.findByIds(rights), startDate, endDate);
-            }
-            roleDao.update(parent);
-        } else
-            throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD, "Could not process such combination of parent/child ids");
-    }
-
-    @Override
-    @Transactional
-    public void removeChildRole(final String id, final String childRoleId) {
-        if (id != null && childRoleId != null) {
-            final RoleEntity child = roleDao.findById(childRoleId);
-            final RoleEntity parent = roleDao.findById(id);
-            if (parent != null && child != null) {
-                parent.removeChild(child);
-            }
-            roleDao.update(parent);
-        }
+    public int getNumOfParentRoles(final String id) {
+        return roleDao.getNumOfParentRoles(id, getDelegationFilter());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public int getNumOfRolesForGroup(String groupId, final String requesterId) {
-        return roleDao.getNumOfRolesForGroup(groupId, getDelegationFilter(requesterId));
+    public int getNumOfRolesForGroup(String groupId) {
+        return roleDao.getNumOfRolesForGroup(groupId, getDelegationFilter());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleEntity> getRolesForUser(final String userId, final String requesterId, final int from, final int size) {
-        return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
+    public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size) {
+        return roleDao.getRolesForUser(userId, getDelegationFilter(), from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public int getNumOfRolesForUser(final String userId, final String requesterId) {
-        return roleDao.getNumOfRolesForUser(userId, getDelegationFilter(requesterId));
+    public int getNumOfRolesForUser(final String userId) {
+        return roleDao.getNumOfRolesForUser(userId, getDelegationFilter());
     }
 
-    private Set<String> getDelegationFilter(String requesterId) {
+    private Set<String> getDelegationFilter() {
         Set<String> filterData = null;
-        if (StringUtils.isNotBlank(requesterId)) {
+        if (StringUtils.isNotBlank(SpringSecurityHelper.getRequestorUserId())) {
             filterData = new HashSet<String>(
-                    DelegationFilterHelper.getRoleFilterFromString(userDataService.getUserAttributesDto(requesterId)));
+                    DelegationFilterHelper.getRoleFilterFromString(userDataService.getUserAttributesDto(SpringSecurityHelper.getRequestorUserId())));
         }
         return filterData;
     }
@@ -826,8 +716,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
-        return roleDao.findRolesWithSubRolesIds(roleIds, getDelegationFilter(requesterId));
+    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds) {
+        return roleDao.findRolesWithSubRolesIds(roleIds, getDelegationFilter());
     }
 
     @Override
@@ -877,24 +767,31 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
-        return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
+    public List<RoleEntity> getUserRoles(String userId, int from, int size) {
+        return roleDao.getRolesForUser(userId, getDelegationFilter(), from, size);
     }
 
     @Override
     @Transactional
-    public Response removeRole(String roleId, String requesterId) throws BasicDataServiceException {
+    @CacheKeyEviction(
+            evictions = {
+                    @CacheKeyEvict("roleEntities")
+            }
+    )
+    public Response removeRole(String roleId) throws BasicDataServiceException {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (roleId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId  is null or empty");
             }
 
-            final RoleEntity entity = this.getRoleLocalized(roleId, requesterId, null);
+            final RoleEntity entity = roleDao.findById(roleId);
             if (entity == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, String.format("No Role is found for roleId: %s", roleId));
             }
-            getProxyService().removeRole(roleId);
+
+            roleDao.delete(entity);
+            
         } catch (BasicDataServiceException e) {
             throw e;
         } catch (Throwable e) {
@@ -907,12 +804,12 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional
-    public String saveRole(Role role, final String requesterId) throws BasicDataServiceException {
+    public String saveRole(Role role) throws BasicDataServiceException {
         String retVal = null;
         try {
             validate(role);
             final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
-            getProxyService().saveRole(entity, requesterId);
+            getProxyService().saveRole(entity);
             retVal = entity.getId();
         } catch (BasicDataServiceException e) {
             throw e;
@@ -946,10 +843,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional
-    public void addGroupToRole(final String roleId, final String groupId, final String requesterId,
-                               final Set<String> rightIds, final Date startDate, final Date endDate) throws BasicDataServiceException {
+    public void addGroupToRole(final String roleId, final String groupId, final Set<String> rightIds, final Date startDate, final Date endDate) throws BasicDataServiceException {
         final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
-        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_ROLE.value());
         GroupEntity groupEntity = groupDataService.getGroup(groupId);
         idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
@@ -961,8 +857,16 @@ public class RoleDataServiceImpl implements RoleDataService {
                 throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
 
-            getProxyService().validateGroup2RoleAddition(roleId, groupId);
-            getProxyService().addGroupToRole(roleId, groupId, rightIds, startDate, endDate);
+            validateGroup2RoleAddition(roleId, groupId);
+            
+            if (roleId != null && groupId != null) {
+                final RoleEntity role = roleDao.findById(roleId);
+                final GroupEntity group = groupDAO.findById(groupId);
+                if (role != null && group != null) {
+                    role.addGroup(group, accessRightDAO.findByIds(rightIds), startDate, endDate);
+                }
+                roleDao.merge(role);
+            }
         } catch (BasicDataServiceException e) {
             throw e;
         } catch (Throwable e) {
@@ -973,16 +877,12 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional
-    public void addUserToRole(final String roleId, final String userId, final String requesterId, final Set<String> rightIds,
-                              final Date startDate, final Date endDate) throws BasicDataServiceException {
+    public void addUserToRole(final String roleId, final String userId, final Set<String> rightIds, final Date startDate, final Date endDate) throws BasicDataServiceException {
         final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
         final UserEntity user = userDataService.getUser(userId);
-        final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
-        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
-        final RoleEntity roleEntity = this.getRole(roleId);
-        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-        idmAuditLog.setRequestorUserId(requesterId);
+        final RoleEntity role = roleDao.findById(roleId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         idmAuditLog.setAuditDescription(String.format("Add user to  role: %s", roleId));
         try {
             if (roleId == null || userId == null) {
@@ -992,7 +892,19 @@ public class RoleDataServiceImpl implements RoleDataService {
             if (startDate != null && endDate != null && startDate.after(endDate)) {
                 throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
-            getProxyService().addUserToRole(roleId, userId, rightIds, startDate, endDate);
+            
+            if(user == null || role == null) {
+            	throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "user or role is null");
+            }
+            
+            final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+            idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+            idmAuditLog.setTargetRole(roleId, role.getName());
+            
+            user.addRole(role, accessRightDAO.findByIds(rightIds), startDate, endDate);
+            
+            userDAO.save(user);
+            
         } catch (BasicDataServiceException e) {
             throw e;
         } catch (Throwable e) {
@@ -1003,21 +915,28 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional
-    public void removeGroupFromRole(String roleId, String groupId, String requesterId) throws BasicDataServiceException {
+    public void removeGroupFromRole(String roleId, String groupId) throws BasicDataServiceException {
         final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
-        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_ROLE.value());
-        GroupEntity groupEntity = groupDataService.getGroup(groupId);
-        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
-        RoleEntity roleEntity = this.getRole(roleId);
-        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Remove group %s from role: %s", groupId, roleId));
         try {
             if (groupId == null || roleId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
             }
+            
+            final GroupEntity group = groupDataService.getGroup(groupId);
+            final RoleEntity role = this.getRole(roleId);
+            if(group == null || role == null) {
+            	throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group or Role is null");
+            }
+            
+            idmAuditLog.setTargetGroup(groupId, group.getName());
+            idmAuditLog.setTargetRole(roleId, role.getName());
+            
+            role.removeGroup(group);
+            roleDao.merge(role);
 
-            getProxyService().removeGroupFromRole(roleId, groupId);
         } catch (BasicDataServiceException e) {
             throw e;
         } catch (Throwable e) {
@@ -1028,21 +947,30 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional
-    public void removeUserFromRole(String roleId, String userId, String requesterId) throws BasicDataServiceException {
+    public void removeUserFromRole(String roleId, String userId) throws BasicDataServiceException {
         final IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
-        UserEntity userEntity = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
-        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
-        RoleEntity roleEntity = this.getRole(roleId);
-        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         idmAuditLog.setAuditDescription(String.format("Remove user %s from role: %s", userId, roleId));
         try {
             if (roleId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            getProxyService().removeUserFromRole(roleId, userId);
+            
+            final UserEntity user = userDataService.getUser(userId);
+            final RoleEntity role = roleDao.findById(roleId);
+            if(user == null || role == null) {
+            	throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "User or Role is null");
+            }
+            
+            final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+            idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+            idmAuditLog.setTargetRole(roleId, role.getName());
+
+            
+            user.removeRole(role);
+            userDAO.save(user);
+                        
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             throw e;
@@ -1056,7 +984,6 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Transactional
     public void addChildRole(final String roleId,
                              final String childRoleId,
-                             final String requesterId,
                              final Set<String> rights,
                              final Date startDate,
                              final Date endDate) throws BasicDataServiceException {
@@ -1068,8 +995,19 @@ public class RoleDataServiceImpl implements RoleDataService {
                 throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
 
-            getProxyService().validateRole2RoleAddition(roleId, childRoleId, rights, startDate, endDate);
-            getProxyService().addChildRole(roleId, childRoleId, rights, startDate, endDate);
+            validateRole2RoleAddition(roleId, childRoleId, rights, startDate, endDate);
+            
+            if (roleId != null && childRoleId != null && !roleId.equals(childRoleId)) {
+                final RoleEntity child = roleDao.findById(childRoleId);
+                final RoleEntity parent = roleDao.findById(roleId);
+                if (parent != null && child != null) {
+                    parent.addChild(child, accessRightDAO.findByIds(rights), startDate, endDate);
+                }
+                roleDao.update(parent);
+            } else {
+                throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD, "Could not process such combination of parent/child ids");
+            }
+            
         } catch (BasicDataServiceException e) {
             throw e;
         } catch (Throwable e) {
@@ -1080,17 +1018,19 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional
-    public void removeChildRole(final String roleId, final String childRoleId, String requesterId) throws BasicDataServiceException {
+    public void removeChildRole(final String roleId, final String childRoleId) throws BasicDataServiceException {
         try {
             if (roleId == null || childRoleId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or child roleId is null");
             }
-            final RoleEntity parent = this.getRole(roleId, null);
-            final RoleEntity child = this.getRole(childRoleId, null);
+            final RoleEntity parent = roleDao.findById(roleId);
+            final RoleEntity child = roleDao.findById(childRoleId);
             if (parent == null || child == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Parent Role or Child Role are not found");
             }
-            getProxyService().removeChildRole(roleId, childRoleId);
+            
+            parent.removeChild(child);
+            roleDao.update(parent);
         } catch (BasicDataServiceException e) {
             throw e;
         } catch (Throwable e) {

@@ -3,7 +3,6 @@ package org.openiam.bpm.activiti.delegate.entitlements.displaymapper;
 import java.util.LinkedHashMap;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.delegate.JavaDelegate;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -32,7 +31,7 @@ public class LoginDisplayMapper extends AbstractActivitiJob {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final LinkedHashMap<String, String> metadataMap = new LinkedHashMap<String, String>();
 		final Login loginObj = getObjectVariable(execution, ActivitiConstants.LOGIN, Login.class);
 		

@@ -2,6 +2,7 @@ package org.openiam.mq.listener;
 
 import com.rabbitmq.client.Channel;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.openiam.base.request.*;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -15,6 +16,7 @@ import org.openiam.mq.constants.*;
 import org.openiam.mq.constants.api.OpenIAMAPI;
 import org.openiam.mq.constants.queue.MqQueue;
 import org.openiam.util.AuditLogHelper;
+import org.openiam.util.SpringSecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -50,10 +52,11 @@ public abstract class AbstractListener<API extends OpenIAMAPI> {
 
         Response apiResponse = new Response();
 
-        long startTime = System.currentTimeMillis();
+        final StopWatch sw = new StopWatch();
+        sw.start();
         log.debug("processing {} API Request {} - starting", api.name(), request);
         try {
-
+        	SpringSecurityHelper.setRequesterUserId(request.getRequesterId());
             if(processor==null){
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown processor instance for " + api.name());
             }
@@ -90,7 +93,9 @@ public abstract class AbstractListener<API extends OpenIAMAPI> {
             auditEvent.setException(ex);
 
         } finally {
-            long totalTime = System.currentTimeMillis() - startTime;
+        	SpringSecurityHelper.clearContext();
+        	sw.stop();
+            long totalTime = sw.getTime();
             log.debug("Processing {} API ends. Request {}. Total time: {}", api.name(), request, totalTime / 1000.0f);
             // save audit log and remove threadlocal instance
             if(apiResponse.isFailure()){
@@ -100,10 +105,10 @@ public abstract class AbstractListener<API extends OpenIAMAPI> {
 
             if(request.isAsych()){
                 // not necessary to return response
-                return null;
+            	apiResponse = null;
             }
-            return apiResponse;
         }
+        return apiResponse;
     }
 
     protected void submitAuditLog(){

@@ -213,7 +213,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             }
         }
 
-        List<RoleEntity> roleEntities = roleManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
+        List<RoleEntity> roleEntities = roleManager.findBeans(searchBean, 0, Integer.MAX_VALUE);
         if (roleEntities != null && !roleEntities.isEmpty()) {
             System.out.println("Role matched with existing role...");
             return roleDozerConverter.convertToDTO(roleEntities.get(0), true);

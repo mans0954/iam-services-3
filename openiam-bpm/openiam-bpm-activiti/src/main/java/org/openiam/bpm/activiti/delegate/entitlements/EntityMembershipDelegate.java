@@ -1,19 +1,21 @@
 package org.openiam.bpm.activiti.delegate.entitlements;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
-import org.openiam.constants.AccessReviewConstant;
-import org.openiam.base.request.AccessReviewRequest;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.model.AccessViewBean;
-import org.openiam.model.AccessViewFilterBean;
-import org.openiam.model.AccessViewResponse;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
+import org.openiam.base.request.AccessReviewRequest;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.constants.AccessReviewConstant;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -22,16 +24,14 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.model.AccessViewBean;
+import org.openiam.model.AccessViewFilterBean;
+import org.openiam.model.AccessViewResponse;
 import org.openiam.mq.constants.api.AccessReviewAPI;
 import org.openiam.mq.constants.queue.am.AccessReviewQueue;
 import org.openiam.mq.utils.RabbitMQSender;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
 public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
     @Autowired
@@ -47,7 +47,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
     }
 
     @Override
-    public void execute(DelegateExecution execution) throws Exception {
+    protected void doExecute(DelegateExecution execution) throws Exception {
         Response response = null;
         final String associationId = getAssociationId(execution);
         final String memberAssociationId = getMemberAssociationId(execution);
@@ -82,12 +82,12 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                         break;
                     case ADD_ROLE_TO_GROUP:
                         action = AuditAction.ADD_ROLE_TO_GROUP;
-                        roleDataService.addGroupToRole(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
+                        roleDataService.addGroupToRole(associationId, memberAssociationId, rights, startDate, endDate);
                         response = new Response(ResponseStatus.SUCCESS);
                         break;
                     case REMOVE_ROLE_FROM_GROUP:
                         action = AuditAction.REMOVE_ROLE_FROM_GROUP;
-                        roleDataService.removeGroupFromRole(associationId, memberAssociationId, systemUserId);
+                        roleDataService.removeGroupFromRole(associationId, memberAssociationId);
                         response = new Response(ResponseStatus.SUCCESS);
                         break;
                     case ENTITLE_RESOURCE_TO_GROUP:
@@ -100,12 +100,12 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                         break;
                     case ADD_ROLE_TO_ROLE:
                         action = AuditAction.ADD_CHILD_ROLE;
-                        roleDataService.addChildRole(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
+                        roleDataService.addChildRole(associationId, memberAssociationId, rights, startDate, endDate);
                         response = new Response(ResponseStatus.SUCCESS);
                         break;
                     case REMOVE_ROLE_FROM_ROLE:
                         action = AuditAction.REMOVE_CHILD_ROLE;
-                        roleDataService.removeChildRole(associationId, memberAssociationId, systemUserId);
+                        roleDataService.removeChildRole(associationId, memberAssociationId);
                         response = new Response(ResponseStatus.SUCCESS);
                         break;
                     case ENTITLE_RESOURCE_TO_ROLE:
@@ -227,7 +227,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                     }
                                     if (CollectionUtils.isNotEmpty(roleToDelete)) {
                                         for (String id : roleToDelete) {
-                                            roleDataService.removeUserFromRole(id, memberAssociationId, systemUserId);
+                                            roleDataService.removeUserFromRole(id, memberAssociationId);
                                             response = new Response(ResponseStatus.SUCCESS);
                                         }
                                     }
@@ -286,7 +286,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 response = provisionService.modifyUser(pUser);
                             }
                         } else {
-                            roleDataService.addUserToRole(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
+                            roleDataService.addUserToRole(associationId, memberAssociationId, rights, startDate, endDate);
                             response = new Response(ResponseStatus.SUCCESS);
                         }
                         break;
@@ -302,7 +302,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 response = provisionService.modifyUser(pUser);
                             }
                         } else {
-                            roleDataService.removeUserFromRole(associationId, memberAssociationId, systemUserId);
+                            roleDataService.removeUserFromRole(associationId, memberAssociationId);
                             response = new Response(ResponseStatus.SUCCESS);
                         }
                         break;

@@ -9,7 +9,7 @@ public class BasicCandidateTaskListener extends AbstractCandidateTaskListener {
 	}
 
 	@Override
-	public void notify(DelegateTask delegateTask) {
-		super.notify(delegateTask, null);
+	protected void doNotify(DelegateTask delegateTask) {
+		super.doNotify(delegateTask);
 	}
 }

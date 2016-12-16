@@ -3,13 +3,13 @@ package org.openiam.bpm.activiti.delegate.user.newuser;
 import java.util.Collection;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.openiam.base.request.NotificationParam;
+import org.openiam.base.request.NotificationRequest;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.base.request.NotificationParam;
-import org.openiam.base.request.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 
@@ -22,7 +22,7 @@ public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
     private NewUserProfileRequestModel profileModel;
 
     @Override
-    public void execute(DelegateExecution execution) throws Exception {
+    protected void doExecute(DelegateExecution execution) throws Exception {
         profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 
         final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);

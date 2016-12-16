@@ -128,7 +128,7 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 					
 					@Override
 					public void run() {
-						assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), allRightIds, null, null));
+						assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), allRightIds, null, null));
 					}
 				});
 			}
@@ -139,7 +139,7 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 					
 					@Override
 					public void run() {
-						assertSuccess(resourceDataService.addRoleToResource(resource.getId(), role.getId(), getRequestorId(), allRightIds, null, null));
+						assertSuccess(resourceDataService.addRoleToResource(resource.getId(), role.getId(), null, allRightIds, null, null));
 					}
 				});
 			}
@@ -160,7 +160,7 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 				
 					@Override
 					public void run() {
-						assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), allRightIds, null, null));
+						assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), allRightIds, null, null));
 					}
 				});
 			}

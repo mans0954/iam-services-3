@@ -121,7 +121,7 @@ public class NewUserModelToProvisionConverter {
 			
 			if(CollectionUtils.isNotEmpty(request.getRoleIds())) {
 				for(final String roleId : request.getRoleIds()) {
-					final RoleEntity entity = roleDataService.getRoleLocalized(roleId, null, null);
+					final RoleEntity entity = roleDataService.getRoleLocalized(roleId, null);
 					if(entity != null) {
 						final Role role = roleDozerConverter.convertToDTO(entity, false);
 						user.addRole(role, null, null, null);

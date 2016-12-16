@@ -523,9 +523,9 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	protected Role createRole() {
 		Role role = new Role();
 		role.setName(getRandomName());
-		Response wsResponse = roleServiceClient.saveRole(role, null);
+		Response wsResponse = roleServiceClient.saveRole(role);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", role, wsResponse));
-		role = roleServiceClient.getRoleLocalized((String)wsResponse.getResponseValue(), null, getDefaultLanguage());
+		role = roleServiceClient.getRoleLocalized((String)wsResponse.getResponseValue(), getDefaultLanguage());
 		
 		if(user != null) {
 			final ApproverAssociation association = new ApproverAssociation();

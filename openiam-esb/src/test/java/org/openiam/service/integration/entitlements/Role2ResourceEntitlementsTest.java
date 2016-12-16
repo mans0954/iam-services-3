@@ -39,7 +39,7 @@ public class Role2ResourceEntitlementsTest extends AbstractEntitlementsTest<Role
 
 	@Override
 	protected Response deleteParent(Role parent, final String requestorId) {
-		return roleServiceClient.removeRole(parent.getId(), null);
+		return roleServiceClient.removeRole(parent.getId());
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class Role2ResourceEntitlementsTest extends AbstractEntitlementsTest<Role
 		searchBean.addResourceId(child.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
-		final List<Role> dtos = roleServiceClient.findBeans(searchBean, "3000", 0, Integer.MAX_VALUE);
+		final List<Role> dtos = roleServiceClient.findBeans(searchBean, 0, Integer.MAX_VALUE);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Role> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child"), optional.isPresent());
@@ -93,7 +93,7 @@ public class Role2ResourceEntitlementsTest extends AbstractEntitlementsTest<Role
 
 	@Override
 	protected Role getParentById(Role parent) {
-		return roleServiceClient.getRoleLocalized(parent.getId(), "3000", getDefaultLanguage());
+		return roleServiceClient.getRoleLocalized(parent.getId(), getDefaultLanguage());
 	}
 
 	@Override

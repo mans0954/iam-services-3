@@ -32,17 +32,17 @@ public class Role2UserEntitlementsTest extends AbstractEntitlementsTest<Role, Us
 
 	@Override
 	protected Response addChildToParent(final Role parent, final User child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
-		return roleServiceClient.addUserToRole(parent.getId(), child.getId(), null, rights, startDate, endDate);
+		return roleServiceClient.addUserToRole(parent.getId(), child.getId(), rights, startDate, endDate);
 	}
 
 	@Override
 	protected Response removeChildFromParent(Role parent, User child, final String requestorId) {
-		return roleServiceClient.removeUserFromRole(parent.getId(), child.getId(), null);
+		return roleServiceClient.removeUserFromRole(parent.getId(), child.getId());
 	}
 
 	@Override
 	protected Response deleteParent(Role parent, final String requestorId) {
-		return roleServiceClient.removeRole(parent.getId(), null);
+		return roleServiceClient.removeRole(parent.getId());
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class Role2UserEntitlementsTest extends AbstractEntitlementsTest<Role, Us
 		searchBean.addUserId(child.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
-		final List<Role> dtos = roleServiceClient.findBeans(searchBean, "3000", 0, 100);
+		final List<Role> dtos = roleServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Role> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find parent"), optional.isPresent());
@@ -81,14 +81,17 @@ public class Role2UserEntitlementsTest extends AbstractEntitlementsTest<Role, Us
 		final List<User> dtos = userServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<User> optional = dtos.stream().filter(e -> e.getId().equals(child.getId())).findAny();
-			Assert.assertTrue(String.format("Can't find parent"), optional.isPresent());
-			final User e = optional.get();
-			if(CollectionUtils.isEmpty(rights)) {
-				Assert.assertTrue(CollectionUtils.isEmpty(e.getAccessRightIds()));
+			if(optional.isPresent()) {
+				final User e = optional.get();
+				if(CollectionUtils.isEmpty(rights)) {
+					Assert.assertTrue(CollectionUtils.isEmpty(e.getAccessRightIds()));
+				} else {
+					Assert.assertEquals(rights, e.getAccessRightIds());
+				}
+				return true;
 			} else {
-				Assert.assertEquals(rights, e.getAccessRightIds());
+				return false;
 			}
-			return true;
 		} else {
 			return false;
 		}
@@ -96,7 +99,7 @@ public class Role2UserEntitlementsTest extends AbstractEntitlementsTest<Role, Us
 
 	@Override
 	protected Role getParentById(Role parent) {
-		return roleServiceClient.getRoleLocalized(parent.getId(), "3000", getDefaultLanguage());
+		return roleServiceClient.getRoleLocalized(parent.getId(), getDefaultLanguage());
 	}
 
 	@Override

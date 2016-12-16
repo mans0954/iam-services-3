@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:cxf="http://cxf.apache.org/core"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       					   http://www.springframework.org/schema/beans/spring-beans.xsd
+       					   http://www.springframework.org/schema/context 
+       					   http://www.springframework.org/schema/context/spring-context.xsd 
+       					   http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+       					   http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd">
+
+    <!-- EXAMPLE for client  -->
+    
+    <bean id="cxfHeaderInterceptor" class="org.openiam.test.config.SoapHeaderInterceptor" />
+
+    <jaxws:client id="managedSysServiceClient"
+                       serviceClass="org.openiam.srvc.idm.ManagedSystemWebService"
+                       address="${openiam.service_host}${openiam.idm.ws.path}ManagedSystemWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="authorizationManagerMenuServiceClient"
+                  serviceClass="org.openiam.srvc.am.AuthorizationManagerMenuWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerMenuWebService">
+		<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="userServiceClient"
+                  serviceClass="org.openiam.srvc.user.UserDataWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}UserDataService">
+		<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="resourceServiceClient"
+                  serviceClass="org.openiam.srvc.am.ResourceDataService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ResourceDataWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="authServiceClient"
+                  serviceClass="org.openiam.srvc.am.AuthenticationService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}AuthenticationService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="authorizationManagerServiceClient"
+                  serviceClass="org.openiam.srvc.am.AuthorizationManagerWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="groupServiceClient"
+                  serviceClass="org.openiam.srvc.am.GroupDataWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}GroupDataWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="identityServiceClient"
+                  serviceClass="org.openiam.srvc.idm.IdentityWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}IdentityWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="roleServiceClient"
+                  serviceClass="org.openiam.srvc.am.RoleDataWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}RoleDataWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="organizationServiceClient"
+                  serviceClass="org.openiam.srvc.am.OrganizationDataService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}OrganizationDataService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="metadataServiceClient"
+                  serviceClass="org.openiam.srvc.common.MetadataWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}MetadataWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="provisionServiceClient"
+                  serviceClass="org.openiam.srvc.idm.ProvisionService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}ProvisioningService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="asynchProvisionServiceClient"
+                  serviceClass="org.openiam.srvc.idm.AsynchUserProvisionService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}AsynchUserProvisionService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="groupProvisionServiceClient"
+                  serviceClass="org.openiam.srvc.idm.ObjectProvisionService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}GroupProvisionService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="provisionConnectorWebServiceClient"
+                  serviceClass="org.openiam.srvc.idm.ProvisionConnectorWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ConnectorWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="synchConfigServiceClient"
+                  serviceClass="org.openiam.srvc.idm.IdentitySynchWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}IdentitySynchWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="asynchSynchConfigServiceClient"
+                  serviceClass="org.openiam.srvc.idm.AsynchIdentitySynchService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}Asynch-SynchronizatonService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="synchReviewServiceClient"
+                  serviceClass="org.openiam.srvc.idm.SynchReviewWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}SynchReviewWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="passwordServiceClient"
+                  serviceClass="org.openiam.srvc.user.PasswordWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}PasswordWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="loginServiceClient"
+                  serviceClass="org.openiam.srvc.user.LoginDataWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}LoginDataWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="authAttributeServiceClient"
+                  serviceClass="org.openiam.srvc.am.AuthResourceAttributeWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}AuthResourceAttributeWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="authProviderServiceClient"
+                  serviceClass="org.openiam.srvc.am.AuthProviderWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}AuthProviderWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="keyManagementServiceClient"
+                  serviceClass="org.openiam.srvc.encryption.KeyManagementWS"
+                  address="${openiam.service_host}${openiam.idm.ws.path}KeyManagementWS">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="systemInfoServiceClient"
+                  serviceClass="org.openiam.srvc.common.SystemInfoWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}SystemInfoWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="contentProviderServiceClient"
+                  serviceClass="org.openiam.srvc.am.ContentProviderWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ContentProviderWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="auditServiceClient"
+                  serviceClass="org.openiam.srvc.audit.IdmAuditLogWebDataService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}AuditService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="challengeResponseServiceClient"
+                  serviceClass="org.openiam.srvc.user.ChallengeResponseWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ChallengeResponseWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="reportServiceClient"
+                  serviceClass="org.openiam.srvc.report.ReportWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ReportWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="mailServiceClient"
+                  serviceClass="org.openiam.srvc.common.MailService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}EmailWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="uriFederationServiceClient"
+                  serviceClass="org.openiam.srvc.am.URIFederationWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}URIFederationWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="languageServiceClient"
+                  serviceClass="org.openiam.srvc.common.LanguageWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}LanguageWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="metadataElementTemplateServiceClient"
+                  serviceClass="org.openiam.srvc.common.MetadataElementTemplateWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}MetadataElementTemplateWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="policyServiceClient"
+                  serviceClass="org.openiam.srvc.common.PolicyDataService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}PolicyWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="reconciliationServiceClient"
+                  serviceClass="org.openiam.srvc.idm.ReconciliationWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ReconciliationWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="fileServiceClient"
+                  serviceClass="org.openiam.srvc.common.FileWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}FileWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="activitiClient"
+                  serviceClass="org.openiam.srvc.activiti.ActivitiService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ActivitiService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="authManagerAdminClient"
+                  serviceClass="org.openiam.srvc.am.AuthorizationManagerAdminWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerAdminWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="organizationTypeClient"
+                  serviceClass="org.openiam.srvc.am.OrganizationTypeDataService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}OrganizationTypeDataService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="batchServiceClient"
+                  serviceClass="org.openiam.srvc.batch.BatchDataService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}BatchDataWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="asyncReconciliationServiceClient"
+                  serviceClass="org.openiam.srvc.idm.AsynchReconciliationService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}AsynchReconciliationWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="uiThemeClient"
+                  serviceClass="org.openiam.srvc.common.UIThemeWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}UIThemeWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+	<jaxws:client id="propertyValuerServiceClient"
+                  serviceClass="org.openiam.srvc.common.PropertyValueWebService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}PropertyValueWebService">
+		<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+                  
+	<jaxws:client id="accessReviewServiceClient"
+                  serviceClass="org.openiam.srvc.am.AccessReviewWebService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}AccessReviewWebService">
+		<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+	<jaxws:client id="accessRightServiceClient"
+              serviceClass="org.openiam.srvc.am.AccessRightDataService"
+              address="${openiam.service_host}${openiam.connector.ws.path}AccessRightDataService">
+		<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="oauthWebServiceClient"
+                  serviceClass="org.openiam.srvc.am.OAuthWebService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}OAuthWebService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+	<jaxws:client id="elasticSearchServiceClient"
+                  serviceClass="org.openiam.srvc.search.ElasticSearchWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ElasticSearchWebService">
+		<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+
+    <jaxws:client id="userAccessControlServiceClient"
+                  serviceClass="org.openiam.provision.service.UserAccessControlService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}UserAccessControlService">
+    	<jaxws:outInterceptors>
+    		<ref bean="cxfHeaderInterceptor" />
+    	</jaxws:outInterceptors>
+    </jaxws:client>
+</beans>

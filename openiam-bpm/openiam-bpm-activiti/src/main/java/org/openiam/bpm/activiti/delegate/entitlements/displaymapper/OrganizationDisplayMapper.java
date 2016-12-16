@@ -7,12 +7,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
 import org.openiam.idm.srvc.org.service.OrganizationTypeService;
-import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class OrganizationDisplayMapper extends AbstractActivitiJob {
@@ -25,7 +23,7 @@ public class OrganizationDisplayMapper extends AbstractActivitiJob {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final LinkedHashMap<String, String> metadataMap = new LinkedHashMap<String, String>();
 		final Organization organization = getObjectVariable(execution, ActivitiConstants.ORGANIZATION, Organization.class);
 		

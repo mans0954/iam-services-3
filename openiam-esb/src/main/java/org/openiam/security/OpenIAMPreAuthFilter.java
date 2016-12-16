@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.util.CXFAuthentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
@@ -20,15 +21,15 @@ public class OpenIAMPreAuthFilter extends AbstractPreAuthenticatedProcessingFilt
 
 	@Override
 	protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
-		return getAuthentiction(request);
+		return getAuthentication(request);
 	}
 
 	@Override
 	protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
-		return getAuthentiction(request);
+		return getAuthentication(request);
 	}
 	
-	private CXFAuthentication getAuthentiction(final HttpServletRequest request) {
+	private CXFAuthentication getAuthentication(final HttpServletRequest request) {
 		CXFAuthentication retVal = null;
 		final String userId = StringUtils.trimToNull(request.getHeader("x-openiam-userId"));
 		if(userId != null) {

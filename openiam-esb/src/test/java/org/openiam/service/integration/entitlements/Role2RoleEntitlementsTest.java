@@ -26,22 +26,22 @@ public class Role2RoleEntitlementsTest extends AbstractCircularEntitlementTest<R
 
 	@Override
 	protected Response addChildToParent(final Role parent, final Role child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
-		return roleServiceClient.addChildRole(parent.getId(), child.getId(), null, rights, startDate, endDate);
+		return roleServiceClient.addChildRole(parent.getId(), child.getId(), rights, startDate, endDate);
 	}
 
 	@Override
 	protected Response removeChildFromParent(Role parent, Role child, final String requestorId) {
-		return roleServiceClient.removeChildRole(parent.getId(), child.getId(), null);
+		return roleServiceClient.removeChildRole(parent.getId(), child.getId());
 	}
 
 	@Override
 	protected Response deleteParent(Role parent, final String requestorId) {
-		return roleServiceClient.removeRole(parent.getId(), null);
+		return roleServiceClient.removeRole(parent.getId());
 	}
 
 	@Override
 	protected Response deleteChild(Role child, final String requestorId) {
-		return roleServiceClient.removeRole(child.getId(), null);
+		return roleServiceClient.removeRole(child.getId());
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class Role2RoleEntitlementsTest extends AbstractCircularEntitlementTest<R
 		final RoleSearchBean searchBean = new RoleSearchBean();
 		searchBean.addChildId(child.getId());
 		searchBean.setIncludeAccessRights(true);
-		final List<Role> dtos = roleServiceClient.findBeans(searchBean, "3000", 0, 1000);
+		final List<Role> dtos = roleServiceClient.findBeans(searchBean, 0, 1000);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Role> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child role"), optional.isPresent());
@@ -70,7 +70,7 @@ public class Role2RoleEntitlementsTest extends AbstractCircularEntitlementTest<R
 		final RoleSearchBean searchBean = new RoleSearchBean();
 		searchBean.addParentId(parent.getId());
 		searchBean.setIncludeAccessRights(true);
-		final List<Role> dtos = roleServiceClient.findBeans(searchBean, "3000", 0, 1000);
+		final List<Role> dtos = roleServiceClient.findBeans(searchBean, 0, 1000);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Role> optional = dtos.stream().filter(e -> e.getId().equals(child.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find parent role"), optional.isPresent());
@@ -91,11 +91,11 @@ public class Role2RoleEntitlementsTest extends AbstractCircularEntitlementTest<R
 
 	@Override
 	protected Role getParentById(Role parent) {
-		return roleServiceClient.getRoleLocalized(parent.getId(), "3000", getDefaultLanguage());
+		return roleServiceClient.getRoleLocalized(parent.getId(), getDefaultLanguage());
 	}
 
 	@Override
 	protected Role getChildById(Role child) {
-		return roleServiceClient.getRoleLocalized(child.getId(), "3000", getDefaultLanguage());
+		return roleServiceClient.getRoleLocalized(child.getId(), getDefaultLanguage());
 	}
 }

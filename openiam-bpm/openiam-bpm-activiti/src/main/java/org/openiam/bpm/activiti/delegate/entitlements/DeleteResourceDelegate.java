@@ -20,7 +20,7 @@ public class DeleteResourceDelegate extends AbstractActivitiJob {
 	}
 
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		Response wsResponse = null;
 		final Resource resource = getObjectVariable(execution, ActivitiConstants.RESOURCE, Resource.class);
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);

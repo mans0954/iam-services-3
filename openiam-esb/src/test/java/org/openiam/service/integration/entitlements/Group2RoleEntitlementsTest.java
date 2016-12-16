@@ -31,12 +31,12 @@ public class Group2RoleEntitlementsTest extends AbstractEntitlementsTest<Group, 
 
 	@Override
 	protected Response addChildToParent(final Group parent, final Role child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
-		return roleServiceClient.addGroupToRole(child.getId(), parent.getId(), null, rights, startDate, endDate);
+		return roleServiceClient.addGroupToRole(child.getId(), parent.getId(), rights, startDate, endDate);
 	}
 
 	@Override
 	protected Response removeChildFromParent(Group parent, Role child, final String requestorId) {
-		return roleServiceClient.removeGroupFromRole(child.getId(), parent.getId(), null);
+		return roleServiceClient.removeGroupFromRole(child.getId(), parent.getId());
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class Group2RoleEntitlementsTest extends AbstractEntitlementsTest<Group, 
 
 	@Override
 	protected Response deleteChild(Role child, final String requestorId) {
-		return roleServiceClient.removeRole(child.getId(), null);
+		return roleServiceClient.removeRole(child.getId());
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class Group2RoleEntitlementsTest extends AbstractEntitlementsTest<Group, 
 		searchBean.addGroupId(parent.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
-		final List<Role> dtos = roleServiceClient.findBeans(searchBean, "3000", 0, 100);
+		final List<Role> dtos = roleServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Role> optional = dtos.stream().filter(e -> e.getId().equals(child.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find parent"), optional.isPresent());
@@ -101,7 +101,7 @@ public class Group2RoleEntitlementsTest extends AbstractEntitlementsTest<Group, 
 
 	@Override
 	protected Role getChildById(Role child) {
-		return roleServiceClient.getRoleLocalized(child.getId(), "3000", getDefaultLanguage());
+		return roleServiceClient.getRoleLocalized(child.getId(), getDefaultLanguage());
 	}
 
 	@Test

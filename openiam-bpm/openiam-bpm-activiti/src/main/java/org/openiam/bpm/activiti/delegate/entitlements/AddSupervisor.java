@@ -28,7 +28,7 @@ public class AddSupervisor extends AbstractActivitiJob {
 	}
 
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final String superiorId = getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
 		final String subordinateId = getStringVariable(execution, ActivitiConstants.MEMBER_ASSOCIATION_ID);
 		final User superior = getUser(superiorId);

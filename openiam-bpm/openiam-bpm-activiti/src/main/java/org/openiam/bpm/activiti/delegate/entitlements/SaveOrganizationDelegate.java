@@ -21,7 +21,7 @@ public class SaveOrganizationDelegate extends AbstractActivitiJob {
 	
 
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final Organization organization = getObjectVariable(execution, ActivitiConstants.ORGANIZATION, Organization.class);
 
         final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);

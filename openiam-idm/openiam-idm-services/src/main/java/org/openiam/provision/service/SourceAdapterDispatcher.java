@@ -885,7 +885,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     RoleSearchBean rsb = new RoleSearchBean();
                     rsb.setNameToken(new SearchParam(role.getName(), MatchType.EXACT));
                     rsb.setManagedSysId(role.getManagedSystemId());
-                    List<Role> dbRoles = roleDataService.findBeansDto(rsb, requestorId, -1, -1);
+                    List<Role> dbRoles = roleDataService.findBeansDto(rsb, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbRoles)) {
                         if (dbRoles.size() > 1) {
                             warnings.append(this.getWarning("Not unique name. Skip it. Role Name=" + role.getName()));

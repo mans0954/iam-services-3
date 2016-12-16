@@ -84,7 +84,7 @@ public class InternationalizationStressTest extends AbstractTestNGSpringContextT
 			
 		//System.out.println(String.format("User ID: %s", userId));
 		final Group group = groupServiceFactory.getGroup(groupId, userId);
-		final Role role = roleServiceClient.getRole(roleId, userId);
+		final Role role = roleServiceClient.getRole(roleId);
 		sw.stop();
 		//Assert.assertNotNull(group);
 		System.out.println(String.format("%s ms.  UID: %s", sw.getTime(), userId));

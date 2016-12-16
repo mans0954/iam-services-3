@@ -57,22 +57,22 @@ public class RoleServiceTest extends AbstractAttributeServiceTest<Role, RoleSear
 
 	@Override
 	protected Response save(Role t) {
-		return roleServiceClient.saveRole(t, null);
+		return roleServiceClient.saveRole(t);
 	}
 
 	@Override
 	protected Response delete(Role t) {
-		return (t != null) ? roleServiceClient.removeRole(t.getId(), null) : null;
+		return (t != null) ? roleServiceClient.removeRole(t.getId()) : null;
 	}
 
 	@Override
 	protected Role get(String key) {
-		return roleServiceClient.getRoleLocalized(key, null, null);
+		return roleServiceClient.getRoleLocalized(key, null);
 	}
 
 	@Override
 	public List<Role> find(RoleSearchBean searchBean, int from, int size) {
-		return roleServiceClient.findBeans(searchBean, null, from, size);
+		return roleServiceClient.findBeans(searchBean, from, size);
 	}
 
 	@Test
@@ -83,9 +83,9 @@ public class RoleServiceTest extends AbstractAttributeServiceTest<Role, RoleSear
 		
 		r1.setName(name);
 		r2.setName(name);
-		Response response = roleServiceClient.saveRole(r1, getRequestorId());
+		Response response = roleServiceClient.saveRole(r1);
 		assertSuccess(response);
-		response = roleServiceClient.saveRole(r2, getRequestorId());
+		response = roleServiceClient.saveRole(r2);
 		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
 	}
 	
@@ -100,9 +100,9 @@ public class RoleServiceTest extends AbstractAttributeServiceTest<Role, RoleSear
 		r1.setManagedSysId(managedSystemId);
 		r2.setName(name);
 		r2.setManagedSysId(managedSystemId);
-		Response response = roleServiceClient.saveRole(r1, getRequestorId());
+		Response response = roleServiceClient.saveRole(r1);
 		assertSuccess(response);
-		response = roleServiceClient.saveRole(r2, getRequestorId());
+		response = roleServiceClient.saveRole(r2);
 		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
 	}
 	
@@ -116,9 +116,9 @@ public class RoleServiceTest extends AbstractAttributeServiceTest<Role, RoleSear
 		r1.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 0, 10).get(0).getId());
 		r2.setName(name);
 		r2.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 0, 10).get(1).getId());
-		Response response = roleServiceClient.saveRole(r1, getRequestorId());
+		Response response = roleServiceClient.saveRole(r1);
 		assertSuccess(response);
-		response = roleServiceClient.saveRole(r2, getRequestorId());
+		response = roleServiceClient.saveRole(r2);
 		assertSuccess(response);
 	}
 

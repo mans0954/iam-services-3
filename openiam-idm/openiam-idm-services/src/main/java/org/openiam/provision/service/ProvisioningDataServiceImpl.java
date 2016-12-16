@@ -926,7 +926,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 }
             }
         }
-        final List<RoleEntity> roleList = roleDataService.getUserRoles(user.getId(), null, 0, Integer.MAX_VALUE);
+        final List<RoleEntity> roleList = roleDataService.getUserRoles(user.getId(), 0, Integer.MAX_VALUE);
         final Login primLogin = loginDozerConverter.convertToDTO(lg, false);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
@@ -2320,7 +2320,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     if (CollectionUtils.isNotEmpty(resources)) {
                         resourceSet.addAll(resources);
                     }
-                    List<RoleEntity> roleEntities = roleDataService.getRolesInGroup(gr.getId(), null, 0, Integer.MAX_VALUE);
+                    List<RoleEntity> roleEntities = roleDataService.getRolesInGroup(gr.getId(), 0, Integer.MAX_VALUE);
                     if (CollectionUtils.isNotEmpty(roleEntities)) {
                         List<Role> roles = roleDozerConverter.convertToDTOList(roleEntities, false);
                         Set<Resource> roleResources = getResourcesForRoles(new HashSet<Role>(roles));
@@ -2773,7 +2773,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                     break;
                                 case ROLE:
                                     Role role = roleDozerConverter.convertToDTO(
-                                            roleDataService.getRole(ob.getObjectId(), requestorId), false);
+                                            roleDataService.getRole(ob.getObjectId()), false);
                                     if (existingRoles.contains(role)) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
                                             existingRoles.remove(role);

@@ -55,11 +55,11 @@ public class RoleListener extends AbstractListener<RoleAPI> {
                 switch (api){
                     case FindBeans:
                         response = new RoleListResponse();
-                        ((RoleListResponse)response).setList(roleDataService.findBeansDto(((BaseSearchServiceRequest<RoleSearchBean>)request).getSearchBean(), request.getRequesterId(), request.getFrom(), request.getSize()));
+                        ((RoleListResponse)response).setList(roleDataService.findBeansDto(((BaseSearchServiceRequest<RoleSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize()));
                         break;
                     case CountBeans:
                         response = new IntResponse();
-                        ((IntResponse)response).setValue(roleDataService.countBeans(((BaseSearchServiceRequest<RoleSearchBean>)request).getSearchBean(), request.getRequesterId()));
+                        ((IntResponse)response).setValue(roleDataService.countBeans(((BaseSearchServiceRequest<RoleSearchBean>)request).getSearchBean()));
                         break;
                     default:
                         throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
@@ -76,7 +76,7 @@ public class RoleListener extends AbstractListener<RoleAPI> {
                 switch (api){
                     case GetRoleLocalized:
                         response = new RoleResponse();
-                        ((RoleResponse)response).setValue(roleDataService.getRoleDtoLocalized(request.getId(), request.getRequesterId(), request.getLanguage()));
+                        ((RoleResponse)response).setValue(roleDataService.getRoleDtoLocalized(request.getId(), request.getLanguage()));
                         break;
                     case GetRoleAttributes:
                         response = new RoleAttributeListResponse();
@@ -84,7 +84,7 @@ public class RoleListener extends AbstractListener<RoleAPI> {
                         break;
                     case GetParentRoles:
                         response = new RoleListResponse();
-                        ((RoleListResponse)response).setList(roleDataService.getParentRolesDto(request.getId(), request.getRequesterId(), ((GetParentsRequest)request).getFrom(), ((GetParentsRequest)request).getSize()));
+                        ((RoleListResponse)response).setList(roleDataService.getParentRolesDto(request.getId(), ((GetParentsRequest)request).getFrom(), ((GetParentsRequest)request).getSize()));
                         break;
                     case HasChildEntities:
                         response = new BooleanResponse();
@@ -113,11 +113,11 @@ public class RoleListener extends AbstractListener<RoleAPI> {
                         break;
                     case SaveRole:
                         response = new StringResponse();
-                        ((StringResponse)response).setValue(roleDataService.saveRole(((BaseCrudServiceRequest<Role>)request).getObject(), request.getRequesterId()));
+                        ((StringResponse)response).setValue(roleDataService.saveRole(((BaseCrudServiceRequest<Role>)request).getObject()));
                         break;
                     case RemoveRole:
                         response = new Response();
-                        roleDataService.removeRole(request.getObject().getId(), request.getRequesterId());
+                        roleDataService.removeRole(request.getObject().getId());
                         break;
                     default:
                         throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());
@@ -132,7 +132,7 @@ public class RoleListener extends AbstractListener<RoleAPI> {
             @Override
             public Response doProcess(RoleAPI api, IdsServiceRequest request) throws BasicDataServiceException {
                 TreeObjectIdListServiceResponse response = new TreeObjectIdListServiceResponse();
-                List<TreeObjectId> result = roleDataService.getRolesWithSubRolesIds(request.getIds(), request.getRequesterId());
+                List<TreeObjectId> result = roleDataService.getRolesWithSubRolesIds(request.getIds());
                 response.setTreeObjectIds(result);
                 return response;
             }
@@ -146,26 +146,23 @@ public class RoleListener extends AbstractListener<RoleAPI> {
                 BooleanResponse response = new BooleanResponse();
                 switch (api){
                     case AddGroupToRole:
-                        roleDataService.addGroupToRole(request.getObjectId(), request.getLinkedObjectId(), request.getRequesterId(), request.getRightIds(),
+                        roleDataService.addGroupToRole(request.getObjectId(), request.getLinkedObjectId(), request.getRightIds(),
                                 request.getStartDate(), request.getEndDate());
                         break;
                     case ValidateGroup2RoleAddition:
                         roleDataService.validateGroup2RoleAddition(request.getObjectId(), request.getLinkedObjectId());
                         break;
                     case RemoveGroupFromRole:
-                        roleDataService.removeGroupFromRole(request.getObjectId(), request.getLinkedObjectId(),request.getRequesterId());
+                        roleDataService.removeGroupFromRole(request.getObjectId(), request.getLinkedObjectId());
                         break;
                     case AddUserToRole:
-                        roleDataService.addUserToRole(request.getObjectId(), request.getLinkedObjectId(), request.getRequesterId(),
-                                                        request.getRightIds(), request.getStartDate(), request.getEndDate());
+                        roleDataService.addUserToRole(request.getObjectId(), request.getLinkedObjectId(), request.getRightIds(), request.getStartDate(), request.getEndDate());
                         break;
                     case RemoveUserFromRole:
-                        roleDataService.removeUserFromRole(request.getObjectId(), request.getLinkedObjectId(),
-                                request.getRequesterId());
+                        roleDataService.removeUserFromRole(request.getObjectId(), request.getLinkedObjectId());
                         break;
                     case AddChildRole:
-                        roleDataService.addChildRole(request.getObjectId(), request.getLinkedObjectId(), request.getRequesterId(), request.getRightIds(),
-                                                     request.getStartDate(), request.getEndDate());
+                        roleDataService.addChildRole(request.getObjectId(), request.getLinkedObjectId(), request.getRightIds(), request.getStartDate(), request.getEndDate());
                         break;
                     case CanAddChildRole:
                         roleDataService.validateRole2RoleAddition(request.getObjectId(), request.getLinkedObjectId(), request.getRightIds(),

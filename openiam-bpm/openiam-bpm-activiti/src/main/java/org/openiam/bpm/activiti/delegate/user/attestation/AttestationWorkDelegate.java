@@ -15,7 +15,7 @@ public class AttestationWorkDelegate extends AbstractActivitiJob {
 	}
 
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		

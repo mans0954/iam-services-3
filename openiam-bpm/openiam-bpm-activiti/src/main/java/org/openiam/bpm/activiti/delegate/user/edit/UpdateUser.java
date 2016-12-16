@@ -23,7 +23,7 @@ public class UpdateUser extends AbstractEntitlementsDelegate {
 	}
 
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final UserProfileRequestModel profile = getObjectVariable(execution, ActivitiConstants.REQUEST, UserProfileRequestModel.class);
 		//final String userId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 		

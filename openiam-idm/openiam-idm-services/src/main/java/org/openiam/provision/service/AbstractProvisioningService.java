@@ -1577,7 +1577,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             for (final UserToRoleMembershipXref xref : pUser.getRoles()) {
                 final AttributeOperationEnum operation = xref.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
-                    final RoleEntity roleEntity = roleDataService.getRoleLocalized(xref.getEntityId(), null, null);
+                    final RoleEntity roleEntity = roleDataService.getRoleLocalized(xref.getEntityId(), null);
                     userEntity.addRole(roleEntity, accessRightDAO.findByIds(xref.getAccessRightIds()), xref.getStartDate(), xref.getEndDate());
                     // Audit Log ---------------------------------------------------
                     final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
@@ -1590,7 +1590,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     parentLog.addChild(auditLog);
                     //--------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    final RoleEntity re = roleDataService.getRoleLocalized(xref.getEntityId(), null, null);
+                    final RoleEntity re = roleDataService.getRoleLocalized(xref.getEntityId(), null);
                     userEntity.removeRole(re);
                     final Role dr = roleDozerConverter.convertToDTO(re, false);
                     dr.setOperation(operation);

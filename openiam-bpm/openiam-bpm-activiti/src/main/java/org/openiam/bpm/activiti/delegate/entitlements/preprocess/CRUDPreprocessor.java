@@ -42,7 +42,7 @@ public class CRUDPreprocessor extends AbstractEntitlementsDelegate {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final AssociationType type = AssociationType.getByValue(getStringVariable(execution, ActivitiConstants.ASSOCIATION_TYPE));
 		final String associationId = getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
 		final String requestorId = getRequestorId(execution);

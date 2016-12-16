@@ -84,7 +84,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 			groupServiceClient.deleteGroup(group.getId(), null);
 		}
 		if(role != null) {
-			roleServiceClient.removeRole(role.getId(), null);
+			roleServiceClient.removeRole(role.getId());
 		}
 		if(organization != null) {
 			organizationServiceClient.deleteOrganization(organization.getId(), null);

@@ -10,7 +10,7 @@ public class ReplaceSuperiorNotifierDelegate extends AbstractEntitlementsDelegat
     private FixedValue notifySuperior;
 
     @Override
-    public void execute(DelegateExecution execution) throws Exception {
+    protected void doExecute(DelegateExecution execution) throws Exception {
         if (execution.hasVariable("CurrentSuperiorID") && execution.hasVariable("NewSuperiorID")) {
             Object superior = null;
             if ("current".equals(notifySuperior.getExpressionText())) {
@@ -23,7 +23,7 @@ public class ReplaceSuperiorNotifierDelegate extends AbstractEntitlementsDelegat
                 execution.setVariable(ActivitiConstants.ASSOCIATION_ID.getName(), currSuperior);
             }
             execution.setVariable(ActivitiConstants.CARDINALITY_OBJECT.getName(), superior);
-            super.execute(execution);
+            super.doExecute(execution);
         } else {
             throw new IllegalArgumentException("CurrentSuperiorID and NewSuperiorID must be defined");
         }

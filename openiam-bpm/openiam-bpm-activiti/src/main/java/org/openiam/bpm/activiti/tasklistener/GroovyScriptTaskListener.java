@@ -27,7 +27,7 @@ public class GroovyScriptTaskListener extends AbstractActivitiJob {
 	}
 	
 	@Override
-	public void notify(DelegateTask delegateTask) {
+	protected void doNotify(DelegateTask delegateTask) {
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(delegateTask);
 		idmAuditLog.setAction(AuditAction.ACTIVITI_GROOVY_SCRIPT.value());
 		try {

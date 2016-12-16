@@ -49,7 +49,6 @@ import java.util.*;
         "zipCode",
         "delAdmin",
         "attributeList",
-        "requesterId",
         "updatedSince",
         "firstNameMatchToken",
         "nickNameMatchToken",
@@ -188,8 +187,6 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> {
      */
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
-    private String requesterId;
-    
     /**
      * First name token to search by
      */
@@ -259,14 +256,6 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> {
 	public void setEmployeeIdMatchToken(SearchParam employeeIdMatchToken) {
 		this.employeeIdMatchToken = employeeIdMatchToken;
 	}
-
-	public String getRequesterId() {
-        return requesterId;
-    }
-
-    public void setRequesterId(String requesterId) {
-        this.requesterId = requesterId;
-    }
 
     public boolean isDelAdmin() {
         return delAdmin;
@@ -649,8 +638,6 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> {
 		result = prime * result
 				+ ((principal == null) ? 0 : principal.hashCode());
 		result = prime * result
-				+ ((requesterId == null) ? 0 : requesterId.hashCode());
-		result = prime * result
 				+ ((searchMode == null) ? 0 : searchMode.hashCode());
 		result = prime * result
 				+ ((showInSearch == null) ? 0 : showInSearch.hashCode());
@@ -791,11 +778,6 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> {
 			if (other.principal != null)
 				return false;
 		} else if (!principal.equals(other.principal))
-			return false;
-		if (requesterId == null) {
-			if (other.requesterId != null)
-				return false;
-		} else if (!requesterId.equals(other.requesterId))
 			return false;
 		if (searchMode != other.searchMode)
 			return false;

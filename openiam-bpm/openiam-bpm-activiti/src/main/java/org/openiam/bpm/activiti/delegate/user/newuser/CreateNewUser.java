@@ -4,6 +4,7 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
@@ -16,9 +17,7 @@ import org.openiam.idm.srvc.provision.NewUserModelToProvisionConverter;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.base.response.ProvisionUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 public class CreateNewUser extends AbstractEntitlementsDelegate {
 
@@ -32,7 +31,7 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 	}
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
+	protected void doExecute(DelegateExecution execution) throws Exception {
 		final NewUserProfileRequestModel request = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         String requesterId = getRequestorId(execution);
