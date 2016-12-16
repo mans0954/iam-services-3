@@ -21,6 +21,9 @@ import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.mq.constants.queue.MqQueue;
+import org.openiam.mq.constants.queue.user.LoginQueue;
+import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.common.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,7 +41,7 @@ import java.util.List;
 		portName = "LoginDataWebServicePort")
 @Service("loginWS")
 @Transactional
-public class LoginDataWebServiceImpl implements LoginDataWebService {
+public class LoginDataWebServiceImpl extends AbstractApiService implements LoginDataWebService {
 
 	@Autowired
 	private LoginDataService loginDS;
@@ -52,7 +55,12 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
     private MailService mailService;
 	
 	private static final Log log = LogFactory.getLog(LoginDataWebServiceImpl.class);
-	
+
+	@Autowired
+	public LoginDataWebServiceImpl(LoginQueue queue) {
+		super(queue);
+	}
+
 	@Override
 	public Response isValidLogin(final Login principal) {
 		final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);

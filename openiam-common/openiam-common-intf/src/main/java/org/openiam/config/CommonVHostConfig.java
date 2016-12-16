@@ -2,6 +2,7 @@ package org.openiam.config;
 
 import org.openiam.mq.constants.RabbitMQVHosts;
 import org.openiam.mq.constants.queue.common.*;
+import org.openiam.mq.constants.queue.common.PolicyQueue;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;

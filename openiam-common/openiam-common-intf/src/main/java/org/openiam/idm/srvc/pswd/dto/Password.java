@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.pswd.dto;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 
 /**
  * Object representing a password in OpenIAM
@@ -40,7 +41,7 @@ import javax.xml.bind.annotation.XmlType;
         "srcApplicationId",
         "skipPasswordFrequencyCheck"
 })
-public class Password {
+public class Password implements Serializable {
 
     protected String principal;
     protected String password;
