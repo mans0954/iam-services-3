@@ -51,7 +51,7 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 
 	@Override
 	protected Response save(Group t) {
-		return groupServiceClient.saveGroup(t, null);
+		return groupServiceClient.saveGroup(t);
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 
 	@Override
 	public List<Group> find(GroupSearchBean searchBean, int from, int size) {
-		return groupServiceClient.findBeans(searchBean, null, from, size);
+		return groupServiceClient.findBeans(searchBean, from, size);
 	}
 
 /*	@Override
@@ -92,12 +92,12 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 
 	@Override
 	protected Response delete(Group t) {
-		return (t != null && t.getId() != null) ? groupServiceClient.deleteGroup(t.getId(), null) : null;
+		return (t != null && t.getId() != null) ? groupServiceClient.deleteGroup(t.getId()) : null;
 	}
 	
 	@Override
 	protected Group get(String key) {
-		return groupServiceClient.getGroup(key, null);
+		return groupServiceClient.getGroup(key);
 	}
 
 	@Override
@@ -189,9 +189,9 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 		
 		r1.setName(name);
 		r2.setName(name);
-		Response response = groupServiceClient.saveGroup(r1, getRequestorId());
+		Response response = groupServiceClient.saveGroup(r1);
 		assertSuccess(response);
-		response = groupServiceClient.saveGroup(r2, getRequestorId());
+		response = groupServiceClient.saveGroup(r2);
 		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
 	}
 	
@@ -206,9 +206,9 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 		r1.setManagedSysId(managedSystemId);
 		r2.setName(name);
 		r2.setManagedSysId(managedSystemId);
-		Response response = groupServiceClient.saveGroup(r1, getRequestorId());
+		Response response = groupServiceClient.saveGroup(r1);
 		assertSuccess(response);
-		response = groupServiceClient.saveGroup(r2, getRequestorId());
+		response = groupServiceClient.saveGroup(r2);
 		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
 	}
 	
@@ -222,9 +222,9 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 		r1.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 0, 10).get(0).getId());
 		r2.setName(name);
 		r2.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 0, 10).get(1).getId());
-		Response response = groupServiceClient.saveGroup(r1, getRequestorId());
+		Response response = groupServiceClient.saveGroup(r1);
 		assertSuccess(response);
-		response = groupServiceClient.saveGroup(r2, getRequestorId());
+		response = groupServiceClient.saveGroup(r2);
 		assertSuccess(response);
 	}
 }

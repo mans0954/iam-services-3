@@ -95,7 +95,7 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
             while(!groupIdList.isEmpty()){
                 try {
                     String groupId = groupIdList.get(0);
-                    groupServiceClient.deleteGroup(groupId, REQUESTER_ID);
+                    groupServiceClient.deleteGroup(groupId);
                 } catch (Exception e) {}
             }
         }

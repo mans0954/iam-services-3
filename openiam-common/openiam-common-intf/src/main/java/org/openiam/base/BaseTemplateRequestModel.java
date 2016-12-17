@@ -16,14 +16,12 @@ import javax.xml.bind.annotation.XmlType;
         propOrder = {
                 "activitiRequestType",
                 "pageTemplate",
-                "languageId",
-                "requesterId"
+                "languageId"
         })
 public abstract class BaseTemplateRequestModel<TargetObject extends KeyDTO> extends KeyDTO  {
     private ActivitiRequestType activitiRequestType;
     private PageTempate pageTemplate;
     private String languageId;
-    private String requesterId;
 
     public ActivitiRequestType getActivitiRequestType() {
         return activitiRequestType;
@@ -44,14 +42,6 @@ public abstract class BaseTemplateRequestModel<TargetObject extends KeyDTO> exte
     public abstract TargetObject getTargetObject();
     public abstract void setTargetObject(TargetObject obj);
 
-    public String getRequesterId() {
-        return requesterId;
-    }
-
-    public void setRequesterId(String requesterId) {
-        this.requesterId = requesterId;
-    }
-
     public String getLanguageId() {
         return languageId;
     }
@@ -70,7 +60,6 @@ public abstract class BaseTemplateRequestModel<TargetObject extends KeyDTO> exte
 
         if (activitiRequestType != that.activitiRequestType) return false;
         if (pageTemplate != null ? !pageTemplate.equals(that.pageTemplate) : that.pageTemplate != null) return false;
-        if (requesterId != null ? !requesterId.equals(that.requesterId) : that.requesterId != null) return false;
         return languageId != null ? languageId.equals(that.languageId) : that.languageId == null;
 
     }
@@ -81,7 +70,6 @@ public abstract class BaseTemplateRequestModel<TargetObject extends KeyDTO> exte
         result = 31 * result + (activitiRequestType != null ? activitiRequestType.hashCode() : 0);
         result = 31 * result + (pageTemplate != null ? pageTemplate.hashCode() : 0);
         result = 31 * result + (languageId != null ? languageId.hashCode() : 0);
-        result = 31 * result + (requesterId != null ? requesterId.hashCode() : 0);
         return result;
     }
 
@@ -91,7 +79,6 @@ public abstract class BaseTemplateRequestModel<TargetObject extends KeyDTO> exte
                 "activitiRequestType=" + activitiRequestType +
                 ", pageTemplate=" + pageTemplate +
                 ", languageId='" + languageId + '\'' +
-                ", requesterId='" + requesterId + '\'' +
                 '}';
     }
 }

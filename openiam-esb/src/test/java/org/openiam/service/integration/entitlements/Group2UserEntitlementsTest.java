@@ -32,17 +32,17 @@ public class Group2UserEntitlementsTest extends AbstractEntitlementsTest<Group, 
 
 	@Override
 	protected Response addChildToParent(final Group parent, final User child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
-		return groupServiceClient.addUserToGroup(parent.getId(), child.getId(), null, rights, startDate, endDate);
+		return groupServiceClient.addUserToGroup(parent.getId(), child.getId(), rights, startDate, endDate);
 	}
 
 	@Override
 	protected Response removeChildFromParent(Group parent, User child, final String requestorId) {
-		return groupServiceClient.removeUserFromGroup(parent.getId(), child.getId(), null);
+		return groupServiceClient.removeUserFromGroup(parent.getId(), child.getId());
 	}
 
 	@Override
 	protected Response deleteParent(Group parent, final String requestorId) {
-		return groupServiceClient.deleteGroup(parent.getId(), null);
+		return groupServiceClient.deleteGroup(parent.getId());
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class Group2UserEntitlementsTest extends AbstractEntitlementsTest<Group, 
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
 		searchBean.setLanguage(getDefaultLanguage());
-		final List<Group> dtos = groupServiceClient.findBeans(searchBean, "3000", 0, 100);
+		final List<Group> dtos = groupServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Group> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find parent"), optional.isPresent());
@@ -97,7 +97,7 @@ public class Group2UserEntitlementsTest extends AbstractEntitlementsTest<Group, 
 
 	@Override
 	protected Group getParentById(Group parent) {
-		return groupServiceClient.getGroupLocalize(parent.getId(), "3000", getDefaultLanguage());
+		return groupServiceClient.getGroupLocalize(parent.getId(), getDefaultLanguage());
 	}
 
 	@Override

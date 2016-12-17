@@ -40,7 +40,7 @@ public class Group2ResourceEntitlementsTest extends AbstractEntitlementsTest<Gro
 
 	@Override
 	protected Response deleteParent(Group parent, final String requestorId) {
-		return groupServiceClient.deleteGroup(parent.getId(), null);
+		return groupServiceClient.deleteGroup(parent.getId());
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class Group2ResourceEntitlementsTest extends AbstractEntitlementsTest<Gro
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
 		searchBean.setLanguage(getDefaultLanguage());
-		final List<Group> dtos = groupServiceClient.findBeans(searchBean, "3000", 0, 100);
+		final List<Group> dtos = groupServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Group> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child"), optional.isPresent());
@@ -95,7 +95,7 @@ public class Group2ResourceEntitlementsTest extends AbstractEntitlementsTest<Gro
 
 	@Override
 	protected Group getParentById(Group parent) {
-		return groupServiceClient.getGroupLocalize(parent.getId(), "3000", getDefaultLanguage());
+		return groupServiceClient.getGroupLocalize(parent.getId(), getDefaultLanguage());
 	}
 
 	@Override

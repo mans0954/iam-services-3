@@ -36,6 +36,7 @@ import org.openiam.provision.dto.common.UserSearchKey;
 import org.openiam.provision.dto.common.UserSearchKeyEnum;
 import org.openiam.provision.dto.common.UserSearchMemberhipKey;
 import org.openiam.provision.dto.srcadapter.*;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -130,7 +131,14 @@ public class SourceAdapterDispatcher implements Runnable {
         try {
             SourceAdapterRequest request = null;
             while (!getTerminate() && (request = pullFromQueue()) != null) {
-                process(request);
+            	try {
+            		if(request.getRequestor() != null) {
+            			SpringSecurityHelper.setRequesterUserId(request.getRequestor().getValue());
+            		}
+            		process(request);
+            	} finally {
+            		SpringSecurityHelper.clearContext();
+            	}
                 // keep this due to existed in old code
                 Thread.sleep(100);
             }
@@ -228,13 +236,6 @@ public class SourceAdapterDispatcher implements Runnable {
                 request.setAction(SourceAdapterOperationEnum.MODIFY);
             }
 
-            User requestor = this.getUser(request.getRequestor(), request);
-            if (requestor != null && StringUtils.isNotBlank(requestor.getId())) {
-                requestorId = requestor.getId();
-            }
-            if (StringUtils.isBlank(requestorId)) {
-                throw new Exception("Requestor not found");
-            }
             idmAuditLog.setRequestorUserId(requestorId);
         } catch (Exception e) {
 //            response.setStatus(ResponseStatus.FAILURE);
@@ -249,7 +250,7 @@ public class SourceAdapterDispatcher implements Runnable {
         }
         ProvisionUser pUser = null;
         try {
-            pUser = this.convertToProvisionUser(request, warnings, requestorId);
+            pUser = this.convertToProvisionUser(request, warnings);
             if (SourceAdapterOperationEnum.ADD.equals(request.getAction()) && StringUtils.isNotBlank(pUser.getId())) {
                 throw new Exception("Such user exists. Can't add! User=" + pUser.getDisplayName());
             }
@@ -370,7 +371,7 @@ public class SourceAdapterDispatcher implements Runnable {
         auditLogService.save(idmAuditLog);
     }
 
-    private ProvisionUser convertToProvisionUser(SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {
+    private ProvisionUser convertToProvisionUser(SourceAdapterRequest request, StringBuilder warnings) throws Exception {
         //shit for AKZO
         User u = null;
         if (StringUtils.isNotBlank(request.getEmployeeId())) {
@@ -397,16 +398,16 @@ public class SourceAdapterDispatcher implements Runnable {
             throw new Exception("Can't find user!");
         ProvisionUser pUser = new ProvisionUser(u);
         this.fillProperties(request, pUser);
-        this.fillGroups(pUser, request, warnings, requestorId);
-        this.fillRoles(pUser, request, warnings, requestorId);
+        this.fillGroups(pUser, request, warnings);
+        this.fillRoles(pUser, request, warnings);
         this.fillResources(pUser, request, warnings);
         fillAddresses(pUser, request, warnings);
         fillPhones(pUser, request, warnings);
         fillEmail(pUser, request, warnings);
         fillUserAttribute(pUser, request, warnings);
-        fillOrganizations(pUser, request, warnings, requestorId);
+        fillOrganizations(pUser, request, warnings);
         fillSuperVisors(pUser, request, warnings);
-        fillPrincipals(pUser, request, warnings, requestorId);
+        fillPrincipals(pUser, request, warnings);
         fillAlternativeContact(pUser, request, warnings);
         return pUser;
     }
@@ -477,7 +478,7 @@ public class SourceAdapterDispatcher implements Runnable {
         }
     }
 
-    private void fillPrincipals(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {
+    private void fillPrincipals(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getLogins())) {
             boolean isFound;
             if (pUser.getPrincipalList() == null) {
@@ -517,8 +518,7 @@ public class SourceAdapterDispatcher implements Runnable {
         login.setManagedSysId(loginRequest.getManagedSystemId());
     }
 
-    private void fillGroups(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings, String
-            requestorId) throws Exception {
+    private void fillGroups(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getGroups())) {
             boolean isFound;
             if (pUser.getGroups() == null) {
@@ -544,7 +544,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     GroupSearchBean gsb = new GroupSearchBean();
                     gsb.setNameToken(new SearchParam(group.getName(), MatchType.EXACT));
                     gsb.setManagedSysId(group.getManagedSystemId());
-                    List<Group> dbGroups = groupDataService.findDtoBeans(gsb, requestorId, -1, -1);
+                    List<Group> dbGroups = groupDataService.findDtoBeans(gsb, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbGroups)) {
                         if (dbGroups.size() > 1) {
                             warnings.append(this.getWarning("Not unique name. Skip it. Group Name=" + group.getName()));
@@ -564,7 +564,7 @@ public class SourceAdapterDispatcher implements Runnable {
     }
 
     private void fillOrganizations(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder
-            warnings, String requestorId) throws Exception {
+            warnings) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getOrganizations())) {
             boolean isFound = false;
             if (pUser.getAffiliations() == null) {
@@ -573,7 +573,7 @@ public class SourceAdapterDispatcher implements Runnable {
             List<UserToOrganizationMembershipXref> result = new ArrayList<UserToOrganizationMembershipXref>();
             for (SourceAdapterOrganizationRequest org : request.getOrganizations()) {
                 isFound = false;
-                Organization organizationDB = this.getOrganizationFromDataBase(org, warnings, requestorId);
+                Organization organizationDB = this.getOrganizationFromDataBase(org, warnings, SpringSecurityHelper.getRequestorUserId());
                 if (organizationDB == null) {
                     break;
                 }
@@ -588,7 +588,7 @@ public class SourceAdapterDispatcher implements Runnable {
                             case REPLACE: {
                                 organizationUserDTO.setOrganizationTypeId(org.getMetadataTypeId());
                                 this.convertToOrganization(organizationDB, org, warnings);
-                                Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
+                                Response response = organizationDataService.saveOrganization(organizationDB, SpringSecurityHelper.getRequestorUserId());
                                 if (response.isFailure()) {
                                     warnings.append(getWarning("Organization doesn't added/updated to DataBase. " + response.getErrorCode() + ":" + response.getErrorText()));
                                 }
@@ -620,13 +620,13 @@ public class SourceAdapterDispatcher implements Runnable {
                         if (StringUtils.isBlank(organizationDB.getId()) && CollectionUtils.isNotEmpty(organizationDB.getAttributes())) {
                             Set<OrganizationAttribute> attributes = organizationDB.getAttributes();
                             organizationDB.setAttributes(null);
-                            Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
+                            Response response = organizationDataService.saveOrganization(organizationDB, SpringSecurityHelper.getRequestorUserId());
                             if (response.isSuccess()) {
                                 organizationDB.setId((String) response.getResponseValue());
                                 organizationDB.setAttributes(attributes);
                             }
                         }
-                        Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
+                        Response response = organizationDataService.saveOrganization(organizationDB, SpringSecurityHelper.getRequestorUserId());
                         if (response.isSuccess()) {
                             organizationDB.setId((String) response.getResponseValue());
 
@@ -862,8 +862,7 @@ public class SourceAdapterDispatcher implements Runnable {
     }
 
 
-    private void fillRoles(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings, String
-            requestorId) throws Exception {
+    private void fillRoles(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getRoles())) {
             boolean isFound;
             if (pUser.getRoles() == null) {

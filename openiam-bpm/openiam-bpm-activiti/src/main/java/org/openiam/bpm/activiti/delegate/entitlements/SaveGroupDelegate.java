@@ -42,12 +42,11 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
         }
         try {
         	idmAuditLog.setTargetGroup(groupRequestModel.getTargetObject().getId(), groupRequestModel.getTargetObject().getName());
-            groupRequestModel.setRequesterId(getRequestorId(execution));
             final Response wsResponse =  groupDataService.saveGroupRequestWeb(groupRequestModel);
             if (wsResponse.isSuccess()) {
                 String groupId = (String) wsResponse.getResponseValue();
 
-                Group createdGroup  = groupDataService.getGroupDtoLocalize(groupId, getRequestorId(execution), null);
+                Group createdGroup  = groupDataService.getGroupDtoLocalize(groupId, null);
                 ProvisionGroup provisionGroup = new ProvisionGroup(createdGroup);
                 Response groupResponse = (isNew) ? groupProvisionService.add(provisionGroup) :
                         groupProvisionService.modify(provisionGroup);

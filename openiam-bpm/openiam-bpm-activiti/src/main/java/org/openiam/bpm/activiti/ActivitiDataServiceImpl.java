@@ -85,6 +85,7 @@ import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.AuditLogHelper;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -202,8 +203,8 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		return "Hello";
 	}
 
-	private ResourceEntity createAndSaveWorkflowResource(final String name, final String requestor) {
-		final UserEntity user = userDataService.getUser(requestor);
+	private ResourceEntity createAndSaveWorkflowResource(final String name) {
+		final UserEntity user = userDataService.getUser(SpringSecurityHelper.getRequestorUserId());
 		final ResourceEntity workflowMasterResource = resourceService.findResourceById(propertyValueSweeper.getString("org.openiam.workflow.master.resource"));
 
 		final ResourceEntity resource = new ResourceEntity();
@@ -213,7 +214,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		resource.addUser(user, accessRightDAO.findAll(), null, null);
 		resource.addChildResource(workflowMasterResource, null, null, null);
 
-		resourceService.save(resource, requestor);
+		resourceService.save(resource, SpringSecurityHelper.getRequestorUserId());
 		return resource;
 	}
 
@@ -226,7 +227,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 		idmAuditLog.setAction(AuditAction.NEW_USER_WORKFLOW.value());
 		idmAuditLog.setBaseObject(request);
-		idmAuditLog.setRequestorUserId(request.getRequesterId());
+		idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
 		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 
@@ -287,7 +288,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 			approverCardinatlity.add(approverUserIds);
 		}
 
-		final ResourceEntity resource = createAndSaveWorkflowResource(taskName, request.getRequesterId());
+		final ResourceEntity resource = createAndSaveWorkflowResource(taskName);
 
 		final Map<String, Object> variables = new HashMap<String, Object>();
 		variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
@@ -301,9 +302,9 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		}
 		variables.put(ActivitiConstants.TASK_NAME.getName(), taskName);
 		variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
-		variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequesterId());
+		variables.put(ActivitiConstants.REQUESTOR.getName(), SpringSecurityHelper.getRequestorUserId());
 		variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
-		variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), request.getRequesterId());
+		variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), SpringSecurityHelper.getRequestorUserId());
 		if(identifier.getCustomActivitiAttributes() != null) {
 			variables.putAll(identifier.getCustomActivitiAttributes());
 		}
@@ -319,8 +320,8 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 		final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 		resource.setReferenceId(processInstance.getId());
-		resourceService.save(resource, request.getRequesterId());
-		populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequesterId());
+		resourceService.save(resource, SpringSecurityHelper.getRequestorUserId());
+		populate(response, processInstance, resource, approverAssociationIds, approverUserIds, SpringSecurityHelper.getRequestorUserId());
 
 		idmAuditLog = auditLogService.findById(idmAuditLog.getId());
 		idmAuditLog.setTargetTask(processInstance.getId(), taskName);
@@ -408,7 +409,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		IdmAuditLogEntity idmAuditLog = AuditLogHolder.getInstance().getEvent();
 		idmAuditLog.setAction(AuditAction.EDIT_USER_WORKFLOW.value());
 		idmAuditLog.setBaseObject(request);
-		idmAuditLog.setRequestorUserId(request.getRequesterId());
+		idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
 		idmAuditLog.setSource(AuditSource.WORKFLOW.value());
 		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 
@@ -447,7 +448,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 			approverCardinatlity.add(approverUserIds);
 		}
 
-		final ResourceEntity resource = createAndSaveWorkflowResource(description, request.getRequesterId());
+		final ResourceEntity resource = createAndSaveWorkflowResource(description);
 
 		final Map<String, Object> variables = new HashMap<String, Object>();
 		variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
@@ -461,7 +462,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		}
 		variables.put(ActivitiConstants.TASK_NAME.getName(), description);
 		variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), description);
-		variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequesterId());
+		variables.put(ActivitiConstants.REQUESTOR.getName(), SpringSecurityHelper.getRequestorUserId());
 		variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getUser().getId());
 		variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), ActivitiRequestType.EDIT_USER.getKey());
 		if(identifier.getCustomActivitiAttributes() != null) {
@@ -475,8 +476,8 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 		final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
 		resource.setReferenceId(processInstance.getId());
-		resourceService.save(resource, request.getRequesterId());
-		populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequesterId());
+		resourceService.save(resource, SpringSecurityHelper.getRequestorUserId());
+		populate(response, processInstance, resource, approverAssociationIds, approverUserIds, SpringSecurityHelper.getRequestorUserId());
 
 		idmAuditLog = auditLogService.findById(idmAuditLog.getId());
 		for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
@@ -568,7 +569,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 			}
 		}
 
-		final ResourceEntity resource = createAndSaveWorkflowResource(request.getName(), request.getRequesterId());
+		final ResourceEntity resource = createAndSaveWorkflowResource(request.getName());
 
 		idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 		final Map<String, Object> variables = new HashMap<String, Object>();

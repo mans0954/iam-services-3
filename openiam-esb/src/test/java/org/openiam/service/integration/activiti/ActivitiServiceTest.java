@@ -319,7 +319,6 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 		
 		request.setTestRequest(true);
 		request.addCustomApproverId(requestor.getId());
-		request.setRequesterId(requestor.getId());
 		return request;
 	}
 	

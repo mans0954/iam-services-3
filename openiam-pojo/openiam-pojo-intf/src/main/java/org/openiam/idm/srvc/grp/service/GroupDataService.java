@@ -1,5 +1,9 @@
 package org.openiam.idm.srvc.grp.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
@@ -11,11 +15,6 @@ import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
 /**
  * <code>GroupDataService</code> provides a service to manage groups as well
@@ -31,16 +30,13 @@ public interface GroupDataService {
 	@Deprecated
     public GroupEntity getGroup(final String id);
 	
-	@Deprecated
-    public GroupEntity getGroup(final String id, final String requesterId);
-	public GroupEntity getGroupByNameAndManagedSystem(final String groupName, final String managedSystemId, final String requesterId, final LanguageEntity language);
+	public GroupEntity getGroupByNameAndManagedSystem(final String groupName, final String managedSystemId, final LanguageEntity language);
     public List<Group> getCompiledGroupsForUser(final String userId);
-    public GroupEntity getGroupByName(final String groupName, final String requesterId);
+    public GroupEntity getGroupByName(final String groupName);
     public GroupEntity getGroupLocalize(final String id, final LanguageEntity language);
-    public GroupEntity getGroupLocalize(final String id, final String requesterId, final LanguageEntity language);
-    public Group getGroupDtoLocalize(final String id, final String requesterId, final Language language);
+    public Group getGroupDtoLocalize(final String id, final Language language);
 
-    public GroupEntity getGroupByNameLocalize(final String groupName, final String requesterId, final LanguageEntity language);
+    public GroupEntity getGroupByNameLocalize(final String groupName, final LanguageEntity language);
     public List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language);
     /**
      * Returns a list of Group objects that satisfy the search criteria defined through the GroupSearch parameter.
@@ -48,46 +44,45 @@ public interface GroupDataService {
      * @param searchBean
      * @return
      */
-    public List<GroupEntity> findBeans(final GroupSearchBean searchBean, String requesterId, final int from, final int size);
-    public List<Group> findDtoBeans(final GroupSearchBean searchBean, String requesterId, final int from, final int size);
+    public List<GroupEntity> findBeans(final GroupSearchBean searchBean, final int from, final int size);
+    public List<Group> findDtoBeans(final GroupSearchBean searchBean, final int from, final int size);
 
-    public List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size);
-    public List<GroupEntity> getParentGroups(final String groupId, final String requesterId, final int from, final int size);
-    public List<GroupEntity> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size);
+    public List<GroupEntity> getChildGroups(final String groupId, final int from, final int size);
+    public List<GroupEntity> getParentGroups(final String groupId, final int from, final int size);
+    public List<GroupEntity> getGroupsForResource(final String resourceId, final int from, final int size);
 
-    public List<Group> getGroupsDtoForUser(final String userId, String requesterId, final int from, final int size);
+    public List<Group> getGroupsDtoForUser(final String userId, final int from, final int size);
 
-    public List<GroupEntity> getGroupsForUser(final String userId, String requesterId, final int from, final int size);
-    public List<GroupEntity> getGroupsForRole(final String roleId, String requesterId, final int from, final int size);
+    public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size);
+    public List<GroupEntity> getGroupsForRole(final String roleId, final int from, final int size);
 
-    public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
-    public List<GroupEntity> getChildGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getChildGroupsDtoLocalize(final String groupId, final String requesterId, final int from, final int size, final Language language);
-    public List<GroupEntity> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getParentGroupsDtoLocalize(final String groupId, final String requesterId, final int from, final int size, final Language language);
-    public List<GroupEntity> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getGroupsDtoForResourceLocalize(final String resourceId, final String requesterId, final int from, final int size, final Language language);
-    public List<GroupEntity> getGroupsForUserLocalize(final String userId, String requesterId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getGroupsDtoForUserLocalize(final String userId, String requesterId, final int from, final int size, final Language language);
-    public List<GroupEntity> getGroupsForRoleLocalize(final String roleId, String requesterId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getGroupsDtoForRoleLocalize(final String roleId, String requesterId, final int from, final int size, boolean deepFlag, final Language language);
+    public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, final int from, final int size, final LanguageEntity language);
+    public List<GroupEntity> getChildGroupsLocalize(final String groupId, final int from, final int size, final LanguageEntity language);
+    public List<Group> getChildGroupsDtoLocalize(final String groupId, final int from, final int size, final Language language);
+    public List<GroupEntity> getParentGroupsLocalize(final String groupId, final int from, final int size, final LanguageEntity language);
+    public List<Group> getParentGroupsDtoLocalize(final String groupId, final int from, final int size, final Language language);
+    public List<GroupEntity> getGroupsForResourceLocalize(final String resourceId, final int from, final int size, final LanguageEntity language);
+    public List<Group> getGroupsDtoForResourceLocalize(final String resourceId, final int from, final int size, final Language language);
+    public List<GroupEntity> getGroupsForUserLocalize(final String userId, final int from, final int size, final LanguageEntity language);
+    public List<Group> getGroupsDtoForUserLocalize(final String userId, final int from, final int size, final Language language);
+    public List<GroupEntity> getGroupsForRoleLocalize(final String roleId, final int from, final int size, final LanguageEntity language);
+    public List<Group> getGroupsDtoForRoleLocalize(final String roleId, final int from, final int size, boolean deepFlag, final Language language);
 
     public Set<String> getGroupIdList();
 
-    public int getNumOfGroupsForRole(final String roleId, final String requesterId);
-    public int getNumOfGroupsForUser(final String userId, final String requesterId);
-    public int getNumOfGroupsForResource(final String resourceId, final String requesterId);
-    public int getNumOfChildGroups(final String groupId, final String requesterId);
-    public int getNumOfParentGroups(final String groupId, final String requesterId);
-    public int countBeans(final GroupSearchBean searchBean, final String requesterId);
+    public int getNumOfGroupsForRole(final String roleId);
+    public int getNumOfGroupsForUser(final String userId);
+    public int getNumOfGroupsForResource(final String resourceId);
+    public int getNumOfChildGroups(final String groupId);
+    public int getNumOfParentGroups(final String groupId);
+    public int countBeans(final GroupSearchBean searchBean);
 
     public boolean isValid(final GroupEntity group) throws BasicDataServiceException;
-	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException;
-    public Response saveGroup(final Group group, final String requesterId);
-    public void saveGroup(final GroupEntity group, final GroupOwner groupOwner, final String requestorId) throws BasicDataServiceException;
+	public void saveGroup(final GroupEntity group) throws BasicDataServiceException;
+    public Response saveGroup(final Group group);
+    public void saveGroup(final GroupEntity group, final GroupOwner groupOwner) throws BasicDataServiceException;
     public void addRequiredAttributes(GroupEntity group);
-	public void deleteGroup(final String groupId);
-    public Response deleteGroup(final String groupId, final String requesterId);
+    public Response deleteGroup(final String groupId);
     /**
      * Returns true or false depending on whether a user belongs to a particular
      * group or not. If a group has been marked as "Inherits from Parent", then
@@ -114,9 +109,6 @@ public interface GroupDataService {
      */
     public void removeAttribute(final String attributeId);
 
-    public void addChildGroup(final String groupId, final String childGroupId, final Set<String> rights, final Date startDate, final Date endDate);
-    public void removeChildGroup(final String groupId, final String childGroupId);
-    
     public void validateGroup2GroupAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException;
     
     public Group getGroupDTO(final String groupId);
@@ -126,11 +118,11 @@ public interface GroupDataService {
     public List<GroupEntity> findGroupsByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language);
     //public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity lang);
 
-    public int countGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId);
-    public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size);
+    public int countGroupsForOwner(GroupSearchBean searchBean, String ownerId);
+    public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String ownerId, int from, int size);
     
     public boolean hasAttachedEntities(String groupId);
-    public List<Group> findGroupsDtoForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size);
+    public List<Group> findGroupsDtoForOwner(GroupSearchBean searchBean, String ownerId, int from, int size);
     public void removeRoleFromGroup(String roleId, String groupId);
 
     public void saveGroupRequest(final GroupRequestModel request) throws Exception;
@@ -138,13 +130,13 @@ public interface GroupDataService {
     //public List<GroupOwner> getOwnersBeansForGroup(String groupId);
 
 
-    public Response addUserToGroup(final String groupId, final String userId, final String requesterId, final Set<String> rightIds,
+    public Response addUserToGroup(final String groupId, final String userId, final Set<String> rightIds,
                                    final Date startDate, final Date endDate);
-    public Response removeUserFromGroup(final String groupId, final String userId, final String requesterId);
+    public Response removeUserFromGroup(final String groupId, final String userId);
 
-    public Response addChildGroup(final String groupId, final String childGroupId, final String requesterId,
+    public Response addChildGroup(final String groupId, final String childGroupId,
                                   final Set<String> rights, final Date startDate, final Date endDate);
-    public Response removeChildGroup(final String groupId, final String childGroupId, final String requesterId);
+    public Response removeChildGroup(final String groupId, final String childGroupId);
 
 
     public SaveTemplateProfileResponse saveGroupRequestWeb(final GroupRequestModel request);

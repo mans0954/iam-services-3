@@ -454,9 +454,9 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	protected Group createGroup() {
 		Group group = new Group();
 		group.setName(getRandomName());
-		Response wsResponse = groupServiceClient.saveGroup(group, null);
+		Response wsResponse = groupServiceClient.saveGroup(group);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", group, wsResponse));
-		group = groupServiceClient.getGroup((String)wsResponse.getResponseValue(), null);
+		group = groupServiceClient.getGroup((String)wsResponse.getResponseValue());
 		
 		if(user != null) {
 			final ApproverAssociation association = new ApproverAssociation();

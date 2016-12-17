@@ -34,22 +34,22 @@ public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest
 										final Set<String> rights,
 										final Date startDate, 
 										final Date endDate) {
-		return groupServiceClient.addChildGroup(parent.getId(), child.getId(), null, rights, startDate, endDate);
+		return groupServiceClient.addChildGroup(parent.getId(), child.getId(), rights, startDate, endDate);
 	}
 
 	@Override
 	protected Response removeChildFromParent(Group parent, Group child, final String requestorId) {
-		return groupServiceClient.removeChildGroup(parent.getId(), child.getId(), null);
+		return groupServiceClient.removeChildGroup(parent.getId(), child.getId());
 	}
 
 	@Override
 	protected Response deleteParent(Group parent, final String requestorId) {
-		return groupServiceClient.deleteGroup(parent.getId(), null);
+		return groupServiceClient.deleteGroup(parent.getId());
 	}
 
 	@Override
 	protected Response deleteChild(Group child, final String requestorId) {
-		return groupServiceClient.deleteGroup(child.getId(), null);
+		return groupServiceClient.deleteGroup(child.getId());
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest
 		searchBean.addChildId(child.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setLanguage(getDefaultLanguage());
-		final List<Group> groups = groupServiceClient.findBeans(searchBean, "3000", 0, 100);
+		final List<Group> groups = groupServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(groups)) {
 			final Optional<Group> optional = groups.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child resource"), optional.isPresent());
@@ -80,7 +80,7 @@ public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest
 		searchBean.addParentId(parent.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setLanguage(getDefaultLanguage());
-		final List<Group> groups = groupServiceClient.findBeans(searchBean, "3000", 0, 100);
+		final List<Group> groups = groupServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(groups)) {
 			final Optional<Group> optional = groups.stream().filter(e -> e.getId().equals(child.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find parent resource"), optional.isPresent());
@@ -101,11 +101,11 @@ public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest
 
 	@Override
 	protected Group getParentById(Group parent) {
-		return groupServiceClient.getGroupLocalize(parent.getId(), "3000", getDefaultLanguage());
+		return groupServiceClient.getGroupLocalize(parent.getId(), getDefaultLanguage());
 	}
 
 	@Override
 	protected Group getChildById(Group child) {
-		return groupServiceClient.getGroupLocalize(child.getId(), "3000", getDefaultLanguage());
+		return groupServiceClient.getGroupLocalize(child.getId(), getDefaultLanguage());
 	}
 }

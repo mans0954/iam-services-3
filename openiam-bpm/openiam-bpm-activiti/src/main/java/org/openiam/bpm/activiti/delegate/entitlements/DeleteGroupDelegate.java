@@ -29,7 +29,7 @@ public class DeleteGroupDelegate extends AbstractActivitiJob {
         try {
         	if(group != null) {
         		idmAuditLog.setTargetGroup(group.getId(), group.getName());
-                wsResponse = groupDataService.deleteGroup(group.getId(), systemUserId);
+                wsResponse = groupDataService.deleteGroup(group.getId());
                 if (wsResponse.isSuccess()) {
                     idmAuditLog.succeed();
                 } else {

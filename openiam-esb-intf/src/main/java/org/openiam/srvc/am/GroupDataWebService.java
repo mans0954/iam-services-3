@@ -51,24 +51,20 @@ public interface GroupDataWebService {
      * otherwise it contains error code.
      */
     @WebMethod
-    public Response saveGroup(final @WebParam(name = "group", targetNamespace = "") Group group,
-    						  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public Response saveGroup(final @WebParam(name = "group", targetNamespace = "") Group group);
 
     /**
      * This method retrieves an existing group object. Dependent objects such as
      * users are not retrieved. Null is returned if the groupId is not found.
      *
      * @param groupId - the Group ID
-     * @param requesterId - the User ID who request this operation. This param is required if delegation filter is set
      * @return - a Group Object if it is found, otherwise null will be returned.
      */
     @WebMethod
-    public Group getGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public Group getGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     @WebMethod
     public Group getGroupLocalize(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                           final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     /**
@@ -78,25 +74,21 @@ public interface GroupDataWebService {
      * @return - a Response Object which contains operation status.
      */
     @WebMethod
-    public Response deleteGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public Response deleteGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     /**
      * Gets the number of child groups that are direct members of this Group
      * @param groupId - the Group ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @return Integer, total number of groups that are direct members of this Group
      */
     @WebMethod
     @Deprecated
-    public int getNumOfChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public int getNumOfChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     /**
      * Returns a paged List of child groups that are are direct members of this Group
      *
      * @param groupId - the Group ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @param deepFlag - shows that method returns Group List with all sub collections
      * @param from - where to start in the list
      * @param size - how many to return
@@ -105,7 +97,6 @@ public interface GroupDataWebService {
     @WebMethod
     @Deprecated
     public List<Group> getChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                       final @WebParam(name = "deepFlag", targetNamespace = "") Boolean deepFlag,
     								  final @WebParam(name = "from", targetNamespace = "") int from,
     								  final @WebParam(name = "size", targetNamespace = "") int size);
@@ -113,7 +104,6 @@ public interface GroupDataWebService {
     @WebMethod
     @Deprecated
     public List<Group> getChildGroupsLocalize(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                       final @WebParam(name = "deepFlag", targetNamespace = "") Boolean deepFlag,
                                       final @WebParam(name = "from", targetNamespace = "") int from,
                                       final @WebParam(name = "size", targetNamespace = "") int size,
@@ -121,19 +111,16 @@ public interface GroupDataWebService {
     /**
      * Gets the number of groups that are direct parents of this Group
      * @param groupId - the Group ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @return - Integer, total number of groups that are direct parents of this Group
      */
     @WebMethod
     @Deprecated
-    public int getNumOfParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                    final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public int getNumOfParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     /**
      * Returns a paged List of groups that are direct parents of this Group
      *
      * @param groupId - the Group ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @param from - where to start in the list
      * @param size - how many to return
      * @return a paged List of of Group objects. Returns null if no groups are found.
@@ -141,14 +128,12 @@ public interface GroupDataWebService {
     @WebMethod
     @Deprecated
     public List<Group> getParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                       final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     								   final @WebParam(name = "from", targetNamespace = "") int from,
     								   final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     @Deprecated
     public List<Group> getParentGroupsLocalize(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                       final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                        final @WebParam(name = "from", targetNamespace = "") int from,
                                        final @WebParam(name = "size", targetNamespace = "") int size,
                                        final @WebParam(name = "lang", targetNamespace = "") Language language);
@@ -176,7 +161,6 @@ public interface GroupDataWebService {
     @WebMethod
     public Response addUserToGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                    final @WebParam(name = "userId", targetNamespace = "") String userId,
-                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                    final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
                                    final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
                                    final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
@@ -191,8 +175,7 @@ public interface GroupDataWebService {
      */
     @WebMethod
     public Response removeUserFromGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                        final @WebParam(name = "userId", targetNamespace = "") String userId,
-                                        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+                                        final @WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Adds an attribute to the Group object.
@@ -201,8 +184,7 @@ public interface GroupDataWebService {
      * @return   a Response Object which contains an operation status and GroupAttribute ID.
      */
     @WebMethod
-    public Response addAttribute(final @WebParam(name = "attribute", targetNamespace = "") GroupAttribute attribute,
-                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public Response addAttribute(final @WebParam(name = "attribute", targetNamespace = "") GroupAttribute attribute);
 
     /**
      * Removes a GroupAttribute specified by the attribute.
@@ -211,27 +193,23 @@ public interface GroupDataWebService {
      * @return   a Response Object which contains an operation status.
      */
     @WebMethod
-    public Response removeAttribute(final @WebParam(name = "attributeId", targetNamespace = "") String attributeId,
-                                    final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public Response removeAttribute(final @WebParam(name = "attributeId", targetNamespace = "") String attributeId);
 
     /**
      * Return a paged List of Groups based on parameters, which are specified in GroupSearchBean object
      * @param searchBean -  GroupSearchBean object
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @param from - where to start in the list
      * @param size - how many to return
      * @return List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
     public List<Group> findBeans(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
-                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     							 final @WebParam(name = "from", targetNamespace = "") int from,
     							 final @WebParam(name = "size", targetNamespace = "") int size);
     
     /**
      * Return a paged List of Groups  for given groupOwner based on parameters, which are specified in GroupSearchBean object
      * @param searchBean -  GroupSearchBean object
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @param ownerId - the User ID who is the owner for the searching groups
      * @param from - where to start in the list
      * @param size - how many to return
@@ -239,7 +217,6 @@ public interface GroupDataWebService {
      */
     @WebMethod
     public List<Group> findGroupsForOwner(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
-                                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                           final @WebParam(name = "ownerId", targetNamespace = "") String ownerId,
                                           final @WebParam(name = "from", targetNamespace = "") int from,
                                           final @WebParam(name = "size", targetNamespace = "") int size);
@@ -247,29 +224,24 @@ public interface GroupDataWebService {
     /**
      * Returns total number of Groups based on parameters, which are specified in GroupSearchBean object
      * @param searchBean -  GroupSearchBean object
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @return - Integer, total number of groups based on parameters, which are specified in GroupSearchBean object
      */
     @WebMethod
-    public int countBeans(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
-                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public int countBeans(final @WebParam(name = "searchBean") GroupSearchBean searchBean);
 
     /**
      * Returns total number of Groups for given groupOwner based on parameters, which are specified in GroupSearchBean object
      * @param searchBean -  GroupSearchBean object
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @param ownerId - the User ID who is the owner for the searching groups
      * @return - Integer, total number of groups based on parameters, which are specified in GroupSearchBean object
      */
     @WebMethod
     public int countGroupsForOwner(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
-                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                    final @WebParam(name = "ownerId", targetNamespace = "") String ownerId);
 
     /**
      * Gets a paged List of Groups directly entitled to the User specified by the userId
      * @param userId - the User ID
-     * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
      * @param deepFlag - shows that method returns Group List with all sub collections
      * @param from - where to start in the paged list
      * @param size - how many to return
@@ -278,14 +250,12 @@ public interface GroupDataWebService {
     @WebMethod
     @Deprecated
     public List<Group> getGroupsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                        @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                         @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
                                         @WebParam(name = "from") int from,
                                         @WebParam(name = "size") int size);
     @WebMethod
     @Deprecated
     public List<Group> getGroupsForUserLocalize(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                        @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                         @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
                                         @WebParam(name = "from") int from,
                                         @WebParam(name = "size") int size,
@@ -293,31 +263,26 @@ public interface GroupDataWebService {
     /**
      * Gets the number of Groups directly entitled to this User specified by the userId
      * @param userId - the User ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @return the number of Groups directly entitled to this User specified by the userId
      */
     @Deprecated
-    public int getNumOfGroupsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
-                                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public int getNumOfGroupsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Gets a paged List of Groups directly entitled to the Resource specified by the resourceId
      * @param resourceId - the Resource ID
-     * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
      * @param from - where to start in the paged list
      * @param size - how many to return
      * @return a paged List of Groups directly entitled to the Resource specified by the resourceId
      */
     @WebMethod
     public List<Group> getGroupsForResource(final @WebParam(name = "resourceId") String resourceId,
-                                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                             final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
     										final @WebParam(name = "from", targetNamespace = "") int from,
     										final @WebParam(name = "size", targetNamespace = "") int size);
     @WebMethod
     @Deprecated
     public List<Group> getGroupsForResourceLocalize(final @WebParam(name = "resourceId") String resourceId,
-                                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                             final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
                                             final @WebParam(name = "from", targetNamespace = "") int from,
                                             final @WebParam(name = "size", targetNamespace = "") int size,
@@ -326,18 +291,15 @@ public interface GroupDataWebService {
     /**
      * Gets the number of Groups directly entitled to this Resource specified by the resourceId
      * @param resourceId - the Resource ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @return the number of Groups directly entitled to this Resource specified by the resourceId
      */
     @WebMethod
     @Deprecated
-    public int getNumOfGroupsforResource(final @WebParam(name = "resourceId") String resourceId,
-                                         final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public int getNumOfGroupsforResource(final @WebParam(name = "resourceId") String resourceId);
 
     /**
      * Gets a paged List of Groups directly entitled to the Role specified by the roleId
      * @param roleId - the Role ID
-     * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
      * @param from - where to start in the paged list
      * @param size - how many to return
      * @param deepFlag - if true then it shows that returned Groups contain other objects that are directly entitled to returned Groups
@@ -346,7 +308,6 @@ public interface GroupDataWebService {
     @WebMethod
     @Deprecated
     public List<Group> getGroupsForRole(final @WebParam(name = "roleId") String roleId,
-                                        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     									final @WebParam(name = "from", targetNamespace = "") int from,
     									final @WebParam(name = "size", targetNamespace = "") int size,
                                         final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag);
@@ -354,7 +315,6 @@ public interface GroupDataWebService {
     @WebMethod
     @Deprecated
     public List<Group> getGroupsForRoleLocalize(final @WebParam(name = "roleId") String roleId,
-                                        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                         final @WebParam(name = "from", targetNamespace = "") int from,
                                         final @WebParam(name = "size", targetNamespace = "") int size,
                                         final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
@@ -363,13 +323,11 @@ public interface GroupDataWebService {
     /**
      * Gets the number of Groups directly entitled to this Role specified by the roleId
      * @param roleId - the Role ID
-     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @return the number of Groups directly entitled to this Role specified by the roleId
      */
     @WebMethod
     @Deprecated
-    public int getNumOfGroupsForRole(final @WebParam(name = "roleId") String roleId,
-                                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public int getNumOfGroupsForRole(final @WebParam(name = "roleId") String roleId);
 
 
     /**
@@ -381,7 +339,6 @@ public interface GroupDataWebService {
     @WebMethod
     public Response addChildGroup(final @WebParam(name = "groupId") String groupId, 
     							  final @WebParam(name = "childGroupId") String childGroupId,
-                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                   final @WebParam(name = "rights", targetNamespace = "") Set<String> rights,
                                   final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
                                   final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
@@ -401,8 +358,7 @@ public interface GroupDataWebService {
      */
     @WebMethod
     public Response removeChildGroup(final @WebParam(name = "groupId") String groupId,
-                                     final @WebParam(name = "childGroupId") String childGroupId,
-                                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+                                     final @WebParam(name = "childGroupId") String childGroupId);
 
 
     /**
@@ -435,8 +391,7 @@ public interface GroupDataWebService {
     
     @WebMethod
     Response removeRoleFromGroup(@WebParam(name = "roleId", targetNamespace = "") String roleId,
-                                 @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+                                 @WebParam(name = "groupId", targetNamespace = "") String groupId);
     @WebMethod
     public SaveTemplateProfileResponse saveGroupRequest(final @WebParam(name = "request", targetNamespace = "")  GroupRequestModel request);
     @WebMethod

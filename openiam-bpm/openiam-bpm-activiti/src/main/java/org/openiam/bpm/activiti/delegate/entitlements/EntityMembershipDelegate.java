@@ -74,11 +74,11 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                 switch (requestType) {
                     case ADD_GROUP_TO_GROUP:
                         action = AuditAction.ADD_CHILD_GROUP;
-                        response = groupDataService.addChildGroup(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
+                        response = groupDataService.addChildGroup(associationId, memberAssociationId, rights, startDate, endDate);
                         break;
                     case REMOVE_GROUP_FROM_GROUP:
                         action = AuditAction.REMOVE_CHILD_GROUP;
-                        response = groupDataService.removeChildGroup(associationId, memberAssociationId, systemUserId);
+                        response = groupDataService.removeChildGroup(associationId, memberAssociationId);
                         break;
                     case ADD_ROLE_TO_GROUP:
                         action = AuditAction.ADD_ROLE_TO_GROUP;
@@ -222,7 +222,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                     }
                                     if (CollectionUtils.isNotEmpty(groupToDelete)) {
                                         for (String id : groupToDelete) {
-                                            response = groupDataService.removeUserFromGroup(id, memberAssociationId, systemUserId);
+                                            response = groupDataService.removeUserFromGroup(id, memberAssociationId);
                                         }
                                     }
                                     if (CollectionUtils.isNotEmpty(roleToDelete)) {
@@ -257,7 +257,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 response = provisionService.modifyUser(pUser);
                             }
                         } else {
-                            response = groupDataService.addUserToGroup(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
+                            response = groupDataService.addUserToGroup(associationId, memberAssociationId, rights, startDate, endDate);
                         }
                         break;
                     case REMOVE_USER_FROM_GROUP:
@@ -272,7 +272,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 response = provisionService.modifyUser(pUser);
                             }
                         } else {
-                            response = groupDataService.removeUserFromGroup(associationId, memberAssociationId, systemUserId);
+                            response = groupDataService.removeUserFromGroup(associationId, memberAssociationId);
                         }
                         break;
                     case ADD_USER_TO_ROLE:

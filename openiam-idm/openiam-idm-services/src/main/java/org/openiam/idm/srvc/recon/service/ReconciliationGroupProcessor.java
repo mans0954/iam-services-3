@@ -174,7 +174,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         List<String> processedGroupIds = new ArrayList<String>();
 
         if (searchBean != null) {
-            List<Group> idmGroups = groupDataWebService.findDtoBeans(searchBean, null, 0, Integer.MAX_VALUE);
+            List<Group> idmGroups = groupDataWebService.findDtoBeans(searchBean, 0, Integer.MAX_VALUE);
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Starting processing '" + idmGroups.size()
                     + "' users from Repository to " + mSys.getName());
             int counter = 0;

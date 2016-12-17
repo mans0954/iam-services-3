@@ -2749,7 +2749,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                     break;
                                 case GROUP:
                                     Group group = groupDozerConverter.convertToDTO(
-                                            groupManager.getGroup(ob.getObjectId(), requestorId), false);
+                                            groupManager.getGroup(ob.getObjectId()), false);
                                     if (existingGroups.contains(group)) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
                                             existingGroups.remove(group);

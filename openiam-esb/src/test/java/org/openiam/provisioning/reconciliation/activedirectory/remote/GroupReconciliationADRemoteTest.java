@@ -214,7 +214,7 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
             GroupSearchBean groupSearchBean = new GroupSearchBean();
             groupSearchBean.setNameToken(new SearchParam(TestGroupCN, MatchType.EXACT));
             groupSearchBean.setDeepCopy(false);
-            List<Group> groupsByName = groupDataWebService.findBeans(groupSearchBean, null, 0, 10);
+            List<Group> groupsByName = groupDataWebService.findBeans(groupSearchBean, 0, 10);
             Assert.assertNull(groupsByName);
 
 
@@ -269,13 +269,13 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
             GroupSearchBean groupSearchBean = new GroupSearchBean();
             groupSearchBean.setNameToken(new SearchParam(TestGroupCN, MatchType.EXACT));
             groupSearchBean.setDeepCopy(false);
-            List<Group> groupsByName = groupDataWebService.findBeans(groupSearchBean, null, 0, 10);
+            List<Group> groupsByName = groupDataWebService.findBeans(groupSearchBean, 0, 10);
             Assert.assertNull(groupsByName);
 
             setWSClientTimeout(reconciliationWebService, 600000L);
             reconciliationWebService.startReconciliation(reconciliationConfig);
 
-            groupsByName = groupDataWebService.findBeans(groupSearchBean, null, 0, 10);
+            groupsByName = groupDataWebService.findBeans(groupSearchBean, 0, 10);
             Assert.assertNotNull(groupsByName);
             Assert.assertEquals(groupsByName.size(), 1);
 

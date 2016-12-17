@@ -277,7 +277,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				userServiceClient.removeUser(user.getId());
 			}
 			if(group != null) {
-				groupServiceClient.deleteGroup(group.getId(), null);
+				groupServiceClient.deleteGroup(group.getId());
 			}
 			if(organization != null) {
 				organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId());
@@ -357,7 +357,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				userServiceClient.removeUser(user.getId());
 			}
 			if(group != null) {
-				groupServiceClient.deleteGroup(group.getId(), null);
+				groupServiceClient.deleteGroup(group.getId());
 			}
 			if(role != null) {
 				roleServiceClient.removeRole(role.getId());
@@ -386,8 +386,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			group = super.createGroup();
 			child = super.createGroup();
-			groupServiceClient.addUserToGroup(group.getId(), user.getId(), null, null, startDate, endDate);
-			groupServiceClient.addChildGroup(group.getId(), child.getId(), null, null, startDate, endDate);
+			groupServiceClient.addUserToGroup(group.getId(), user.getId(), null, startDate, endDate);
+			groupServiceClient.addChildGroup(group.getId(), child.getId(), null, startDate, endDate);
 			assertAccessIndirect(group, child);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -397,10 +397,10 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				userServiceClient.removeUser(user.getId());
 			}
 			if(group != null) {
-				groupServiceClient.deleteGroup(group.getId(), null);
+				groupServiceClient.deleteGroup(group.getId());
 			}
 			if(child != null) {
-				groupServiceClient.deleteGroup(child.getId(), null);
+				groupServiceClient.deleteGroup(child.getId());
 			}
 		}
 	}
@@ -458,7 +458,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 		try {
 			user = super.createUser();
 			entity = super.createGroup();
-			groupServiceClient.addUserToGroup(entity.getId(), user.getId(), getRequestorId(), null, startDate, endDate);
+			groupServiceClient.addUserToGroup(entity.getId(), user.getId(), null, startDate, endDate);
 			assertAccess(entity.getId(), "group", user);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {

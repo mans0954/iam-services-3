@@ -175,7 +175,7 @@ public class ProvisioningAuthorizationManagerWebServiceTest extends AbstractAuth
 	protected Response doAddChildGroup(String groupId, String childGroupId,
 			String requestorId, Set<String> rightIds, Date startDate,
 			Date endDate) {
-		return groupServiceClient.addChildGroup(groupId, childGroupId, requestorId, rightIds, startDate, endDate);
+		return groupServiceClient.addChildGroup(groupId, childGroupId, rightIds, startDate, endDate);
 	}
 
 	@Override
@@ -187,7 +187,7 @@ public class ProvisioningAuthorizationManagerWebServiceTest extends AbstractAuth
 
 	@Override
 	protected Response doDeleteGroup(Group group, String requestorId) {
-		return groupServiceClient.deleteGroup(group.getId(), requestorId);
+		return groupServiceClient.deleteGroup(group.getId());
 	}
 
 	@Override

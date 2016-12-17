@@ -914,7 +914,7 @@ public class GroupProvisionDataServiceImpl implements ObjectProvisionDataService
             groupDto.setStatus(status.getValue());
             groupDto.setLastUpdatedBy(requesterId);
             groupDto.setLastUpdate(new Date(System.currentTimeMillis()));
-            groupManager.saveGroup(groupDto, null);
+            groupManager.saveGroup(groupDto);
         }
         // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
 

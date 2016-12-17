@@ -47,7 +47,7 @@ public class UpdateIdmGroupCommand extends BaseReconciliationGroupCommand {
 			executeScript(config.getScript(), attributes, pGroup);
 
 			Set<Resource> resources = pGroup.getResources();
-			Response grpResp = groupDataService.saveGroup(pGroup, DEFAULT_REQUESTER_ID);
+			Response grpResp = groupDataService.saveGroup(pGroup);
 			String groupId = (String) grpResp.getResponseValue();
 			for (Resource res : resources) {
 				if (res.getOperation() == AttributeOperationEnum.ADD) {

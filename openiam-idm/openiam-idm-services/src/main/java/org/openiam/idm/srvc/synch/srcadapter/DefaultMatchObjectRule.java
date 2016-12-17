@@ -168,7 +168,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             }
         }
         if (searchBean != null) {
-            List<GroupEntity> groupEntities = groupManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
+            List<GroupEntity> groupEntities = groupManager.findBeans(searchBean, 0, Integer.MAX_VALUE);
             if (groupEntities != null && !groupEntities.isEmpty()) {
                 System.out.println("Group matched with existing group...");
                 return groupDozerConverter.convertToDTO(groupEntities.get(0), true);

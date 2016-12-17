@@ -55,17 +55,17 @@ public abstract class AbstractAdminAuthorizationManagerTest extends AbstractAuth
 	
 	@Override
 	protected Response doAddUserToGroup(final String groupId, final String userId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return groupServiceClient.addUserToGroup(groupId, userId, requestorId, rightIds, startDate, endDate);
+		return groupServiceClient.addUserToGroup(groupId, userId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doRemoveUserFromGroup(final String groupId, final String userId, final String requestorId) {
-		return groupServiceClient.removeUserFromGroup(groupId, userId, requestorId);
+		return groupServiceClient.removeUserFromGroup(groupId, userId);
 	}
 	
 	@Override
 	protected Response doAddChildGroup(final String groupId, final String childGroupId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return groupServiceClient.addChildGroup(groupId, childGroupId, requestorId, rightIds, startDate, endDate);
+		return groupServiceClient.addChildGroup(groupId, childGroupId, rightIds, startDate, endDate);
 	}
 	
 	@Override
@@ -75,7 +75,7 @@ public abstract class AbstractAdminAuthorizationManagerTest extends AbstractAuth
 	
 	@Override
 	protected Response doDeleteGroup(final Group group, final String requestorId) {
-		return groupServiceClient.deleteGroup(group.getId(), requestorId);
+		return groupServiceClient.deleteGroup(group.getId());
 	}
 	
 	@Override
