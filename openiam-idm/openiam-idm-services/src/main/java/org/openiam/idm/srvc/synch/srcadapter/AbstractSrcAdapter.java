@@ -295,7 +295,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                     }
 
                 } else if (retval == TransformScript.DELETE && pUser.getUser() != null) {
-                    provisionService.deleteByUserId(pUser.getId(), UserStatusEnum.REMOVE, systemAccount);
+                    provisionService.deleteByUserId(pUser.getId(), UserStatusEnum.REMOVE);
 
                 } else {
                     // call prov service

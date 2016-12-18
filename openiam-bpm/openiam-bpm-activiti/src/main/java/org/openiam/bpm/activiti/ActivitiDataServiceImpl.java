@@ -214,7 +214,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		resource.addUser(user, accessRightDAO.findAll(), null, null);
 		resource.addChildResource(workflowMasterResource, null, null, null);
 
-		resourceService.save(resource, SpringSecurityHelper.getRequestorUserId());
+		resourceService.save(resource);
 		return resource;
 	}
 
@@ -320,7 +320,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 		final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 		resource.setReferenceId(processInstance.getId());
-		resourceService.save(resource, SpringSecurityHelper.getRequestorUserId());
+		resourceService.save(resource);
 		populate(response, processInstance, resource, approverAssociationIds, approverUserIds, SpringSecurityHelper.getRequestorUserId());
 
 		idmAuditLog = auditLogService.findById(idmAuditLog.getId());
@@ -476,7 +476,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 		final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
 		resource.setReferenceId(processInstance.getId());
-		resourceService.save(resource, SpringSecurityHelper.getRequestorUserId());
+		resourceService.save(resource);
 		populate(response, processInstance, resource, approverAssociationIds, approverUserIds, SpringSecurityHelper.getRequestorUserId());
 
 		idmAuditLog = auditLogService.findById(idmAuditLog.getId());
@@ -667,7 +667,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 
 		final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
 		resource.setReferenceId(processInstance.getId());
-		resourceService.save(resource, request.getRequesterId());
+		resourceService.save(resource);
 		populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequesterId());
 
 		idmAuditLog = auditLogService.findById(idmAuditLog.getId());

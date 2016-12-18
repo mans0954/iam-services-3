@@ -22,8 +22,7 @@ import javax.jws.WebService;
 public interface PropertyValueWebService {
     
     @WebMethod
-    Response save(final @WebParam(name = "entityList", targetNamespace = "") List<PropertyValue> entityList,
-                  final @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+    Response save(final @WebParam(name = "entityList", targetNamespace = "") List<PropertyValue> entityList);
     
     @WebMethod
     List<PropertyValue> getAll();

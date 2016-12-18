@@ -32,17 +32,17 @@ public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Reso
 
 	@Override
 	protected Response addChildToParent(final Resource parent, final User child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
-		return resourceDataService.addUserToResource(parent.getId(), child.getId(), null, rights, startDate, endDate);
+		return resourceDataService.addUserToResource(parent.getId(), child.getId(), rights, startDate, endDate);
 	}
 
 	@Override
 	protected Response removeChildFromParent(Resource parent, User child, final String requestorId) {
-		return resourceDataService.removeUserFromResource(parent.getId(), child.getId(), null);
+		return resourceDataService.removeUserFromResource(parent.getId(), child.getId());
 	}
 
 	@Override
 	protected Response deleteParent(Resource parent, final String requestorId) {
-		return resourceDataService.deleteResource(parent.getId(), null);
+		return resourceDataService.deleteResource(parent.getId());
 	}
 
 	@Override

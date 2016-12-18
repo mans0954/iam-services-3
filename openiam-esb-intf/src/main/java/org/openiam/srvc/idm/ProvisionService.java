@@ -58,8 +58,7 @@ public interface ProvisionService {
      */
     @WebMethod
     Response testConnectionConfig(
-            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
-            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     /**
      *  The addUser operation enables a requester to create a new user on the
@@ -102,7 +101,6 @@ public interface ProvisionService {
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
             @WebParam(name = "principal", targetNamespace = "") String principal,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
-            @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
             @WebParam(name = "skipManagedSysList", targetNamespace = "") List<String> skipManagedSysList);
     /**
      * The deleteUser operation enables the requester to delete an existing user
@@ -118,8 +116,7 @@ public interface ProvisionService {
     ProvisionUserResponse deleteUser(
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
             @WebParam(name = "principal", targetNamespace = "") String principal,
-            @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
-            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+            @WebParam(name = "status", targetNamespace = "") UserStatusEnum status);
 
     /**
      *
@@ -135,7 +132,6 @@ public interface ProvisionService {
     ProvisionUserResponse deleteByUserWithSkipManagedSysList(
             @WebParam(name = "userId", targetNamespace = "") String userId,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
-            @WebParam(name = "requestorId", targetNamespace = "") String requestorId,
             @WebParam(name = "skipManagedSysList", targetNamespace = "") List<String> skipManagedSysList);
 
     /**
@@ -149,8 +145,7 @@ public interface ProvisionService {
     @WebMethod
     ProvisionUserResponse deleteByUserId(
             @WebParam(name = "userId", targetNamespace = "") String userId,
-            @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
-            @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+            @WebParam(name = "status", targetNamespace = "") UserStatusEnum status);
 
     /**
      * De-provisioning User only from selected resources
@@ -163,7 +158,6 @@ public interface ProvisionService {
     @WebMethod
     ProvisionUserResponse deprovisionSelectedResources(
             @WebParam(name = "userId", targetNamespace = "") String userId,
-            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
             @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList);
 
     /**
@@ -177,7 +171,6 @@ public interface ProvisionService {
     @WebMethod
     ProvisionUserResponse deProvisionUsersToResource(
             @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
-            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
             @WebParam(name = "resourcesIds", targetNamespace = "") List<String> resources);
 
     /**
@@ -191,7 +184,6 @@ public interface ProvisionService {
     @WebMethod
     ProvisionUserResponse provisionUsersToResource(
             @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
-            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
             @WebParam(name = "resourcesIds", targetNamespace = "") List<String> resources);
 
     /**
@@ -205,7 +197,6 @@ public interface ProvisionService {
     @WebMethod
     ProvisionUserResponse provisionUsersToResourceByRole(
             @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
-            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
             @WebParam(name = "rolesIds", targetNamespace = "") List<String> roles);
 
     /**
@@ -219,7 +210,6 @@ public interface ProvisionService {
     @WebMethod
     ProvisionUserResponse deProvisionUsersToResourceByRole(
             @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
-            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
             @WebParam(name = "rolesIds", targetNamespace = "") List<String> roles);
 
 
@@ -234,21 +224,18 @@ public interface ProvisionService {
     @WebMethod
     ProvisionUserResponse provisionUsersToResourceByGroup(
             @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
-            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
             @WebParam(name = "groupsIds", targetNamespace = "") List<String> groups);
 
     /**
      * DeProvisioning User only to selected resources by groups
      *
      * @param users          - users id list
-     * @param requestorUserId - requestor
      * @param groups    - selected groups
      * @return
      */
     @WebMethod
     ProvisionUserResponse deProvisionUsersToResourceByGroup(
             @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
-            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
             @WebParam(name = "groupsIds", targetNamespace = "") List<String> groups);
 
     /**
@@ -283,8 +270,7 @@ public interface ProvisionService {
     @WebMethod
     Response lockUser(
             @WebParam(name = "userId", targetNamespace = "") String userId,
-            @WebParam(name = "operation", targetNamespace = "") AccountLockEnum operation,
-            @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+            @WebParam(name = "operation", targetNamespace = "") AccountLockEnum operation);
 
     /**
      * Operation disables or un-disables an account. If the operation flag is
@@ -297,8 +283,7 @@ public interface ProvisionService {
     @WebMethod
     Response disableUser(
             @WebParam(name = "userId", targetNamespace = "") String userId,
-            @WebParam(name = "operation", targetNamespace = "") boolean operation,
-            @WebParam(name = "requestor", targetNamespace = "") String requestorId);
+            @WebParam(name = "operation", targetNamespace = "") boolean operation);
 
     /**
      * Lookup user by principal name in target system
@@ -356,8 +341,7 @@ public interface ProvisionService {
      */
     @WebMethod
     Response requestAdd(@WebParam(name = "extUser", targetNamespace = "") ExtensibleUser extUser,
-                        @WebParam(name = "login", targetNamespace = "") Login login,
-                        @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+                        @WebParam(name = "login", targetNamespace = "") Login login);
 
     /**
      * Modifies user directly in a given target system bypassing policy map attributes script logic
@@ -368,14 +352,12 @@ public interface ProvisionService {
      */
     @WebMethod
     Response requestModify(@WebParam(name = "extUser", targetNamespace = "") ExtensibleUser extUser,
-                           @WebParam(name = "login", targetNamespace = "") Login login,
-                           @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+                           @WebParam(name = "login", targetNamespace = "") Login login);
 
     @WebMethod
     ObjectResponse requestAddModify(@WebParam(name = "extUser", targetNamespace = "") ExtensibleUser extUser,
                                     @WebParam(name = "login", targetNamespace = "") Login login,
                                     @WebParam(name = "isAdd", targetNamespace = "") boolean isAdd,
-                                    @WebParam(name = "requestId", targetNamespace = "") String requestId,
                                     @WebParam(name = "idmAuditLog", targetNamespace = "") final IdmAuditLogEntity idmAuditLog);
 
     @WebMethod

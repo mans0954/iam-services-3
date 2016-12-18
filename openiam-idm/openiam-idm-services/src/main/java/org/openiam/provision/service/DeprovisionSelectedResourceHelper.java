@@ -35,6 +35,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.base.response.ProvisionUserResponse;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.util.UserUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
@@ -48,7 +49,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
 
-    public ProvisionUserResponse deprovisionSelectedResourcesAsync(final List<String> userIds, final String requestorUserId, final Collection<String> resourceList) {
+    public ProvisionUserResponse deprovisionSelectedResourcesAsync(final List<String> userIds, final Collection<String> resourceList) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         ProvisionUserResponse res = new ProvisionUserResponse();
         res.setStatus(ResponseStatus.FAILURE);
@@ -62,8 +63,8 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
                     final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-                    auditLog.setRequestorUserId(requestorUserId);
-                    UserEntity requestor = userMgr.getUser(requestorUserId);
+                    auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+                    UserEntity requestor = userMgr.getUser(SpringSecurityHelper.getRequestorUserId());
 
                     LoginEntity requestorPrimaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
                             requestor.getPrincipalList());
@@ -93,7 +94,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 Resource res = resourceService.findResourceDtoById(resId, null);
                                 try {
                                     Map<String, Object> bindingMap = new HashMap<String, Object>(); //TODO: check if enough bindingMap data for UPDATE
-                                    ProvisionDataContainer data = deprovisionResourceDataPrepare(res, userEntity, new ProvisionUser(user), requestorUserId, bindingMap);
+                                    ProvisionDataContainer data = deprovisionResourceDataPrepare(res, userEntity, new ProvisionUser(user), SpringSecurityHelper.getRequestorUserId(),  bindingMap);
 
                                     auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                             "De-Provisioning for resource: " + res.getName());
@@ -130,8 +131,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         return res;
     }
 
-    public ProvisionDataContainer deprovisionResourceDataPrepare(Resource res, UserEntity userEntity, ProvisionUser pUser,
-                                                       String requestId, Map<String, Object> tmpMap) {
+    public ProvisionDataContainer deprovisionResourceDataPrepare(Resource res, UserEntity userEntity, ProvisionUser pUser, String requestId, Map<String, Object> tmpMap) {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap); // prevent data rewriting
 
@@ -238,7 +238,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
     }
 
     @Deprecated
-    public ProvisionUserResponse deprovisionSelectedResources( String userId, String requestorUserId, List<String> resourceList)  {
+    public ProvisionUserResponse deprovisionSelectedResources( String userId, List<String> resourceList)  {
     	if(log.isDebugEnabled()) {
     		log.debug("deprovisionSelectedResources().....for userId=" + userId);
     	}
@@ -268,7 +268,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
         // setup audit information
 
-        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorUserId);
+        LoginEntity lRequestor = loginManager.getPrimaryIdentity(SpringSecurityHelper.getRequestorUserId());
         LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
         if (lRequestor != null && lTargetUser != null) {

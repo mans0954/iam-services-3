@@ -473,7 +473,7 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
             if (entity.getResource() != null) {
                 resource.setURL(entity.getResource().getURL());
             }
-            resourceService.save(resource, requesterId);
+            resourceService.save(resource);
             entity.setResource(resource);
         }
         entity.getResource().setCoorelatedName(provider.getName());

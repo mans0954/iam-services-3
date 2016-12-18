@@ -56,7 +56,7 @@ public class Resource2OrganizationEntitlementsTest extends AbstractEntitlementsT
 
 	@Override
 	protected Response deleteChild(Resource child, final String requestorId) {
-		return resourceDataService.deleteResource(child.getId(), requestorId);
+		return resourceDataService.deleteResource(child.getId());
 	}
 
 	@Override

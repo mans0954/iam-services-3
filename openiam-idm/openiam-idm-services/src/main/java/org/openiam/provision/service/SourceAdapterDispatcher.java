@@ -295,19 +295,19 @@ public class SourceAdapterDispatcher implements Runnable {
                 break;
             }
             case DELETE: {
-                ProvisionUserResponse provisionUserResponse = provisioningDataService.deleteByUserWithSkipManagedSysList(pUser.getId(), UserStatusEnum.REMOVE, requestorId, null);
+                ProvisionUserResponse provisionUserResponse = provisioningDataService.deleteByUserWithSkipManagedSysList(pUser.getId(), UserStatusEnum.REMOVE, null);
 //                response.setStatus(provisionUserResponse.getStatus());
 //                response.setError(provisionUserResponse.getErrorText());
                 break;
             }
             case ENABLE: {
-                Response resp = provisioningDataService.disableUser(pUser.getId(), false, requestorId);
+                Response resp = provisioningDataService.disableUser(pUser.getId(), false);
 //                response.setStatus(resp.getStatus());
 //                response.setError(resp.getErrorText());
                 break;
             }
             case DISABLE: {
-                Response resp = provisioningDataService.disableUser(pUser.getId(), true, requestorId);
+                Response resp = provisioningDataService.disableUser(pUser.getId(), true);
 //                response.setStatus(resp.getStatus());
 //                response.setError(resp.getErrorText());
                 break;

@@ -611,7 +611,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 		root.setIsPublic(false);
 		root.setName(getRandomName());
 		root.setURL(getRandomName());
-		final Response response = resourceDataService.saveResource(root, getRequestorId());
+		final Response response = resourceDataService.saveResource(root);
 		final AuthorizationMenu menu = menuWebService.getMenuTree((String)response.getResponseValue(), getDefaultLanguage());
 		Assert.assertNotNull(menu);
 		return menu;

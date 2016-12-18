@@ -23,8 +23,12 @@ import org.openiam.idm.srvc.res.dto.ResourceType;
 
 public interface ResourceService {
 
+	public Response deleteResourceWeb(final String resourceId);
+
 	public void deleteResource(final String resourceId);
-	public void save(final ResourceEntity resource, final String requestorId);
+	
+	
+	public void save(final ResourceEntity resource);
     public void addRequiredAttributes(ResourceEntity resource);
     public List<ResourceProp> findBeansDTO(final ResourcePropSearchBean sb, final int from, final int size);
     public List<ResourcePropEntity> findBeans(final ResourcePropSearchBean sb, final int from, final int size);
@@ -82,8 +86,6 @@ public interface ResourceService {
 	//public List<ResourceEntity> getChildResources(final String resourceId, final int from, final int size);
 
 	//public List<Resource> getChildResourcesDto(String resourceId, int from, int size, Language lang);
-	public void addChildResource(final String parentResourceId, final String childResourceId, final Set<String> rights, final Date startDate, final Date endDate);
-	public void deleteChildResource(final String resourceId, final String childResourceId);
 
 	public void addResourceGroup(final String resourceId, final String groupId, final Set<String> rightIds, final Date startDate, final Date endDate);
 	public void deleteResourceGroup(final String resourceId, final String groupId);
@@ -111,50 +113,51 @@ public interface ResourceService {
 
 	public void validate(final Resource resource) throws BasicDataServiceException;
 
-	public ResourceEntity saveResource(Resource resource, final String requesterId) throws BasicDataServiceException;
+	public ResourceEntity saveResource(Resource resource) throws BasicDataServiceException;
+	
+	public Response saveResourceWeb(Resource resource);
 
-	//public void removeUserFromResource(String resourceId, final String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
+	//public void removeUserFromResource(String resourceId, final String userId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
-	//public void addUserToResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
+	//public void addUserToResource(String resourceId, String userId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
-	//public void deleteResourceWeb(String resourceId, String requesterId) throws BasicDataServiceException;
+	//public void deleteResourceWeb(String resourceId) throws BasicDataServiceException;
 
-	//public void addChildResourceWeb(String resourceId, String childResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
+	//public void addChildResourceWeb(String resourceId, String childResourceId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
-	//public void deleteChildResourceWeb(String resourceId, String memberResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
+	//public void deleteChildResourceWeb(String resourceId, String memberResourceId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
-	//public void addGroupToResourceWeb(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
+	//public void addGroupToResourceWeb(String resourceId, String groupId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
-	//public void removeGroupToResource(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
+	//public void removeGroupToResource(String resourceId, String groupId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
-	//public void addRoleToResourceWeb(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
+	//public void addRoleToResourceWeb(String resourceId, String roleId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
-	public void removeRoleToResource(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException;
 
 	public void saveAttribute(final ResourcePropEntity attribute);
 
-	public Response addGroupToResource(final String resourceId, final String groupId,  final String requesterId,
+	public Response addGroupToResource(final String resourceId, final String groupId,
 									   final Set<String> rightIds, final Date startDate, final Date endDate);
 
-	public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId);
+	public Response removeGroupToResource(final String resourceId, final String groupId);
 
-	public Response addUserToResource(final String resourceId, final String userId, final String requesterId,
+	public Response addUserToResource(final String resourceId, final String userId,
 									  final Set<String> rightIds, final Date startDate, final Date endDate);
 
-	public Response removeUserFromResource(final String resourceId, final String userId, String requesterId);
+	public Response removeUserFromResource(final String resourceId, final String userId);
 
-	public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId,
+	public Response addRoleToResource(final String resourceId, final String roleId,
 									  final Set<String> rightIds, final Date startDate, final Date endDate);
 
-	public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId);
+	public Response removeRoleToResource(final String resourceId, final String roleId);
 
-	public Response addChildResource(final String resourceId, final String childResourceId, final String requesterId,
-									 final Set<String> rights, final Date startDate, final Date endDate);
-	public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId);
-
-	public Response deleteResource(final String resourceId, final String requesterId);
-
-	public Response saveResourceWeb(final Resource resource, final String requesterId);
+	public void addChildResource(final String parentResourceId, final String childResourceId, final Set<String> rights, final Date startDate, final Date endDate);
 	
+	public Response addChildResourceWeb(final String resourceId, final String childResourceId,
+									 final Set<String> rights, final Date startDate, final Date endDate);
+	public void deleteChildResource(final String resourceId, final String childResourceId);
+	
+	public Response deleteChildResourceWeb(final String resourceId, final String memberResourceId);
+
 	public boolean isIndexed(String id);
 }

@@ -602,7 +602,7 @@ public class ProvisionDispatcherTransactionHelper {
                 // updates the attributes with the correct operation codes
                 extUser = ProvisionUtils.updateAttributeList(extUser, null);
 
-                ObjectResponse resp = provisionService.requestAddModify((ExtensibleUser) extUser, targetSysLogin, true, requestId,
+                ObjectResponse resp = provisionService.requestAddModify((ExtensibleUser) extUser, targetSysLogin, true,
                         idmAuditLog);
                 connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
 
@@ -617,7 +617,7 @@ public class ProvisionDispatcherTransactionHelper {
                             new ExtensibleAttribute("ORIG_IDENTITY", targetSysLogin.getOrigPrincipalName(),
                                     AttributeOperationEnum.REPLACE.getValue(), "String"));
                 }
-                ObjectResponse resp = provisionService.requestAddModify((ExtensibleUser) extUser, targetSysLogin, false, requestId,
+                ObjectResponse resp = provisionService.requestAddModify((ExtensibleUser) extUser, targetSysLogin, false,
                         idmAuditLog);
                 connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
             }

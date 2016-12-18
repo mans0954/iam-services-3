@@ -177,29 +177,12 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     }*/
 
     @Override
-    public Response saveResource(final Resource resource, final String requesterId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-          /*resourceService.validate(resource);
-            final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
-            resourceService.save(entity, requesterId);*/
-
-            final ResourceEntity entity = resourceService.saveResource(resource, requesterId);
-            response.setResponseValue(entity.getId());
-        } catch (BasicDataServiceException e) {
-            response.fail();
-            response.setErrorCode(e.getCode());
-            response.setErrorTokenList(e.getErrorTokenList());
-        } catch (Throwable e) {
-            log.error("Can't save or update resource", e);
-            response.setErrorText(e.getMessage());
-            response.fail();
-        }
-        return response;
+    public Response saveResource(final Resource resource) {
+        return resourceService.saveResourceWeb(resource);
     }
 
     @Override
-    public Response saveResourceType(ResourceType resourceType, final String requesterId) {
+    public Response saveResourceType(ResourceType resourceType) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             final ResourceTypeEntity entity = resourceTypeConverter.convertToEntity(resourceType, false);
@@ -226,10 +209,9 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     }
 
     @Override
-    public Response removeUserFromResource(final String resourceId, final String userId, String requesterId) {
+    public Response removeUserFromResource(final String resourceId, final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
@@ -267,11 +249,10 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     //@Transactional
     public Response addUserToResource(final String resourceId,
                                       final String userId,
-                                      final String requesterId,
                                       final Set<String> rightIds,
                                       final Date startDate,
                                       final Date endDate) {
-        return resourceService.addUserToResource(resourceId, userId, requesterId, rightIds, startDate, endDate);
+        return resourceService.addUserToResource(resourceId, userId, rightIds, startDate, endDate);
     }
 
     @Override
@@ -292,15 +273,14 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     }
 
     @Override
-    public Response deleteResource(final String resourceId, final String requesterId) {
-        return resourceService.deleteResource(resourceId, requesterId);
+    public Response deleteResource(final String resourceId) {
+        return resourceService.deleteResourceWeb(resourceId);
     }
 
     @Override
-    public Response deleteResourceType(final String resourceTypeId, final String requesterId) {
+    public Response deleteResourceType(final String resourceTypeId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.DELETE_RESOURCE_TYPE.value());
         try {
             if (resourceTypeId == null) {
@@ -367,45 +347,42 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     public Response addChildResource(final String resourceId, 
     								 final String childResourceId, 
-    								 final String requesterId, 
     								 final Set<String> rights,
     								 final Date startDate,
    								  	 final Date endDate) {
-        return resourceService.addChildResource(resourceId, childResourceId, requesterId, rights, startDate, endDate);
+        return resourceService.addChildResourceWeb(resourceId, childResourceId, rights, startDate, endDate);
     }
 
     @Override
-    public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId) {
-        return resourceService.deleteChildResource(resourceId, memberResourceId, requesterId);
+    public Response deleteChildResource(final String resourceId, final String memberResourceId) {
+        return resourceService.deleteChildResourceWeb(resourceId, memberResourceId);
     }
 
     @Override
-    public Response addGroupToResource(final String resourceId, final String groupId,  final String requesterId,
+    public Response addGroupToResource(final String resourceId, final String groupId, 
     								   final Set<String> rightIds, final Date startDate, final Date endDate) {
-        return resourceService.addGroupToResource(resourceId, groupId, requesterId, rightIds, startDate, endDate);
+        return resourceService.addGroupToResource(resourceId, groupId, rightIds, startDate, endDate);
     }
 
     @Override
-    public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId) {
-        return resourceService.removeGroupToResource(resourceId, groupId, requesterId);
+    public Response removeGroupToResource(final String resourceId, final String groupId) {
+        return resourceService.removeGroupToResource(resourceId, groupId);
     }
 
     @Override
     public Response addRoleToResource(final String resourceId, 
     								  final String roleId, 
-    								  final String requesterId, 
     								  final Set<String> rightIds,
     								  final Date startDate,
     								  final Date endDate) {
 
-        return resourceService.addRoleToResource(resourceId, roleId, requesterId, rightIds, startDate, endDate);
+        return resourceService.addRoleToResource(resourceId, roleId, rightIds, startDate, endDate);
     }
 
     @Override
-    public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId) {
+    public Response removeRoleToResource(final String resourceId, final String roleId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());

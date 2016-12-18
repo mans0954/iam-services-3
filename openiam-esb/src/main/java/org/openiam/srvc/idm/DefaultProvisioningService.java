@@ -53,8 +53,8 @@ public class DefaultProvisioningService implements ProvisionService {
     private ProvisioningDataService provisioningDataService;
 
     @Override
-    public Response testConnectionConfig(String managedSysId, String requesterId) {
-        return provisioningDataService.testConnectionConfig(managedSysId, requesterId);
+    public Response testConnectionConfig(String managedSysId) {
+        return provisioningDataService.testConnectionConfig(managedSysId);
     }
 
     @Override
@@ -68,58 +68,58 @@ public class DefaultProvisioningService implements ProvisionService {
     }
 
     @Override
-    public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status, String requesterId, List<String> skipManagedSysList) {
-        return provisioningDataService.deleteUserWithSkipManagedSysList(managedSystemId, principal, status, requesterId, skipManagedSysList);
+    public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status, List<String> skipManagedSysList) {
+        return provisioningDataService.deleteUserWithSkipManagedSysList(managedSystemId, principal, status, skipManagedSysList);
     }
 
     @Override
-    public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status, String requesterId) {
-        return provisioningDataService.deleteUser(managedSystemId, principal, status, requesterId);
+    public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status) {
+        return provisioningDataService.deleteUser(managedSystemId, principal, status);
     }
 
     @Override
-    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList) {
-        return provisioningDataService.deleteByUserWithSkipManagedSysList(userId, status, requestorId, skipManagedSysList);
+    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, List<String> skipManagedSysList) {
+        return provisioningDataService.deleteByUserWithSkipManagedSysList(userId, status, skipManagedSysList);
     }
 
     @Override
-    public ProvisionUserResponse deleteByUserId(String userId, UserStatusEnum status, String requestorId) {
-        return provisioningDataService.deleteByUserId(userId, status, requestorId);
+    public ProvisionUserResponse deleteByUserId(String userId, UserStatusEnum status) {
+        return provisioningDataService.deleteByUserId(userId, status);
     }
 
     @Override
-    public ProvisionUserResponse deprovisionSelectedResources(String userId, String requestorUserId, List<String> resourceList) {
-        return provisioningDataService.deprovisionSelectedResources(userId, requestorUserId, resourceList);
+    public ProvisionUserResponse deprovisionSelectedResources(String userId, List<String> resourceList) {
+        return provisioningDataService.deprovisionSelectedResources(userId, resourceList);
     }
 
     @Override
-    public ProvisionUserResponse deProvisionUsersToResource(List<String> users, String requestorUserId, List<String> resources) {
-        return provisioningDataService.deProvisionUsersToResource(users, requestorUserId, resources);
+    public ProvisionUserResponse deProvisionUsersToResource(List<String> users, List<String> resources) {
+        return provisioningDataService.deProvisionUsersToResource(users, resources);
     }
 
     @Override
-    public ProvisionUserResponse provisionUsersToResource(List<String> users, String requestorUserId, List<String> resources) {
-        return provisioningDataService.provisionUsersToResource(users, requestorUserId, resources);
+    public ProvisionUserResponse provisionUsersToResource(List<String> users, List<String> resources) {
+        return provisioningDataService.provisionUsersToResource(users, resources);
     }
 
     @Override
-    public ProvisionUserResponse provisionUsersToResourceByRole(List<String> users, String requestorUserId, List<String> roles) {
-        return provisioningDataService.provisionUsersToResourceByRole(users, requestorUserId, roles);
+    public ProvisionUserResponse provisionUsersToResourceByRole(List<String> users, List<String> roles) {
+        return provisioningDataService.provisionUsersToResourceByRole(users, roles);
     }
 
     @Override
-    public ProvisionUserResponse deProvisionUsersToResourceByRole(List<String> users, String requestorUserId, List<String> roles) {
-        return provisioningDataService.deProvisionUsersToResourceByRole(users, requestorUserId, roles);
+    public ProvisionUserResponse deProvisionUsersToResourceByRole(List<String> users, List<String> roles) {
+        return provisioningDataService.deProvisionUsersToResourceByRole(users, roles);
     }
 
     @Override
-    public ProvisionUserResponse provisionUsersToResourceByGroup(List<String> users, String requestorUserId, List<String> groups) {
-        return provisioningDataService.provisionUsersToResourceByGroup(users, requestorUserId, groups);
+    public ProvisionUserResponse provisionUsersToResourceByGroup(List<String> users, List<String> groups) {
+        return provisioningDataService.provisionUsersToResourceByGroup(users, groups);
     }
 
     @Override
-    public ProvisionUserResponse deProvisionUsersToResourceByGroup(List<String> users, String requestorUserId, List<String> groups) {
-        return provisioningDataService.deProvisionUsersToResourceByGroup(users, requestorUserId, groups);
+    public ProvisionUserResponse deProvisionUsersToResourceByGroup(List<String> users, List<String> groups) {
+        return provisioningDataService.deProvisionUsersToResourceByGroup(users, groups);
     }
 
     @Override
@@ -133,13 +133,13 @@ public class DefaultProvisioningService implements ProvisionService {
     }
 
     @Override
-    public Response lockUser(String userId, AccountLockEnum operation, String requestorId) {
-        return provisioningDataService.lockUser(userId, operation, requestorId);
+    public Response lockUser(String userId, AccountLockEnum operation) {
+        return provisioningDataService.lockUser(userId, operation);
     }
 
     @Override
-    public Response disableUser(String userId, boolean operation, String requestorId) {
-        return provisioningDataService.disableUser(userId, operation, requestorId);
+    public Response disableUser(String userId, boolean operation) {
+        return provisioningDataService.disableUser(userId, operation);
     }
 
     @Override
@@ -173,18 +173,18 @@ public class DefaultProvisioningService implements ProvisionService {
     }
 
     @Override
-    public Response requestAdd(ExtensibleUser extUser, Login login, String requestorId) {
-        return provisioningDataService.requestAdd(extUser, login, requestorId);
+    public Response requestAdd(ExtensibleUser extUser, Login login) {
+        return provisioningDataService.requestAdd(extUser, login);
     }
 
     @Override
-    public Response requestModify(ExtensibleUser extUser, Login login, String requestorId) {
-        return provisioningDataService.requestModify(extUser, login, requestorId);
+    public Response requestModify(ExtensibleUser extUser, Login login) {
+        return provisioningDataService.requestModify(extUser, login);
     }
 
     @Override
-    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login login, boolean isAdd, String requestId, IdmAuditLogEntity idmAuditLog) {
-        return provisioningDataService.requestAddModify(extUser, login, isAdd, requestId, idmAuditLog);
+    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login login, boolean isAdd, IdmAuditLogEntity idmAuditLog) {
+        return provisioningDataService.requestAddModify(extUser, login, isAdd, idmAuditLog);
     }
 
     @Override

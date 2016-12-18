@@ -642,7 +642,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
             if(entity.getResource() != null) {
             	resource.setResourceProps(entity.getResource().getResourceProps());
             }
-            resourceService.save(resource, null);
+            resourceService.save(resource);
             entity.setResource(resource);
         } else {
             final ResourceEntity resource = resourceService.findResourceById(entity.getResource().getId());

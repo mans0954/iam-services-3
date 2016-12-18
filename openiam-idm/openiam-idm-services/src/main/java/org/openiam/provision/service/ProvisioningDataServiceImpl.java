@@ -90,6 +90,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.provision.type.ManagedSystemViewerBean;
 import org.openiam.provision.utils.ProvisionUtils;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -135,9 +136,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     private static final Log log = LogFactory.getLog(ProvisioningDataServiceImpl.class);
     private String errorDescription;
 
-    public Response testConnectionConfig(String managedSysId, String requesterId) {
+    public Response testConnectionConfig(String managedSysId) {
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         idmAuditLog.setAction(AuditAction.PROVISIONING_TEST.value());
         try {
             Response response = validateConnectionConfig.testConnection(managedSysId);
@@ -159,17 +160,17 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     }
 
     @Override
-    public ProvisionUserResponse provisionUsersToResource(final List<String> usersIds, final String requestorUserId, final List<String> resourceList) {
-        return provisionSelectedResourceHelper.provisionSelectedResources(usersIds, requestorUserId, resourceList);
+    public ProvisionUserResponse provisionUsersToResource(final List<String> usersIds, final List<String> resourceList) {
+        return provisionSelectedResourceHelper.provisionSelectedResources(usersIds, resourceList);
     }
 
     @Override
-    public ProvisionUserResponse deProvisionUsersToResource(List<String> users, String requestorUserId, List<String> resources) {
-        return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(users, requestorUserId, resources);
+    public ProvisionUserResponse deProvisionUsersToResource(List<String> users, List<String> resources) {
+        return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(users, resources);
     }
 
     @Override
-    public ProvisionUserResponse deProvisionUsersToResourceByRole(List<String> users, String requestorUserId, List<String> roles) {
+    public ProvisionUserResponse deProvisionUsersToResourceByRole(List<String> users, List<String> roles) {
         Set<String> resourceIds = new HashSet<String>();
         for (String roleId : roles) {
             ResourceSearchBean rsb = new ResourceSearchBean();
@@ -179,11 +180,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 resourceIds.add(res.getId());
             }
         }
-        return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(users, requestorUserId, resourceIds);
+        return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(users, resourceIds);
     }
 
     @Override
-    public ProvisionUserResponse deProvisionUsersToResourceByGroup(List<String> users, String requestorUserId, List<String> groups) {
+    public ProvisionUserResponse deProvisionUsersToResourceByGroup(List<String> users, List<String> groups) {
         Set<String> resourceIds = new HashSet<String>();
         for (String groupId : groups) {
             ResourceSearchBean rsb = new ResourceSearchBean();
@@ -193,11 +194,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 resourceIds.add(res.getId());
             }
         }
-        return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(users, requestorUserId, resourceIds);
+        return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(users, resourceIds);
     }
 
     @Override
-    public ProvisionUserResponse provisionUsersToResourceByRole(final List<String> usersIds, final String requestorUserId, final List<String> roleList) {
+    public ProvisionUserResponse provisionUsersToResourceByRole(final List<String> usersIds, final List<String> roleList) {
         Set<String> resourceIds = new HashSet<String>();
         for (String roleId : roleList) {
             ResourceSearchBean rsb = new ResourceSearchBean();
@@ -208,11 +209,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 resourceIds.add(res.getId());
             }
         }
-        return provisionSelectedResourceHelper.provisionSelectedResources(usersIds, requestorUserId, resourceIds);
+        return provisionSelectedResourceHelper.provisionSelectedResources(usersIds, resourceIds);
     }
 
     @Override
-    public ProvisionUserResponse provisionUsersToResourceByGroup(final List<String> usersIds, final String requestorUserId, final List<String> groupList) {
+    public ProvisionUserResponse provisionUsersToResourceByGroup(final List<String> usersIds, final List<String> groupList) {
         Set<String> resourceIds = new HashSet<String>();
         for (String groupId : groupList) {
             ResourceSearchBean rsb = new ResourceSearchBean();
@@ -222,7 +223,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 resourceIds.add(res.getId());
             }
         }
-        return provisionSelectedResourceHelper.provisionSelectedResources(usersIds, requestorUserId, resourceIds);
+        return provisionSelectedResourceHelper.provisionSelectedResources(usersIds, resourceIds);
     }
 
     /*
@@ -394,11 +395,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     @Override
     @Transactional
-    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList) {
-        return deleteByUserWithSkipManagedSysList(userId, status, requestorId, skipManagedSysList, null);
+    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, List<String> skipManagedSysList) {
+        return deleteByUserWithSkipManagedSysList(userId, status, skipManagedSysList, null);
     }
 
-    private ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList, IdmAuditLogEntity auditLog) {
+    private ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, List<String> skipManagedSysList, IdmAuditLogEntity auditLog) {
     	if(log.isDebugEnabled()) {
     		log.debug("----deleteByUserId called.------");
     	}
@@ -407,20 +408,19 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), loginEntityList);
 
         return deleteUserWithSkipManagedSysList(sysConfiguration.getDefaultManagedSysId(),
-                primaryIdentity.getLogin(), status, requestorId, skipManagedSysList, auditLog);
+                primaryIdentity.getLogin(), status, skipManagedSysList, auditLog);
     }
 
     @Override
     @Transactional
-    public ProvisionUserResponse deleteByUserId(String userId, UserStatusEnum status, String requestorId) {
-        return deleteByUserWithSkipManagedSysList(userId, status, requestorId, null);
+    public ProvisionUserResponse deleteByUserId(String userId, UserStatusEnum status) {
+        return deleteByUserWithSkipManagedSysList(userId, status, null);
     }
 
     @Override
     @Transactional
-    public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status,
-                                            String requestorId) {
-        return deleteUserWithSkipManagedSysList(managedSystemId, principal, status, requestorId, null);
+    public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status) {
+        return deleteUserWithSkipManagedSysList(managedSystemId, principal, status, null);
     }
 
     /*
@@ -432,17 +432,16 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
      */
     @Override
     @Transactional
-    public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
-                                                                  String requestorId, List<String> skipManagedSysList) {
-        return deleteUserWithSkipManagedSysList(managedSystemId, principal, status, requestorId, skipManagedSysList, null);
+    public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status, List<String> skipManagedSysList) {
+        return deleteUserWithSkipManagedSysList(managedSystemId, principal, status, skipManagedSysList, null);
     }
 
-    private ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
-                                                                   String requestorId, List<String> skipManagedSysList, IdmAuditLogEntity auditLog) {
+    private ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status, List<String> skipManagedSysList, IdmAuditLogEntity auditLog) {
     	if(log.isDebugEnabled()) {
     		log.debug("----deleteUser called.------");
     	}
 
+    	String requestorId = SpringSecurityHelper.getRequestorUserId();
         if (StringUtils.isEmpty(requestorId)) {
             requestorId = systemUserId;
         }
@@ -788,7 +787,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 pUser.setNotProvisioninResourcesIds(processedResources);
                 modifyUser(pUser);
 
-                return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(userIds, requestorId, processedResources);
+                return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(userIds, processedResources);
             }
 
         } finally {
@@ -823,9 +822,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     @Override
     @Transactional
-    public ProvisionUserResponse deprovisionSelectedResources(String userId, String requestorUserId,
+    public ProvisionUserResponse deprovisionSelectedResources(String userId,
                                                               List<String> resourceList) {
-        return deprovisionSelectedResource.deprovisionSelectedResources(userId, requestorUserId, resourceList);
+        return deprovisionSelectedResource.deprovisionSelectedResources(userId, resourceList);
     }
 
     /*
@@ -837,17 +836,14 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
      */
     @Override
     @Transactional
-    public Response lockUser(String userId, AccountLockEnum operation, String requestorId) {
+    public Response lockUser(String userId, AccountLockEnum operation) {
         final Response response = new Response();
         String auditReason = null;
 
         if (userId == null) {
             throw new NullPointerException("userId is null");
         }
-        if (requestorId == null) {
-            throw new NullPointerException("requestorId is null");
-        }
-
+        
         if (operation == null) {
             throw new NullPointerException("Operation parameter is null");
         }
@@ -906,7 +902,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     final ManagedSysDto managedSys = managedSystemService.getManagedSys(managedSysId);
                     final Login login = loginDozerConverter.convertToDTO(userLogin, false);
                     boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
-                    ResponseType responsetype = suspend(requestorId, login, managedSys,
+                    ResponseType responsetype = suspend(SpringSecurityHelper.getRequestorUserId(), login, managedSys,
                             buildPolicyMapHelper.buildMngSysAttributes(login, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
                     if (responsetype == null) {
                         log.info("Response object from set password is null");
@@ -938,7 +934,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         ManagedSysDto managedSys = managedSystemService.getManagedSysDtoByResource(resource.getId());
                         if (managedSys != null) {
                             boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
-                            ResponseType responsetype = suspend(requestorId, primLogin, managedSys,
+                            ResponseType responsetype = suspend(SpringSecurityHelper.getRequestorUserId(), primLogin, managedSys,
                                     buildPolicyMapHelper.buildMngSysAttributes(primLogin, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
                             if (responsetype.getStatus() == null) {
                                 log.info("Response status is null");
@@ -2654,17 +2650,17 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                             break;
                                         case DEACTIVATE_USER:
                                             res = deleteByUserWithSkipManagedSysList(
-                                                    userId, UserStatusEnum.DELETED, requestorId, null, idmAuditLog);
+                                                    userId, UserStatusEnum.DELETED, null, idmAuditLog);
                                             break;
                                         case DELETE_USER:
                                             res = deleteByUserWithSkipManagedSysList(
-                                                    userId, UserStatusEnum.REMOVE, requestorId, null, idmAuditLog);
+                                                    userId, UserStatusEnum.REMOVE, null, idmAuditLog);
                                             break;
                                         case ENABLE_USER:
-                                            res = disableUser(userId, false, requestorId, idmAuditLog);
+                                            res = disableUser(userId, false, idmAuditLog);
                                             break;
                                         case DISABLE_USER:
-                                            res = disableUser(userId, true, requestorId, idmAuditLog);
+                                            res = disableUser(userId, true, idmAuditLog);
                                             break;
                                         case RESET_USER_PASSWORD:
                                             final PasswordSync pswdSync = new PasswordSync();
@@ -2995,14 +2991,14 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         return null;
     }
 
-    public Response requestAdd(ExtensibleUser extUser, Login login, String requestorId) {
+    public Response requestAdd(ExtensibleUser extUser, Login login) {
         final String requestId = "R" + UUIDGen.getUUID();
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
         if(log.isDebugEnabled()) {
         	log.debug("----addModify called.------");
         }
         final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(requestorId != null ? requestorId : systemUserId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId() != null ? SpringSecurityHelper.getRequestorUserId() : systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_ADD.value());
         idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
 
@@ -3011,7 +3007,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             List<ExtensibleAttribute> hiddenAttrs = buildHiddenMngSysAttributes(login);
             extUser.getAttributes().addAll(hiddenAttrs);
 
-            ObjectResponse resp = requestAddModify(extUser, login, true, requestId, idmAuditLog);
+            ObjectResponse resp = requestAddModify(extUser, login, true, idmAuditLog);
             if (resp.getStatus() != StatusCodeType.SUCCESS) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorText(resp.getErrorMsgAsStr());
@@ -3026,7 +3022,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         return response;
     }
 
-    public Response requestModify(ExtensibleUser extUser, Login login, String requestorId) {
+    public Response requestModify(ExtensibleUser extUser, Login login) {
         final String requestId = "R" + UUIDGen.getUUID();
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
 
@@ -3034,7 +3030,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         	log.debug("----requestModify called.------");
         }
         final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(requestorId != null ? requestorId : systemUserId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId() != null ? SpringSecurityHelper.getRequestorUserId() : systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
         idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
 
@@ -3043,7 +3039,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             List<ExtensibleAttribute> hiddenAttrs = buildHiddenMngSysAttributes(login);
             extUser.getAttributes().addAll(hiddenAttrs);
 
-            ObjectResponse resp = requestAddModify(extUser, login, false, requestId, idmAuditLog);
+            ObjectResponse resp = requestAddModify(extUser, login, false, idmAuditLog);
             if (resp.getStatus() != StatusCodeType.SUCCESS) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorText(resp.getErrorMsgAsStr());
@@ -3145,12 +3141,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
  * String, boolean)
  */
     @Override
-    public Response disableUser(String userId, boolean operation, String requestorId) {
-        return disableUser(userId, operation, requestorId, null);
+    public Response disableUser(String userId, boolean operation) {
+        return disableUser(userId, operation, null);
     }
 
     @Transactional
-    public Response disableUser(String userId, boolean operation, String requestorId, IdmAuditLogEntity auditLog) {
+    public Response disableUser(String userId, boolean operation, IdmAuditLogEntity auditLog) {
     	if(log.isDebugEnabled()) {
 	        log.debug("----disableUser called.------");
 	        log.debug("operation code=" + operation);
@@ -3167,8 +3163,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), usr.getPrincipalList());
         idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
-        idmAuditLog.setRequestorUserId(requestorId);
-        List<LoginEntity> loginEntityList = loginManager.getLoginByUser(requestorId);
+        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+        List<LoginEntity> loginEntityList = loginManager.getLoginByUser(SpringSecurityHelper.getRequestorUserId());
         LoginEntity requestorIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), loginEntityList);
         idmAuditLog.setRequestorPrincipal(requestorIdentity.getLogin());
 
@@ -3232,7 +3228,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             }
             userMgr.updateUserWithDependent(usr, false);
 
-            LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
+            LoginEntity lRequestor = loginManager.getPrimaryIdentity(SpringSecurityHelper.getRequestorUserId());
             LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
             if (lRequestor == null || lTargetUser == null) {
@@ -3248,7 +3244,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.OBJECT_NOT_FOUND);
                 response.setErrorText(String.format(
-                        "Requestor: '%s' or User: '%s' not found", requestorId,
+                        "Requestor: '%s' or User: '%s' not found", SpringSecurityHelper.getRequestorUserId(),
                         userId));
 
                 return response;
@@ -3265,7 +3261,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 for (LoginEntity lg : principalList) {
 
                     final IdmAuditLogEntity idmAuditLogChild = new IdmAuditLogEntity();
-                    idmAuditLogChild.setRequestorUserId(requestorId);
+                    idmAuditLogChild.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
                     idmAuditLogChild.setRequestorPrincipal(lRequestor.getLogin());
                     idmAuditLogChild.setAction(operation ? AuditAction.PROVISIONING_DISABLE_IDENTITY.value() :
                             AuditAction.PROVISIONING_ENABLE_IDENTITY.value());
@@ -3398,8 +3394,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     }
 
     @Override
-    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd, String requestId, final IdmAuditLogEntity idmAuditLog) {
-        return super.requestAddModify(extUser, mLg, isAdd, requestId, idmAuditLog);
+    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd, final IdmAuditLogEntity idmAuditLog) {
+        return super.requestAddModify(extUser, mLg, isAdd, idmAuditLog);
     }
 
 }

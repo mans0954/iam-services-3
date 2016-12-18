@@ -19,6 +19,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.mq.constants.api.AuthProviderAPI;
 import org.openiam.mq.constants.queue.am.AuthProviderQueue;
 import org.openiam.srvc.AbstractApiService;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -118,9 +119,9 @@ public class AuthProviderWebServiceImpl extends AbstractApiService implements Au
     }
 
     @Override
-    public Response saveAuthProvider(AuthProvider provider, final String requestorId) {
+    public Response saveAuthProvider(AuthProvider provider) {
         BaseCrudServiceRequest<AuthProvider> request = new BaseCrudServiceRequest<>(provider);
-        request.setRequesterId(requestorId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         StringResponse response = this.manageApiRequest(AuthProviderAPI.SaveAuthProvider, request, StringResponse.class);
         return response.convertToBase();
     }

@@ -147,21 +147,21 @@ public class ProvisioningAuthorizationManagerWebServiceTest extends AbstractAuth
 
 	@Override
 	protected Response doDeleteResource(Resource resource, String requestorId) {
-		return resourceDataService.deleteResource(resource.getId(), requestorId);
+		return resourceDataService.deleteResource(resource.getId());
 	}
 
 	@Override
 	protected Response doAddGroupToResource(String resourceId, String groupId,
 			String requestorId, Set<String> rightIds, Date startDate,
 			Date endDate) {
-		return resourceDataService.addGroupToResource(resourceId, groupId, requestorId, rightIds, startDate, endDate);
+		return resourceDataService.addGroupToResource(resourceId, groupId, rightIds, startDate, endDate);
 	}
 
 	@Override
 	protected Response doAddRoleToResource(String resourceId, String roleId,
 			String requestorId, Set<String> rightIds, Date startDate,
 			Date endDate) {
-		return resourceDataService.addRoleToResource(resourceId, roleId, requestorId, rightIds, startDate, endDate);
+		return resourceDataService.addRoleToResource(resourceId, roleId, rightIds, startDate, endDate);
 	}
 
 	@Override
@@ -182,7 +182,7 @@ public class ProvisioningAuthorizationManagerWebServiceTest extends AbstractAuth
 	protected Response doAddChildResource(String resourceId,
 			String childResourceId, String requestorId, Set<String> rightIds,
 			Date startDate, Date endDate) {
-		return resourceDataService.addChildResource(resourceId, childResourceId, requestorId, rightIds, startDate, endDate);
+		return resourceDataService.addChildResource(resourceId, childResourceId, rightIds, startDate, endDate);
 	}
 
 	@Override
@@ -206,13 +206,13 @@ public class ProvisioningAuthorizationManagerWebServiceTest extends AbstractAuth
 	@Override
 	protected Response doRemoveRoleToResource(String resourceId, String roleId,
 			String requestorId) {
-		return resourceDataService.removeRoleToResource(resourceId, roleId, requestorId);
+		return resourceDataService.removeRoleToResource(resourceId, roleId);
 	}
 
 	@Override
 	protected Response doRemoveGroupToResource(String resourceId,
 			String groupId, String requestorId) {
-		return resourceDataService.removeGroupToResource(resourceId, groupId, requestorId);
+		return resourceDataService.removeGroupToResource(resourceId, groupId);
 	}
 
 	@Override

@@ -29,12 +29,12 @@ public class Role2ResourceEntitlementsTest extends AbstractEntitlementsTest<Role
 
 	@Override
 	protected Response addChildToParent(final Role parent, final Resource child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
-		return resourceDataService.addRoleToResource(child.getId(), parent.getId(), null, rights, startDate, endDate);
+		return resourceDataService.addRoleToResource(child.getId(), parent.getId(), rights, startDate, endDate);
 	}
 
 	@Override
 	protected Response removeChildFromParent(Role parent, Resource child, final String requestorId) {
-		return resourceDataService.removeRoleToResource(child.getId(), parent.getId(), null);
+		return resourceDataService.removeRoleToResource(child.getId(), parent.getId());
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class Role2ResourceEntitlementsTest extends AbstractEntitlementsTest<Role
 
 	@Override
 	protected Response deleteChild(Resource child, final String requestorId) {
-		return resourceDataService.deleteResource(child.getId(), null);
+		return resourceDataService.deleteResource(child.getId());
 	}
 
 	@Override

@@ -217,7 +217,7 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
         return delete(user.getId());
     }
     protected Response delete(String userId) {
-        Response response = provisionService.deleteByUserId(userId, UserStatusEnum.REMOVE, REQUESTER_ID);
+        Response response = provisionService.deleteByUserId(userId, UserStatusEnum.REMOVE);
         if(response.isSuccess())
             dropUserId(userId);
         return response;

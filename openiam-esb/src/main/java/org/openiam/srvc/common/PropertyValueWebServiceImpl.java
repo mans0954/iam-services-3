@@ -15,6 +15,7 @@ import org.openiam.mq.constants.api.common.PropertyValueAPI;
 import org.openiam.mq.constants.queue.common.PropertyValueQueue;
 import org.openiam.property.dto.PropertyValue;
 import org.openiam.srvc.AbstractApiService;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,9 +34,9 @@ public class PropertyValueWebServiceImpl extends AbstractApiService implements P
 	}
 
 	 @Override
-	 public Response save(List<PropertyValue> dtoList, final String requestorId) {
+	 public Response save(List<PropertyValue> dtoList) {
 		PropertyValueCrudRequest request = new PropertyValueCrudRequest();
-		request.setRequesterId(requestorId);
+		request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
 		request.setPropertyValueList(dtoList);
 		return this.manageCrudApiRequest(PropertyValueAPI.Save, request);
 	 }

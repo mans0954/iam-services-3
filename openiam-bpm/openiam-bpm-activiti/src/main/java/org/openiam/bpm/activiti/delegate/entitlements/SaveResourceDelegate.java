@@ -31,7 +31,7 @@ public class SaveResourceDelegate extends AbstractActivitiJob {
             idmAuditLog.setAuditDescription("Edit resource");
         }
         try {
-            final Response response = resourceService.saveResourceWeb(resource, getRequestorId(execution));
+            final Response response = resourceService.saveResourceWeb(resource);
             if (response.isSuccess()) {
                 String resourceId = (String) response.getResponseValue();
                 idmAuditLog.setTargetResource(resourceId, resource.getName());

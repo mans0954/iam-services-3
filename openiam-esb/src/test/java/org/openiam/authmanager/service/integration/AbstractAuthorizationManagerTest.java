@@ -50,7 +50,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		/* setup the public resource, and ensure that it's actually public after saving */
 		publicResource = super.createResource();
 		publicResource.setIsPublic(true);
-		assertSuccess(resourceDataService.saveResource(publicResource, null));
+		assertSuccess(resourceDataService.saveResource(publicResource));
 		publicResource = resourceDataService.getResource(publicResource.getId(), getDefaultLanguage());
 		Assert.assertNotNull(publicResource);
 		Assert.assertTrue(publicResource.getIsPublic());
@@ -76,7 +76,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	
 	@AfterClass
 	public void _destroy() {
-		resourceDataService.deleteResource(publicResource.getId(), null);
+		resourceDataService.deleteResource(publicResource.getId());
 		if(user != null) {
 			userServiceClient.removeUser(user.getId());
 		}
@@ -90,7 +90,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 			organizationServiceClient.deleteOrganization(organization.getId());
 		}
 		if(resource != null) {
-			resourceDataService.deleteResource(resource.getId(), null);
+			resourceDataService.deleteResource(resource.getId());
 		}
 	}
 	

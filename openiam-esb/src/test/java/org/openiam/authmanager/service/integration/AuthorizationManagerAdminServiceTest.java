@@ -99,11 +99,11 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			
 			assertSuccess(groupServiceClient.addUserToGroup(groupId, userId, rightIds, startDate, endDate));
 			
-			assertSuccess(resourceDataService.addGroupToResource(resourceId, groupId, requesterId, rightIds, startDate, endDate));
-			assertSuccess(resourceDataService.addRoleToResource(resourceId, roleId, requesterId, rightIds, startDate, endDate));
-			assertSuccess(resourceDataService.addUserToResource(resourceId, userId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addGroupToResource(resourceId, groupId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addRoleToResource(resourceId, roleId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addUserToResource(resourceId, userId, rightIds, startDate, endDate));
 
-			assertSuccess(resourceDataService.addChildResource(resourceId, childResourceId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addChildResource(resourceId, childResourceId, rightIds, startDate, endDate));
 			assertSuccess(groupServiceClient.addChildGroup(groupId, childGroupId, rightIds, startDate, endDate));
 			assertSuccess(roleServiceClient.addChildRole(roleId, childRoleId, rightIds, startDate, endDate));
 
@@ -170,7 +170,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -222,7 +222,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String resourceId = resource.getId();
 			final String requesterId = null;
 			
-			assertSuccess(resourceDataService.addUserToResource(resourceId, userId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addUserToResource(resourceId, userId, rightIds, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resourceId, getMiddleDate(startDate, endDate));
 			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
@@ -241,7 +241,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), getRequestorId()));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -293,7 +293,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String resourceId = resource.getId();
 			final String requesterId = null;
 			
-			assertSuccess(resourceDataService.addGroupToResource(resourceId, groupId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addGroupToResource(resourceId, groupId, rightIds, startDate, endDate));
 			assertSuccess(groupServiceClient.addUserToGroup(groupId, userId, null, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resourceId, getMiddleDate(startDate, endDate));
@@ -313,7 +313,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -365,7 +365,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String resourceId = resource.getId();
 			final String requesterId = null;
 			
-			assertSuccess(resourceDataService.addRoleToResource(resourceId, roleId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addRoleToResource(resourceId, roleId, rightIds, startDate, endDate));
 			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, null, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resourceId, getMiddleDate(startDate, endDate));
@@ -385,7 +385,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), getRequestorId()));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -457,7 +457,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(groupServiceClient.deleteGroup(group.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), getRequestorId()));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -501,8 +501,8 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String userId = user.getId();
 			final String requesterId = null;
 			
-			assertSuccess(resourceDataService.addChildResource(resource.getId(), child.getId(), requesterId, rightIds, startDate, endDate));
-			assertSuccess(resourceDataService.addUserToResource(child.getId(), userId, requesterId, null, startDate, endDate));
+			assertSuccess(resourceDataService.addChildResource(resource.getId(), child.getId(), rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addUserToResource(child.getId(), userId, null, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resource.getId(), getMiddleDate(startDate, endDate));
 			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
@@ -512,10 +512,10 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(userServiceClient.removeUser(user.getId()));
 			}
 			if(child != null) {
-				assertSuccess(resourceDataService.deleteResource(child.getId(), null));
+				assertSuccess(resourceDataService.deleteResource(child.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -561,7 +561,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String userId = user.getId();
 			final String requesterId = null;
 			
-			assertSuccess(resourceDataService.addGroupToResource(resource.getId(), parent.getId(), requesterId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addGroupToResource(resource.getId(), parent.getId(), rightIds, startDate, endDate));
 			assertSuccess(groupServiceClient.addChildGroup(parent.getId(), child.getId(), null, startDate, endDate));
 			assertSuccess(groupServiceClient.addUserToGroup(child.getId(), userId, null, startDate, endDate));
 			
@@ -579,7 +579,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(groupServiceClient.deleteGroup(parent.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -625,7 +625,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String userId = user.getId();
 			final String requesterId = null;
 			
-			assertSuccess(resourceDataService.addRoleToResource(resource.getId(), parent.getId(), requesterId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addRoleToResource(resource.getId(), parent.getId(), rightIds, startDate, endDate));
 			assertSuccess(roleServiceClient.addChildRole(parent.getId(), child.getId(), null, startDate, endDate));
 			assertSuccess(roleServiceClient.addUserToRole(child.getId(), userId, null, startDate, endDate));
 			
@@ -643,7 +643,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(roleServiceClient.removeRole(parent.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -707,7 +707,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(organizationServiceClient.deleteOrganization(parent.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -758,7 +758,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			
 			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, null, startDate, endDate));
 			assertSuccess(roleServiceClient.addGroupToRole(roleId, groupId, null, startDate, endDate));
-			assertSuccess(resourceDataService.addGroupToResource(resourceId, groupId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addGroupToResource(resourceId, groupId, rightIds, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resource.getId(), getMiddleDate(startDate, endDate));
 			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
@@ -774,7 +774,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(roleServiceClient.removeRole(role.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -825,7 +825,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			
 			assertSuccess(organizationServiceClient.addUserToOrg(organizationId, userId, null, startDate, endDate));
 			assertSuccess(organizationServiceClient.addGroupToOrganization(organizationId, groupId, null, startDate, endDate));
-			assertSuccess(resourceDataService.addGroupToResource(resourceId, groupId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addGroupToResource(resourceId, groupId, rightIds, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resource.getId(), getMiddleDate(startDate, endDate));
 			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
@@ -841,7 +841,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), getRequestorId()));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}
@@ -892,7 +892,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			
 			assertSuccess(organizationServiceClient.addUserToOrg(organizationId, userId, null, startDate, endDate));
 			assertSuccess(organizationServiceClient.addRoleToOrganization(organizationId, roleId, null, startDate, endDate));
-			assertSuccess(resourceDataService.addRoleToResource(resourceId, roleId, requesterId, rightIds, startDate, endDate));
+			assertSuccess(resourceDataService.addRoleToResource(resourceId, roleId, rightIds, startDate, endDate));
 			
 			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resource.getId(), getMiddleDate(startDate, endDate));
 			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
@@ -908,7 +908,7 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId()));
 			}
 			if(resource != null) {
-				assertSuccess(resourceDataService.deleteResource(resource.getId(), getRequestorId()));
+				assertSuccess(resourceDataService.deleteResource(resource.getId()));
 			}
 		}
 	}

@@ -15,27 +15,27 @@ public abstract class AbstractAdminAuthorizationManagerTest extends AbstractAuth
 
 	@Override
 	protected Response doAddUserToResource(final String resourceId, final String userId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return resourceDataService.addUserToResource(resourceId, userId, requestorId, rightIds, startDate, endDate);
+		return resourceDataService.addUserToResource(resourceId, userId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doRemoveUserFromResource(final String resourceId, final String userId, final String requestorId) {
-		return resourceDataService.removeUserFromResource(resourceId, userId, requestorId);
+		return resourceDataService.removeUserFromResource(resourceId, userId);
 	}
 	
 	@Override
 	protected Response doDeleteResource(final Resource resource, final String requestorId) {
-		return resourceDataService.deleteResource(resource.getId(), requestorId);
+		return resourceDataService.deleteResource(resource.getId());
 	}
 	
 	@Override
 	protected Response doAddGroupToResource(final String resourceId, final String groupId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return resourceDataService.addGroupToResource(resourceId, groupId, requestorId, rightIds, startDate, endDate);
+		return resourceDataService.addGroupToResource(resourceId, groupId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doAddRoleToResource(final String resourceId, final String roleId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return resourceDataService.addRoleToResource(resourceId, roleId, requestorId, rightIds, startDate, endDate);
+		return resourceDataService.addRoleToResource(resourceId, roleId, rightIds, startDate, endDate);
 	}
 	
 	@Override
@@ -70,7 +70,7 @@ public abstract class AbstractAdminAuthorizationManagerTest extends AbstractAuth
 	
 	@Override
 	protected Response doAddChildResource(final String resourceId, final String childResourceId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return resourceDataService.addChildResource(resourceId, childResourceId, requestorId, rightIds, startDate, endDate);
+		return resourceDataService.addChildResource(resourceId, childResourceId, rightIds, startDate, endDate);
 	}
 	
 	@Override
@@ -100,12 +100,12 @@ public abstract class AbstractAdminAuthorizationManagerTest extends AbstractAuth
 	
 	@Override
 	protected Response doRemoveRoleToResource(final String resourceId, final String roleId, final String requestorId) {
-		return resourceDataService.removeRoleToResource(resourceId, roleId, requestorId);
+		return resourceDataService.removeRoleToResource(resourceId, roleId);
 	}
 	
 	@Override
 	protected Response doRemoveGroupToResource(final String resourceId, final String groupId, final String requestorId) {
-		return resourceDataService.removeGroupToResource(resourceId, groupId, requestorId);
+		return resourceDataService.removeGroupToResource(resourceId, groupId);
 	}
 	
 	@Override

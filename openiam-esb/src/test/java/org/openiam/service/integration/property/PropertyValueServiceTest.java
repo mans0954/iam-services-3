@@ -47,7 +47,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 		}
 		
 		if(doCheck) {
-			Response response = propertyValuerServiceClient.save(dtoList, null);
+			Response response = propertyValuerServiceClient.save(dtoList);
 			Assert.assertNotNull(response);
 			Assert.assertTrue(response.isFailure());
 			Assert.assertEquals(response.getErrorCode(), ResponseCode.PROPERTY_I18_VALUE_MISSING);
@@ -63,7 +63,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 		}
 		
 		if(doCheck) {
-			Response response = propertyValuerServiceClient.save(dtoList, null);
+			Response response = propertyValuerServiceClient.save(dtoList);
 			Assert.assertNotNull(response);
 			Assert.assertTrue(response.isFailure());
 			Assert.assertEquals(response.getErrorCode(), ResponseCode.PROPERTY_VALUE_REQUIRED);
@@ -79,7 +79,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 			}
 		}
 		if(doCheck) {
-			Response response = propertyValuerServiceClient.save(dtoList, null);
+			Response response = propertyValuerServiceClient.save(dtoList);
 			Assert.assertNotNull(response);
 			Assert.assertTrue(response.isFailure());
 			Assert.assertEquals(response.getErrorCode(), ResponseCode.PROPERTY_VALUE_REQUIRED);
@@ -97,7 +97,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 		}
 		
 		if(doCheck) {
-			Response response = propertyValuerServiceClient.save(dtoList, null);
+			Response response = propertyValuerServiceClient.save(dtoList);
 			Assert.assertNotNull(response);
 			Assert.assertTrue(response.isFailure());
 			Assert.assertEquals(response.getErrorCode(), ResponseCode.PROPERTY_TYPE_INVALID);
@@ -107,7 +107,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 	@Test
 	public void testSave() {
 		List<PropertyValue> dtoList1 = propertyValuerServiceClient.getAll();
-		Response response = propertyValuerServiceClient.save(dtoList1, null);
+		Response response = propertyValuerServiceClient.save(dtoList1);
 		Assert.assertNotNull(response);
 		Assert.assertTrue(response.isSuccess());
 		

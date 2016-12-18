@@ -35,7 +35,7 @@ public class DeleteIdmUserExcludeTargetCommand extends BaseReconciliationUserCom
 			ProvisionUser pUser = new ProvisionUser(user);
 			pUser.setSrcSystemId(mSysID);
 			executeScript(config.getScript(), attributes, pUser);
-			ProvisionUserResponse response = provisionService.deleteByUserId(user.getId(), UserStatusEnum.DELETED, DEFAULT_REQUESTER_ID);
+			ProvisionUserResponse response = provisionService.deleteByUserId(user.getId(), UserStatusEnum.DELETED);
 			return response.isSuccess();
 		} catch (Exception e) {
 			e.printStackTrace();

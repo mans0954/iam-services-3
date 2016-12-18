@@ -74,12 +74,12 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 
 	@Override
 	protected Response save(Resource t) {
-		return resourceDataService.saveResource(t, null);
+		return resourceDataService.saveResource(t);
 	}
 
 	@Override
 	protected Response delete(Resource t) {
-		return resourceDataService.deleteResource(t.getId(), null);
+		return resourceDataService.deleteResource(t.getId());
 	}
 
 	@Override
@@ -133,7 +133,7 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 		Tuple<Resource, Resource> t = null;
 		try {
 			t = addChildResource(startDate, endDate);
-			Response response = resourceDataService.deleteChildResource(t.getKey().getId(), t.getValue().getId(), "3000");
+			Response response = resourceDataService.deleteChildResource(t.getKey().getId(), t.getValue().getId());
 			Assert.assertTrue(String.format("Can't delete resource: %s", response), response.isSuccess());
 		} finally {
 			if(t != null) {
@@ -203,7 +203,7 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 		response = saveAndAssert(resource2);
 		resource2 = get((String)response.getResponseValue());
 		
-		response = resourceDataService.addChildResource(resource1.getId(), resource2.getId(), "3000", null, startDate, endDate);
+		response = resourceDataService.addChildResource(resource1.getId(), resource2.getId(), null, startDate, endDate);
 		Assert.assertTrue(String.format("Could not add child resource: %s", response), response.isSuccess());
 		
 		return new Tuple<Resource, Resource>(resource1, resource2);

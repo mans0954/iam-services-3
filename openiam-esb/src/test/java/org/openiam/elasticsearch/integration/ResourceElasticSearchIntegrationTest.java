@@ -90,7 +90,7 @@ public class ResourceElasticSearchIntegrationTest extends AbstractMetdataTypeEla
 		resource.setRisk(ResourceRisk.HIGH);
 		resource.setResourceType(resourceDataService.findResourceTypes(null, 0, 1, null).get(0));
 		//resource.addResourceProp(generateResourceProp());
-		final Response response = resourceDataService.saveResource(resource, getRequestorId());
+		final Response response = resourceDataService.saveResource(resource);
 		assertSuccess(response);
 		final Resource dto = resourceDataService.getResource((String)response.getResponseValue(), getDefaultLanguage());
 		Assert.assertNotNull(dto);
@@ -106,7 +106,7 @@ public class ResourceElasticSearchIntegrationTest extends AbstractMetdataTypeEla
 
 	@Override
 	protected void delete(Resource dto) {
-		resourceDataService.deleteResource(dto.getId(), getRequestorId());
+		resourceDataService.deleteResource(dto.getId());
 	}
 
 	@Override

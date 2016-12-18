@@ -30,12 +30,12 @@ public class Group2ResourceEntitlementsTest extends AbstractEntitlementsTest<Gro
 
 	@Override
 	protected Response addChildToParent(final Group parent, final Resource child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
-		return resourceDataService.addGroupToResource(child.getId(), parent.getId(), null, rights, startDate, endDate);
+		return resourceDataService.addGroupToResource(child.getId(), parent.getId(), rights, startDate, endDate);
 	}
 
 	@Override
 	protected Response removeChildFromParent(Group parent, Resource child, final String requestorId) {
-		return resourceDataService.removeGroupToResource(child.getId(), parent.getId(), null);
+		return resourceDataService.removeGroupToResource(child.getId(), parent.getId());
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class Group2ResourceEntitlementsTest extends AbstractEntitlementsTest<Gro
 
 	@Override
 	protected Response deleteChild(Resource child, final String requestorId) {
-		return resourceDataService.deleteResource(child.getId(), null);
+		return resourceDataService.deleteResource(child.getId());
 	}
 
 	@Override

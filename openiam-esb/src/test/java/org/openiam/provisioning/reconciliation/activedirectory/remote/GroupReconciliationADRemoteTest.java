@@ -259,7 +259,7 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
             Assert.assertTrue(true);
             Assert.assertNotNull(reconciliationConfig);
             // Test connection first
-            Response testConnectionResponse = provisionService.testConnectionConfig(reconciliationConfig.getManagedSysId(), "3000");
+            Response testConnectionResponse = provisionService.testConnectionConfig(reconciliationConfig.getManagedSysId());
             Assert.assertNotNull(testConnectionResponse);
             Assert.assertTrue(testConnectionResponse.isSuccess());
 

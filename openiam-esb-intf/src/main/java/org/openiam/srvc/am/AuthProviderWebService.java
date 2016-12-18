@@ -53,8 +53,7 @@ public interface AuthProviderWebService {
                                              @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
-    Response saveAuthProvider(@WebParam(name = "provider", targetNamespace = "") AuthProvider provider,
-                              @WebParam(name = "requestorId", targetNamespace = "") final String requestorId);
+    Response saveAuthProvider(@WebParam(name = "provider", targetNamespace = "") AuthProvider provider);
     @WebMethod
     Response deleteAuthProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
 

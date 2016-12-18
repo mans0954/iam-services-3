@@ -30,12 +30,12 @@ public class ResourceTypeServiceTest extends AbstractKeyServiceTest<ResourceType
 
 	@Override
 	protected Response save(ResourceType t) {
-		return resourceDataService.saveResourceType(t, null);
+		return resourceDataService.saveResourceType(t);
 	}
 
 	@Override
 	protected Response delete(ResourceType t) {
-		return resourceDataService.deleteResourceType(t.getId(), null);
+		return resourceDataService.deleteResourceType(t.getId());
 	}
 
 	@Override

@@ -24,33 +24,33 @@ import java.util.List;
  */
 public interface ProvisioningDataService {
 
-    public ProvisionUserResponse provisionUsersToResource(final List<String> usersIds, final String requestorUserId, final List<String> resourceList);
+    public ProvisionUserResponse provisionUsersToResource(final List<String> usersIds, final List<String> resourceList);
 
-    public ProvisionUserResponse deProvisionUsersToResource(List<String> users, String requestorUserId, List<String> resources);
+    public ProvisionUserResponse deProvisionUsersToResource(List<String> users, List<String> resources);
 
-    public ProvisionUserResponse deProvisionUsersToResourceByRole(List<String> users, String requestorUserId, List<String> roles);
+    public ProvisionUserResponse deProvisionUsersToResourceByRole(List<String> users, List<String> roles);
 
-    public ProvisionUserResponse deProvisionUsersToResourceByGroup(List<String> users, String requestorUserId, List<String> groups);
+    public ProvisionUserResponse deProvisionUsersToResourceByGroup(List<String> users, List<String> groups);
 
-    public ProvisionUserResponse provisionUsersToResourceByRole(final List<String> usersIds, final String requestorUserId, final List<String> roleList);
+    public ProvisionUserResponse provisionUsersToResourceByRole(final List<String> usersIds, final List<String> roleList);
 
-    public ProvisionUserResponse provisionUsersToResourceByGroup(final List<String> usersIds, final String requestorUserId, final List<String> groupList);
+    public ProvisionUserResponse provisionUsersToResourceByGroup(final List<String> usersIds, final List<String> groupList);
 
     public ProvisionUserResponse addUser(final ProvisionUser pUser);
 
     public ProvisionUserResponse modifyUser(final ProvisionUser pUser);
 
-    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList);
+    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, List<String> skipManagedSysList);
 
-    public ProvisionUserResponse deleteByUserId(String userId, UserStatusEnum status, String requestorId);
+    public ProvisionUserResponse deleteByUserId(String userId, UserStatusEnum status);
 
-    public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status, String requestorId);
+    public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status);
 
-    public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status, String requestorId, List<String> skipManagedSysList);
+    public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status, List<String> skipManagedSysList);
 
-    public ProvisionUserResponse deprovisionSelectedResources(String userId, String requestorUserId, List<String> resourceList);
+    public ProvisionUserResponse deprovisionSelectedResources(String userId, List<String> resourceList);
 
-    public Response lockUser(String userId, AccountLockEnum operation, String requestorId);
+    public Response lockUser(String userId, AccountLockEnum operation);
 
     //public void updateResources(UserEntity userEntity, ProvisionUser pUser, Set<Resource> resourceSet, Set<Resource> deleteResourceSet, IdmAuditLog parentLog);
 
@@ -68,23 +68,23 @@ public interface ProvisioningDataService {
 
     public Response startBulkOperation(final BulkOperationRequest bulkRequest);
 
-    public Response disableUser(String userId, boolean operation, String requestorId);
+    public Response disableUser(String userId, boolean operation);
 
-    public Response testConnectionConfig(String managedSysId, String requesterId);
+    public Response testConnectionConfig(String managedSysId);
 
     public Response syncPasswordFromSrc(PasswordSync passwordSync);
 
     public ManagedSystemViewerResponse buildManagedSystemViewer(String userId, String managedSysId);
 
-    public Response requestAdd(ExtensibleUser extUser, Login login, String requestorId);
+    public Response requestAdd(ExtensibleUser extUser, Login login);
 
-    public Response requestModify(ExtensibleUser extUser, Login login, String requestorId);
+    public Response requestModify(ExtensibleUser extUser, Login login);
 
-    public Response disableUser(String userId, boolean operation, String requestorId, IdmAuditLogEntity auditLog);
+    public Response disableUser(String userId, boolean operation, IdmAuditLogEntity auditLog);
 
     public Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type);
 
-    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd, String requestId, final IdmAuditLogEntity idmAuditLog);
+    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd, final IdmAuditLogEntity idmAuditLog);
 
 
 }

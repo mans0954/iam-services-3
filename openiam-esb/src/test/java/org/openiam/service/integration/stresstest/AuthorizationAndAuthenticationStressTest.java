@@ -139,7 +139,7 @@ public class AuthorizationAndAuthenticationStressTest extends AbstractServiceTes
 					
 					@Override
 					public void run() {
-						assertSuccess(resourceDataService.addRoleToResource(resource.getId(), role.getId(), null, allRightIds, null, null));
+						assertSuccess(resourceDataService.addRoleToResource(resource.getId(), role.getId(), allRightIds, null, null));
 					}
 				});
 			}

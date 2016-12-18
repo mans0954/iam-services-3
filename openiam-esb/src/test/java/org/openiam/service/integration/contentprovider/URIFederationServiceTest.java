@@ -213,7 +213,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		assertMetadataEquals(url, method, response);
 		
 		cp.getPatternSet().forEach(pattern -> {
-			final Response entResponse = resourceDataService.addUserToResource(pattern.getResourceId(), userId, null, null, null, null);
+			final Response entResponse = resourceDataService.addUserToResource(pattern.getResourceId(), userId, null, null, null);
 			Assert.assertTrue(entResponse.isSuccess());
 		});
 
@@ -247,7 +247,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 		assertMetadataEquals(url, method, response);
 		
-		Response entitlementsResponse = resourceDataService.addUserToResource(cp.getResourceId(), userId, null, null, null, null);
+		Response entitlementsResponse = resourceDataService.addUserToResource(cp.getResourceId(), userId, null, null, null);
 		Assert.assertTrue(entitlementsResponse.isSuccess());
 		
 		url = "http://www.example.com/paramsWithNoMethod/foobar";
@@ -353,7 +353,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		cp.getPatternSet().forEach(pattern -> {
 			if(pattern.getMethods() != null) {
 				pattern.getMethods().forEach(uriMethod -> {
-					final Response entResponse = resourceDataService.addUserToResource(uriMethod.getResourceId(), userId, null, null, null, null);
+					final Response entResponse = resourceDataService.addUserToResource(uriMethod.getResourceId(), userId, null, null, null);
 					Assert.assertTrue(entResponse.isSuccess());
 				});
 			}

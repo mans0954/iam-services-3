@@ -502,7 +502,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		resourceTypeSearchBean.setSupportsHierarchy(true);
 		resource.setResourceType(resourceDataService.findResourceTypes(resourceTypeSearchBean, 0, 1, null).get(0));
 		resource.setName(getRandomName());
-		Response wsResponse = resourceDataService.saveResource(resource, null);
+		Response wsResponse = resourceDataService.saveResource(resource);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", resource, wsResponse));
 		resource = resourceDataService.getResource((String)wsResponse.getResponseValue(), getDefaultLanguage());
 		

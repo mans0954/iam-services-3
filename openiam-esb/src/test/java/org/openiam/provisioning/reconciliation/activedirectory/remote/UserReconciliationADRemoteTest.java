@@ -295,7 +295,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             Assert.assertNotNull(reconciliationConfig);
 
             setWSClientTimeout(reconciliationWebService, 600000L);
-            Response testConnectionResponse = provisionService.testConnectionConfig(reconciliationConfig.getManagedSysId(), "3000");
+            Response testConnectionResponse = provisionService.testConnectionConfig(reconciliationConfig.getManagedSysId());
             Assert.assertNotNull(testConnectionResponse);
             Assert.assertTrue(testConnectionResponse.isSuccess());
 

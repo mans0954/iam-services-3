@@ -93,8 +93,7 @@ public interface ManagedSystemWebService {
      */
     @WebMethod
     Response requestSSLCert(
-            @WebParam(name = "sys", targetNamespace = "") ManagedSysDto sys,
-            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+            @WebParam(name = "sys", targetNamespace = "") ManagedSysDto sys);
 
     /**
      * Removes a managed system entry from the system.

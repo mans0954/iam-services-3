@@ -92,11 +92,11 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                         break;
                     case ENTITLE_RESOURCE_TO_GROUP:
                         action = AuditAction.ADD_GROUP_TO_RESOURCE;
-                        response = resourceDataService.addGroupToResource(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
+                        response = resourceDataService.addGroupToResource(associationId, memberAssociationId, rights, startDate, endDate);
                         break;
                     case DISENTITLE_RESOURCE_FROM_GROUP:
                         action = AuditAction.REMOVE_GROUP_FROM_RESOURCE;
-                        response = resourceDataService.removeGroupToResource(associationId, memberAssociationId, systemUserId);
+                        response = resourceDataService.removeGroupToResource(associationId, memberAssociationId);
                         break;
                     case ADD_ROLE_TO_ROLE:
                         action = AuditAction.ADD_CHILD_ROLE;
@@ -110,19 +110,19 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                         break;
                     case ENTITLE_RESOURCE_TO_ROLE:
                         action = AuditAction.ADD_ROLE_TO_RESOURCE;
-                        response = resourceDataService.addRoleToResource(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
+                        response = resourceDataService.addRoleToResource(associationId, memberAssociationId, rights, startDate, endDate);
                         break;
                     case DISENTITLE_RESOURCE_FROM_ROLE:
                         action = AuditAction.REMOVE_ROLE_FROM_RESOURCE;
-                        response = resourceDataService.removeRoleToResource(associationId, memberAssociationId, systemUserId);
+                        response = resourceDataService.removeRoleToResource(associationId, memberAssociationId);
                         break;
                     case ADD_RESOURCE_TO_RESOURCE:
                         action = AuditAction.ADD_CHILD_RESOURCE;
-                        response = resourceDataService.addChildResource(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
+                        response = resourceDataService.addChildResourceWeb(associationId, memberAssociationId, rights, startDate, endDate);
                         break;
                     case REMOVE_RESOURCE_FROM_RESOURCE:
                         action = AuditAction.REMOVE_CHILD_RESOURCE;
-                        response = resourceDataService.deleteChildResource(associationId, memberAssociationId, systemUserId);
+                        response = resourceDataService.deleteChildResourceWeb(associationId, memberAssociationId);
                         break;
                     case ENTITLE_USER_TO_RESOURCE:
                         action = AuditAction.ADD_USER_TO_RESOURCE;
@@ -136,7 +136,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 response = provisionService.modifyUser(pUser);
                             }
                         } else {
-                            response = resourceDataService.addUserToResource(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
+                            response = resourceDataService.addUserToResource(associationId, memberAssociationId, rights, startDate, endDate);
                         }
                         break;
                     case RESOURCE_CERTIFICATION:
@@ -214,10 +214,10 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                         response = provisionService.modifyUser(pUser);
                                     }
                                 } else {
-                                    response = resourceDataService.removeUserFromResource(associationId, memberAssociationId, systemUserId);
+                                    response = resourceDataService.removeUserFromResource(associationId, memberAssociationId);
                                     if (CollectionUtils.isNotEmpty(resourceToDelete)) {
                                         for (String id : resourceToDelete) {
-                                            response = resourceDataService.removeUserFromResource(id, memberAssociationId, systemUserId);
+                                            response = resourceDataService.removeUserFromResource(id, memberAssociationId);
                                         }
                                     }
                                     if (CollectionUtils.isNotEmpty(groupToDelete)) {
@@ -240,7 +240,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                         response = provisionService.modifyUser(pUser);
                                     }
                                 } else {
-                                    response = resourceDataService.removeUserFromResource(associationId, memberAssociationId, systemUserId);
+                                    response = resourceDataService.removeUserFromResource(associationId, memberAssociationId);
                                 }
                             }
                         }

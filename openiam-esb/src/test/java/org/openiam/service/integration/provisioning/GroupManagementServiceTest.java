@@ -78,7 +78,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         if (CollectionUtils.isNotEmpty(userIds)) {
             for (String userId : userIds) {
                 try {
-                    provisionServiceClient.deleteByUserId(userId, UserStatusEnum.REMOVE, getRequestorId());
+                    provisionServiceClient.deleteByUserId(userId, UserStatusEnum.REMOVE);
                 } catch (Exception e) {}
             }
         }

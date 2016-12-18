@@ -40,6 +40,7 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -55,7 +56,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
     @Autowired
     protected ManagedSystemService managedSystemService;
 
-    public ProvisionUserResponse provisionSelectedResources(final List<String> userIds, final String requestorUserId, final Collection<String> resourceList) {
+    public ProvisionUserResponse provisionSelectedResources(final List<String> userIds, final Collection<String> resourceList) {
         final List<ProvisionDataContainer> dataList = new LinkedList<>();
         ProvisionUserResponse res = new ProvisionUserResponse();
         res.setStatus(ResponseStatus.FAILURE);
@@ -69,8 +70,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
 
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
                     final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-                    auditLog.setRequestorUserId(requestorUserId);
-                    UserEntity requestor = userMgr.getUser(requestorUserId);
+                    auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+                    UserEntity requestor = userMgr.getUser(SpringSecurityHelper.getRequestorUserId());
 
                     LoginEntity requestorPrimaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
                             requestor.getPrincipalList());
@@ -112,7 +113,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                     // in
                                     // dataList
                                     ProvisionDataContainer data = provisionResource(res, userEntity, new ProvisionUser(user), tmpMap,
-                                            primaryIdentity, requestorUserId);
+                                            primaryIdentity, SpringSecurityHelper.getRequestorUserId());
 
                                     auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                             "Provisioning for resource: " + res.getName());
@@ -130,7 +131,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                     String onDeleteProp = (CollectionUtils.isNotEmpty(props)) ? props.get(0).getValue() : null;
                                     if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
                                         ProvisionDataContainer enableData = provisionResource(res, userEntity, new ProvisionUser(user), bindingMap,
-                                                primaryIdentity, requestorUserId);
+                                                primaryIdentity, SpringSecurityHelper.getRequestorUserId());
                                         if (enableData != null) {
                                             enableData.setParentAuditLogId(auditLog.getId());
                                             dataList.add(enableData);

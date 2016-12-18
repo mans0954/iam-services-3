@@ -120,6 +120,7 @@ import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringContextProvider;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.util.UserUtils;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1820,8 +1821,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         }
     }
 
-    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd,
-                                           String requestId, final IdmAuditLogEntity idmAuditLog) {
+    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd, final IdmAuditLogEntity idmAuditLog) {
 
         ObjectResponse response = new ObjectResponse();
 
@@ -1848,7 +1848,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
         userReq.setObjectIdentity(mLg.getLogin());
-        userReq.setRequestID(requestId);
+        userReq.setRequestID(SpringSecurityHelper.getRequestorUserId());
         userReq.setTargetID(managedSysId);
         userReq.setHostLoginId(mSys.getUserId());
         String passwordDecoded = managedSystemService.getDecryptedPassword(mSysDto);

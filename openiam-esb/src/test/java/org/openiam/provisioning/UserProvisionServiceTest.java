@@ -148,7 +148,7 @@ public class UserProvisionServiceTest extends AbstractTestNGSpringContextTests {
         if(userIDsForDelete != null && userIDsForDelete.size() > 0) {
             for(String userID : userIDsForDelete) {
                 try {
-                    provisionService.deleteByUserId(userID,UserStatusEnum.REMOVE, null);
+                    provisionService.deleteByUserId(userID,UserStatusEnum.REMOVE);
                 } catch (Throwable t) {
                     // do nothing
                 }

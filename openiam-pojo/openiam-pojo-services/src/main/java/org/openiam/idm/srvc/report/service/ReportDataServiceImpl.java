@@ -302,13 +302,13 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 			resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
 			resource.setIsPublic(false);
 			resource.setCoorelatedName(entity.getReportName());
-			resourceService.save(resource, null);
+			resourceService.save(resource);
 			entity.setResourceId(resource.getId());
 		} else {
 			resource = resourceService.findResourceById(entity.getResourceId());
 			if(resource != null) {
 				resource.setCoorelatedName(entity.getReportName());
-				resourceService.save(resource, null);
+				resourceService.save(resource);
 			}
 		}
 

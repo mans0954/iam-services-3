@@ -248,7 +248,7 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 
 	@Override
 	protected Response save(AuthProvider t) {
-		return authProviderServiceClient.saveAuthProvider(t, null);
+		return authProviderServiceClient.saveAuthProvider(t);
 	}
 
 	@Override

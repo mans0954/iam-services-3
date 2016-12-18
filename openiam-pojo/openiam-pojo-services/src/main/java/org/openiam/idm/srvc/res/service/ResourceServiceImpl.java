@@ -70,6 +70,7 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
 import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringContextProvider;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
@@ -228,7 +229,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    public void save(ResourceEntity entity, final String requestorId) {
+    public void save(ResourceEntity entity) {
         if (entity.getResourceType() != null) {
             entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getId()));
         }
@@ -258,7 +259,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             resourceDao.save(entity);
 
             if (addApproverAssociation) {
-                entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
+                entity.addApproverAssociation(createDefaultApproverAssociations(entity));
             }
 
             addRequiredAttributes(entity);
@@ -285,18 +286,17 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         }
     }
 
-    private ApproverAssociationEntity createDefaultApproverAssociations(final ResourceEntity entity,
-                                                                        final String requestorId) {
+    private ApproverAssociationEntity createDefaultApproverAssociations(final ResourceEntity entity) {
         final ApproverAssociationEntity association = new ApproverAssociationEntity();
         association.setAssociationEntityId(entity.getId());
         association.setAssociationType(AssociationType.RESOURCE);
         association.setApproverLevel(Integer.valueOf(0));
-        association.setApproverEntityId(requestorId);
+        association.setApproverEntityId(SpringSecurityHelper.getRequestorUserId());
         association.setApproverEntityType(AssociationType.USER);
         return association;
     }
 
-/*    private ResourceEntity getNewAdminResource(final ResourceEntity entity, final String requestorId) {
+/*    private ResourceEntity getNewAdminResource(final ResourceEntity entity) {
         final ResourceEntity adminResource = new ResourceEntity();
         adminResource.setName(String.format("RES_ADMIN_%s_%s", entity.getName(),
                 RandomStringUtils.randomAlphanumeric(2)));
@@ -864,36 +864,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     	}
     )
     @Transactional
-    public ResourceEntity saveResource(final Resource resource, final String requesterId) throws BasicDataServiceException {
+    public ResourceEntity saveResource(final Resource resource) throws BasicDataServiceException {
         this.validate(resource);
         final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
-        this.save(entity, requesterId);
+        this.save(entity);
         resource.setId(entity.getId());
         return entity;
-    }
-
-
-    @Override
-    @CacheKeyEviction(
-        	evictions={
-        		@CacheKeyEvict("resources"),
-        		@CacheKeyEvict("resourceEntities")
-        	}
-        )
-    @Transactional
-    public void removeRoleToResource(final String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
-        RoleEntity roleEntity = roleService.getRole(roleId);
-        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-        ResourceEntity resourceEntity = this.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-        idmAuditLog.setAuditDescription(String.format("Remove role: %s from resource: %s", roleId, resourceId));
-
-        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
-        }
-        this.deleteResourceRole(resourceId, roleId);
     }
 
     private ResourceService getProxyService() {
@@ -1008,11 +984,10 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 //                    @CacheKeyEvict("resourceEntities")
 //            }
 //    )
-    public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId,
+    public Response addGroupToResource(final String resourceId, final String groupId,
                                        final Set<String> rightIds, final Date startDate, final Date endDate){
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
         Group group = groupDataService.getGroupDTO(groupId);
         idmAuditLog.setTargetGroup(groupId, group.getName());
@@ -1056,10 +1031,9 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 //                    @CacheKeyEvict("resourceEntities")
 //            }
 //    )
-    public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId) {
+    public Response removeGroupToResource(final String resourceId, final String groupId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
         idmAuditLog.setAuditDescription(String.format("Remove group: %s from resource: %s", groupId, resourceId));
 
@@ -1098,11 +1072,10 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    public Response addUserToResource(final String resourceId, final String userId, final String requesterId,
+    public Response addUserToResource(final String resourceId, final String userId,
                                       final Set<String> rightIds, final Date startDate, final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
@@ -1140,10 +1113,9 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    public Response removeUserFromResource(final String resourceId, final String userId, String requesterId) {
+    public Response removeUserFromResource(final String resourceId, final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
@@ -1183,11 +1155,10 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 //                    @CacheKeyEvict("resourceEntities")
 //            }
 //    )
-    public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId,
+    public Response addRoleToResource(final String resourceId, final String roleId,
                                       final Set<String> rightIds, final Date startDate, final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
 
         idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
@@ -1239,10 +1210,9 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 //                    @CacheKeyEvict("resourceEntities")
 //            }
 //    )
-    public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId) {
+    public Response removeRoleToResource(final String resourceId, final String roleId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
@@ -1289,15 +1259,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 //                    parameterIndex=1
 //            )
 //    })
-    public Response addChildResource(final String resourceId,
+    public Response addChildResourceWeb(final String resourceId,
                                      final String childResourceId,
-                                     final String requesterId,
                                      final Set<String> rights,
                                      final Date startDate,
                                      final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_CHILD_RESOURCE.value());
         ResourceEntity resourceEntity = this.findResourceById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
@@ -1346,10 +1314,9 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 //                    parameterIndex=1
 //            )
 //    })
-    public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId) {
+    public Response deleteChildResourceWeb(final String resourceId, final String memberResourceId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
-        idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_CHILD_RESOURCE.value());
         ResourceEntity resourceEntity = this.findResourceById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
@@ -1393,14 +1360,14 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
                     @CacheKeyEvict("resourceEntities")
             }
     )
-    public Response deleteResource(final String resourceId, final String requesterId) {
+    public Response deleteResourceWeb(final String resourceId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (resourceId == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Resource ID is not specified");
             }
 
-            getProxyService().validateResourceDeletion(resourceId);
+            validateResourceDeletion(resourceId);
             getProxyService().deleteResource(resourceId);
             //resourceService.deleteResourceWeb(resourceId, requesterId);
 
@@ -1416,21 +1383,16 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         return response;
     }
 
-    @Override
-    @CacheKeyEviction(
-            evictions={
-                    @CacheKeyEvict("resources"),
-                    @CacheKeyEvict("resourceEntities")
-            }
-    )
-    public Response saveResourceWeb(final Resource resource, final String requesterId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-          /*resourceService.validate(resource);
-            final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
-            resourceService.save(entity, requesterId);*/
+	@Override
+	public boolean isIndexed(String id) {
+		return resourceElasticSearchRepo.exists(id);
+	}
 
-            final ResourceEntity entity = getProxyService().saveResource(resource, requesterId);
+	@Override
+	public Response saveResourceWeb(Resource resource) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            final ResourceEntity entity = getProxyService().saveResource(resource);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.fail();
@@ -1442,10 +1404,5 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             response.fail();
         }
         return response;
-    }
-
-	@Override
-	public boolean isIndexed(String id) {
-		return resourceElasticSearchRepo.exists(id);
 	}
 }

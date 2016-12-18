@@ -34,7 +34,7 @@ public class RemoveIdmUserCommand extends BaseReconciliationUserCommand {
 			ProvisionUser pUser = new ProvisionUser(user);
 			pUser.setSrcSystemId(mSysID);
 			executeScript(config.getScript(), attributes, pUser);
-			ProvisionUserResponse response =  provisionService.deleteByUserId(user.getId(), UserStatusEnum.REMOVE, DEFAULT_REQUESTER_ID);
+			ProvisionUserResponse response =  provisionService.deleteByUserId(user.getId(), UserStatusEnum.REMOVE);
 			return response.isSuccess();
 		} catch (Exception e) {
 			e.printStackTrace();

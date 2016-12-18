@@ -97,7 +97,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		roleResourceList = resourceServiceClient.findBeans(rsb,0,MAX_ROLE_SCOPE_LIST_SIZE,null);
 		role = createRole();
 		for(Resource r: roleResourceList){
-			resourceServiceClient.addRoleToResource(r.getId(), role.getId(), "3000", null, null, null);
+			resourceServiceClient.addRoleToResource(r.getId(), role.getId(), null, null, null);
 		}
 		refreshAuthorizationManager();
 
@@ -120,7 +120,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		provider.setProviderType(oauthProviderTypeId);
 		provider.setAttributes(getAttributeList());
 
-		final Response wsResponse = authProviderServiceClient.saveAuthProvider(provider, getRequestorId());
+		final Response wsResponse = authProviderServiceClient.saveAuthProvider(provider);
 		Assert.assertNotNull(wsResponse);
 		Assert.assertTrue(wsResponse.isSuccess());
 		final String providerId = (String)wsResponse.getResponseValue();
@@ -174,7 +174,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		}
 		updateScopeAttribute(provider, buildScopeAttributeValue(newScopes));
 
-		Response wsResponse = authProviderServiceClient.saveAuthProvider(provider, getRequestorId());
+		Response wsResponse = authProviderServiceClient.saveAuthProvider(provider);
 		Assert.assertNotNull(wsResponse);
 		Assert.assertTrue(wsResponse.isSuccess());
 
@@ -191,7 +191,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 
 		// add 2 more scopes (restore previous scopes)
 		updateScopeAttribute(provider, buildScopeAttributeValue(new ArrayList<>(resourceList)));
-		wsResponse = authProviderServiceClient.saveAuthProvider(provider, getRequestorId());
+		wsResponse = authProviderServiceClient.saveAuthProvider(provider);
 		Assert.assertNotNull(wsResponse);
 		Assert.assertTrue(wsResponse.isSuccess());
 
@@ -275,7 +275,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		newScopes.addAll(roleResourceList);
 
 		updateScopeAttribute(provider, buildScopeAttributeValue(newScopes));
-		Response wsResponse = authProviderServiceClient.saveAuthProvider(provider, getRequestorId());
+		Response wsResponse = authProviderServiceClient.saveAuthProvider(provider);
 		Assert.assertNotNull(wsResponse);
 		Assert.assertTrue(wsResponse.isSuccess());
 

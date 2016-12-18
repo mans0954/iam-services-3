@@ -53,6 +53,7 @@ import org.openiam.idm.util.SSLCert;
 import org.openiam.mq.constants.queue.idm.ManagedSysQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.util.AuditLogHelper;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -134,10 +135,10 @@ public class ManagedSystemWebServiceImpl extends AbstractApiService implements M
     }
 
     @Override
-    public Response requestSSLCert(@WebParam(name = "sys", targetNamespace = "") ManagedSysDto sys, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
+    public Response requestSSLCert(final ManagedSysDto sys) {
         Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-        auditLog.setRequestorUserId(requesterId);
+        auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         auditLog.setAction(AuditAction.SSL_CERT_REQUEST.value());
         auditLog.setTargetManagedSys(sys.getId(), sys.getName());
         try {
