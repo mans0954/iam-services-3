@@ -145,7 +145,7 @@ public class NewUserModelToProvisionConverter {
 
 			if(CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
 				for(final String organizationId : request.getOrganizationIds()) {
-					final OrganizationEntity entity = organizationDataService.getOrganizationLocalized(organizationId, null, null);
+					final OrganizationEntity entity = organizationDataService.getOrganizationLocalized(organizationId, null);
 					if(entity != null) {
 						final Organization organization = organizationDozerConverter.convertToDTO(entity, false);
 						user.addAffiliation(organization, null, null, null);

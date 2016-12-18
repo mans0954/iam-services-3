@@ -573,7 +573,7 @@ public class SourceAdapterDispatcher implements Runnable {
             List<UserToOrganizationMembershipXref> result = new ArrayList<UserToOrganizationMembershipXref>();
             for (SourceAdapterOrganizationRequest org : request.getOrganizations()) {
                 isFound = false;
-                Organization organizationDB = this.getOrganizationFromDataBase(org, warnings, SpringSecurityHelper.getRequestorUserId());
+                Organization organizationDB = this.getOrganizationFromDataBase(org, warnings);
                 if (organizationDB == null) {
                     break;
                 }
@@ -588,7 +588,7 @@ public class SourceAdapterDispatcher implements Runnable {
                             case REPLACE: {
                                 organizationUserDTO.setOrganizationTypeId(org.getMetadataTypeId());
                                 this.convertToOrganization(organizationDB, org, warnings);
-                                Response response = organizationDataService.saveOrganization(organizationDB, SpringSecurityHelper.getRequestorUserId());
+                                Response response = organizationDataService.saveOrganization(organizationDB);
                                 if (response.isFailure()) {
                                     warnings.append(getWarning("Organization doesn't added/updated to DataBase. " + response.getErrorCode() + ":" + response.getErrorText()));
                                 }
@@ -620,13 +620,13 @@ public class SourceAdapterDispatcher implements Runnable {
                         if (StringUtils.isBlank(organizationDB.getId()) && CollectionUtils.isNotEmpty(organizationDB.getAttributes())) {
                             Set<OrganizationAttribute> attributes = organizationDB.getAttributes();
                             organizationDB.setAttributes(null);
-                            Response response = organizationDataService.saveOrganization(organizationDB, SpringSecurityHelper.getRequestorUserId());
+                            Response response = organizationDataService.saveOrganization(organizationDB);
                             if (response.isSuccess()) {
                                 organizationDB.setId((String) response.getResponseValue());
                                 organizationDB.setAttributes(attributes);
                             }
                         }
-                        Response response = organizationDataService.saveOrganization(organizationDB, SpringSecurityHelper.getRequestorUserId());
+                        Response response = organizationDataService.saveOrganization(organizationDB);
                         if (response.isSuccess()) {
                             organizationDB.setId((String) response.getResponseValue());
 
@@ -644,7 +644,7 @@ public class SourceAdapterDispatcher implements Runnable {
         }
     }
 
-    private List<Organization> findOrganization(SourceAdapterOrganizationRequest org, String requestodId) {
+    private List<Organization> findOrganization(SourceAdapterOrganizationRequest org) {
         List<Organization> organization = null;
         OrganizationSearchBean osb = new OrganizationSearchBean();
         if (StringUtils.isNotBlank(org.getName()) && StringUtils.isNotBlank(org.getOrganizationTypeId())) {
@@ -654,7 +654,7 @@ public class SourceAdapterDispatcher implements Runnable {
             osb.addAttribute(org.getAttributeLookup().getName(), org.getAttributeLookup().getValue());
         }
         osb.setDeepCopy(false);
-        organization = organizationDataService.findBeansDto(osb, requestodId, 0, Integer.MAX_VALUE, null);
+        organization = organizationDataService.findBeansDto(osb, 0, Integer.MAX_VALUE, null);
         return organization;
     }
 
@@ -761,8 +761,8 @@ public class SourceAdapterDispatcher implements Runnable {
     }
 
     private Organization getOrganizationFromDataBase(SourceAdapterOrganizationRequest org, StringBuilder
-            warnings, String requestorId) {
-        List<Organization> organization = this.findOrganization(org, requestorId);
+            warnings) {
+        List<Organization> organization = this.findOrganization(org);
         if (CollectionUtils.isEmpty(organization)) {
             warnings.append(getWarning("can't find org=" + org.toString()));
             return null;

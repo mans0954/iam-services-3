@@ -37,7 +37,7 @@ public class OrganizationAttributeListener extends AbstractAttributeListener {
         OrganizationSearchBean searchBean = new OrganizationSearchBean();
         searchBean.setMetadataType(request.getMetadataTypeId());
 
-        List<OrganizationEntity> orgList = organizationService.findBeans(searchBean,null,-1,-1);
+        List<OrganizationEntity> orgList = organizationService.findBeans(searchBean,-1,-1);
         if(CollectionUtils.isNotEmpty(orgList)){
             for(OrganizationEntity org: orgList){
                 Set<OrganizationAttributeEntity> orgAttributes = org.getAttributes();

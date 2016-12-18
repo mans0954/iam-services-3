@@ -31,17 +31,17 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 
 	@Override
 	protected Response addChildToParent(Organization parent, User child, final String requestorId, final Set<String> rights, Date startDate, final Date endDate) {
-		return organizationServiceClient.addUserToOrg(parent.getId(), child.getId(), requestorId, rights, startDate, endDate);
+		return organizationServiceClient.addUserToOrg(parent.getId(), child.getId(), rights, startDate, endDate);
 	}
 
 	@Override
 	protected Response removeChildFromParent(Organization parent, User child, final String requestorId) {
-		return organizationServiceClient.removeUserFromOrg(parent.getId(), child.getId(), requestorId);
+		return organizationServiceClient.removeUserFromOrg(parent.getId(), child.getId());
 	}
 
 	@Override
 	protected Response deleteParent(Organization parent, final String requestorId) {
-		return organizationServiceClient.deleteOrganization(parent.getId(), requestorId);
+		return organizationServiceClient.deleteOrganization(parent.getId());
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
 		searchBean.setLanguage(getDefaultLanguage());
-		final List<Organization> dtos = organizationServiceClient.findBeans(searchBean, "3000", 0, 100);
+		final List<Organization> dtos = organizationServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find parent"), optional.isPresent());
@@ -81,14 +81,17 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 		final List<User> dtos = userServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<User> optional = dtos.stream().filter(e -> e.getId().equals(child.getId())).findAny();
-			Assert.assertTrue(String.format("Can't find parent"), optional.isPresent());
-			final User e = optional.get();
-			if(CollectionUtils.isEmpty(rights)) {
-				Assert.assertTrue(CollectionUtils.isEmpty(e.getAccessRightIds()));
+			if(optional.isPresent()) {
+				final User e = optional.get();
+				if(CollectionUtils.isEmpty(rights)) {
+					Assert.assertTrue(CollectionUtils.isEmpty(e.getAccessRightIds()));
+				} else {
+					Assert.assertEquals(rights, e.getAccessRightIds());
+				}
+				return true;
 			} else {
-				Assert.assertEquals(rights, e.getAccessRightIds());
+				return false;
 			}
-			return true;
 		} else {
 			return false;
 		}
@@ -96,7 +99,7 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 
 	@Override
 	protected Organization getParentById(Organization parent) {
-		return organizationServiceClient.getOrganizationLocalized(parent.getId(), null, null);
+		return organizationServiceClient.getOrganizationLocalized(parent.getId(), null);
 	}
 
 	@Override

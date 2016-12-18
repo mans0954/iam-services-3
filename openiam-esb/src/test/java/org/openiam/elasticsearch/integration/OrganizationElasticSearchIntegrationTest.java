@@ -40,20 +40,20 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 		organization.setDomainName(getRandomName());
 		organization.setLdapStr(getRandomName());
 		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, getDefaultLanguage()).get(0).getId());
-		final Response response = organizationServiceClient.saveOrganization(organization, getRequestorId());
+		final Response response = organizationServiceClient.saveOrganization(organization);
 		assertSuccess(response);
-		organization = organizationServiceClient.getOrganizationLocalized((String)response.getResponseValue(), getRequestorId(), getDefaultLanguage());
+		organization = organizationServiceClient.getOrganizationLocalized((String)response.getResponseValue(), getDefaultLanguage());
 		Assert.assertNotNull(organization);
 		
 		final String organizationId = organization.getId();
 		
-		parentOrganizationId = organizationServiceClient.findBeans(null, getRequestorId(), 0, 10)
+		parentOrganizationId = organizationServiceClient.findBeans(null, 0, 10)
 				   .stream()
 				   .filter(e -> !e.getId().equals(organizationId))
 				   .findAny()
 				   .get()
 				   .getId();
-		assertSuccess(organizationServiceClient.addChildOrganization(parentOrganizationId, organization.getId(), getRequestorId(), null, null, null));
+		assertSuccess(organizationServiceClient.addChildOrganization(parentOrganizationId, organization.getId(), null, null, null));
 		sleep(5);
 		return organization;
 	}
@@ -81,7 +81,7 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 			sb.addParentId(parent.getId());
 			
 			/* start in 15 s, end in 30 s */
-			assertSuccess(organizationServiceClient.addChildOrganization(parent.getId(), child.getId(), getRequestorId(), null, DateUtils.addSeconds(now, 15), DateUtils.addSeconds(now, 30)));
+			assertSuccess(organizationServiceClient.addChildOrganization(parent.getId(), child.getId(), null, DateUtils.addSeconds(now, 15), DateUtils.addSeconds(now, 30)));
 			sleep(5000);
 			assertNotFound(sb);
 			
@@ -94,10 +94,10 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 			assertNotFound(sb);
 		} finally {
 			if(child != null) {
-				organizationServiceClient.deleteOrganization(child.getId(), getRequestorId());
+				organizationServiceClient.deleteOrganization(child.getId());
 			}
 			if(parent != null) {
-				organizationServiceClient.deleteOrganization(parent.getId(), getRequestorId());
+				organizationServiceClient.deleteOrganization(parent.getId());
 			}
 		}
 	}
@@ -105,11 +105,11 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 	@Test
 	public void testInternationalizationOfOrganizationType() {
 		final OrganizationSearchBean sb = newSearchBean();
-		List<Organization> retval = organizationServiceClient.findBeans(sb, getRequestorId(), 0, 3);
+		List<Organization> retval = organizationServiceClient.findBeans(sb, 0, 3);
 		assertOrganizationTypePresent(retval);
 		
 		sb.setNameToken(new SearchParam("a", MatchType.CONTAINS));
-		retval = organizationServiceClient.findBeans(sb, getRequestorId(), 0, 3);
+		retval = organizationServiceClient.findBeans(sb, 0, 3);
 		assertOrganizationTypePresent(retval);
 	}
 	
@@ -148,7 +148,7 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 
 	@Override
 	protected void delete(Organization dto) {
-		assertSuccess(organizationServiceClient.deleteOrganization(dto.getId(), getRequestorId()));
+		assertSuccess(organizationServiceClient.deleteOrganization(dto.getId()));
 	}
 
 	@Override
@@ -168,7 +168,7 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 
 	@Override
 	protected List<Organization> findBeans(OrganizationSearchBean searchBean) {
-		return organizationServiceClient.findBeans(searchBean, getRequestorId(), 0, 10);
+		return organizationServiceClient.findBeans(searchBean, 0, 10);
 	}
 
 

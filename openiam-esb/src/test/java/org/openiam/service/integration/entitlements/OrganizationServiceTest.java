@@ -68,24 +68,24 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 
 	@Override
 	protected Response save(Organization t) {
-		return organizationServiceClient.saveOrganization(t, null);
+		return organizationServiceClient.saveOrganization(t);
 	}
 
 	@Override
 	protected Response delete(Organization t) {
-		return organizationServiceClient.deleteOrganization(t.getId(), null);
+		return organizationServiceClient.deleteOrganization(t.getId());
 	}
 
 	@Override
 	protected Organization get(String key) {
-		return organizationServiceClient.getOrganizationLocalized(key, null, null);
+		return organizationServiceClient.getOrganizationLocalized(key, null);
 	}
 
 	@Override
 	public List<Organization> find(OrganizationSearchBean searchBean, int from,
 			int size) {
 		searchBean.setLanguage(getDefaultLanguage());
-		return organizationServiceClient.findBeans(searchBean, null, from, size);
+		return organizationServiceClient.findBeans(searchBean, from, size);
 	}
 
 	@Test
@@ -96,9 +96,9 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 		
 		r1.setName(name);
 		r2.setName(name);
-		Response response = organizationServiceClient.saveOrganization(r1, getRequestorId());
+		Response response = organizationServiceClient.saveOrganization(r1);
 		assertSuccess(response);
-		response = organizationServiceClient.saveOrganization(r2, getRequestorId());
+		response = organizationServiceClient.saveOrganization(r2);
 		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
 	}
 	
@@ -113,9 +113,9 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 		r1.setOrganizationTypeId(typeId);
 		r2.setName(name);
 		r2.setOrganizationTypeId(typeId);
-		Response response = organizationServiceClient.saveOrganization(r1, getRequestorId());
+		Response response = organizationServiceClient.saveOrganization(r1);
 		assertSuccess(response);
-		response = organizationServiceClient.saveOrganization(r2, getRequestorId());
+		response = organizationServiceClient.saveOrganization(r2);
 		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
 	}
 	
@@ -129,9 +129,9 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 		r1.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 10, null).get(0).getId());
 		r2.setName(name);
 		r2.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 10, null).get(1).getId());
-		Response response = organizationServiceClient.saveOrganization(r1, getRequestorId());
+		Response response = organizationServiceClient.saveOrganization(r1);
 		assertSuccess(response);
-		response = organizationServiceClient.saveOrganization(r2, getRequestorId());
+		response = organizationServiceClient.saveOrganization(r2);
 		assertSuccess(response);
 	}
 

@@ -17,37 +17,37 @@ public abstract class AbstractAuthorizationManagerValidator extends AbstractAuth
 
 	@Override
 	protected Response doAddChildOrganization(final String organizationId, final String childOrganizationId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return organizationServiceClient.addChildOrganization(organizationId, childOrganizationId, requestorId, rightIds, startDate, endDate);
+		return organizationServiceClient.addChildOrganization(organizationId, childOrganizationId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doAddResourceToOrganization(final String organizationId, final String resourceId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return organizationServiceClient.addResourceToOrganization(organizationId, resourceId, requestorId, rightIds, startDate, endDate);
+		return organizationServiceClient.addResourceToOrganization(organizationId, resourceId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doRemoveResourceFromOrganization(final String organizationid, final String resourceId, final String requestorId) {
-		return organizationServiceClient.removeResourceFromOrganization(organizationid, resourceId, requestorId);
+		return organizationServiceClient.removeResourceFromOrganization(organizationid, resourceId);
 	}
 	
 	@Override
 	protected Response doAddRoleToOrganization(final String organizationId, final String roleId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return organizationServiceClient.addRoleToOrganization(organizationId, roleId, requestorId, rightIds, startDate, endDate);
+		return organizationServiceClient.addRoleToOrganization(organizationId, roleId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doRemoveRoleFromOrganization(final String organizationId, final String roleId, final String requestorId) {
-		return organizationServiceClient.removeRoleFromOrganization(organizationId, roleId, requestorId);
+		return organizationServiceClient.removeRoleFromOrganization(organizationId, roleId);
 	}
 	
 	@Override
 	protected Response doAddGroupToOrganization(final String organizationId, final String groupId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return organizationServiceClient.addGroupToOrganization(organizationId, groupId, requestorId, rightIds, startDate, endDate);
+		return organizationServiceClient.addGroupToOrganization(organizationId, groupId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doRemoveGroupFromOrganization(final String organizationId, final String groupId, final String requestorId) {
-		return organizationServiceClient.removeGroupFromOrganization(organizationId, groupId, requestorId);
+		return organizationServiceClient.removeGroupFromOrganization(organizationId, groupId);
 	}
 	
 	@Override

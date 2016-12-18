@@ -43,7 +43,7 @@ public class GroupDisplayMapper extends AbstractActivitiJob {
 		if(CollectionUtils.isNotEmpty(groupRequestModel.getTargetObject().getOrganizations())) {
 			StringBuilder nameBuilder = new StringBuilder();
 			for(GroupToOrgMembershipXref org : groupRequestModel.getTargetObject().getOrganizations()){
-				final OrganizationEntity entity = organizationService.getOrganization(org.getId(), null);
+				final OrganizationEntity entity = organizationService.getOrganization(org.getId());
 				if(entity != null) {
 					if(nameBuilder.length()>0)
 						nameBuilder.append(", ");

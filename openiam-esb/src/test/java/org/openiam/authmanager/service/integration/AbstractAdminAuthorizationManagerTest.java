@@ -90,12 +90,12 @@ public abstract class AbstractAdminAuthorizationManagerTest extends AbstractAuth
 	
 	@Override
 	protected Response doAddUserToOrg(final String organizationId, final String userId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		return organizationServiceClient.addUserToOrg(organizationId, userId, requestorId, rightIds, startDate, endDate);
+		return organizationServiceClient.addUserToOrg(organizationId, userId, rightIds, startDate, endDate);
 	}
 	
 	@Override
 	protected Response doRemoveUserFromOrg(final String organizationId, final String userId, final String requestorId) {
-		return organizationServiceClient.removeUserFromOrg(organizationId, userId, requestorId);
+		return organizationServiceClient.removeUserFromOrg(organizationId, userId);
 	}
 	
 	@Override
@@ -115,7 +115,7 @@ public abstract class AbstractAdminAuthorizationManagerTest extends AbstractAuth
 	
 	@Override
 	protected Response doRemoveOrganization(final Organization organization, final String requestorId) {
-		return organizationServiceClient.deleteOrganization(organization.getId(), requestorId);
+		return organizationServiceClient.deleteOrganization(organization.getId());
 	}	
 	
 }

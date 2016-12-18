@@ -318,7 +318,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 response = provisionService.modifyUser(pUser);
                             }
                         } else {
-                            response = organizationDataService.addUserToOrg(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
+                            response = organizationDataService.addUserToOrg(associationId, memberAssociationId, rights, startDate, endDate);
                         }
                         break;
                     case REMOVE_USER_FROM_ORG:
@@ -332,7 +332,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 response = provisionService.modifyUser(pUser);
                             }
                         } else {
-                            response = organizationDataService.removeUserFromOrg(associationId, memberAssociationId, systemUserId);
+                            response = organizationDataService.removeUserFromOrg(associationId, memberAssociationId);
                         }
                         break;
                     default:

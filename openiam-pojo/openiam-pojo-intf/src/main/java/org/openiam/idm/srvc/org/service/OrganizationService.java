@@ -25,29 +25,15 @@ import javax.jws.WebParam;
 public interface OrganizationService {
     @Deprecated
 	public Organization getOrganizationDTO(final String orgId);
-    @Deprecated
-    public OrganizationEntity getOrganization(String orgId);
 
     @Deprecated
-    public OrganizationEntity getOrganization(final String orgId, String requesterId);
+    public OrganizationEntity getOrganization(final String orgId);
 
     @Deprecated
-    public OrganizationEntity getOrganizationByName(final String name, String requesterId);
-
-    /*@Deprecated
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size);
+    public OrganizationEntity getOrganizationByName(final String name);
 
     @Deprecated
-    public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size);
-
-    @Deprecated
-    public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size);
-
-    @Deprecated
-    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size);*/
-
-    @Deprecated
-    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId);
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId);
 
     @Deprecated
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue);
@@ -56,33 +42,33 @@ public interface OrganizationService {
 
     public Organization getOrganizationDTO(final String orgId, final LanguageEntity langauge);
 
-    public Organization getOrganizationLocalizedDto(String orgId, String requesterId, final LanguageEntity language);
+    public Organization getOrganizationLocalizedDto(String orgId, final LanguageEntity language);
 
-    public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity language);
+    public OrganizationEntity getOrganizationByName(final String name, final LanguageEntity language);
 
    // public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity lang);
 
     //public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size);
 
-    public List<Organization> getOrganizationsDtoForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<Organization> getOrganizationsDtoForUser(String userId, final int from, final int size, final LanguageEntity language);
 
-    public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<OrganizationEntity> getParentOrganizations(final String orgId, final int from, final int size, final LanguageEntity language);
 
-    public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language);
+    public List<Organization> getParentOrganizationsDto(String orgId, int from, int size, final LanguageEntity language);
 
     //public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity lang);
 
    // public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity lang);
 
-    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size);
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, final int from, final int size);
+    public List<OrganizationEntity> getOrganizationsForUser(String userId, final int from, final int size, final LanguageEntity language);
 
 
-    public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language);
+    public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, int from, int size, final LanguageEntity language);
 
-    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity language);
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, final LanguageEntity language);
 
-    public List<Organization> getAllowedParentOrganizationsDtoForType(final String orgTypeId, String requesterId, final LanguageEntity language);
+    public List<Organization> getAllowedParentOrganizationsDtoForType(final String orgTypeId, final LanguageEntity language);
 
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity language);
 
@@ -99,21 +85,19 @@ public interface OrganizationService {
     public void addUserToOrg(String orgId, String userId, String metadataTypeId);*/
 
 
-	public int count(final OrganizationSearchBean searchBean, String requesterId);
-	public void addUserToOrg(final String orgId, final String userId, Set<String> rightIds, final Date startDate, final Date endDate);
-	public void removeUserFromOrg(String orgId, String userId);
-    public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException;
-	public Organization save(final Organization organization, final String requestorId) throws BasicDataServiceException;
+	public int count(final OrganizationSearchBean searchBean);
+    public Organization save(final Organization organization, final boolean skipPrePostProcessors) throws BasicDataServiceException;
+	public Organization save(final Organization organization) throws BasicDataServiceException;
     public void addRequiredAttributes(OrganizationEntity organization);
 	public void removeChildOrganization(final String organizationId, final String childOrganizationId);
 	public void addChildOrganization(final String organizationId, final String childOrganizationId, final Set<String> rightIds, final Date startDate, final Date endDate);
-	public void deleteOrganization(final String orgId) throws BasicDataServiceException;
+	public Response deleteOrganization(final String orgId) throws BasicDataServiceException;
     public void deleteOrganization(final String orgId, final boolean skipPrePostProcessors) throws BasicDataServiceException;
 	public void validateOrg2OrgAddition(String parentId, String memberId, final Set<String> rightIds) throws BasicDataServiceException;
     public void validate(final Organization organization) throws BasicDataServiceException;
 
     public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap);
-    public Set<String> getDelegationFilter(String requesterId);
+    public Set<String> getDelegationFilter();
 
         public void addLocation(LocationEntity val);
 
@@ -158,27 +142,24 @@ public interface OrganizationService {
     public void addRoleToOrganization(final String organizationId, final String roleId, final Set<String> rightIds, final Date startDate, final Date endDate);
     public void removeRoleFromOrganization(final String organizationId, final String roleId);
 
-    public List<Organization> getUserAffiliationsByType(String userId, String typeId, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<Organization> getUserAffiliationsByType(String userId, String typeId, final int from, final int size, final LanguageEntity language);
 
     public List<OrganizationAttribute> getOrgAttributesDtoList(String orgId);
     public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge);
-    public OrganizationEntity getOrganizationLocalized(String orgId, String requesterId, final LanguageEntity langauge);
     public void saveAttribute(final OrganizationAttributeEntity attribute);
 
 
-    public Response saveOrganization(final Organization organization, final String requesterId);
-    public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors);
-    public Response deleteOrganization(final String orgId, final String requestorId);
-    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors, final String requestorId);
+    public Response saveOrganization(final Organization organization);
+    public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final boolean skipPrePostProcessors);
+    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors) throws BasicDataServiceException;
 
     public Response addUserToOrg(final String orgId,
                                  final String userId,
-                                 final String requestorId,
                                  final Set<String> rightIds,
                                  final Date startDate,
                                  final Date endDate);
 
-    public Response removeUserFromOrg(String orgId, String userId, final String requestorId);
+    public Response removeUserFromOrg(String orgId, String userId);
     
     public boolean isIndexed(String id);
 }

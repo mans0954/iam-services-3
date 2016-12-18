@@ -79,25 +79,25 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     /**
      * Only for internal system use, without @LocalizedServiceGet
      */
-    public Organization getOrganization(final String orgId, String requesterId) {
-        return this.getOrganizationLocalized(orgId, requesterId, getDefaultLanguage());
+    public Organization getOrganization(final String orgId) {
+        return this.getOrganizationLocalized(orgId, getDefaultLanguage());
     }
 
     @Override
     //@LocalizedServiceGet
     //@Transactional(readOnly = true)
-    public Organization getOrganizationLocalized(final String orgId, String requesterId, final Language language) {
-        final OrganizationEntity entity = organizationService.getOrganizationLocalized(orgId, requesterId, languageConverter.convertToEntity(language, false));
+    public Organization getOrganizationLocalized(final String orgId, final Language language) {
+        final OrganizationEntity entity = organizationService.getOrganizationLocalized(orgId, languageConverter.convertToEntity(language, false));
         return organizationDozerConverter.convertToDTO(entity, true);
     }
     
     @Override
     @Deprecated
-	public int getNumOfOrganizationsForUser(final String userId, final String requesterId) {
+	public int getNumOfOrganizationsForUser(final String userId) {
     	final OrganizationSearchBean sb = new OrganizationSearchBean();
     	sb.addUserId(userId);
     	sb.setDeepCopy(false);
-    	return count(sb, requesterId);
+    	return count(sb);
 	}
 
     @Override
@@ -105,23 +105,23 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
      * for internal use only, without  @LocalizedServiceGet
      */
     @Deprecated
-    public List<Organization> getOrganizationsForUser(final String userId, final String requesterId, final int from, final int size) {
+    public List<Organization> getOrganizationsForUser(final String userId, final int from, final int size) {
     	final OrganizationSearchBean sb = new OrganizationSearchBean();
     	sb.addUserId(userId);
     	sb.setDeepCopy(false);
-    	return findBeans(sb, requesterId, from, size);
+    	return findBeans(sb, from, size);
     }
 
     @Override
     //@LocalizedServiceGet
-    public List<Organization> getOrganizationsForUserLocalized(final String userId, final String requesterId, final int from, final int size, final Language language) {
-        return organizationService.getOrganizationsDtoForUser(userId, requesterId, from, size, languageConverter.convertToEntity(language, false));
+    public List<Organization> getOrganizationsForUserLocalized(final String userId, final int from, final int size, final Language language) {
+        return organizationService.getOrganizationsDtoForUser(userId, from, size, languageConverter.convertToEntity(language, false));
     }
 
     @Override
     @LocalizedServiceGet
-    public List<Organization> findBeans(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size) {
-    	final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size);
+    public List<Organization> findBeans(final OrganizationSearchBean searchBean, final int from, final int size) {
+    	final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, from, size);
         final List<Organization> dtoList = organizationDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
         accessRightProcessor.process(searchBean, dtoList, entityList);
         return dtoList;
@@ -129,65 +129,66 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Override
     @Deprecated
-    public List<Organization> getParentOrganizations(String orgId, String requesterId, final int from, final int size) {
-        return this.getParentOrganizationsLocalized(orgId, requesterId, from, size, getDefaultLanguage());
+    public List<Organization> getParentOrganizations(String orgId, final int from, final int size) {
+        return this.getParentOrganizationsLocalized(orgId, from, size, getDefaultLanguage());
     }
 
     @Override
     @LocalizedServiceGet
     @Deprecated
-    public List<Organization> getParentOrganizationsLocalized(String orgId, String requesterId, final int from, final int size, final Language language) {
+    public List<Organization> getParentOrganizationsLocalized(String orgId, final int from, final int size, final Language language) {
         final OrganizationSearchBean sb = new OrganizationSearchBean();
         sb.addChildId(orgId);
         sb.setLanguage(language);
-        return findBeans(sb, requesterId, from, size);
+        return findBeans(sb, from, size);
     }
 
     @Override
     @Deprecated
-    public List<Organization> getChildOrganizations(String orgId, String requesterId, final int from, final int size) {
-        return this.getChildOrganizationsLocalized(orgId, requesterId, from, size, getDefaultLanguage());
+    public List<Organization> getChildOrganizations(String orgId, final int from, final int size) {
+        return this.getChildOrganizationsLocalized(orgId, from, size, getDefaultLanguage());
     }
 
     @Override
     @LocalizedServiceGet
     @Deprecated
-    public List<Organization> getChildOrganizationsLocalized(String orgId, String requesterId, final int from, final int size, final Language language) {
+    public List<Organization> getChildOrganizationsLocalized(String orgId, final int from, final int size, final Language language) {
         final OrganizationSearchBean sb = new OrganizationSearchBean();
         sb.addParentId(orgId);
         sb.setLanguage(language);
-        return findBeans(sb, requesterId, from, size);
+        return findBeans(sb, from, size);
     }
 
     @Override
     @Deprecated
-    public int getNumOfParentOrganizations(String orgId, String requesterId) {
+    public int getNumOfParentOrganizations(String orgId) {
         final OrganizationSearchBean sb = new OrganizationSearchBean();
         sb.addChildId(orgId);
-        return count(sb, requesterId);    }
-
-    @Override
-    @Deprecated
-    public int getNumOfChildOrganizations(String orgId, String requesterId) {
-        final OrganizationSearchBean sb = new OrganizationSearchBean();
-        sb.addParentId(orgId);
-        return count(sb, requesterId);    }
-
-    @Override
-    public int count(final OrganizationSearchBean searchBean, String requesterId) {
-        return organizationService.count(searchBean, requesterId);
+        return count(sb);
     }
 
     @Override
     @Deprecated
-    public List<Organization> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){
-        return this.getAllowedParentOrganizationsForTypeLocalized(orgTypeId, requesterId, getDefaultLanguage());
+    public int getNumOfChildOrganizations(String orgId) {
+        final OrganizationSearchBean sb = new OrganizationSearchBean();
+        sb.addParentId(orgId);
+        return count(sb);    }
+
+    @Override
+    public int count(final OrganizationSearchBean searchBean) {
+        return organizationService.count(searchBean);
+    }
+
+    @Override
+    @Deprecated
+    public List<Organization> getAllowedParentOrganizationsForType(final String orgTypeId){
+        return this.getAllowedParentOrganizationsForTypeLocalized(orgTypeId, getDefaultLanguage());
     }
 
     @Override
     //@LocalizedServiceGet
-    public List<Organization> getAllowedParentOrganizationsForTypeLocalized(final String orgTypeId, String requesterId, final Language language) {
-        return organizationService.getAllowedParentOrganizationsDtoForType(orgTypeId, requesterId, languageConverter.convertToEntity(language, false));
+    public List<Organization> getAllowedParentOrganizationsForTypeLocalized(final String orgTypeId, final Language language) {
+        return organizationService.getAllowedParentOrganizationsDtoForType(orgTypeId, languageConverter.convertToEntity(language, false));
     }
 
   /*  @Override
@@ -206,34 +207,33 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Override
     @Deprecated
-    public List<Organization> getOrganizationsForUserByType(final String userId, final String requesterId, final String organizationTypeId) {
-        return this.getOrganizationsForUserByTypeLocalized(userId, requesterId, organizationTypeId, getDefaultLanguage());
+    public List<Organization> getOrganizationsForUserByType(final String userId, final String organizationTypeId) {
+        return this.getOrganizationsForUserByTypeLocalized(userId, organizationTypeId, getDefaultLanguage());
     }
 
 	@Override
 	@LocalizedServiceGet
-	public List<Organization> getOrganizationsForUserByTypeLocalized(final String userId, final String requesterId, final String organizationTypeId, final Language language) {
+	public List<Organization> getOrganizationsForUserByTypeLocalized(final String userId, final String organizationTypeId, final Language language) {
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
 		searchBean.addUserId(userId);
 		searchBean.setOrganizationTypeId(organizationTypeId);
 		searchBean.setDeepCopy(false);
 		searchBean.setLanguage(language);
-		return findBeans(searchBean, requesterId, 0, Integer.MAX_VALUE);
+		return findBeans(searchBean, 0, Integer.MAX_VALUE);
 	}
 
     @Override
     public Response addUserToOrg(final String orgId, 
     							 final String userId, 
-    							 final String requestorId,
     							 final Set<String> rightIds,
     							 final Date startDate,
 								 final Date endDate) {
-        return organizationService.addUserToOrg(orgId, userId, requestorId, rightIds, startDate, endDate);
+        return organizationService.addUserToOrg(orgId, userId, rightIds, startDate, endDate);
     }
 
     @Override
-    public Response removeUserFromOrg(String orgId, String userId, final String requestorId) {
-        return organizationService.removeUserFromOrg(orgId, userId, requestorId);
+    public Response removeUserFromOrg(String orgId, String userId) {
+        return organizationService.removeUserFromOrg(orgId, userId);
     }
 
     private Language getDefaultLanguage(){
@@ -243,15 +243,15 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public Response saveOrganization(final Organization organization, final String requesterId) {
-        return saveOrganizationWithSkipPrePostProcessors(organization, requesterId, false);
+    public Response saveOrganization(final Organization organization) {
+        return saveOrganizationWithSkipPrePostProcessors(organization, false);
     }
 
     @Override
-    public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) {
+    public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final boolean skipPrePostProcessors) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            Organization org = organizationService.save(organization, requestorId, skipPrePostProcessors);
+            Organization org = organizationService.save(organization, skipPrePostProcessors);
             response.setResponseValue(org.getId());
 
         } catch (BasicDataServiceException e) {
@@ -267,7 +267,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public Response removeChildOrganization(final String organizationId, final String childOrganizationId, final String requestorId) {
+    public Response removeChildOrganization(final String organizationId, final String childOrganizationId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || childOrganizationId == null) {
@@ -289,7 +289,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
     public Response addChildOrganization(final String organizationId, 
     									 final String childOrganizationId, 
-    									 final String requestorId,
     									 final Set<String> rightIds,
     									 final Date startDate,
     									 final Date endDate) {
@@ -317,7 +316,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	@Override
 	public Response addRoleToOrganization(final String organizationId, 
 										  final String roleId, 
-										  final String requestorId,
 										  final Set<String> rightIds,
 										  final Date startDate,
 	    								  final Date endDate) {
@@ -342,7 +340,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
 	@Override
-	public Response removeRoleFromOrganization(final String organizationId, final String roleId, final String requestorId) {
+	public Response removeRoleFromOrganization(final String organizationId, final String roleId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || roleId == null) {
@@ -363,7 +361,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	@Override
 	public Response addResourceToOrganization(final String organizationId, 
 											  final String resourceId, 
-											  final String requestorId,
 											  final Set<String> rightIds,
 											  final Date startDate,
 		    								  final Date endDate) {
@@ -388,7 +385,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
 	@Override
-	public Response removeResourceFromOrganization(final String organizationId, final String resourceId, final String requestorId) {
+	public Response removeResourceFromOrganization(final String organizationId, final String resourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || resourceId == null) {
@@ -409,7 +406,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
 	public Response addGroupToOrganization(final String organizationId, 
 										   final String groupId, 
-										   final String requestorId,
 										   final Set<String> rightIds,
 										   final Date startDate,
 	    								   final Date endDate) {
@@ -434,7 +430,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
 	@Override
-	public Response removeGroupFromOrganization(final String organizationId, final String groupId, final String requestorId) {
+	public Response removeGroupFromOrganization(final String organizationId, final String groupId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || groupId == null) {
@@ -453,13 +449,35 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
     @Override
-    public Response deleteOrganization(final String orgId, final String requestorId) {
-        return organizationService.deleteOrganization(orgId, requestorId);
+    public Response deleteOrganization(final String orgId) {
+        Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            response = organizationService.deleteOrganization(orgId);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
     }
 
     @Override
-    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors, final String requestorId) {
-        return organizationService.deleteOrganizationWithSkipPrePostProcessors(orgId, skipPrePostProcessors, requestorId);
+    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors) {
+    	 Response response = new Response(ResponseStatus.SUCCESS);
+         try {
+             response = organizationService.deleteOrganizationWithSkipPrePostProcessors(orgId, skipPrePostProcessors);
+         } catch (BasicDataServiceException e) {
+             response.setStatus(ResponseStatus.FAILURE);
+             response.setErrorCode(e.getCode());
+         } catch (Throwable e) {
+             log.error("Can't perform operation", e);
+             response.setStatus(ResponseStatus.FAILURE);
+             response.setErrorText(e.getMessage());
+         }
+         return response;
     }
     
     private void validateDeleteInternal(final String id) throws BasicDataServiceException {
@@ -671,7 +689,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         final Set<String> orgsId = new HashSet<String>();
         final OrganizationSearchBean sb = new OrganizationSearchBean();
         sb.addUserId(userId);
-        List<OrganizationEntity> orgList = organizationService.findBeans(sb, null, from, size);
+        List<OrganizationEntity> orgList = organizationService.findBeans(sb, from, size);
         for (OrganizationEntity org : orgList) {
             orgsId.add(org.getId());
         }
@@ -693,8 +711,8 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public List<Organization> getUserAffiliationsByType(final String userId, final String typeId, int from, int size, final String requesterId, final Language language) {
-        return organizationService.getUserAffiliationsByType(userId, typeId, requesterId, from, size, languageConverter.convertToEntity(language, false));
+    public List<Organization> getUserAffiliationsByType(final String userId, final String typeId, int from, int size, final Language language) {
+        return organizationService.getUserAffiliationsByType(userId, typeId, from, size, languageConverter.convertToEntity(language, false));
     }
 
     public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId){

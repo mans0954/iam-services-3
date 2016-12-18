@@ -30,17 +30,17 @@ public class Group2OrganizationEntitlementsTest extends AbstractEntitlementsTest
 
 	@Override
 	protected Response addChildToParent(final Organization parent, final Group child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
-		return organizationServiceClient.addGroupToOrganization(parent.getId(), child.getId(), requestorId, rights, startDate, endDate);
+		return organizationServiceClient.addGroupToOrganization(parent.getId(), child.getId(), rights, startDate, endDate);
 	}
 
 	@Override
 	protected Response removeChildFromParent(Organization parent, Group child, final String requestorId) {
-		return organizationServiceClient.removeGroupFromOrganization(parent.getId(), child.getId(), requestorId);
+		return organizationServiceClient.removeGroupFromOrganization(parent.getId(), child.getId());
 	}
 
 	@Override
 	protected Response deleteParent(Organization parent, final String requestorId) {
-		return organizationServiceClient.deleteOrganization(parent.getId(), requestorId);
+		return organizationServiceClient.deleteOrganization(parent.getId());
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class Group2OrganizationEntitlementsTest extends AbstractEntitlementsTest
 		searchBean.addGroupId(child.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setLanguage(getDefaultLanguage());
-		final List<Organization> dtos = organizationServiceClient.findBeans(searchBean, null, 0, 100);
+		final List<Organization> dtos = organizationServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child"), optional.isPresent());
@@ -99,7 +99,7 @@ public class Group2OrganizationEntitlementsTest extends AbstractEntitlementsTest
 
 	@Override
 	protected Organization getParentById(Organization parent) {
-		return organizationServiceClient.getOrganizationLocalized(parent.getId(), "3000", getDefaultLanguage());
+		return organizationServiceClient.getOrganizationLocalized(parent.getId(), getDefaultLanguage());
 	}
 
 	@Override

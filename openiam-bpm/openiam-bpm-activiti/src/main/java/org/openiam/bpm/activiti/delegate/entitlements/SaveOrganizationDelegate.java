@@ -33,7 +33,7 @@ public class SaveOrganizationDelegate extends AbstractActivitiJob {
             idmAuditLog.setAuditDescription("Edit organization");
         }
         try {
-            final Response response = organizationService.saveOrganization(organization, getRequestorId(execution));
+            final Response response = organizationService.saveOrganization(organization);
             if (response.isSuccess()) {
                 String orgId = (String) response.getResponseValue();
                 idmAuditLog.setTargetOrg(orgId, organization.getName());

@@ -28,7 +28,7 @@ public class DeleteOrganizationDelegate extends AbstractActivitiJob {
         try {
         	if (organization != null) {
         		idmAuditLog.setTargetOrg(organization.getId(), organization.getName());
-                wsResponse = organizationService.deleteOrganization(organization.getId(), systemUserId);
+                wsResponse = organizationService.deleteOrganization(organization.getId());
                 if (wsResponse.isSuccess()) {
                     idmAuditLog.succeed();
                 } else {

@@ -223,7 +223,7 @@ public class ProvisioningAuthorizationManagerWebServiceTest extends AbstractAuth
 	@Override
 	protected Response doRemoveOrganization(Organization organization,
 			String requestorId) {
-		return organizationServiceClient.deleteOrganization(organization.getId(), requestorId);
+		return organizationServiceClient.deleteOrganization(organization.getId());
 	}
 
 	@Test

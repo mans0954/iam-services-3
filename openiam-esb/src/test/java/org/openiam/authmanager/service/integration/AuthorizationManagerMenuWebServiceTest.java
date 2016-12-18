@@ -150,7 +150,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 		try {
 			user = super.createUser();
 			organization = super.createOrganization();
-			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate);
+			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate);
 			assertAccess(organization.getId(), "organization", user);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -160,7 +160,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				userServiceClient.removeUser(user.getId());
 			}
 			if(organization != null) {
-				organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId());
+				organizationServiceClient.deleteOrganization(organization.getId());
 			}
 		}
 	}
@@ -186,8 +186,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			organization = super.createOrganization();
 			child = super.createOrganization();
-			organizationServiceClient.addUserToOrg(child.getId(), user.getId(), getRequestorId(), null, startDate, endDate);
-			organizationServiceClient.addChildOrganization(organization.getId(), child.getId(), getRequestorId(), null, startDate, endDate);
+			organizationServiceClient.addUserToOrg(child.getId(), user.getId(), null, startDate, endDate);
+			organizationServiceClient.addChildOrganization(organization.getId(), child.getId(), null, startDate, endDate);
 			assertAccessIndirect(organization, child);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -197,10 +197,10 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				userServiceClient.removeUser(user.getId());
 			}
 			if(child != null) {
-				organizationServiceClient.deleteOrganization(child.getId(), getRequestorId());
+				organizationServiceClient.deleteOrganization(child.getId());
 			}
 			if(organization != null) {
-				organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId());
+				organizationServiceClient.deleteOrganization(organization.getId());
 			}
 		}
 	}
@@ -226,8 +226,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			organization = super.createOrganization();
 			role = super.createRole();
-			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate);
-			organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), getRequestorId(), null, startDate, endDate);
+			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(),  null, startDate, endDate);
+			organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), null, startDate, endDate);
 			assertAccessIndirect(role, organization);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -240,7 +240,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				roleServiceClient.removeRole(role.getId());
 			}
 			if(organization != null) {
-				organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId());
+				organizationServiceClient.deleteOrganization(organization.getId());
 			}
 		}
 	}
@@ -266,8 +266,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			organization = super.createOrganization();
 			group = super.createGroup();
-			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate);
-			organizationServiceClient.addGroupToOrganization(organization.getId(), group.getId(), getRequestorId(), null, startDate, endDate);
+			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate);
+			organizationServiceClient.addGroupToOrganization(organization.getId(), group.getId(), null, startDate, endDate);
 			assertAccessIndirect(group, organization);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -280,7 +280,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				groupServiceClient.deleteGroup(group.getId());
 			}
 			if(organization != null) {
-				organizationServiceClient.deleteOrganization(organization.getId(), getRequestorId());
+				organizationServiceClient.deleteOrganization(organization.getId());
 			}
 		}
 	}

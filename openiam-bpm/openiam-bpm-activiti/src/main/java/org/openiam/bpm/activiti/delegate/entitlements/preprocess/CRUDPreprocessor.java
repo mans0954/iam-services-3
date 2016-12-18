@@ -69,7 +69,7 @@ public class CRUDPreprocessor extends AbstractEntitlementsDelegate {
 					}
 					break;
 				case ORGANIZATION:
-					final OrganizationEntity organization = organizationService.getOrganization(associationId, null);
+					final OrganizationEntity organization = organizationService.getOrganization(associationId);
 					if(organization != null) {
 						isAdmin = authManagerService.isMemberOfOrganization(requestorId, organization.getId(), adminRightId);
 					}
