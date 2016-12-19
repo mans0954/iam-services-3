@@ -30,7 +30,11 @@ public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 		
 		http.addFilterAfter(preAuthFilter(), SecurityContextPersistenceFilter.class);
 		
-		SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+		/* 
+		 * inheritable thread local is evil. This will *not* work when submitting to executors, for example,
+		 * as threads are re-used
+		 */
+		//SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
 	}
 	
 	@Bean

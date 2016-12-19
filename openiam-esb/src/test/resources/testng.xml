@@ -31,7 +31,9 @@
 			<class name="org.openiam.service.integration.entitlements.Role2RoleEntitlementsTest" />
 			<class name="org.openiam.service.integration.entitlements.Role2UserEntitlementsTest" />
 			<class name="org.openiam.service.integration.entitlements.RoleServiceTest" />
+			<!--
 			<class name="org.openiam.service.integration.entitlements.ApproverAssociationServiceTest" />
+			-->
 			<class name="org.openiam.service.integration.entitlements.ResourceTypeServiceTest" />
 			<class name="org.openiam.service.integration.entitlements.Organization2UserEntitlementsTest"/>
 			<class name="org.openiam.service.integration.entitlements.Group2OrganizationEntitlementsTest"/>

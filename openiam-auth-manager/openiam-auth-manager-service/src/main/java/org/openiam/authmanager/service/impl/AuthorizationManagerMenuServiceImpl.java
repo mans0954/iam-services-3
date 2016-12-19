@@ -132,7 +132,6 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	@Value("${org.openiam.authorization.manager.threadsweep}")
 	private long sweepInterval;
 	
-	private ExecutorService service = new  ScheduledThreadPoolExecutor(1);
 	*/
 	
 	@Override

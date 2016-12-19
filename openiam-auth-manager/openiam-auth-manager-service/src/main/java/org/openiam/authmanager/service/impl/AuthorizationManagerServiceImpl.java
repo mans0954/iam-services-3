@@ -83,7 +83,6 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	@Value("${org.openiam.authorization.manager.threadsweep}")
 	private long sweepInterval;
 	
-	private ExecutorService service = new  ScheduledThreadPoolExecutor(1);
 	*/
 	
 	/* used to prevent reads when a cache refresh takes place */

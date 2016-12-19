@@ -40,7 +40,7 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 		if(searchBean != null && searchBean instanceof ApproverAssocationSearchBean) {
 			final ApproverAssocationSearchBean sb = (ApproverAssocationSearchBean)searchBean;
 			if(CollectionUtils.isNotEmpty(sb.getKeySet())) {
-				criteria.add(Restrictions.in("id", sb.getKeySet()));
+				criteria.add(Restrictions.in(getPKfieldName(), sb.getKeySet()));
 			} else {
 				if(sb.getAssociationType() != null) {
 					criteria.add(Restrictions.eq("associationType", sb.getAssociationType()));
