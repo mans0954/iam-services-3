@@ -281,6 +281,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         lg.setResetPassword(0);
         lg.setAuthFailCount(0);
         lg.setIsLocked(0);
+        lg.setForceChangePassword(0);
 
         // password has been changed the token is no longer valid
         lg.setPswdResetToken(null);
@@ -311,13 +312,13 @@ public class LoginDataServiceImpl implements LoginDataService {
     @Override
     @Transactional
     public boolean resetPassword(String login, String sysId, String password) {
-        return this.resetPassword(login, sysId, password, true);
+        return this.resetPassword(login, sysId, password, true,false);
     }
 
 
     @Override
     @Transactional
-    public boolean resetPassword(String login, String sysId, String password, boolean isActivate) {
+    public boolean resetPassword(String login, String sysId, String password, boolean isActivate, boolean forceChange) {
 
         LoginEntity lg = getLoginByManagedSys(login, sysId);
         if (lg == null) {
@@ -331,9 +332,19 @@ public class LoginDataServiceImpl implements LoginDataService {
 
         String changePswdOnReset = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "CHNG_PSWD_ON_RESET");
-        boolean preservePassword = "false".equalsIgnoreCase(changePswdOnReset);
 
-        String pswdExpValue = preservePassword
+//        boolean preservePassword = "false".equalsIgnoreCase(changePswdOnReset);
+        boolean changePassword = "true".equalsIgnoreCase(changePswdOnReset);
+
+        if(forceChange){
+            lg.setForceChangePassword(1);
+        }
+
+
+
+        boolean endDecision = changePassword || forceChange;
+
+        String pswdExpValue = endDecision
                 ? getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXPIRATION")
                 : getPolicyAttribute(plcy.getPolicyAttributes(),
