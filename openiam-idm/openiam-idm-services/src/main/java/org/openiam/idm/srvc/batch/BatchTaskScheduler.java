@@ -11,6 +11,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -22,6 +23,7 @@ import org.openiam.idm.srvc.batch.service.BatchService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -54,6 +56,9 @@ public class BatchTaskScheduler extends AbstractBaseService implements Initializ
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
+    
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
     
     @Autowired
     private HazelcastConfiguration hazelcastConfiguration;
@@ -111,7 +116,7 @@ public class BatchTaskScheduler extends AbstractBaseService implements Initializ
     public void execute(final String id, final List<BatchTaskScheduleEntity> scheduledTaskList) {
 		final Runnable task = batchService.getRunnable(id, scheduledTaskList);
 		if(task != null) {
-			batchTaskThreadExecutor.execute(task);
+			batchTaskThreadExecutor.execute(new OpenIAMRunnable(task, systemUserId));
 		}
     }
     

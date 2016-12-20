@@ -33,6 +33,7 @@ import org.openiam.base.response.SyncResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.concurrent.OpenIAMCallable;
 import org.openiam.idm.parser.csv.CSVHelper;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
@@ -175,7 +176,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                             return number;
                         }
                     };
-                    Future<Integer> submit = executor.submit(worker);
+                    Future<Integer> submit = executor.submit(new OpenIAMCallable<Integer>(worker, config.getRequestorUserId()));
                     list.add(submit);
                 }
 

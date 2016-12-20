@@ -1,6 +1,7 @@
 package org.openiam.util;
 
 import org.elasticsearch.common.lang3.StringUtils;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,7 +20,9 @@ public class SpringSecurityHelper {
 				if(authentication != null && authentication.getCredentials() != null) {
 					if(authentication.getCredentials() instanceof CXFAuthentication) {
 						userId = ((CXFAuthentication)authentication.getCredentials()).getUserId();
-					}
+					}/* else if(authentication.getCredentials() instanceof AnonymousAuthenticationToken) {
+						//what now?
+					}*/
 				}
 			}
 		}

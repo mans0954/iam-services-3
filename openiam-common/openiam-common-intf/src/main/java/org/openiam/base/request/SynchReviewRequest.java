@@ -13,7 +13,8 @@ import java.util.List;
         "sourceRejected",
         "skipSourceValid",
         "skipRecordValid",
-        "reviewRecords"
+        "reviewRecords",
+        "requestorId"
 })
 public class SynchReviewRequest {
     private String synchReviewId;
@@ -21,6 +22,7 @@ public class SynchReviewRequest {
     private boolean skipSourceValid;
     private boolean skipRecordValid;
     private List<SynchReviewRecord> reviewRecords;
+    private String requestorId;
 
     public String getSynchReviewId() {
         return synchReviewId;
@@ -61,4 +63,14 @@ public class SynchReviewRequest {
     public void setReviewRecords(List<SynchReviewRecord> reviewRecords) {
         this.reviewRecords = reviewRecords;
     }
+
+	public String getRequestorId() {
+		return requestorId;
+	}
+
+	public void setRequestorId(String requestorId) {
+		this.requestorId = requestorId;
+	}
+    
+    
 }

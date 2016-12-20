@@ -2,9 +2,11 @@ package org.openiam.elasticsearch.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +25,9 @@ public class ElasticsearchReindexServiceImpl implements InitializingBean, Elasti
     private ExecutorService service;
     @Autowired
     private ElasticsearchReindexProcessor reindexProcessor;
+    
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
 
     @Override
     public void reindex(ElasticsearchReindexRequest reindexRequest) throws Exception {
@@ -33,7 +38,7 @@ public class ElasticsearchReindexServiceImpl implements InitializingBean, Elasti
     @Override
     public void afterPropertiesSet() throws Exception {
         service = Executors.newCachedThreadPool();
-        service.submit(reindexProcessor);
+        service.submit(new OpenIAMRunnable(reindexProcessor, systemUserId));
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 service.shutdown();

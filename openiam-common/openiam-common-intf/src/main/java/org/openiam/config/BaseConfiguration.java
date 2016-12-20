@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.openiam.hazelcast.HazelcastConfiguration;
+import org.openiam.concurrent.OpenIAMThreadPoolTaskExecutor;
+import org.openiam.concurrent.OpenIAMThreadPoolTaskScheduler;
+import org.openiam.concurrent.RequestorIDProvider;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,8 +19,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestTemplate;
@@ -30,9 +30,6 @@ import org.springframework.web.client.RestTemplate;
 @EnableAspectJAutoProxy
 @ImportResource({"classpath:environmentContext.xml", "classpath:databaseContext.xml"})
 public class BaseConfiguration implements SchedulingConfigurer {
-	
-	@Autowired
-	private HazelcastConfiguration hazelcastConfig;
 	
 	@Autowired
 	private CustomJacksonMapper mapper;
@@ -49,32 +46,52 @@ public class BaseConfiguration implements SchedulingConfigurer {
 	@Value("${org.openiam.batch.task.executor.queue.capacity}")
 	private int queueCapacity;
 	
+	@Value("${org.openiam.idm.system.user.id}")
+	private String systemUserId;
+	
 	@Bean(name="authManagerCompilationPool")
-	public ThreadPoolTaskExecutor authManagerCompilationPool() {
-		final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+	public OpenIAMThreadPoolTaskExecutor authManagerCompilationPool() {
+		final OpenIAMThreadPoolTaskExecutor executor = new OpenIAMThreadPoolTaskExecutor();
 		executor.setCorePoolSize(10);
+		executor.initialize();
+		executor.setRequestorIDProvider(new RequestorIDProvider() {
+			
+			@Override
+			public String getRequestorId() {
+				return systemUserId;
+			}
+		});
 		return executor;
 	}
 	
 	/* this is for @Async stuff */
 	@Bean(name="taskExecutor")
-	public ThreadPoolTaskExecutor taskExecutor() {
-		return createTaskExecutor(100, 200, 300, "TaskExecutor-");
+	public OpenIAMThreadPoolTaskExecutor taskExecutor() {
+		final OpenIAMThreadPoolTaskExecutor executor = createTaskExecutor(100, 200, 300, "TaskExecutor-");
+		return executor;
 	}
 
 	@Bean(name = "workerTaskExecutor")
-	public ThreadPoolTaskExecutor workerTaskExecutor() {
-		return createTaskExecutor(20, 50, 100, "WorkerTaskExecutor-");
+	public OpenIAMThreadPoolTaskExecutor workerTaskExecutor() {
+		final OpenIAMThreadPoolTaskExecutor executor = createTaskExecutor(20, 50, 100, "WorkerTaskExecutor-");
+		return executor;
 	}
 
-	private ThreadPoolTaskExecutor createTaskExecutor(int corePoolSize, int maxPoolSize, int queueCapacity, String prefix){
-		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+	private OpenIAMThreadPoolTaskExecutor createTaskExecutor(int corePoolSize, int maxPoolSize, int queueCapacity, String prefix){
+		final OpenIAMThreadPoolTaskExecutor executor = new OpenIAMThreadPoolTaskExecutor();
 		executor.setCorePoolSize(corePoolSize);
 		executor.setMaxPoolSize(maxPoolSize);
 		executor.setQueueCapacity(queueCapacity);
 		executor.setThreadNamePrefix(prefix);
 		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 		executor.initialize();
+		executor.setRequestorIDProvider(new RequestorIDProvider() {
+			
+			@Override
+			public String getRequestorId() {
+				return systemUserId;
+			}
+		});
 		return executor;
 	}
 
@@ -95,8 +112,8 @@ public class BaseConfiguration implements SchedulingConfigurer {
 	
 	
 	@Bean(destroyMethod="shutdown", name="scheduler")
-	public ThreadPoolTaskScheduler scheduler() {
-		final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+	public OpenIAMThreadPoolTaskScheduler scheduler() {
+		final OpenIAMThreadPoolTaskScheduler scheduler = new OpenIAMThreadPoolTaskScheduler();
 		scheduler.setPoolSize(taskSchedulerSize);
 		return scheduler;
 	}
@@ -107,11 +124,19 @@ public class BaseConfiguration implements SchedulingConfigurer {
 	}
 	
 	@Bean(name="batchTaskThreadExecutor")
-	public ThreadPoolTaskExecutor batchTaskThreadExecutor() {
-		final ThreadPoolTaskExecutor e = new ThreadPoolTaskExecutor();
+	public OpenIAMThreadPoolTaskExecutor batchTaskThreadExecutor() {
+		final OpenIAMThreadPoolTaskExecutor e = new OpenIAMThreadPoolTaskExecutor();
 		e.setCorePoolSize(corePoolSize);
 		e.setMaxPoolSize(maxPoolSize);
 		e.setQueueCapacity(queueCapacity);
+		e.initialize();
+		e.setRequestorIDProvider(new RequestorIDProvider() {
+			
+			@Override
+			public String getRequestorId() {
+				return systemUserId;
+			}
+		});
 		return e;
 	}
 }

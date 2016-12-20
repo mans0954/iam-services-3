@@ -10,6 +10,7 @@ import org.openiam.base.response.list.IdmAuditLogListResponse;
 import org.openiam.base.response.list.StringListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
@@ -24,6 +25,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -43,6 +45,9 @@ import java.util.List;
 public class AuditLogListener extends AbstractListener<AuditLogAPI> {
     @Autowired
     private AuditLogService auditLogService;
+    
+    @Value("${org.openiam.idm.system.user.id}")
+    private String sysUserId;
 
     @Autowired
     public AuditLogListener(AuditLogQueue queue) {
@@ -52,6 +57,7 @@ public class AuditLogListener extends AbstractListener<AuditLogAPI> {
     private AuditLogBatchContainer batchContainer;
 
     @Autowired
+    @Qualifier("taskExecutor")
     public ThreadPoolTaskExecutor taskExecutor;
     @Autowired
     @Qualifier("transactionTemplate")
@@ -78,16 +84,17 @@ public class AuditLogListener extends AbstractListener<AuditLogAPI> {
             }
             if(batchContainer.isFull()){
                 final List<IdmAuditLogEntity> eventList = batchContainer.getEventList();
-                taskExecutor.execute(() ->
+                taskExecutor.execute(new OpenIAMRunnable(() -> {
                         transactionTemplate.execute(new TransactionCallback<Void>() {
-                        @Override
-                        public Void doInTransaction(TransactionStatus status) {
-                            for (IdmAuditLogEntity event : eventList) {
-                                doInProcess(event);
-                            }
-                            return null;
-                        }
-                    }));
+	                        @Override
+	                        public Void doInTransaction(TransactionStatus status) {
+	                            for (IdmAuditLogEntity event : eventList) {
+	                                doInProcess(event);
+	                            }
+	                            return null;
+	                        }
+                        });
+                }, sysUserId));
                 // create a new container for the next batch;
                 batchContainer = new AuditLogBatchContainer();
             } else {

@@ -11,6 +11,7 @@ import org.openiam.base.response.ProvisionUserResponse;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.SearchParam;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -39,6 +40,7 @@ import org.openiam.provision.dto.srcadapter.*;
 import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -81,6 +83,9 @@ public class SourceAdapterDispatcher implements Runnable {
 
     @Autowired
     protected AuditLogService auditLogService;
+    
+    @Value("${org.openiam.idm.system.user.id}")
+    private String sysUserId;
 
     final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     final static String WARNING = "Warning! %s.\n";
@@ -102,7 +107,7 @@ public class SourceAdapterDispatcher implements Runnable {
     @PostConstruct
     public void init() {
         final ExecutorService executorService = Executors.newCachedThreadPool();
-        executorService.submit(this);
+        executorService.submit(new OpenIAMRunnable(this, sysUserId));
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 setTerminate(true);
@@ -127,6 +132,7 @@ public class SourceAdapterDispatcher implements Runnable {
         return requestQueue.take();
     }
 
+    @Override
     public void run() {
         try {
             SourceAdapterRequest request = null;

@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.request.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.base.request.SynchReviewRequest;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -63,17 +64,18 @@ public class AsynchIdentitySynchDataServiceImpl implements AsynchIdentitySynchDa
     	if(log.isDebugEnabled()) {
     		log.debug("A-START SYNCH CALLED...................");
     	}
-        try {
-            Executors.newSingleThreadExecutor().execute(new Runnable() {
-                public void run() {
-                    identitySynchService.startSynchronization(config);
-                }
-            });
-        } catch (Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService:startSynchronization");
-            log.error(e);
+    	
+        Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> {
+        	try {
+        		identitySynchService.startSynchronization(config);
+        	} catch(Throwable e) {
+        		log.error("EXCEPTION:AsynchIdentitySynchService:startSynchronization", e);
+        	}
+    	}, config));
+        
+        if(log.isDebugEnabled()) {
+        	log.debug("A-START SYNCH END ---------------------");
         }
-        log.debug("A-START SYNCH END ---------------------");
     }
 
     public void startCustomSynchronization(
@@ -81,18 +83,13 @@ public class AsynchIdentitySynchDataServiceImpl implements AsynchIdentitySynchDa
 
 
         log.debug("A-START SYNCH CALLED...................");
-        try {
-            Executors.newSingleThreadExecutor().execute(new Runnable() {
-                public void run() {
-                    identitySynchService.startCustomSynchronization(config, additionalValues);
-                }
-            });
-        } catch (Exception e) {
-        	if(log.isDebugEnabled()) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService:startCustomSynchronization");
-			}            
-			log.error(e);
-        }
+            Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> {
+            	try {
+            		identitySynchService.startCustomSynchronization(config, additionalValues);
+            	} catch(Throwable e) {
+            		log.error("EXCEPTION:AsynchIdentitySynchService:startCustomSynchronization", e);
+            	}
+            }, config));
         if(log.isDebugEnabled()) {
         	log.debug("A-START SYNCH END ---------------------");
         }
@@ -104,18 +101,13 @@ public class AsynchIdentitySynchDataServiceImpl implements AsynchIdentitySynchDa
     	if(log.isDebugEnabled()) {
     		log.debug("START SYNCH REVIEW CALLED...................");
     	}
-        try {
-            Executors.newSingleThreadExecutor().execute(new Runnable() {
-                public void run() {
-                    synchReviewService.executeSynchReview(synchReviewRequest);
-                }
-            });
-        } catch (Exception e) {
-        	if(log.isDebugEnabled()) {
-        		log.debug("EXCEPTION:AsynchIdentitySynchService:executeSynchReview");
+        Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> {
+        	try {
+        		synchReviewService.executeSynchReview(synchReviewRequest);
+        	} catch(Throwable e) {
+        		log.error("EXCEPTION:AsynchIdentitySynchService:executeSynchReview", e);
         	}
-            log.error(e);
-        }
+        }, synchReviewRequest.getRequestorId()));
         if(log.isDebugEnabled()) {
         	log.debug("FINISHED SYNCH REVIEW ---------------------");
         }
@@ -124,36 +116,24 @@ public class AsynchIdentitySynchDataServiceImpl implements AsynchIdentitySynchDa
 
     @Override
     public void bulkUserMigration(final BulkMigrationConfig config) {
-        try {
-
-            Executors.newSingleThreadExecutor().execute(new Runnable() {
-                public void run() {
-                    identitySynchService.bulkUserMigration(config);
-                }
-            });
-        } catch (Exception e) {
-        	if(log.isDebugEnabled()) {
-        		log.debug("EXCEPTION:AsynchIdentitySynchService:bulkUserMigration");
-        	}
-            log.error(e);
-        }
+        Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> {
+            try {
+                identitySynchService.bulkUserMigration(config);
+            } catch(Throwable e) {
+            	log.error("EXCEPTION:AsynchIdentitySynchService:bulkUserMigration", e);
+            }
+        }, config.getRequestorId()));
     }
 
     @Override
     public void resynchRole(final String roleId) {
-        try {
-
-            Executors.newSingleThreadExecutor().execute(new Runnable() {
-                public void run() {
-                    identitySynchService.resynchRole(roleId);
-                }
-            });
-        } catch (Exception e) {
-        	if(log.isDebugEnabled()) {
-        		log.debug("EXCEPTION:AsynchIdentitySynchService:resynchRole");
-        	}
-            log.error(e);
-        }
+        Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> {
+            try {
+                identitySynchService.resynchRole(roleId);
+            } catch(Throwable e) {
+            	log.error("EXCEPTION:AsynchIdentitySynchService:resynchRole", e);
+            }
+        }));
     }
 
 }

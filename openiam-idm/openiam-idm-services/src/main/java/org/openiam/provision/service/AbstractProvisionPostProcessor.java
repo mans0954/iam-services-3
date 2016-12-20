@@ -3,6 +3,7 @@ package org.openiam.provision.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.request.NotificationRequest;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.srvc.common.MailService;
 
@@ -41,11 +42,9 @@ public abstract class AbstractProvisionPostProcessor<T> implements ProvisionServ
     }
 
     public void sendEmailNotification(final NotificationRequest request) {
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            public void run() {
-                mailService.sendNotification(request);
-            }
-        });
+        Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> { 
+        	mailService.sendNotification(request); 
+        }, request));
     }
 
     @Override

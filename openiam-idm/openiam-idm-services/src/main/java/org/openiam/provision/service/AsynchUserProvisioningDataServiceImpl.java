@@ -23,6 +23,7 @@ package org.openiam.provision.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,21 +50,21 @@ public class AsynchUserProvisioningDataServiceImpl implements AsynchUserProvisio
       */
     @Override
     public void addUser(final ProvisionUser user) {
-        log.debug("START PROVISIONING - ADD USER CALLED...................");
-
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            public void run() {
+    	if(log.isDebugEnabled()) {
+    		log.debug("START PROVISIONING - ADD USER CALLED...................");
+    	}
+    	Executors.newSingleThreadExecutor().execute(
+	        new OpenIAMRunnable(() -> {
                 try {
                     provisionService.addUser(user);
-                } catch (Exception e) {
-                    log.debug("EXCEPTION:AsynchUserProvisionService.addUser");
-                    log.error(e);
+                } catch (Throwable e) {
+                    log.error("EXCEPTION:AsynchUserProvisionService.addUser", e);
                 }
-            }
-        });
-
-        log.debug("END PROVISIONING - ADD USER ---------------------");
-
+	        }, user)
+    	);
+    	if(log.isDebugEnabled()) {
+    		log.debug("END PROVISIONING - ADD USER ---------------------");
+    	}
     }
     /* (non-Javadoc)
       * @see org.openiam.srvc.idm.ProvisionService#modifyUser(org.openiam.provision.dto.ProvisionUser)
@@ -73,17 +74,15 @@ public class AsynchUserProvisioningDataServiceImpl implements AsynchUserProvisio
             if (log.isDebugEnabled()) {
                 log.debug("START PROVISIONING - MODIFY USER CALLED...................");
             }
-
-            Executors.newSingleThreadExecutor().execute(new Runnable() {
-                public void run() {
+            Executors.newSingleThreadExecutor().execute(
+    	        new OpenIAMRunnable(() -> {
                     try {
-                        provisionService.modifyUser(user);
-                    } catch (Exception e) {
-                        log.debug("EXCEPTION:AsynchUserProvisionService.modifyUser");
-                        log.error(e);
+                    	provisionService.modifyUser(user);
+                    } catch (Throwable e) {
+                        log.error("EXCEPTION:AsynchUserProvisionService.modifyUser", e);
                     }
-                }
-            });
+    	        }, user)
+        	);
 
             if (log.isDebugEnabled()) {
                 log.debug("END PROVISIONING - MODIFY USER ---------------------");
@@ -95,17 +94,16 @@ public class AsynchUserProvisioningDataServiceImpl implements AsynchUserProvisio
             if (log.isDebugEnabled()) {
                 log.debug("START BULK OPERATION CALLED...................");
             }
-
-            Executors.newSingleThreadExecutor().execute(new Runnable() {
-                public void run() {
+            Executors.newSingleThreadExecutor().execute(
+    	        new OpenIAMRunnable(() -> {
                     try {
-                        provisionService.startBulkOperation(bulkRequest);
-                    } catch (Exception e) {
-                        log.debug("EXCEPTION:AsynchUserProvisionService.startBulkOperation");
-                        log.error(e);
+                    	provisionService.startBulkOperation(bulkRequest);
+                    } catch (Throwable e) {
+                        log.error("EXCEPTION:AsynchUserProvisionService.modifyUser", e);
                     }
-                }
-            });
+    	        }, bulkRequest.getRequesterId())
+        	);
+
             log.debug("END BULK OPERATION CALLED ---------------------");
         }
 

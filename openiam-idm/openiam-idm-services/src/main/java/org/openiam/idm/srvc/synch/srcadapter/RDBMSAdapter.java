@@ -29,6 +29,7 @@ import org.openiam.base.response.SyncResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
@@ -188,21 +189,18 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                     int shiftIndex = threadCoount > THREAD_COUNT && i == threadCoount - 1 ? remains : rowsInOneExecutors;
                     // Part of the rowas that should be processing with this thread
                     final List<LineObject> part = results.subList(startIndex, startIndex + shiftIndex);
-                    threadResults.add(service.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                Timestamp mostRecentRecord = proccess(config, resultReview, provisionService, part, validationScript, transformScripts, matchRule, resultReview, startIndex);
-                                recentRecordByThreadInx.put("Thread_" + threadIndx, mostRecentRecord);
-                            } catch (ClassNotFoundException e) {
-                                log.error(e);
-                                /*
-                                synchStartLog.updateSynchAttributes("FAIL", ResponseCode.CLASS_NOT_FOUND.toString(), e.toString());
-                                auditHelper.logEvent(synchStartLog);
-                                */
-                            }
+                    threadResults.add(service.submit(new OpenIAMRunnable(() -> { 
+                        try {
+                            Timestamp mostRecentRecord = proccess(config, resultReview, provisionService, part, validationScript, transformScripts, matchRule, resultReview, startIndex);
+                            recentRecordByThreadInx.put("Thread_" + threadIndx, mostRecentRecord);
+                        } catch (ClassNotFoundException e) {
+                            log.error(e);
+                            /*
+                            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.CLASS_NOT_FOUND.toString(), e.toString());
+                            auditHelper.logEvent(synchStartLog);
+                            */
                         }
-                    }));
+                    }, config)));
                     //Give THREAD_DELAY_BEFORE_START seconds time for thread to be UP (load all cache and begin the work)
                     Thread.sleep(THREAD_DELAY_BEFORE_START);
                 }

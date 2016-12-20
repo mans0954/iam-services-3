@@ -24,6 +24,7 @@ package org.openiam.srvc.idm;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,22 +60,17 @@ public class AsynchReconciliationServiceImpl implements AsynchReconciliationServ
 	public void startReconciliation(
 			final ReconciliationConfig config) {
 
-		log.debug("A-RECONCILIATION STARTED.............");
-		
-		try {
-            Executors.newSingleThreadExecutor().execute(new Runnable() {
-                public void run() {
-                    reconService.startReconciliation(config);
-                    System.out.println("Asynchronous task");
-                }
-            });
-		}catch(Exception e) {
-			if(log.isDebugEnabled()) {
-				log.debug("EXCEPTION:AsynchReconciliationServiceImpl");
-			}
-			log.error(e);
-			//e.printStackTrace();
+		if(log.isDebugEnabled()) {
+			log.debug("A-RECONCILIATION STARTED.............");
 		}
+
+        Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> {
+			try {
+        		reconService.startReconciliation(config);
+        	} catch(Throwable e) {
+    			log.error("EXCEPTION:AsynchReconciliationServiceImpl", e);
+        	}
+		}, config));
 		if(log.isDebugEnabled()) {
 			log.debug("A-RECONCILIATION COMPLETED ---------------------");
 		}

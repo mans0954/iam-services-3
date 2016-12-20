@@ -21,6 +21,7 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.provision.PostProcessor;
 import org.openiam.provision.PreProcessor;
 import org.openiam.provision.constant.ErrorCode;
@@ -375,11 +376,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         notificationRequest.setParamList(msgParams);
         notificationRequest.setNotificationType(PASSWORD_EMAIL_NOTIFICATION);
 
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            public void run() {
-                mailService.sendNotification(notificationRequest);
-            }
-        });
+        Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> {
+        	mailService.sendNotification(notificationRequest);
+        }, notificationRequest));
 
     }
     protected void sendActivationLink(User user, Login login){
@@ -405,11 +404,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                 notificationRequest.setUserId(user.getId());
                 notificationRequest.setParamList(msgParams);
                 notificationRequest.setNotificationType(NEW_USER_ACTIVATION_NOTIFICATION);
-                Executors.newSingleThreadExecutor().execute(new Runnable() {
-                    public void run() {
-                        mailService.sendNotification(notificationRequest);
-                    }
-                });
+                
+                Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> {
+                	mailService.sendNotification(notificationRequest);
+                }, notificationRequest));
             }
     }
 
@@ -429,12 +427,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         notificationRequest.setParamList(msgParams);
         notificationRequest.setNotificationType(NEW_USER_EMAIL_NOTIFICATION);
 
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            public void run() {
-                mailService.sendNotification(notificationRequest);
-            }
-        });
-
+        new OpenIAMRunnable(() -> {
+        	mailService.sendNotification(notificationRequest);
+        }, notificationRequest);
     }
 
     protected void sendCredentialsToSupervisor(User user, String identity, String password, String name) {
@@ -454,11 +449,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         notificationRequest.setNotificationType(NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION);
         notificationRequest.setParamList(msgParams);
 
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            public void run() {
-                mailService.sendNotification(notificationRequest);
-            }
-        });
+        Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> {
+        	mailService.sendNotification(notificationRequest);
+        }, notificationRequest));
     }
 
     protected Login buildPrimaryPrincipal(Map<String, Object> bindingMap, ScriptIntegration se) {

@@ -29,25 +29,13 @@ public class BulkMigrationConfig {
     Set<String> rightIds;
     private Date startDate;
     private Date endDate;
+    
+    private String requestorId;
 
     public BulkMigrationConfig() {
 
     }
 
-    public BulkMigrationConfig(String lastName, String organizationId, String deptId,
-                               String division, String attributeName, String attributeValue,
-                               String userStatus, String operation, String targetRole, String targetResource) {
-        this.lastName = lastName;
-        this.organizationId = organizationId;
-        this.deptId = deptId;
-        this.division = division;
-        this.attributeName = attributeName;
-        this.attributeValue = attributeValue;
-        this.userStatus = userStatus;
-        this.operation = operation;
-        this.targetRole = targetRole;
-        this.targetResource = targetResource;
-    }
 
     public String getLastName() {
         return lastName;
@@ -154,6 +142,17 @@ public class BulkMigrationConfig {
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
 	}
+
+
+	public String getRequestorId() {
+		return requestorId;
+	}
+
+
+	public void setRequestorId(String requestorId) {
+		this.requestorId = requestorId;
+	}
     
+	
     
 }

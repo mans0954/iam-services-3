@@ -2,6 +2,7 @@ package org.openiam.concurrent;
 
 import java.util.concurrent.Callable;
 
+import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.util.SpringSecurityHelper;
 
 public class OpenIAMCallable<V> implements Callable<V> {
@@ -11,9 +12,9 @@ public class OpenIAMCallable<V> implements Callable<V> {
 
 	private OpenIAMCallable() {}
 	
-	public OpenIAMCallable(final Callable<V> callable) {
+	public OpenIAMCallable(final Callable<V> callable, final String requestorId) {
 		this.callable = callable;
-		this.requestorId = SpringSecurityHelper.getRequestorUserId();
+		this.requestorId = (StringUtils.isNotBlank(requestorId)) ? requestorId : SpringSecurityHelper.getRequestorUserId();
 	}
 
 	@Override

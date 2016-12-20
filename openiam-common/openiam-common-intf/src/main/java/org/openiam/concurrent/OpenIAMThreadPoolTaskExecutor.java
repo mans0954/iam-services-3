@@ -47,7 +47,7 @@ public class OpenIAMThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 		this.allowCoreThreadTimeOut = allowCoreThreadTimeOut;
 	}
 	
-	public void setRequestorId(final String requestorId) {
-		this.executor.setRequestorId(requestorId);
+	public void setRequestorIDProvider(RequestorIDProvider requestorIDProvider) {
+		this.executor.setRequestorIDProvider(requestorIDProvider);
 	}
 }

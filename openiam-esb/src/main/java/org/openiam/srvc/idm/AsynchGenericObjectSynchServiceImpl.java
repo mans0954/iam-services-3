@@ -23,6 +23,7 @@ package org.openiam.srvc.idm;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,16 +59,14 @@ public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectS
     	if(log.isDebugEnabled()) {
     		log.debug("A-START SYNCH CALLED...................");
     	}
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            public void run() {
-                try {
-                    synchService.startSynchronization(config);
-                } catch (Exception e) {
-                    log.debug("EXCEPTION:AsynchIdentitySynchService");
-                    log.error(e);
-                }
+    	
+        Executors.newSingleThreadExecutor().execute(new OpenIAMRunnable(() -> {
+            try {
+                synchService.startSynchronization(config);
+            } catch (Exception e) {
+                log.error("EXCEPTION:AsynchIdentitySynchService", e);
             }
-        });
+        }, config));
 
         if(log.isDebugEnabled()) {
         	log.debug("A-START SYNCH END ---------------------");
