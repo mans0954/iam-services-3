@@ -174,15 +174,8 @@ public class ProvisionDispatcherTransactionHelper {
                         loginChanges.setIsLocked(0);
 
                         String scrambledPassword = PasswordGenerator.generatePassword(10);
-                        try {
-                            loginChanges.setPassword(loginManager.encryptPassword(identity.getUserId(),
-                                    scrambledPassword));
-                        } catch (EncryptionException ee) {
-                            log.error(ee);
-                            // put the password in a clean state so that the
-                            // operation continues
-                            loginChanges.setPassword(null);
-                        }
+                        loginChanges.setPassword(loginManager.encryptPassword(identity.getUserId(),
+                                scrambledPassword));
 
                     } else {
                         idmAuditLog.fail();

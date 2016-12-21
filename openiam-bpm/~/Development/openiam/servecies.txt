@@ -1,0 +1,1 @@
+org.openiam:openiam-bpm:pom:4.0.0

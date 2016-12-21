@@ -25,9 +25,9 @@ public interface LoginDataService {
 
     void updateLogin(LoginEntity principal);
 
-    void deleteLogin(final String loginId);
+    void deleteLogin(final String loginId)throws BasicDataServiceException;
 
-    void activateDeactivateLogin(String loginId, LoginStatusEnum status);
+    void activateDeactivateLogin(String loginId, LoginStatusEnum status) throws BasicDataServiceException;
 
     void removeLogin(String principal, String managedSysId);
 
@@ -83,7 +83,7 @@ public interface LoginDataService {
      * @param newPassword
      * @return
      */
-    boolean isPasswordEq(String principal, String sysId, String newPassword) throws Exception;
+    boolean isPasswordEq(String principal, String sysId, String newPassword) throws BasicDataServiceException;
 
     /**
      * Checks to see if a login exists for a user - domain - managed system combination
@@ -126,9 +126,9 @@ public interface LoginDataService {
      * @param password
      * @return
      */
-    String encryptPassword(String userId, String password) throws Exception;
+    String encryptPassword(String userId, String password) throws BasicDataServiceException;
 
-    String decryptPassword(String userId, String password) throws Exception;
+    String decryptPassword(String userId, String password) throws BasicDataServiceException;
 
     List<LoginEntity> getLoginByUser(String userId);
 
@@ -148,11 +148,11 @@ public interface LoginDataService {
 
 //    List<LoginEntity> getLoginByDomain(String domain);
 
-    List<LoginEntity> getLockedUserSince(Date lastExecTime);
+    List<Login> getLockedUserSince(Date lastExecTime);
 
-    List<LoginEntity> getInactiveUsers(int startDays, int endDays);
+    List<Login> getInactiveUsers(int startDays, int endDays);
 
-    List<LoginEntity> getUserNearPswdExpiration(int expDays);
+    List<Login> getUserNearPswdExpiration(int expDays);
 
     /**
      * Returns a list of Login objects which are nearing expiry depending on PWD_EXP_WARN password attribute
@@ -161,7 +161,7 @@ public interface LoginDataService {
      * @param
      * @return
      */
-    List<LoginEntity> getUsersNearPswdExpiration();
+    List<Login> getUsersNearPswdExpiration();
 
     /**
      * List of users whose passworss are expiring today
@@ -188,9 +188,13 @@ public interface LoginDataService {
 
     Integer count(LoginSearchBean searchBean);
 
-    List<LoginEntity> findBeans(LoginSearchBean searchBean, int from, int size);
+    List<Login> findBeans(LoginSearchBean searchBean, int from, int size);
 
     void forgotUsername(String email) throws BasicDataServiceException;
 
-    public Response saveLogin(final Login principal);
+    public String saveLogin(final Login principal) throws BasicDataServiceException;
+
+    void validateLogin(Login object) throws BasicDataServiceException;
+
+    void resetPasswordAndNotifyUser(final String principal, final String managedSysId, final String contentProviderId, final String password, final boolean notifyUserViaEmail)throws BasicDataServiceException;
 }

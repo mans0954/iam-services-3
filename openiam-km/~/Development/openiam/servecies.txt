@@ -1,0 +1,1 @@
+org.openiam:km-core:pom:4.0.0

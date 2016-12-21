@@ -35,6 +35,7 @@ import org.openiam.cache.CacheKeyEviction;
 import org.openiam.cache.ProvisionUserResourceKeyGenerator;
 import org.openiam.constants.AccountLockEnum;
 import org.openiam.constants.ProvisionActionTypeEnum;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.provision.PostProcessor;
 import org.openiam.provision.PreProcessor;
 import org.openiam.provision.constant.StatusCodeType;
@@ -621,6 +622,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         idmAuditLogChild.fail();
                         idmAuditLogChild.setFailureReason(resp.getErrorMsgAsStr());
                     }
+                } catch (BasicDataServiceException e) {
+                    log.error(e.getMessage(), e);
                 } finally {
                     idmAuditLog.addChild(idmAuditLogChild);
                 }
