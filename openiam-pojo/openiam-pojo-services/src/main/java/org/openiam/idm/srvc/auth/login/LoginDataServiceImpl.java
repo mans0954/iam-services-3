@@ -7,10 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.response.LoginResponse;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
@@ -37,9 +34,12 @@ import org.openiam.idm.srvc.pswd.service.PasswordPolicyProvider;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.mq.constants.api.common.EmailAPI;
+import org.openiam.mq.constants.queue.common.MailQueue;
+import org.openiam.mq.utils.RabbitMQSender;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,6 +86,13 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Autowired
     private MailDataService mailService;
+
+    @Autowired
+    private UserDataService userService;
+    @Autowired
+    private RabbitMQSender rabbitMQSender;
+    @Autowired
+    private MailQueue mailQueue;
 
     boolean encrypt = true; // default encryption setting
     private static final Log log = LogFactory
@@ -140,6 +147,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public String getPassword(String login, String sysId)
             throws Exception {
 
@@ -181,17 +189,24 @@ public class LoginDataServiceImpl implements LoginDataService {
      * @return
      */
     @Override
-    public boolean isPasswordEq(String principal, String sysId, String newPassword) throws Exception {
+    @Transactional(readOnly = true)
+    public boolean isPasswordEq(String principal, String sysId, String newPassword) throws BasicDataServiceException {
         if (principal == null) {
-            throw new NullPointerException("principal is null");
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "principal is null");
         }
         if (sysId == null) {
-            throw new NullPointerException("sysId is null");
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "sysId is null");
         }
         if (newPassword == null) {
             return false;
         }
-        String oldPassword = getPassword(principal, sysId);
+        String oldPassword = null;
+        try {
+            oldPassword = getPassword(principal, sysId);
+        } catch (Exception e) {
+            log.error("Old Password decryption error", e);
+            throw new BasicDataServiceException(ResponseCode.FAIL_DECRYPTION, e.getMessage());
+        }
         if (oldPassword != null) {
             if (oldPassword.equals(newPassword)) {
                 return true;
@@ -208,7 +223,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LoginEntity> findBeans(LoginSearchBean searchBean, int from, int size) {
+    public List<Login> findBeans(LoginSearchBean searchBean, int from, int size) {
         List<LoginEntity> retVal = null;
         if (CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
             final List<LoginEntity> entityList = loginDao.findByIds(searchBean.getKeySet());
@@ -223,7 +238,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         	}
             //retVal = loginSearchDAO.find(from, size, null, searchBean);
         }
-        return retVal;
+        return (CollectionUtils.isNotEmpty(retVal)) ? loginDozerConverter.convertToDTOList(retVal, searchBean.isDeepCopy()):null;
     }
     
     /**
@@ -231,7 +246,7 @@ public class LoginDataServiceImpl implements LoginDataService {
      * supporting alternate approaches to encryption.
      *
      * @param login
-     * @param sysId
+     * @param managedSysId
      * @param password
      * @return
      */
@@ -367,20 +382,28 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Override
     @Transactional(readOnly=true)
-    public String encryptPassword(String userId, String password)
-            throws Exception {
+    public String encryptPassword(String userId, String password) throws BasicDataServiceException {
         if (password != null) {
-            return keyManagementService.encrypt(userId, KeyName.password, password);
+            try {
+                return keyManagementService.encrypt(userId, KeyName.password, password);
+            } catch (Exception e) {
+                log.error("Password encryption error", e);
+                throw new BasicDataServiceException(ResponseCode.FAIL_ENCRYPTION, e.getMessage());
+            }
         }
         return null;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public String decryptPassword(String userId, String password)
-            throws Exception {
+    public String decryptPassword(String userId, String password) throws BasicDataServiceException {
         if (password != null) {
-            return keyManagementService.decrypt(userId, KeyName.password, password);
+            try {
+                return keyManagementService.decrypt(userId, KeyName.password, password);
+            } catch (Exception e) {
+                log.error("Password decryption error", e);
+                throw new BasicDataServiceException(ResponseCode.FAIL_DECRYPTION, e.getMessage());
+            }
         }
         return null;
     }
@@ -401,18 +424,6 @@ public class LoginDataServiceImpl implements LoginDataService {
 
         return loginList;
     }
-
-//    @Transactional(readOnly = true)
-//    public List<LoginEntity> getLoginByDomain(String domain) {
-//        if (domain == null) {
-//            throw new NullPointerException("domain is null");
-//        }
-//        List<LoginEntity> loginList = loginDao.findLoginByDomain(domain);
-//        if (loginList == null || loginList.size() == 0) {
-//            return null;
-//        }
-//        return loginList;
-//    }
 
     @Override
     @Transactional
@@ -535,26 +546,26 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LoginEntity> getLockedUserSince(Date lastExecTime) {
-        return loginDao.findLockedUsers(lastExecTime);
+    public List<Login> getLockedUserSince(Date lastExecTime) {
+        return loginDozerConverter.convertToDTOList(loginDao.findLockedUsers(lastExecTime), false);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<LoginEntity> getInactiveUsers(int startDays, int endDays) {
+    public List<Login> getInactiveUsers(int startDays, int endDays) {
         String primaryManagedSys = sysConfiguration.getDefaultManagedSysId();
 
         List<LoginEntity> loginList = loginDao.findInactiveUsers(startDays,
                 endDays, primaryManagedSys);
 
-        return loginList;
+        return loginDozerConverter.convertToDTOList(loginList, false);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<LoginEntity> getUserNearPswdExpiration(int expDays) {
+    public List<Login> getUserNearPswdExpiration(int expDays) {
         List<LoginEntity> loginList = loginDao.findUserNearPswdExp(expDays);
-        return loginList;
+        return loginDozerConverter.convertToDTOList(loginList, false);
     }
 
     private PolicyAttribute getPolicyAttributeDto(Set<PolicyAttribute> attr, String name) {
@@ -577,7 +588,7 @@ public class LoginDataServiceImpl implements LoginDataService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<LoginEntity> getUsersNearPswdExpiration() {
+    public List<Login> getUsersNearPswdExpiration() {
         List<LoginEntity> loginList = new ArrayList<>();
         Policy plcy = passwordPolicyProvider.getGlobalPasswordPolicy();
         PolicyAttribute pswdExpValue = getPolicyAttributeDto(plcy.getPolicyAttributes(),
@@ -599,7 +610,7 @@ public class LoginDataServiceImpl implements LoginDataService {
             log.warn("Can't get Logins with val2=" + val2);
         }
 
-        return loginList;
+        return loginDozerConverter.convertToDTOList(loginList, false);
     }
 
     @Override
@@ -674,7 +685,10 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Override
     @Transactional
-    public void deleteLogin(String loginId) {
+    public void deleteLogin(String loginId) throws BasicDataServiceException{
+        if(StringUtils.isBlank(loginId)) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
         final LoginEntity entity = loginDao.findById(loginId);
         if (entity != null) {
             loginDao.delete(entity);
@@ -684,7 +698,11 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Override
     @Transactional
-    public void activateDeactivateLogin(String loginId, LoginStatusEnum status) {
+    public void activateDeactivateLogin(String loginId, LoginStatusEnum status) throws BasicDataServiceException {
+        if(StringUtils.isBlank(loginId)) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+
         final LoginEntity entity = loginDao.findById(loginId);
         if (entity != null) {
             entity.setStatus(status);
@@ -701,6 +719,9 @@ public class LoginDataServiceImpl implements LoginDataService {
     @Override
     @Transactional
     public void forgotUsername(String email) throws BasicDataServiceException {
+        if(StringUtils.isBlank(email)) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
         List<UserEntity> userList = userDao.getByEmail(email);
 
         if (CollectionUtils.isEmpty(userList))
@@ -742,43 +763,79 @@ public class LoginDataServiceImpl implements LoginDataService {
 
 
     @Override
-    public Response saveLogin(final Login principal) {
-        final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-        try {
-            if(principal == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
+    @Transactional
+    public String saveLogin(final Login principal) throws BasicDataServiceException{
+        validateLogin(principal);
 
-            if(StringUtils.isBlank(principal.getManagedSysId()) ||
-                    StringUtils.isBlank(principal.getLogin())) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
+        final LoginEntity entity = loginDozerConverter.convertToEntity(principal, true);
+        if(StringUtils.isNotBlank(entity.getId())) {
+            this.updateLogin(entity);
+        } else {
+            this.addLogin(entity);
+        }
+        return entity.getId();
+    }
 
-            final LoginEntity currentEntity = this.getLoginByManagedSys(principal.getLogin(), principal.getManagedSysId());
-            if(currentEntity != null) {
-                if(StringUtils.isBlank(principal.getId())) {
-                    throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
-                } else if(!principal.getId().equals(currentEntity.getId())) {
-                    throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+    @Override
+    @Transactional
+    public void validateLogin(Login principal) throws BasicDataServiceException{
+        if(principal == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+
+        if(StringUtils.isBlank(principal.getManagedSysId()) ||
+                StringUtils.isBlank(principal.getLogin())) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+
+        final LoginEntity currentEntity = this.getLoginByManagedSys(principal.getLogin(), principal.getManagedSysId());
+        if(currentEntity != null) {
+            if(StringUtils.isBlank(principal.getId())) {
+                throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+            } else if(!principal.getId().equals(currentEntity.getId())) {
+                throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+            }
+        }
+    }
+    @Transactional
+    public void resetPasswordAndNotifyUser(final String principal, final String managedSysId, final String contentProviderId,
+                                           final String password, final boolean notifyUserViaEmail)throws BasicDataServiceException{
+
+        boolean result = this.resetPassword(principal, managedSysId, contentProviderId, password, true);
+        if (!result) {
+            throw new BasicDataServiceException(ResponseCode.PASSWORD_RESET_ERROR);
+        }
+
+        if(notifyUserViaEmail){
+            // send email to user with password
+            LoginEntity loginEntity = this.getLoginByManagedSys(principal, managedSysId);
+            if(loginEntity!=null){
+
+                String pwd = this.decryptPassword(loginEntity.getUserId(), password);
+
+                if(StringUtils.isNotBlank(password)){
+                    UserEntity user =  userService.getUser(loginEntity.getUserId());
+                    if(user!=null){
+                        NotificationRequest request = new NotificationRequest();
+                        request.setUserId(user.getId());
+                        request.setNotificationType("USER_PASSWORD_EMAIL");
+
+
+                        List<NotificationParam> paramList = new LinkedList<NotificationParam>();
+
+                        paramList.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getId()));
+                        paramList.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), principal));
+                        paramList.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), pwd));
+                        paramList.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
+                        paramList.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
+
+                        request.setParamList(paramList);
+
+                        rabbitMQSender.send(mailQueue, EmailAPI.SendNotification, request);
+                    }
                 }
             }
-
-            final LoginEntity entity = loginDozerConverter.convertToEntity(principal, true);
-            if(StringUtils.isNotBlank(entity.getId())) {
-                this.updateLogin(entity);
-            } else {
-                this.addLogin(entity);
-            }
-            resp.setResponseValue(entity.getId());
-        } catch(BasicDataServiceException e) {
-            log.warn(String.format("Error while saving login: %s", e.getMessage()));
-            resp.setErrorCode(e.getCode());
-            resp.setStatus(ResponseStatus.FAILURE);
-        } catch(Throwable e) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
-            log.error("Error while saving login", e);
         }
-        return resp;
     }
+
 }
