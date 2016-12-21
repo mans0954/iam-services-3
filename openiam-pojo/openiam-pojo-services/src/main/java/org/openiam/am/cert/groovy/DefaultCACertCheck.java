@@ -31,7 +31,7 @@ public class DefaultCACertCheck {
 	protected CertDataService certManager;
 
 	public DefaultCACertCheck() {
-		
+
 	}
 
 	public final void setCertficiate(final X509Certificate cert) {
@@ -56,7 +56,7 @@ public class DefaultCACertCheck {
 	 * @return
 	 */
 	public Boolean resolve() throws BasicDataServiceException {
-/*
+		/*
 		if (caCert != null) {
 			try {
 				caCert.checkValidity();
@@ -70,22 +70,25 @@ public class DefaultCACertCheck {
 					throw new BasicDataServiceException(ResponseCode.CERT_CLIENT_INVALID, ex.getMessage());
 				}
 				try {
-					caCert.verify(clientCert.getPublicKey());
+					clientCert.verify(caCert.getPublicKey());
 				} catch (Exception ex) {
 					throw new BasicDataServiceException(ResponseCode.CERT_INVALID_VERIFY_WITH_CA, ex.getMessage());
 				}
 
-				if (StringUtils.isBlank(crlPath)) {
+				try {
 					certManager.verifyCertificateNotRevoked(caCert, clientCert);
-				} else {
-					List<X509CRLHolder> crlList = new ArrayList<X509CRLHolder>();
-					// "file://crl.der"    "https://lnx1.openiamdemo.com/crl"
-					crlList.add(certManager.downloadCRL(crlPath));
-					certManager.verifyCertificateNotRevoked(crlList, caCert, clientCert);
+				} catch (Exception ex) {
+					if (StringUtils.isBlank(crlPath)) {
+						List<X509CRLHolder> crlList = new ArrayList<X509CRLHolder>();
+						// "file://crl.der"    "https://lnx1.openiamdemo.com/crl"
+						crlList.add(certManager.downloadCRL(crlPath));
+						certManager.verifyCertificateNotRevoked(crlList, caCert, clientCert);
+					}
 				}
+
 			}
 		}
-*/
-		return true;
+		*/
+			return true;
 	}
 }
