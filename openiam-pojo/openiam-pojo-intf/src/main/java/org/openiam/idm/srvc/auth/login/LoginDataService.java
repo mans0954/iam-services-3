@@ -111,7 +111,7 @@ public interface LoginDataService {
      */
     public boolean resetPassword(String principal, String sysId, String password);
 
-    public boolean resetPassword(String principal, String sysId, String password, boolean isActivate);
+    public boolean resetPassword(String principal, String sysId, String password, boolean isActivate, boolean forceChange);
 
 
     /**
