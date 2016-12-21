@@ -21,6 +21,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.thread.Sweepable;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -218,14 +219,14 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 	}
     @Override
     @LocalizedServiceGet
-    public List<OrganizationType> getAllowedParents(String organizationTypeId, String requesterId, final Language language){
+    public List<OrganizationType> getAllowedParents(String organizationTypeId, final Language language){
         OrganizationTypeSearchBean searchBean = new OrganizationTypeSearchBean();
-        searchBean.setKeySet(getAllowedParentsIds(organizationTypeId, requesterId));
+        searchBean.setKeySet(getAllowedParentsIds(organizationTypeId));
         return findBeans(searchBean, 0, Integer.MAX_VALUE,language);
     }
 
     @Override
-    public Set<String> getAllowedParentsIds(String organizationTypeId, String requesterId){
+    public Set<String> getAllowedParentsIds(String organizationTypeId){
 //        Set<String> result = new HashSet<>();
 //        List<OrgType2OrgTypeXref> xrefList = organizationTypeDAO.getOrgTypeToOrgTypeXrefList();
 //
@@ -238,8 +239,8 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 //            }
 //        }
         Map<String, UserAttribute> requesterAttributes = null;
-        if (StringUtils.isNotBlank(requesterId)) {
-            requesterAttributes = userDataService.getUserAttributesDto(requesterId);
+        if (StringUtils.isNotBlank(SpringSecurityHelper.getRequestorUserId())) {
+            requesterAttributes = userDataService.getUserAttributesDto(SpringSecurityHelper.getRequestorUserId());
         }
         return getAllowedParentsIds(organizationTypeId, requesterAttributes);
     }

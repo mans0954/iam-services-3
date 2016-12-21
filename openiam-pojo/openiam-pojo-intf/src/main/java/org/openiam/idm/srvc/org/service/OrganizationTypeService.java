@@ -30,9 +30,9 @@ public interface OrganizationTypeService {
 	
 	void removeChild(final String id, final String childId) throws BasicDataServiceException;
 
-    List<OrganizationType> getAllowedParents(String organizationTypeId, String requesterId, final Language language);
+    List<OrganizationType> getAllowedParents(String organizationTypeId, final Language language);
 
-    Set<String> getAllowedParentsIds(String organizationTypeId, String requesterId);
+    Set<String> getAllowedParentsIds(String organizationTypeId);
 
     Set<String> getAllowedParentsIds(String organizationTypeId, Map<String, UserAttribute> requesterAttributes);
 

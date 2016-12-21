@@ -88,13 +88,12 @@ public class OrganizationTypeDataServiceImpl extends AbstractApiService implemen
 	}
 
     @Override
-    public List<OrganizationType> getAllowedParents(final String organizationTypeId, final String requesterId, final Language language){
+    public List<OrganizationType> getAllowedParents(final String organizationTypeId, final Language language){
 		OrganizationTypeSearchBean searchBean = new OrganizationTypeSearchBean();
 		searchBean.addKey(organizationTypeId);
 
 		BaseSearchServiceRequest<OrganizationTypeSearchBean> request = new BaseSearchServiceRequest<>(searchBean);
 		request.setLanguage(language);
-		request.setRequesterId(requesterId);
 		return this.getValueList(OrganizationTypeAPI.GetAllowedParents, request, OrganizationTypeListResponse.class);
     }
 }

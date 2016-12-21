@@ -44,6 +44,5 @@ public interface OrganizationTypeDataService {
 
     @WebMethod
 	List<OrganizationType> getAllowedParents(final @WebParam(name = "organizationTypeId", targetNamespace = "") String organizationTypeId,
-											 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
 											 final @WebParam(name = "lang", targetNamespace = "") Language language);
 }

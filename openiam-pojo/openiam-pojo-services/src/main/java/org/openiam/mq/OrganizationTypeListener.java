@@ -57,7 +57,7 @@ public class OrganizationTypeListener extends AbstractListener<OrganizationTypeA
                     case GetAllowedParents:
                         response = new OrganizationTypeListResponse();
                         final String id = (CollectionUtils.isNotEmpty((req.getSearchBean().getKeySet()))) ? req.getSearchBean().getKeySet().iterator().next() : null;
-                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.getAllowedParents(id, request.getRequesterId(), request.getLanguage()));
+                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.getAllowedParents(id, request.getLanguage()));
                         break;
                     case Count:
                         response = new IntResponse();

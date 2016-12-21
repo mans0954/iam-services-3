@@ -7,6 +7,7 @@ import org.openiam.mq.constants.MQConstant;
 import org.openiam.mq.constants.api.OpenIAMAPI;
 import org.openiam.mq.constants.queue.MqQueue;
 import org.openiam.mq.gateway.RequestServiceGateway;
+import org.openiam.util.SpringSecurityHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.MessageProperties;
@@ -55,6 +56,7 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
         long startTime = System.currentTimeMillis();
         log.debug("Send to QUEUE : {}; Request: {};", queue.toString(), request.toString());
 
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         Object response = getRabbitOperations().convertSendAndReceive(queue.getExchange().name(), queue.getRoutingKey(),
                             request, message -> {
                             message.getMessageProperties().setHeader(MQConstant.VIRTUAL_HOST, queue.getVHost());
@@ -88,6 +90,8 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
 
     private void convertAndSendWithName(final String vhost, final String exchange, final OpenIAMAPI api, final Long delayMillis, final BaseServiceRequest request, final String routingKey) throws Exception {
         log.debug("Send to exchange : EXCHANGE = " + exchange + "; RoutingKey: " + routingKey + ";" + request.toString());
+        
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
         getRabbitOperations().convertAndSend(exchange, routingKey, request,
                 message -> {
                     message.getMessageProperties().setHeader(MQConstant.VIRTUAL_HOST, vhost);
