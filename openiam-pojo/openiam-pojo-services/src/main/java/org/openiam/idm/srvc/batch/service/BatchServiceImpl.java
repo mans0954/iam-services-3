@@ -8,6 +8,7 @@ import org.dozer.util.ReflectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.dozer.converter.BatchTaskDozerConverter;
 import org.openiam.dozer.converter.BatchTaskScheduleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -25,6 +26,7 @@ import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.Trigger;
@@ -61,6 +63,9 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 	@Autowired
 	@Qualifier("configurableGroovyScriptEngine")
 	private ScriptIntegration scriptRunner;
+	
+	@Value("${org.openiam.idm.system.user.id}")
+	private String systemUserId;
     
     @Autowired
     @Qualifier("transactionManager")
@@ -197,17 +202,22 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 
 	@Override
 	@Transactional(readOnly=true)
-	public Runnable getRunnable(final String id, final List<BatchTaskScheduleEntity> scheduledTasks) {
+	public OpenIAMRunnable getRunnable(final String id, final List<BatchTaskScheduleEntity> scheduledTasks) {
 		final BatchTaskEntity entity = batchDao.findById(id);
 		Runnable runnable = null;
 		if(entity != null) {
 			if(StringUtils.isNotBlank(entity.getSpringBean()) && StringUtils.isNotBlank(entity.getSpringBeanMethod())) {
-				return new BatchTaskSpringThread(entity, ctx, scheduledTasks);
+				runnable = new BatchTaskSpringThread(entity, ctx, scheduledTasks);
 			} else if(StringUtils.isNotBlank(entity.getTaskUrl())) {
-				return new BatchTaskGroovyThread(entity, ctx, scheduledTasks);
+				runnable = new BatchTaskGroovyThread(entity, ctx, scheduledTasks);
 			}
 		}
-		return runnable;
+		
+		OpenIAMRunnable retval = null;
+		if(runnable != null) {
+			retval = new OpenIAMRunnable(runnable, systemUserId);
+		} 
+		return retval;
 	}
 
 	@Override
@@ -230,7 +240,7 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 	@Override
 	@Transactional(readOnly=true)
 	public void run(String id, boolean synchronous) {
-    	final Runnable runnable = getRunnable(id, null);
+    	final OpenIAMRunnable runnable = getRunnable(id, null);
     	if(runnable != null) {
 	        if(synchronous) {
 	        	runnable.run();

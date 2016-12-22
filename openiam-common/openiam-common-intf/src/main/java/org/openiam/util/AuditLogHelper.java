@@ -19,6 +19,12 @@ public class AuditLogHelper {
     private RabbitMQSender rabbitMQSender;
     @Autowired
     private AuditLogQueue queue;
+    
+    public IdmAuditLogEntity newInstance() {
+    	final IdmAuditLogEntity log = new IdmAuditLogEntity();
+    	log.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+    	return log;
+    }
 
     public IdmAuditLogEntity save(IdmAuditLogEntity event){
         IdmAuditLogRequest wrapper = new IdmAuditLogRequest();

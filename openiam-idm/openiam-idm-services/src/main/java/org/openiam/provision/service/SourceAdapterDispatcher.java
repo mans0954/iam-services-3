@@ -37,6 +37,7 @@ import org.openiam.provision.dto.common.UserSearchKey;
 import org.openiam.provision.dto.common.UserSearchKeyEnum;
 import org.openiam.provision.dto.common.UserSearchMemberhipKey;
 import org.openiam.provision.dto.srcadapter.*;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -80,6 +81,9 @@ public class SourceAdapterDispatcher implements Runnable {
     private OrganizationService organizationDataService;
     @Autowired
     protected SysConfiguration sysConfiguration;
+    
+    @Autowired
+    private AuditLogHelper auditLogHelper;
 
     @Autowired
     protected AuditLogService auditLogService;
@@ -217,7 +221,7 @@ public class SourceAdapterDispatcher implements Runnable {
     private void process(SourceAdapterRequest request) {
 //        MuleContextProvider.getCtx().getDefaultMessageReceiverThreadingProfile().get
         StringBuilder warnings = new StringBuilder();
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         try {
             idmAuditLog.addCustomRecord("Request XML", this.write(request));
         } catch (Exception e) {

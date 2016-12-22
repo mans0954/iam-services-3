@@ -39,6 +39,7 @@ import org.openiam.mq.constants.queue.am.AMQueue;
 import org.openiam.mq.constants.queue.am.GroupQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.audit.IdmAuditLogWebDataService;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -80,6 +81,9 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
 
     @Autowired
     protected LanguageDataService languageDataService;
+    
+    @Autowired
+    private AuditLogHelper auditLogHelper;
     
     @Autowired
     private AccessRightProcessor accessRightProcessor;
@@ -282,7 +286,7 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     @Override
     public Response removeUserFromGroup(final String groupId, final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        final IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         try {
             if (groupId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
@@ -290,7 +294,6 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
             
             final GroupEntity groupEntity = groupManager.getGroupLocalize(groupId, null);
             if(groupEntity != null) {
-            	auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
             	auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
             	auditLog.setTargetUser(userId, null);
             	auditLog.setTargetGroup(groupId, groupEntity.getName());
@@ -320,9 +323,8 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     @Override
     public Response addAttribute(final GroupAttribute attribute) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         auditLog.setAction(AuditAction.ADD_ATTRIBUTE_TO_GROUP.value());
-        auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         try {
             if (attribute == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Attribute object is null");
@@ -358,8 +360,7 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     @Override
     public Response removeAttribute(final String attributeId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-        auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+        IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         auditLog.setAction(AuditAction.REMOVE_GROUP_ATTRIBUTE.value());
         try {
             if (attributeId == null) {
@@ -603,8 +604,7 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     @Override
     public Response removeRoleFromGroup(String roleId, String groupId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_GROUP.value());
         GroupEntity groupEntity = groupManager.getGroup(groupId);
         idmAuditLog.setTargetGroup(groupId, groupEntity.getName());

@@ -87,7 +87,7 @@ public class ProvisionConnectorWebServiceImpl extends AbstractBaseService implem
     
     @Override
     public Response save(final ProvisionConnectorDto dto) {
-    	final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+    	final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
     	idmAuditLog.setAction(AuditAction.SAVE_CONNECTOR.toString());
     	final ProvisionConnectorEntity entity = provisionConnectorConverter.convertToEntity(dto, true);
     	final Response response = new Response();

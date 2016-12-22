@@ -62,8 +62,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
 
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
-                    final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-                    auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+                    final IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
                     UserEntity requestor = userMgr.getUser(SpringSecurityHelper.getRequestorUserId());
 
                     LoginEntity requestorPrimaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
@@ -79,7 +78,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                             Login primaryIdentity = UserUtils.getUserManagedSysIdentity(sysConfiguration.getDefaultManagedSysId(),
                                     user.getPrincipalList());
 
-                            final IdmAuditLogEntity auditLogChild = new IdmAuditLogEntity();
+                            final IdmAuditLogEntity auditLogChild = auditLogHelper.newInstance();
                             auditLog.setRequestorPrincipal(requestorPrimaryIdentity.getLogin());
                             auditLog.setAction(AuditAction.DE_PROVISIONING.value());
                             auditLog.addTarget(userEntity.getId(), AuditTarget.USER.value(), primaryIdentity.getLogin());

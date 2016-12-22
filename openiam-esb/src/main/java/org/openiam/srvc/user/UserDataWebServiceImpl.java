@@ -1203,8 +1203,7 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     public Response saveProfilePicture(ProfilePicture pic) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         if (StringUtils.isBlank(pic.getId())) {
             idmAuditLog.setAction(AuditAction.ADD_PROFILE_PICTURE_FOR_USER.value());
         } else {
@@ -1245,8 +1244,7 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     public Response deleteProfilePictureById(String picId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.DELETE_PROFILE_PICTURE_FOR_USER.value());
         idmAuditLog.setAuditDescription(String.format("Delete profile picture with id: %s", picId));
 
@@ -1279,8 +1277,7 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     public Response deleteProfilePictureByUserId(String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.DELETE_PROFILE_PICTURE_FOR_USER.value());
         UserEntity user = userDataService.getUser(userId);
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());

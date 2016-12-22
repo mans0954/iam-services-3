@@ -41,12 +41,12 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
 
     private static final Log log = LogFactory.getLog(GenericObjectSynchServiceImpl.class);
 
+    @Override
     public SyncResponse startSynchronization(SynchConfig config) {
     	if(log.isDebugEnabled()) {
         log.debug("- Generic Object Synchronization started..^^^^^^^^");
 		}
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(systemUserId);
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
         idmAuditLog.setAuditDescription("- Generic Object Synchronization started..^^^^^^^^");
         try {

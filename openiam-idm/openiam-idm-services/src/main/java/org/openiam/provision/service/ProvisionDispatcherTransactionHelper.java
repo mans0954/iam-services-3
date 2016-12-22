@@ -63,6 +63,7 @@ import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.provision.utils.ProvisionUtils;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -124,6 +125,9 @@ public class ProvisionDispatcherTransactionHelper {
 
     @Autowired
     private BuildUserPolicyMapHelper buildPolicyMapHelper;
+    
+    @Autowired
+    private AuditLogHelper auditLogHelper;
 
     @Value("${org.openiam.debug.hidden.attributes}")
     protected String hiddenAttributes;
@@ -139,8 +143,7 @@ public class ProvisionDispatcherTransactionHelper {
 
         Login identity = data.getIdentity();
 
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(systemUserId);
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.PROVISIONING_DISPATCHER.value());
         idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
         idmAuditLog.setManagedSysId(identity.getManagedSysId());

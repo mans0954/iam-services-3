@@ -137,8 +137,7 @@ public class ManagedSystemWebServiceImpl extends AbstractApiService implements M
     @Override
     public Response requestSSLCert(final ManagedSysDto sys) {
         Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-        auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+        IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         auditLog.setAction(AuditAction.SSL_CERT_REQUEST.value());
         auditLog.setTargetManagedSys(sys.getId(), sys.getName());
         try {

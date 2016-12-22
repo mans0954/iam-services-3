@@ -48,7 +48,9 @@ public abstract class AbstractListener<API extends OpenIAMAPI> {
 
     public Response processRequest(API api, BaseServiceRequest request, RequestProcessor processor){
         // init AuditLog event for this call
-        AuditLogHolder.getInstance().setEvent(new IdmAuditLogEntity());
+    	
+    	SpringSecurityHelper.setRequesterUserId(request.getRequesterId());
+        AuditLogHolder.getInstance().setEvent(auditLogHelper.newInstance());
         IdmAuditLogEntity auditEvent = AuditLogHolder.getInstance().getEvent();
 
         Response apiResponse = new Response();
@@ -57,7 +59,6 @@ public abstract class AbstractListener<API extends OpenIAMAPI> {
         sw.start();
         log.debug("processing {} API Request {} - starting", api.name(), request);
         try {
-        	SpringSecurityHelper.setRequesterUserId(request.getRequesterId());
             if(processor==null){
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown processor instance for " + api.name());
             }

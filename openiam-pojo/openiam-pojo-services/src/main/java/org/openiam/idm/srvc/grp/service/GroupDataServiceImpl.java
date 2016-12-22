@@ -975,21 +975,9 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         bean.setAttributes(dbProps);
 	}
 
-    private void auditLogRemoveParent(final GroupEntity group, final GroupToGroupMembershipXrefEntity parent, final String requesterId){
-        // Audit Log -----------------------------------------------------------------------------------
-        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-        auditLog.setRequestorUserId(requesterId);
-        auditLog.setTargetGroup(group.getId(), group.getName());
-        auditLog.setAction(AuditAction.REMOVE_PARENT_GROUP.value());
-        auditLog.put(parent.getEntity().getName(), parent.getId());
-        auditLogHelper.enqueue(auditLog);
-    }
-
-
     private void auditLogRemoveAttribute(final GroupEntity group, final GroupAttributeEntity groupAttr){
         // Audit Log -----------------------------------------------------------------------------------
-    	IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-        auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+    	IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         auditLog.setTargetGroup(group.getId(), group.getName());
         auditLog.setTargetGroupAttribute(groupAttr.getId(), groupAttr.getName());
         auditLog.setAction(AuditAction.DELETE_ATTRIBUTE.value());
@@ -999,8 +987,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
     private void auditLogAddAttribute(final GroupEntity group, final GroupAttributeEntity groupAttr){
         // Audit Log -----------------------------------------------------------------------------------
-    	IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-        auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+    	IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         auditLog.setTargetGroup(group.getId(), group.getName());
         auditLog.setTargetGroupAttribute(groupAttr.getId(), groupAttr.getName());
         auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
@@ -1306,14 +1293,13 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     public Response addUserToGroup(final String groupId, final String userId, final Set<String> rightIds,
                                    final Date startDate, final Date endDate){
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
         UserEntity user = userDataService.getUser(userId);
         LoginEntity userPrimaryIdentity =  UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
         auditLog.setTargetUser(userId,userPrimaryIdentity.getLogin());
         GroupEntity groupEntity = this.getGroup(groupId);
         auditLog.setTargetGroup(groupId, groupEntity.getName());
-        auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         auditLog.setAuditDescription(String.format("Add user %s to group: %s", userId, groupId));
         try {
             if (groupId == null) {
@@ -1346,7 +1332,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     @Override
     public Response removeUserFromGroup(final String groupId, final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        final IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         try {
             if (groupId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
@@ -1354,7 +1340,6 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
             final GroupEntity groupEntity = this.getGroupLocalize(groupId, null);
             if(groupEntity != null) {
-                auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
                 auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
                 auditLog.setTargetUser(userId, null);
                 auditLog.setTargetGroup(groupId, groupEntity.getName());
@@ -1384,13 +1369,12 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     @Override
     public Response addChildGroup(final String groupId, final String childGroupId, final Set<String> rights, final Date startDate, final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
         //GroupEntity groupEntity = groupManager.getGroup(groupId);
         //auditLog.setTargetGroup(groupId, groupEntity.getName());
         //GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
         //auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
-        auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         auditLog.setAuditDescription(String.format("Add child group: %s to group: %s", childGroupId, groupId));
 
         try {
@@ -1445,13 +1429,12 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     @Override
     public Response removeChildGroup(final String groupId, final String childGroupId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         auditLog.setAction(AuditAction.REMOVE_CHILD_GROUP.value());
         Group groupDto = this.getGroupDTO(groupId);
         auditLog.setTargetGroup(groupId, groupDto.getName());
         Group groupChild = this.getGroupDTO(childGroupId);
         auditLog.setTargetGroup(childGroupId, groupChild.getName());
-        auditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
         auditLog.setAuditDescription(String.format("Remove child group: %s from group: %s", childGroupId, groupId));
 
         try {

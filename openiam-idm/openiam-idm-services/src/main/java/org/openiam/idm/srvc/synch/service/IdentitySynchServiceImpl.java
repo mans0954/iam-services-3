@@ -74,6 +74,7 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.AsynchUserProvisionDataService;
 import org.openiam.provision.service.ProvisioningDataService;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -122,6 +123,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     private AuditLogService auditLogService;
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
+    
+    @Autowired
+    private AuditLogHelper auditLogHelper;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -215,8 +219,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         	log.debug("-startSynchronization CALLED.^^^^^^^^");
         }
 
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(systemUserId);
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setRequestorPrincipal("sysadmin");
         idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
         idmAuditLog.setSource(config.getId());

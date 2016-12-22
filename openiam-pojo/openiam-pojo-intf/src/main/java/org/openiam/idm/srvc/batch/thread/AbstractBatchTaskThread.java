@@ -19,8 +19,6 @@ public abstract class AbstractBatchTaskThread implements Runnable {
     protected ApplicationContext ctx;
     protected BatchTaskEntity entity;
     protected List<BatchTaskScheduleEntity> scheduledTasks;
-    @Value("${org.openiam.idm.system.user.id}")
-    protected String systemUserId;
     @Autowired
     protected AuditLogHelper auditLogHelper;
     @Autowired
@@ -34,8 +32,7 @@ public abstract class AbstractBatchTaskThread implements Runnable {
     }
 
     protected void logSuccess() {
-    	IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(systemUserId);
+    	IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.BATCH_TASK_EXECUTE.value());
         idmAuditLog.setAuditDescription(entity.getName());
         idmAuditLog.addAttribute(AuditAttributeName.URL, entity.getTaskUrl());
@@ -45,8 +42,7 @@ public abstract class AbstractBatchTaskThread implements Runnable {
     }
 
     protected void logFail(Throwable e) {
-    	IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(systemUserId);
+    	IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.BATCH_TASK_EXECUTE.value());
         idmAuditLog.setAuditDescription(entity.getName());
         idmAuditLog.addAttribute(AuditAttributeName.URL, entity.getTaskUrl());

@@ -114,9 +114,9 @@ public class BatchTaskScheduler extends AbstractBaseService implements Initializ
     }
     
     public void execute(final String id, final List<BatchTaskScheduleEntity> scheduledTaskList) {
-		final Runnable task = batchService.getRunnable(id, scheduledTaskList);
+		final OpenIAMRunnable task = batchService.getRunnable(id, scheduledTaskList);
 		if(task != null) {
-			batchTaskThreadExecutor.execute(new OpenIAMRunnable(task, systemUserId));
+			batchTaskThreadExecutor.execute(task);
 		}
     }
     
@@ -142,7 +142,7 @@ public class BatchTaskScheduler extends AbstractBaseService implements Initializ
 	        			if(CollectionUtils.isNotEmpty(batchList)) {
 	        				for(final BatchTaskEntity entity : batchList) {
 	        					schedule(entity);
-	        					final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+	        					final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
 								auditLogHelper.enqueue(idmAuditLog);
 	        					batchDao.save(entity);
 	        				}

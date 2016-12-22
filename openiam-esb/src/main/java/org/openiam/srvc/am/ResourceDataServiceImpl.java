@@ -43,6 +43,7 @@ import org.openiam.mq.constants.queue.am.AMQueue;
 import org.openiam.mq.constants.queue.am.ResourceQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.audit.IdmAuditLogWebDataService;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -78,6 +79,8 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Autowired
     private AccessRightProcessor accessRightProcessor;
 
+    @Autowired
+    private AuditLogHelper auditLogHelper;
 
     @Autowired
     private IdmAuditLogWebDataService auditLogService;
@@ -211,7 +214,7 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     public Response removeUserFromResource(final String resourceId, final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
@@ -280,7 +283,7 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     public Response deleteResourceType(final String resourceTypeId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.DELETE_RESOURCE_TYPE.value());
         try {
             if (resourceTypeId == null) {
@@ -382,7 +385,7 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     public Response removeRoleToResource(final String resourceId, final String roleId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());

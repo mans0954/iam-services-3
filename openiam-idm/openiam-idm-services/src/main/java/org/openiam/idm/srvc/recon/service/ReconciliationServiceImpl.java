@@ -129,11 +129,12 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     */
     private static Set<String> runningTask = Collections.newSetFromMap(new ConcurrentHashMap());
 
+    @Override
     public ReconciliationResponse startReconciliation(ReconciliationConfig config) {
 
 		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getId());
 
-		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+		IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setRequestorUserId(config.getRequesterId());
         idmAuditLog.setAction(AuditAction.RECONCILIATION.value());
         ManagedSysEntity managedSysEntity = managedSysService.getManagedSysById(config.getManagedSysId());

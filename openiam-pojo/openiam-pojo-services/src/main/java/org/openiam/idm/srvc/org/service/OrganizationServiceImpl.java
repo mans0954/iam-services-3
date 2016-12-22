@@ -483,8 +483,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public Organization save(final Organization organization, final boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
-        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+        final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         if (StringUtils.isNotBlank(organization.getId())) {
             idmAuditLog.setAction(AuditAction.EDIT_ORG.value());
             idmAuditLog.setTargetOrg(organization.getId(), organization.getName());
@@ -1013,7 +1012,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public void deleteOrganization(final String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
-        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.DELETE_ORG.value());
 
         try {

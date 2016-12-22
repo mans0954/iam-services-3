@@ -987,7 +987,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     public Response addGroupToResource(final String resourceId, final String groupId,
                                        final Set<String> rightIds, final Date startDate, final Date endDate){
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
         Group group = groupDataService.getGroupDTO(groupId);
         idmAuditLog.setTargetGroup(groupId, group.getName());
@@ -1033,7 +1033,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 //    )
     public Response removeGroupToResource(final String resourceId, final String groupId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
         idmAuditLog.setAuditDescription(String.format("Remove group: %s from resource: %s", groupId, resourceId));
 
@@ -1075,7 +1075,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     public Response addUserToResource(final String resourceId, final String userId,
                                       final Set<String> rightIds, final Date startDate, final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
@@ -1115,7 +1115,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     public Response removeUserFromResource(final String resourceId, final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
@@ -1158,7 +1158,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     public Response addRoleToResource(final String resourceId, final String roleId,
                                       final Set<String> rightIds, final Date startDate, final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
 
         idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
@@ -1212,7 +1212,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 //    )
     public Response removeRoleToResource(final String resourceId, final String roleId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
@@ -1265,7 +1265,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
                                      final Date startDate,
                                      final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.ADD_CHILD_RESOURCE.value());
         ResourceEntity resourceEntity = this.findResourceById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
@@ -1316,7 +1316,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 //    })
     public Response deleteChildResourceWeb(final String resourceId, final String memberResourceId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.REMOVE_CHILD_RESOURCE.value());
         ResourceEntity resourceEntity = this.findResourceById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());

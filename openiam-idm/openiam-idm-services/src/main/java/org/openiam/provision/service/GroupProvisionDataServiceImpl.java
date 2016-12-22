@@ -1054,8 +1054,7 @@ public class GroupProvisionDataServiceImpl implements ObjectProvisionDataService
     public LookupObjectResponse getTargetSystemObject(final String principalName,
                                                       final String managedSysId,
                                                   final List<ExtensibleAttribute> extensibleAttributes) {
-        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(systemUserId);
+        final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.PROVISIONING_LOOKUP.value());
 
         if(log.isDebugEnabled()) {

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.batch.service;
 
+import org.openiam.concurrent.OpenIAMRunnable;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.BatchTaskScheduleSearchBean;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;
@@ -26,7 +27,7 @@ public interface BatchService {
     BatchTaskEntity findById(final String id);
     BatchTask findDto(final String id);
     
-    Runnable getRunnable(final String id, final List<BatchTaskScheduleEntity> scheduledTasks);
+    OpenIAMRunnable getRunnable(final String id, final List<BatchTaskScheduleEntity> scheduledTasks);
     
     Trigger getCronTrigger(final String id);
     

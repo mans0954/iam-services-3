@@ -138,8 +138,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     private String errorDescription;
 
     public Response testConnectionConfig(String managedSysId) {
-        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+        IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAction(AuditAction.PROVISIONING_TEST.value());
         try {
             Response response = validateConnectionConfig.testConnection(managedSysId);
@@ -251,9 +250,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
-                    IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+                    IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
 
-                    idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
+                    //idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.CREATE_USER.value());
                     idmAuditLog.setAuditDescription("Provisioning add user: " + pUser.getId()
@@ -335,8 +334,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
-                    IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-                    idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
+                    IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
+                    //idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(auditAction != null ? auditAction.value() : AuditAction.MODIFY_USER.value());
                     LoginEntity loginEntity = loginManager.getByUserIdManagedSys(pUser.getId(), sysConfiguration.getDefaultManagedSysId());
@@ -450,7 +449,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
 
-        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setRequestorUserId(requestorId);
         LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
         idmAuditLog.setRequestorPrincipal(lRequestor.getLogin());
@@ -529,7 +528,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
             Set<String> processedResources = new HashSet<String>();
             if (!managedSystemId.equals(sysConfiguration.getDefaultManagedSysId())) {
-                final IdmAuditLogEntity idmAuditLogChild = new IdmAuditLogEntity();
+                final IdmAuditLogEntity idmAuditLogChild = auditLogHelper.newInstance();
                 idmAuditLogChild.setRequestorUserId(requestorId);
                 idmAuditLogChild.setRequestorPrincipal(lRequestor.getLogin());
                 idmAuditLogChild.setAction(AuditAction.PROVISIONING_DELETE_IDENTITY.value());
@@ -646,7 +645,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 List<LoginEntity> principalList = loginManager.getLoginByUser(userId);
                 if (principalList != null) {
                     for (LoginEntity l : principalList) {
-                        final IdmAuditLogEntity idmAuditLogChild = new IdmAuditLogEntity();
+                        final IdmAuditLogEntity idmAuditLogChild = auditLogHelper.newInstance();
                         idmAuditLogChild.setRequestorUserId(requestorId);
                         idmAuditLogChild.setRequestorPrincipal(lRequestor.getLogin());
                         idmAuditLogChild.setAction(AuditAction.PROVISIONING_DELETE_IDENTITY.value());
@@ -1517,11 +1516,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     	if(log.isDebugEnabled()) {
     		log.debug("----resetPassword called.------");
     	}
-        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         List<LoginEntity> loginEntityList = loginManager.getLoginByUser(passwordSync.getRequestorId());
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
         idmAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
-        idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
+        //idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
         idmAuditLog.setAction(AuditAction.USER_RESETPASSWORD.value());
 
         if (auditLog != null) {
@@ -1672,10 +1671,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                             return response;
                         }
-                        final IdmAuditLogEntity childAuditLog = new IdmAuditLogEntity();
+                        final IdmAuditLogEntity childAuditLog = auditLogHelper.newInstance();
                         if (!lg.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
                             childAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
-                            childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
+                            //childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
                             childAuditLog.setAction(AuditAction.PROVISIONING_RESETPASSWORD.value());
                             childAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
 
@@ -1933,11 +1932,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     	if(log.isDebugEnabled()) {
     		log.debug("----setPassword called.------");
     	}
-        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         List<LoginEntity> loginEntityList = loginManager.getLoginByUser(passwordSync.getRequestorId());
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
         idmAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
-        idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
+        //idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
         idmAuditLog.setAction(AuditAction.CHANGE_PASSWORD.value());
         idmAuditLog.setBaseObject(passwordSync);
         idmAuditLog.setUserId(passwordSync.getUserId());
@@ -2099,9 +2098,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                     if (!managedSysId.equals(sysConfiguration.getDefaultManagedSysId())) {
 
-                        final IdmAuditLogEntity childAuditLog = new IdmAuditLogEntity();
+                        final IdmAuditLogEntity childAuditLog = auditLogHelper.newInstance();
                         childAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
-                        childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
+                        //childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
                         childAuditLog.setAction(AuditAction.PROVISIONING_SETPASSWORD.value());
                         childAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
 
@@ -2392,12 +2391,14 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     		log.debug("----syncPasswordFromSrc called.------");
     	}
         boolean saveAuditLog = true;
-        final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+        final IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
         auditLog.setBaseObject(passwordSync);
         auditLog.setAction(AuditAction.PASSWORD_INTERCEPTOR.value());
+        /*
         if (StringUtils.isNotBlank(passwordSync.getRequestorId())) {
             auditLog.setRequestorUserId(passwordSync.getRequestorId());
         }
+        */
         auditLog.setManagedSysId(passwordSync.getManagedSystemId());
 
         long curTime = System.currentTimeMillis();
@@ -2487,9 +2488,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                 // SIA - 20150702
                 final ManagedSysEntity mSys = managedSystemService.getManagedSysById(targetLoginEntity.getManagedSysId());
-                final IdmAuditLogEntity childAuditLog = new IdmAuditLogEntity();
+                final IdmAuditLogEntity childAuditLog = auditLogHelper.newInstance();
                 childAuditLog.setRequestorPrincipal(targetLoginEntity.getLogin());
-                childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
+                //childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
                 childAuditLog.setAction(AuditAction.PROVISIONING_SETPASSWORD.value());
                 childAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
 
@@ -2601,11 +2602,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         if (CollectionUtils.isNotEmpty(bulkRequest.getUserIds()) &&
                 CollectionUtils.isNotEmpty(bulkRequest.getOperations())) {
 
-            final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+            final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
             idmAuditLog.setAction(AuditAction.BULK_OPERATION.value());
             String requestorId = bulkRequest.getRequesterId();
             LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
-            idmAuditLog.setRequestorUserId(requestorId);
+            //idmAuditLog.setRequestorUserId(requestorId);
             idmAuditLog.setRequestorPrincipal(lRequestor.getLogin());
 
             List<String> failedUserIds = new ArrayList<String>();
@@ -2722,8 +2723,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                                 format = (Boolean) ob.getProperties().get("format");
                                             }
 
-                                            final IdmAuditLogEntity childAuditLog = new IdmAuditLogEntity();
-                                            childAuditLog.setRequestorUserId(requestorId);
+                                            final IdmAuditLogEntity childAuditLog = auditLogHelper.newInstance();
+                                            //childAuditLog.setRequestorUserId(requestorId);
                                             childAuditLog.setRequestorPrincipal(lRequestor.getLogin());
                                             childAuditLog.setAction(AuditAction.USER_NOTIFY.value());
                                             childAuditLog.setTargetUser(pUser.getId(), primaryIdentity.getLogin());
@@ -3000,8 +3001,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         if(log.isDebugEnabled()) {
         	log.debug("----addModify called.------");
         }
-        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId() != null ? SpringSecurityHelper.getRequestorUserId() : systemUserId);
+        final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
+        //idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId() != null ? SpringSecurityHelper.getRequestorUserId() : systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_ADD.value());
         idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
 
@@ -3032,8 +3033,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         if(log.isDebugEnabled()) {
         	log.debug("----requestModify called.------");
         }
-        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId() != null ? SpringSecurityHelper.getRequestorUserId() : systemUserId);
+        final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
+        //idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId() != null ? SpringSecurityHelper.getRequestorUserId() : systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
         idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
 
@@ -3163,7 +3164,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         UserEntity usr = this.userMgr.getUser(userId);
         ProvisionUser user = new ProvisionUser(userDozerConverter.convertToDTO(usr, true));
 
-        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        final IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), usr.getPrincipalList());
         idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
         idmAuditLog.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
@@ -3181,7 +3182,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         int callPreProcessor = callPreProcessor("DISABLE", user, bindingMap, null);
 
-        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPreProcessor result="
+        idmAuditLog.put(AuditAttributeName.DESCRIPTION, "callPreProcessor result="
                 + (callPreProcessor == 1 ? "SUCCESS" : "FAIL"));
         if (callPreProcessor != ProvisioningConstants.SUCCESS) {
             idmAuditLog.fail();
@@ -3211,7 +3212,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 idmAuditLog.setAction(AuditAction.PROVISIONING_DISABLE.value());
                 usr.setSecondaryStatus(UserStatusEnum.DISABLED);
                 if(saveRehireChange.equalsIgnoreCase("true")) {
-                    IdmAuditLogEntity childAuditLog = new IdmAuditLogEntity();
+                    IdmAuditLogEntity childAuditLog = auditLogHelper.newInstance();
                     childAuditLog.setUserId(usr.getId());
                     childAuditLog.setAction(AuditAction.USER_LEAVER.value());
                     childAuditLog.setAuditDescription(usr.getDisplayName() + " User disabled");
@@ -3222,7 +3223,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 idmAuditLog.setAction(AuditAction.PROVISIONING_ENABLE.value());
                 usr.setSecondaryStatus(null);
                 if(saveRehireChange.equalsIgnoreCase("true")) {
-                    IdmAuditLogEntity childAuditLog = new IdmAuditLogEntity();
+                    IdmAuditLogEntity childAuditLog = auditLogHelper.newInstance();
                     childAuditLog.setUserId(usr.getId());
                     childAuditLog.setAction(AuditAction.USER_REHIRED.value());
                     childAuditLog.setAuditDescription(usr.getDisplayName() + " User rehired");
@@ -3263,8 +3264,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             	}
                 for (LoginEntity lg : principalList) {
 
-                    final IdmAuditLogEntity idmAuditLogChild = new IdmAuditLogEntity();
-                    idmAuditLogChild.setRequestorUserId(SpringSecurityHelper.getRequestorUserId());
+                    final IdmAuditLogEntity idmAuditLogChild = auditLogHelper.newInstance();
                     idmAuditLogChild.setRequestorPrincipal(lRequestor.getLogin());
                     idmAuditLogChild.setAction(operation ? AuditAction.PROVISIONING_DISABLE_IDENTITY.value() :
                             AuditAction.PROVISIONING_ENABLE_IDENTITY.value());

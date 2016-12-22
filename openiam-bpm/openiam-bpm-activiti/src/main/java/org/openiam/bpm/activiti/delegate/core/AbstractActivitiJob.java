@@ -41,6 +41,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.provision.service.ProvisioningDataService;
+import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,6 +113,9 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	@Autowired
 	@Qualifier("userManager")
 	private UserDataService userManager;
+	
+	@Autowired
+    protected AuditLogHelper auditLogHelper;
 	
 	protected void doNotify(final DelegateTask delegateTask) {
 		throw new RuntimeException("doNotify must be overridden");
@@ -351,8 +355,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	}
 	
 	protected IdmAuditLogEntity createNewAuditLog(final DelegateExecution execution) {
-		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(getRequestorId(execution));
+		IdmAuditLogEntity idmAuditLog = auditLogHelper.newInstance();
         idmAuditLog.setAuditDescription(getTaskName(execution));
         idmAuditLog.setTaskDescription(getTaskDescription(execution));
         idmAuditLog.setTaskName(getTaskName(execution));

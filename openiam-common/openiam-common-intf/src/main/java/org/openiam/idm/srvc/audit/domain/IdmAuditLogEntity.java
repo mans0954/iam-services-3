@@ -71,6 +71,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @SimpleElasticSearchJSONMapping
 public class IdmAuditLogEntity extends KeyEntity {
 	
+	public IdmAuditLogEntity() {}
+	
 	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     @Column(name="USER_ID", length=32)
     private String userId;
@@ -405,6 +407,12 @@ public class IdmAuditLogEntity extends KeyEntity {
     public void addAttribute(final AuditAttributeName key, final String value) {
     	put(key.name(), value);
     }
+	
+	public void put(final AuditAttributeName key, final String value) {
+		if(key != null) {
+			put(key.name(), value);
+		}
+	}
     
     public void put(final String key, final String value) {
     	if(key != null && value != null) {
