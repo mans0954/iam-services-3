@@ -1,10 +1,7 @@
 package org.openiam.config;
 
 import org.openiam.mq.constants.RabbitMQVHosts;
-import org.openiam.mq.constants.queue.user.LoginQueue;
-import org.openiam.mq.constants.queue.user.PasswordQueue;
-import org.openiam.mq.constants.queue.user.UserAttributeQueue;
-import org.openiam.mq.constants.queue.user.UserServiceQueue;
+import org.openiam.mq.constants.queue.user.*;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -57,5 +54,12 @@ public class UserVHostConfig extends BaseVHostConfig{
         bindQueue(userAmqpAdmin(), queue);
         return queue;
     }
+    @Bean
+    public ChallengeResponseQueue ChallengeResponseQueue() {
+        ChallengeResponseQueue queue =  new ChallengeResponseQueue();
+        bindQueue(userAmqpAdmin(), queue);
+        return queue;
+    }
+
 
 }

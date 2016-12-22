@@ -1,12 +1,19 @@
 package org.openiam.idm.srvc.pswd.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.id.UUIDGen;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.IdentityQuestGroupDozerConverter;
+import org.openiam.dozer.converter.IdentityQuestionDozerConverter;
+import org.openiam.dozer.converter.UserIdentityAnswerDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
@@ -14,16 +21,18 @@ import org.openiam.idm.srvc.pswd.domain.IdentityQuestGroupEntity;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
+import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
+import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 //@Transactional
@@ -53,6 +62,11 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     @Autowired
     private IdentityQuestGroupDozerConverter groupDozerConverter;
 
+    @Autowired
+    private IdentityQuestionDozerConverter questionDozerConverter;
+    @Autowired
+    private UserIdentityAnswerDozerConverter answerDozerConverter;
+
     @Override
     public Integer getNumOfRequiredQuestions(String userId, boolean isEnterprise) {
         return getResponseValidator().getNumOfRequiredQuestions(userId, isEnterprise);
@@ -72,66 +86,97 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     }
 
     @Override
-    public List<IdentityQuestionEntity> findQuestionBeans(
-            IdentityQuestionSearchBean searchBean, int from, int size) {
+    @LocalizedServiceGet
+    @Transactional(readOnly = true)
+    public List<IdentityQuestion> findQuestionBeans(IdentityQuestionSearchBean searchBean, int from, int size, final Language language) {
         List<IdentityQuestionEntity> beans = getResponseValidator().findQuestionBeans(searchBean, from, size);
-        return beans;
+        return (beans != null) ? questionDozerConverter.convertToDTOList(beans, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
     }
 
     @Override
-    public IdentityQuestionEntity getQuestion(final String questionId) {
-        return getResponseValidator().getQuestion(questionId);
+    @LocalizedServiceGet
+    @Transactional(readOnly = true)
+    public IdentityQuestion getQuestion(final String questionId, final Language language) {
+        IdentityQuestionEntity question = getResponseValidator().getQuestion(questionId);
+        return (question != null) ? questionDozerConverter.convertToDTO(question, false) : null;
     }
 
 
     @Override
-    public List<UserIdentityAnswerEntity> findAnswerBeans(
-            IdentityAnswerSearchBean searchBean, String requesterId, int from, int size) throws Exception {
+    @Transactional(readOnly = true)
+    public List<UserIdentityAnswer> findAnswerBeans(IdentityAnswerSearchBean searchBean, String requesterId, int from, int size) throws BasicDataServiceException {
         final List<UserIdentityAnswerEntity> beans = getResponseValidator().findAnswerBeans(searchBean, requesterId, from, size);
-        return beans;
-//        return decryptAnswers(beans, requesterId);
+        return (beans != null) ? answerDozerConverter.convertToDTOList(beans, searchBean.isDeepCopy()) : null;
     }
     
 
-//    private List<UserIdentityAnswerEntity> decryptAnswers(List<UserIdentityAnswerEntity> answerList, String requesterId)
-//            throws Exception {
-//        if(CollectionUtils.isNotEmpty(answerList)){
-//            for(UserIdentityAnswerEntity entity: answerList){
-//                if(StringUtils.isNotBlank(requesterId)
-//                   && requesterId.equals(entity.getUserId())
-//                   && entity.getIsEncrypted()){
-//
-//                    entity.setQuestionAnswer(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
-//                                                                          entity.getQuestionAnswer()));
-//                }
-//            }
-//        }
-//        return answerList;
-//    }
-
     @Override
-    public void saveQuestion(IdentityQuestionEntity entity) throws Exception {
+    @Transactional
+    public String saveQuestion(IdentityQuestion question) throws BasicDataServiceException {
+        if (question == null) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+
+        if (StringUtils.isBlank(question.getIdentityQuestGrpId())) {
+            throw new BasicDataServiceException(ResponseCode.NO_IDENTITY_QUESTION_GROUP);
+        }
+        if (MapUtils.isEmpty(question.getDisplayNameMap())) {
+            throw new BasicDataServiceException(ResponseCode.NO_IDENTITY_QUESTION);
+        }
+        final IdentityQuestionEntity entity = questionDozerConverter.convertToEntity(question, false);
         getResponseValidator().saveQuestion(entity);
+        return entity.getId();
     }
 
     @Override
-    public void deleteQuestion(String questionId) throws Exception {
+    @Transactional
+    public void deleteQuestion(String questionId) throws BasicDataServiceException {
+        if (StringUtils.isBlank(questionId)) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
         getResponseValidator().deleteQuestion(questionId);
     }
 
     @Override
-    public void saveAnswer(UserIdentityAnswerEntity entity) throws Exception {
+    @Transactional
+    public String saveAnswer(UserIdentityAnswer answer) throws BasicDataServiceException {
+        if (answer == null) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+
+        if (StringUtils.isBlank(answer.getQuestionId())) {
+            throw new BasicDataServiceException(ResponseCode.NO_IDENTITY_QUESTION);
+        }
+
+        final UserIdentityAnswerEntity entity = answerDozerConverter.convertToEntity(answer, true);
+        if (answer.getQuestionId() == null) {
+            entity.setIdentityQuestion(null);
+        }
         getResponseValidator().saveAnswer(entity);
+        return entity.getId();
     }
 
     @Override
-    public void deleteAnswer(String answerId) throws Exception {
+    @Transactional
+    public void deleteAnswer(String answerId) throws BasicDataServiceException {
+        if (StringUtils.isBlank(answerId)) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
         getResponseValidator().deleteAnswer(answerId);
     }
 
     @Override
-    public void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception {
-        getResponseValidator().saveAnswers(answerList);
+    @Transactional
+    public void saveAnswers(List<UserIdentityAnswer> answerList) throws BasicDataServiceException {
+        this.validateAnswers(answerList);
+        final List<UserIdentityAnswerEntity> answerEntityList = new LinkedList<UserIdentityAnswerEntity>();
+        for (final UserIdentityAnswer answer : answerList) {
+            final UserIdentityAnswerEntity entity = answerDozerConverter.convertToEntity(answer, true);
+            if (answer.getQuestionId() == null)
+                entity.setIdentityQuestion(null);
+            answerEntityList.add(entity);
+        }
+        getResponseValidator().saveAnswers(answerEntityList);
 
         // add to audit log and update the user record that challenge response
         // answers have been updated
@@ -150,7 +195,9 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     }
 
     @Override
-    public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList) throws Exception {
+    public boolean isResponseValid(String userId, List<UserIdentityAnswer> newAnswerDtoList) throws BasicDataServiceException {
+        final List<UserIdentityAnswerEntity> entityList = answerDozerConverter.convertToEntityList(newAnswerDtoList, true);
+
         int requiredCorrectEnterprise = 0;
         int requiredCorrectUserSpecified = 0;
         PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
@@ -172,10 +219,10 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
         
         final IdentityAnswerSearchBean sb = new IdentityAnswerSearchBean();
         sb.setUserId(userId);
-        final List<UserIdentityAnswerEntity> savedAnsList = findAnswerBeans(sb, null, 0, Integer.MAX_VALUE);
+        final List<UserIdentityAnswerEntity> savedAnsList = getResponseValidator().findAnswerBeans(sb, null, 0, Integer.MAX_VALUE);
 
-        return getResponseValidator().isResponseValid(userId, newAnswerList, savedAnsList, requiredCorrectEnterprise, true)
-                && getResponseValidator().isResponseValid(userId, newAnswerList, savedAnsList, requiredCorrectUserSpecified, false);
+        return getResponseValidator().isResponseValid(userId, entityList, savedAnsList, requiredCorrectEnterprise, true)
+                && getResponseValidator().isResponseValid(userId, entityList, savedAnsList, requiredCorrectUserSpecified, false);
     }
 
     private ChallengeResponseValidator getResponseValidator() {
@@ -183,7 +230,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     }
 
     @Override
-    public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
+    public boolean isUserAnsweredSecurityQuestions(final String userId) throws BasicDataServiceException {
         return getResponseValidator().isUserAnsweredSecurityQuestions(userId);
     }
 
@@ -198,4 +245,35 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 		final List<IdentityQuestGroupEntity> entities = getResponseValidator().getAllIdentityQuestionGroups();
 		return groupDozerConverter.convertToDTOList(entities, false);
 	}
+    @Override
+    public void validateAnswers(List<UserIdentityAnswer> answerList)  throws BasicDataServiceException{
+        if (CollectionUtils.isEmpty(answerList)) {
+            throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+        String requestId = "R" + UUIDGen.getUUID();
+
+			// check for duplicates
+        final Set<String> questionIdSet = new HashSet<String>();
+        final Set<String> questionTextSet = new HashSet<String>();
+        for (final UserIdentityAnswer answer : answerList) {
+            if (StringUtils.isNotBlank(answer.getQuestionId()) && questionIdSet.contains(answer.getQuestionId())) {
+                throw new BasicDataServiceException(ResponseCode.IDENTICAL_QUESTIONS);
+            }
+            if (StringUtils.isNotBlank(answer.getQuestionText()) && questionTextSet.contains(answer.getQuestionText())) {
+                throw new BasicDataServiceException(ResponseCode.IDENTICAL_QUESTIONS);
+            }
+            if (StringUtils.isBlank(answer.getQuestionId()) && StringUtils.isBlank(answer.getQuestionText())) {
+                throw new BasicDataServiceException(ResponseCode.QUEST_NOT_SELECTED);
+            }
+
+            if(StringUtils.isBlank(answer.getQuestionAnswer())){
+                throw new BasicDataServiceException(ResponseCode.ANSWER_NOT_TAKEN);
+            }
+            if (StringUtils.isNotBlank(answer.getQuestionId()))
+                questionIdSet.add(answer.getQuestionId());
+
+            if (StringUtils.isNotBlank(answer.getQuestionText()))
+                questionTextSet.add(answer.getQuestionText());
+        }
+    }
 }
