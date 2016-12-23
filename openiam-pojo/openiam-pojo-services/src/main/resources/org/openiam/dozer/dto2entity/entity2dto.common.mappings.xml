@@ -29,6 +29,10 @@
             <a>element.displayName</a>
             <b>metadataName</b>
         </field>
+        <field>
+            <a>element.description</a>
+            <b>metadataDescription</b>
+        </field>
     </mapping>
 
     <mapping>
@@ -70,6 +74,10 @@
             <a>element.displayName</a>
             <b>metadataName</b>
         </field>
+        <field>
+            <a>element.description</a>
+            <b>metadataDescription</b>
+        </field>
     </mapping>
 
     <mapping>
@@ -87,6 +95,10 @@
         <field>
             <a>element.displayName</a>
             <b>metadataName</b>
+        </field>
+        <field>
+            <a>element.description</a>
+            <b>metadataDescription</b>
         </field>
     </mapping>
 
@@ -161,6 +173,10 @@
             <a>element.displayName</a>
             <b>metadataName</b>
         </field>
+        <field>
+            <a>element.description</a>
+            <b>metadataDescription</b>
+        </field>
     </mapping>
 
     <mapping>
@@ -184,6 +200,10 @@
         <field>
             <a>element.displayName</a>
             <b>metadataName</b>
+        </field>
+        <field>
+            <a>element.description</a>
+            <b>metadataDescription</b>
         </field>
         <field>
             <a>organization.id</a>

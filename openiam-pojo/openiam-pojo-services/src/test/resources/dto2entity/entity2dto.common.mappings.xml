@@ -23,6 +23,10 @@
             <a>element.displayName</a>
             <b>metadataName</b>
         </field>
+		<field>
+			<a>element.description</a>
+			<b>metadataDescription</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
