@@ -57,6 +57,7 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
         log.debug("Send to QUEUE : {}; Request: {};", queue.toString(), request.toString());
 
         request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
+        request.setLanguageId(SpringSecurityHelper.getLanguageId());
         Object response = getRabbitOperations().convertSendAndReceive(queue.getExchange().name(), queue.getRoutingKey(),
                             request, message -> {
                             message.getMessageProperties().setHeader(MQConstant.VIRTUAL_HOST, queue.getVHost());
@@ -92,6 +93,7 @@ public class RequestServiceGatewayImpl extends RabbitGatewaySupport implements R
         log.debug("Send to exchange : EXCHANGE = " + exchange + "; RoutingKey: " + routingKey + ";" + request.toString());
         
         request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
+        request.setLanguageId(SpringSecurityHelper.getLanguageId());
         getRabbitOperations().convertAndSend(exchange, routingKey, request,
                 message -> {
                     message.getMessageProperties().setHeader(MQConstant.VIRTUAL_HOST, vhost);

@@ -113,7 +113,7 @@ public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionSer
                     } catch (Throwable e) {
                         log.error("EXCEPTION:AsynchUserProvisionService.startBulkOperation", e);
                     }
-                }, bulkRequest.getRequesterId())
+                }, bulkRequest.getRequesterId(), null)
             );
             log.debug("END BULK OPERATION CALLED ---------------------");
         }

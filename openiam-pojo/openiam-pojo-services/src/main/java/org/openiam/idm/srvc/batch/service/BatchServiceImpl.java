@@ -215,7 +215,7 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 		
 		OpenIAMRunnable retval = null;
 		if(runnable != null) {
-			retval = new OpenIAMRunnable(runnable, systemUserId);
+			retval = new OpenIAMRunnable(runnable, systemUserId, null);
 		} 
 		return retval;
 	}

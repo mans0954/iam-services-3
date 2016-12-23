@@ -1,8 +1,7 @@
 package org.openiam.concurrent;
 
-import org.openiam.util.SpringSecurityHelper;
-
-public interface RequestorIDProvider {
+public interface SecurityInfoProvider {
 
 	public String getRequestorId();
+	public String getLanguageId();
 }

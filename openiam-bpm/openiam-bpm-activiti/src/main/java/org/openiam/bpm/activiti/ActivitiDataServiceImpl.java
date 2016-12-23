@@ -305,6 +305,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		variables.put(ActivitiConstants.REQUESTOR.getName(), SpringSecurityHelper.getRequestorUserId());
 		variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
 		variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), SpringSecurityHelper.getRequestorUserId());
+		variables.put(ActivitiConstants.LANGUAGE_ID.getName(), SpringSecurityHelper.getLanguageId());
 		if(identifier.getCustomActivitiAttributes() != null) {
 			variables.putAll(identifier.getCustomActivitiAttributes());
 		}
@@ -465,6 +466,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		variables.put(ActivitiConstants.REQUESTOR.getName(), SpringSecurityHelper.getRequestorUserId());
 		variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getUser().getId());
 		variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), ActivitiRequestType.EDIT_USER.getKey());
+		variables.put(ActivitiConstants.LANGUAGE_ID.getName(), SpringSecurityHelper.getLanguageId());
 		if(identifier.getCustomActivitiAttributes() != null) {
 			variables.putAll(identifier.getCustomActivitiAttributes());
 		}
@@ -583,6 +585,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 		variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequesterId());
 		variables.put(ActivitiConstants.DELETABLE.getName(), Boolean.valueOf(request.isDeletable()));
 		variables.put(ActivitiConstants.ACCESS_RIGHTS.getName(), request.getAccessRights());
+		variables.put(ActivitiConstants.LANGUAGE_ID.getName(), SpringSecurityHelper.getLanguageId());
 
 		if(request.getStartDate() != null) {
 			variables.put(ActivitiConstants.START_DATE.getName(), request.getStartDate());
@@ -728,6 +731,7 @@ public class ActivitiDataServiceImpl extends AbstractBaseService implements Acti
 			variables.put(ActivitiConstants.COMMENT.getName(), request.getComment());
 			variables.put(ActivitiConstants.IS_TASK_APPROVED.getName(), request.isAccepted());
 			variables.put(ActivitiConstants.EXECUTOR_ID.getName(), request.getRequesterId());
+			variables.put(ActivitiConstants.LANGUAGE_ID.getName(), SpringSecurityHelper.getLanguageId());
 			if(request.getCustomVariables() != null) {
 				variables.putAll(request.getCustomVariables());
 			}

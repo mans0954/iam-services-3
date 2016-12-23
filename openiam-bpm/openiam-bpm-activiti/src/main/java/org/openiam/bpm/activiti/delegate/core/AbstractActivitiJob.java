@@ -127,7 +127,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	@Override
 	public final void notify(DelegateTask delegateTask) {
 		try {
-			SpringSecurityHelper.setRequesterUserId(getRequestorId(delegateTask.getExecution()));
+			SpringSecurityHelper.setAuthenticationInformation(getRequestorId(delegateTask.getExecution()), getLanguageId(delegateTask.getExecution()));
 			doNotify(delegateTask);
 		} finally {
 			SpringSecurityHelper.clearContext();
@@ -138,7 +138,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	public final void execute(DelegateExecution execution) throws Exception {
 		try {
 			doExecute(execution);
-			SpringSecurityHelper.setRequesterUserId(getRequestorId(execution));
+			SpringSecurityHelper.setAuthenticationInformation(getRequestorId(execution), getLanguageId(execution));
 		} finally {
 			SpringSecurityHelper.clearContext();
 		}
@@ -300,6 +300,10 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	
 	protected ActivitiRequestType getRequestType(final DelegateExecution execution) {
 		return ActivitiRequestType.getByName(getStringVariable(execution, ActivitiConstants.WORKFLOW_NAME));
+	}
+	
+	public String getLanguageId(final DelegateExecution execution) {
+		return getStringVariable(execution, ActivitiConstants.LANGUAGE_ID);
 	}
 	
 	public String getRequestorId(final DelegateExecution execution) {

@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.openiam.concurrent.OpenIAMThreadPoolTaskExecutor;
 import org.openiam.concurrent.OpenIAMThreadPoolTaskScheduler;
-import org.openiam.concurrent.RequestorIDProvider;
+import org.openiam.concurrent.SecurityInfoProvider;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,11 +54,17 @@ public class BaseConfiguration implements SchedulingConfigurer {
 		final OpenIAMThreadPoolTaskExecutor executor = new OpenIAMThreadPoolTaskExecutor();
 		executor.setCorePoolSize(10);
 		executor.initialize();
-		executor.setRequestorIDProvider(new RequestorIDProvider() {
+		executor.setRequestorIDProvider(new SecurityInfoProvider() {
 			
 			@Override
 			public String getRequestorId() {
 				return systemUserId;
+			}
+
+			@Override
+			public String getLanguageId() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		});
 		return executor;
@@ -85,11 +91,17 @@ public class BaseConfiguration implements SchedulingConfigurer {
 		executor.setThreadNamePrefix(prefix);
 		executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 		executor.initialize();
-		executor.setRequestorIDProvider(new RequestorIDProvider() {
+		executor.setRequestorIDProvider(new SecurityInfoProvider() {
 			
 			@Override
 			public String getRequestorId() {
 				return systemUserId;
+			}
+
+			@Override
+			public String getLanguageId() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		});
 		return executor;
@@ -115,6 +127,20 @@ public class BaseConfiguration implements SchedulingConfigurer {
 	public OpenIAMThreadPoolTaskScheduler scheduler() {
 		final OpenIAMThreadPoolTaskScheduler scheduler = new OpenIAMThreadPoolTaskScheduler();
 		scheduler.setPoolSize(taskSchedulerSize);
+		scheduler.initialize();
+		scheduler.setRequestorIDProvider(new SecurityInfoProvider() {
+			
+			@Override
+			public String getRequestorId() {
+				return systemUserId;
+			}
+
+			@Override
+			public String getLanguageId() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		});
 		return scheduler;
 	}
 	
@@ -130,11 +156,17 @@ public class BaseConfiguration implements SchedulingConfigurer {
 		e.setMaxPoolSize(maxPoolSize);
 		e.setQueueCapacity(queueCapacity);
 		e.initialize();
-		e.setRequestorIDProvider(new RequestorIDProvider() {
+		e.setRequestorIDProvider(new SecurityInfoProvider() {
 			
 			@Override
 			public String getRequestorId() {
 				return systemUserId;
+			}
+
+			@Override
+			public String getLanguageId() {
+				// TODO Auto-generated method stub
+				return null;
 			}
 		});
 		return e;

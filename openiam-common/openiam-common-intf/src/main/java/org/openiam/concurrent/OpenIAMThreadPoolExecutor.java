@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class OpenIAMThreadPoolExecutor extends ThreadPoolExecutor {
 
-	private RequestorIDProvider requestorIDProvider = new DefaultRequestorIDProvider();
+	private SecurityInfoProvider requestorIDProvider = new DefaultSecurityInfoProvider();
 
 	public OpenIAMThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit,
 			BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
@@ -47,7 +47,7 @@ public class OpenIAMThreadPoolExecutor extends ThreadPoolExecutor {
 	@Override
 	protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
 		if(!(runnable instanceof OpenIAMRunnable)) {
-			runnable = new OpenIAMRunnable(runnable, requestorIDProvider.getRequestorId());
+			runnable = new OpenIAMRunnable(runnable, requestorIDProvider.getRequestorId(), requestorIDProvider.getLanguageId());
 		}
 		return super.newTaskFor(runnable, value);
 	}
@@ -56,7 +56,7 @@ public class OpenIAMThreadPoolExecutor extends ThreadPoolExecutor {
 	protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
 		// TODO Auto-generated method stub
 		if(!(callable instanceof OpenIAMCallable)) {
-			callable = new OpenIAMCallable<T>(callable, requestorIDProvider.getRequestorId());
+			callable = new OpenIAMCallable<T>(callable, requestorIDProvider.getRequestorId(), requestorIDProvider.getLanguageId());
 		}
 			
 		return super.newTaskFor(callable);
@@ -66,14 +66,14 @@ public class OpenIAMThreadPoolExecutor extends ThreadPoolExecutor {
 	public void execute(Runnable command) {
 		if(command != null) {
 			if(!(command instanceof OpenIAMRunnable)) {
-				super.execute(new OpenIAMRunnable(command, requestorIDProvider.getRequestorId()));
+				super.execute(new OpenIAMRunnable(command, requestorIDProvider.getRequestorId(), requestorIDProvider.getLanguageId()));
 			}
 		}
 	}
 
 
 
-	public void setRequestorIDProvider(RequestorIDProvider requestorIDProvider) {
+	public void setRequestorIDProvider(SecurityInfoProvider requestorIDProvider) {
 		this.requestorIDProvider = requestorIDProvider;
 	}
 	

@@ -101,7 +101,7 @@ public class AsynchUserProvisioningDataServiceImpl implements AsynchUserProvisio
                     } catch (Throwable e) {
                         log.error("EXCEPTION:AsynchUserProvisionService.modifyUser", e);
                     }
-    	        }, bulkRequest.getRequesterId())
+    	        }, bulkRequest.getRequesterId(), null)
         	);
 
             log.debug("END BULK OPERATION CALLED ---------------------");

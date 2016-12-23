@@ -14,7 +14,7 @@ public class OpenIAMThreadPoolTaskScheduler extends ThreadPoolTaskScheduler {
 		return new OpenIAMScheduledExecutorService(poolSize, threadFactory, rejectedExecutionHandler);
 	}
 	
-	public void setRequestorIDProvider(final RequestorIDProvider provider) {
+	public void setRequestorIDProvider(final SecurityInfoProvider provider) {
 		((OpenIAMScheduledExecutorService)getScheduledExecutor()).setRequestorIDProvider(provider);
 	}
 }

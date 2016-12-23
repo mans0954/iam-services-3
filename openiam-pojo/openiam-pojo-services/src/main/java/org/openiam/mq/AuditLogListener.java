@@ -94,7 +94,7 @@ public class AuditLogListener extends AbstractListener<AuditLogAPI> {
 	                            return null;
 	                        }
                         });
-                }, sysUserId));
+                }, sysUserId, null));
                 // create a new container for the next batch;
                 batchContainer = new AuditLogBatchContainer();
             } else {

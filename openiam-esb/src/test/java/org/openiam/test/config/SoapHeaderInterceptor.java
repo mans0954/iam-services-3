@@ -35,6 +35,7 @@ public class SoapHeaderInterceptor extends AbstractSoapInterceptor {
 	    // Copy Custom HTTP header on the response
 	    outHeaders.put("x-openiam-userId", Arrays.asList(new String[] {"3000"}));
 	    outHeaders.put("x-openiam-principal", Arrays.asList(new String[] {"sysadmin"}));
+	    outHeaders.put("x-openiam-language-id", Arrays.asList(new String[] {"1"}));
 	}
 
 }

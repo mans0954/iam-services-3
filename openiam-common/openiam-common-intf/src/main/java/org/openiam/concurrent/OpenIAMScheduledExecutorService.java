@@ -15,7 +15,7 @@ import org.openiam.util.SpringSecurityHelper;
 
 public class OpenIAMScheduledExecutorService extends ScheduledThreadPoolExecutor {
 	
-	private RequestorIDProvider requestorIDProvider = new DefaultRequestorIDProvider();
+	private SecurityInfoProvider requestorIDProvider = new DefaultSecurityInfoProvider();
 
 	public OpenIAMScheduledExecutorService(int corePoolSize, RejectedExecutionHandler handler) {
 		super(corePoolSize, handler);
@@ -52,16 +52,18 @@ public class OpenIAMScheduledExecutorService extends ScheduledThreadPoolExecutor
 		
 		private RunnableScheduledFuture<V> future;
 		private String userId = null;
+		private String languageId = null;
 		
 		RunnableScheduledFutureWrapper(final RunnableScheduledFuture<V> future) {
 			this.future = future;
 			this.userId = requestorIDProvider.getRequestorId();
+			this.languageId = requestorIDProvider.getLanguageId();
 		}
 
 		@Override
 		public void run() {
 			try {
-				SpringSecurityHelper.setRequesterUserId(userId);
+				SpringSecurityHelper.setAuthenticationInformation(userId, languageId);
 				this.future.run();
 			} finally {
 				SpringSecurityHelper.clearContext();
@@ -112,16 +114,16 @@ public class OpenIAMScheduledExecutorService extends ScheduledThreadPoolExecutor
 	@Override
 	protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
 		// TODO Auto-generated method stub
-		return super.newTaskFor(new OpenIAMRunnable(runnable, requestorIDProvider.getRequestorId()), value);
+		return super.newTaskFor(new OpenIAMRunnable(runnable, requestorIDProvider.getRequestorId(), requestorIDProvider.getLanguageId()), value);
 	}
 
 	@Override
 	protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
 		// TODO Auto-generated method stub
-		return super.newTaskFor(new OpenIAMCallable<T>(callable, requestorIDProvider.getRequestorId()));
+		return super.newTaskFor(new OpenIAMCallable<T>(callable, requestorIDProvider.getRequestorId(), requestorIDProvider.getLanguageId()));
 	}
 
-	public void setRequestorIDProvider(RequestorIDProvider requestorIDProvider) {
+	public void setRequestorIDProvider(SecurityInfoProvider requestorIDProvider) {
 		this.requestorIDProvider = requestorIDProvider;
 	}
 

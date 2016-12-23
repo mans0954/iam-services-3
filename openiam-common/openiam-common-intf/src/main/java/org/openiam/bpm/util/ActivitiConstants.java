@@ -17,6 +17,7 @@ public enum ActivitiConstants {
 	CANDIDATE_USERS_IDS("candidateUsersIds",  "candidateUserIds", true),
 	TASK_NAME("TaskName", "taskName", false),
 	TASK_DESCRIPTION("TaskDescription", "taskDescription", false),
+	LANGUAGE_ID("LanguageId", "languageId", false),
 	REQUESTOR("TaskOwner", "requestor", false),
 	REQUESTOR_NAME("TaskOwnerName", "taskOwnerName", false),
 	EXECUTOR_ID("ExecutorId", "executorId", true),

@@ -49,7 +49,7 @@ public abstract class AbstractListener<API extends OpenIAMAPI> {
     public Response processRequest(API api, BaseServiceRequest request, RequestProcessor processor){
         // init AuditLog event for this call
     	
-    	SpringSecurityHelper.setRequesterUserId(request.getRequesterId());
+    	SpringSecurityHelper.setAuthenticationInformation(request.getRequesterId(), request.getLanguageId());
         AuditLogHolder.getInstance().setEvent(auditLogHelper.newInstance());
         IdmAuditLogEntity auditEvent = AuditLogHolder.getInstance().getEvent();
 

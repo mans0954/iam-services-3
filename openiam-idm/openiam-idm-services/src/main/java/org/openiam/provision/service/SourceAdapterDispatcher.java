@@ -111,7 +111,7 @@ public class SourceAdapterDispatcher implements Runnable {
     @PostConstruct
     public void init() {
         final ExecutorService executorService = Executors.newCachedThreadPool();
-        executorService.submit(new OpenIAMRunnable(this, sysUserId));
+        executorService.submit(new OpenIAMRunnable(this, sysUserId, null));
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 setTerminate(true);
@@ -143,7 +143,7 @@ public class SourceAdapterDispatcher implements Runnable {
             while (!getTerminate() && (request = pullFromQueue()) != null) {
             	try {
             		if(request.getRequestor() != null) {
-            			SpringSecurityHelper.setRequesterUserId(request.getRequestor().getValue());
+            			SpringSecurityHelper.setAuthenticationInformation(request.getRequestor().getValue(), null);
             		}
             		process(request);
             	} finally {

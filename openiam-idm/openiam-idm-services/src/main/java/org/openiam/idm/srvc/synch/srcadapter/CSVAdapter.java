@@ -176,7 +176,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                             return number;
                         }
                     };
-                    Future<Integer> submit = executor.submit(new OpenIAMCallable<Integer>(worker, config.getRequestorUserId()));
+                    Future<Integer> submit = executor.submit(new OpenIAMCallable<Integer>(worker, config.getRequestorUserId(), null));
                     list.add(submit);
                 }
 

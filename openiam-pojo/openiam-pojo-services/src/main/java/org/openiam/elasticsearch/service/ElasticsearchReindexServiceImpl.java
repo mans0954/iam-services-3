@@ -38,7 +38,7 @@ public class ElasticsearchReindexServiceImpl implements InitializingBean, Elasti
     @Override
     public void afterPropertiesSet() throws Exception {
         service = Executors.newCachedThreadPool();
-        service.submit(new OpenIAMRunnable(reindexProcessor, systemUserId));
+        service.submit(new OpenIAMRunnable(reindexProcessor, systemUserId, null));
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 service.shutdown();

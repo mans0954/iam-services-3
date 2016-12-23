@@ -12,12 +12,16 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.util.CXFAuthentication;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
 public class OpenIAMPreAuthFilter extends AbstractPreAuthenticatedProcessingFilter {
 
 	private static final Log log = LogFactory.getLog(OpenIAMPreAuthFilter.class);
+	
+	@Value("${org.openiam.idm.system.user.id}")
+	private String systemUserId;
 
 	@Override
 	protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
@@ -30,12 +34,17 @@ public class OpenIAMPreAuthFilter extends AbstractPreAuthenticatedProcessingFilt
 	}
 	
 	private CXFAuthentication getAuthentication(final HttpServletRequest request) {
-		CXFAuthentication retVal = null;
-		final String userId = StringUtils.trimToNull(request.getHeader("x-openiam-userId"));
-		if(userId != null) {
-			retVal = new CXFAuthentication(userId, StringUtils.trimToNull(request.getHeader("x-openiam-principal")));
+		String userId = StringUtils.trimToNull(request.getHeader("x-openiam-userId"));
+		
+		/* this is actually required - the user *must* have some kind of user ID in order to propertly continue - some services
+		 * actually require the userId to be there.
+		 * 
+		 * As of now, we have no reason to protect the individual service calls based on userID
+		 */
+		if(StringUtils.isBlank(userId)) {
+			userId = systemUserId;
 		}
-		return retVal;
+		return new CXFAuthentication(userId, StringUtils.trimToNull(request.getHeader("x-openiam-principal")));
 	}
 
 	@Override

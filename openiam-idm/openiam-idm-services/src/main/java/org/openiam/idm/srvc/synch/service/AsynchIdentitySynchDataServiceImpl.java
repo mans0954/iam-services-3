@@ -107,7 +107,7 @@ public class AsynchIdentitySynchDataServiceImpl implements AsynchIdentitySynchDa
         	} catch(Throwable e) {
         		log.error("EXCEPTION:AsynchIdentitySynchService:executeSynchReview", e);
         	}
-        }, synchReviewRequest.getRequestorId()));
+        }, synchReviewRequest.getRequestorId(), null));
         if(log.isDebugEnabled()) {
         	log.debug("FINISHED SYNCH REVIEW ---------------------");
         }
@@ -122,7 +122,7 @@ public class AsynchIdentitySynchDataServiceImpl implements AsynchIdentitySynchDa
             } catch(Throwable e) {
             	log.error("EXCEPTION:AsynchIdentitySynchService:bulkUserMigration", e);
             }
-        }, config.getRequestorId()));
+        }, config.getRequestorId(), null));
     }
 
     @Override
