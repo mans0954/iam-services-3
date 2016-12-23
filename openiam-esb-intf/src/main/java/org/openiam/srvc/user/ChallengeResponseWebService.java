@@ -79,7 +79,7 @@ public interface ChallengeResponseWebService {
 	List<UserIdentityAnswer> findAnswerBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityAnswerSearchBean searchBean,
 											 @WebParam(name = "requesterId", targetNamespace = "") final String requesterId,
 											 @WebParam(name = "from", targetNamespace = "") int from,
-											 @WebParam(name = "size", targetNamespace = "") int size) throws Exception;
+											 @WebParam(name = "size", targetNamespace = "") int size);
 	
 	@WebMethod
 	Response resetQuestionsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);

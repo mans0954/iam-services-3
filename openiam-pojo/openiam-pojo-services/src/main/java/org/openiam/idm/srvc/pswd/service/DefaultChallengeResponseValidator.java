@@ -96,7 +96,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     							   final List<UserIdentityAnswerEntity> newAnswerList, 
     							   final List<UserIdentityAnswerEntity> savedAnsList, 
     							   final int requiredCorrectAns, 
-    							   final boolean isEnterprise) throws Exception {
+    							   final boolean isEnterprise) throws BasicDataServiceException {
         final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList, savedAnsList, isEnterprise);
         return correctAns >= requiredCorrectAns && requiredCorrectAns > 0;
     }
@@ -159,12 +159,12 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     @Override
     @Transactional(readOnly=true)
-    public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
+    public boolean isUserAnsweredSecurityQuestions(final String userId) throws BasicDataServiceException {
     	final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
         return this.isUserAnsweredSecurityQuestions(userId, true, answerList) && this.isUserAnsweredSecurityQuestions(userId, false, answerList);
     }
 
-    private boolean isUserAnsweredSecurityQuestions(final String userId, final boolean isEnterprise, final List<UserIdentityAnswerEntity> answerList) throws Exception {
+    private boolean isUserAnsweredSecurityQuestions(final String userId, final boolean isEnterprise, final List<UserIdentityAnswerEntity> answerList) throws BasicDataServiceException {
         final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId, isEnterprise);
 
 
@@ -181,7 +181,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     }
 
     private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList, final List<UserIdentityAnswerEntity> savedAnsList, boolean isEnterprise)
-            throws Exception {
+            throws BasicDataServiceException {
         int correctAns = 0;
 
         LoginEntity lg = loginManager.getPrimaryIdentity(userId);
@@ -211,7 +211,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         return correctAns;
     }
 
-    private List<UserIdentityAnswerEntity> answersByUser(String userId) throws Exception {
+    private List<UserIdentityAnswerEntity> answersByUser(String userId) throws BasicDataServiceException {
         if (userId == null) {
             throw new NullPointerException("UserId is null");
         }
@@ -247,7 +247,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     @Override
     @Transactional(readOnly=true)
     public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)
-            throws Exception {
+            throws BasicDataServiceException {
         List<UserIdentityAnswerEntity> resultList = null;
         if(searchBean != null) {
 	        if (CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
@@ -259,8 +259,12 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 	        } else {
 	        	if(Boolean.TRUE.equals(searchBean.getIsEncrypted()) && StringUtils.isNotBlank(searchBean.getQuestionText()) && StringUtils.isNotBlank(searchBean.getUserId())) {
 	        		if(StringUtils.isNotBlank(searchBean.getQuestionText())) {
-	        			searchBean.setQuestionText(keyManagementService.encrypt(searchBean.getUserId(), KeyName.challengeResponse, searchBean.getQuestionText()));
-	        		}
+                        try {
+                            searchBean.setQuestionText(keyManagementService.encrypt(searchBean.getUserId(), KeyName.challengeResponse, searchBean.getQuestionText()));
+                        } catch (Exception e) {
+                            throw new BasicDataServiceException(ResponseCode.DATA_ENCRYPTION_ERROR, e.getMessage());
+                        }
+                    }
 	        	}
 	            resultList = answerDAO.getByExample(searchBean, from, size);
 	        }
@@ -270,7 +274,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     @Override
     @Transactional
-    public void saveQuestion(final IdentityQuestionEntity entity) throws Exception {
+    public void saveQuestion(final IdentityQuestionEntity entity) throws BasicDataServiceException {
         if (entity.getIdentityQuestGrp() != null && StringUtils.isNotBlank(entity.getIdentityQuestGrp().getId())) {
             entity.setIdentityQuestGrp(questionGroupDAO.findById(entity.getIdentityQuestGrp().getId()));
         }
@@ -283,7 +287,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     @Override
     @Transactional
-    public void deleteQuestion(final String questionId) throws Exception {
+    public void deleteQuestion(final String questionId) throws BasicDataServiceException {
         final IdentityQuestionEntity entity = questionDAO.findById(questionId);
         if (entity != null) {
             answerDAO.deleteAnswersByQuestionId(entity.getId());
@@ -300,7 +304,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     @Override
     @Transactional
-    public void saveAnswer(final UserIdentityAnswerEntity entity) throws Exception {
+    public void saveAnswer(final UserIdentityAnswerEntity entity) throws BasicDataServiceException {
         if (entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
             entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
         }
@@ -309,7 +313,11 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
             throw new BasicDataServiceException(ResponseCode.NO_ANSWER_TO_QUESTION);
         }
 
-        entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
+        try {
+            entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
+        } catch (Exception e) {
+            throw new BasicDataServiceException(ResponseCode.DATA_ENCRYPTION_ERROR, e.getMessage());
+        }
         entity.setIsEncrypted(true);
 
         answerDAO.merge(entity);
@@ -317,7 +325,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     @Override
     @Transactional
-    public void deleteAnswer(final String answerId) throws Exception {
+    public void deleteAnswer(final String answerId) throws BasicDataServiceException {
         final UserIdentityAnswerEntity entity = answerDAO.findById(answerId);
         if (entity != null) {
             answerDAO.delete(entity);
@@ -326,21 +334,25 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     @Override
     @Transactional
-    public void saveAnswers(final List<UserIdentityAnswerEntity> answerList) throws Exception {
+    public void saveAnswers(final List<UserIdentityAnswerEntity> answerList) throws BasicDataServiceException {
         if (answerList != null) {
             for (final UserIdentityAnswerEntity entity : answerList) {
 
                 if (validateAnswerLength(entity.getQuestionAnswer())) {
+                    try{
+                        if (entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
+                            entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
+                        }
+                        entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
+                        //enncrypt Custom question
+                        if (entity.getIdentityQuestion() == null && StringUtils.isNotBlank(entity.getQuestionText())) {
+                            entity.setQuestionText(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionText()));
+                        }
+                        entity.setIsEncrypted(true);
+                    } catch (Exception ex){
+                        throw new BasicDataServiceException(ResponseCode.DATA_ENCRYPTION_ERROR, ex.getMessage());
+                    }
 
-                    if (entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
-                        entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
-                    }
-                    entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
-                    //enncrypt Custom question
-                    if (entity.getIdentityQuestion() == null && StringUtils.isNotBlank(entity.getQuestionText())) {
-                        entity.setQuestionText(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionText()));
-                    }
-                    entity.setIsEncrypted(true);
                 } else {
                     throw new BasicDataServiceException(ResponseCode.ANSWER_IS_TOO_LONG);
                 }
@@ -371,23 +383,27 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
 
     private List<UserIdentityAnswerEntity> decryptAnswers(List<UserIdentityAnswerEntity> answerList, String requesterId)
-            throws Exception {
+            throws BasicDataServiceException {
         if (CollectionUtils.isNotEmpty(answerList)) {
-            for (UserIdentityAnswerEntity entity : answerList) {
-            	/* 
+            try {
+                for (UserIdentityAnswerEntity entity : answerList) {
+            	/*
             	 * if requesterId is null, then it's an unauthenticated user trying to answer his response questions
-            	 * this should happen *only* if the user is trying to unlock his password. 
+            	 * this should happen *only* if the user is trying to unlock his password.
             	 */
-                if ((StringUtils.isBlank(requesterId) || requesterId.equals(entity.getUserId())) && entity.getIsEncrypted()) {
+                    if ((StringUtils.isBlank(requesterId) || requesterId.equals(entity.getUserId())) && entity.getIsEncrypted()) {
 
-                    entity.setQuestionAnswer(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
-                            entity.getQuestionAnswer()));
+                        entity.setQuestionAnswer(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
+                                entity.getQuestionAnswer()));
 
+                    }
+                    //decrypt Custom question
+                    if ((entity.getIdentityQuestion() == null || entity.getIdentityQuestion().getId() == null) && StringUtils.isNotBlank(entity.getQuestionText())) {
+                        entity.setQuestionText(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionText()));
+                    }
                 }
-                //decrypt Custom question
-                if ((entity.getIdentityQuestion() == null || entity.getIdentityQuestion().getId() == null) && StringUtils.isNotBlank(entity.getQuestionText())) {
-                    entity.setQuestionText(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionText()));
-                }
+            } catch (Exception ex){
+                throw new BasicDataServiceException(ResponseCode.DATA_ENCRYPTION_ERROR, ex.getMessage());
             }
         }
         return answerList;

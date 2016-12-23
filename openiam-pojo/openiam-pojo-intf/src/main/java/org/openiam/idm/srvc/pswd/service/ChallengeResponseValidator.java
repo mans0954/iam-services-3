@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestGroupEntity;
@@ -37,18 +38,17 @@ import java.util.List;
 public interface ChallengeResponseValidator {
     
     boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, List<UserIdentityAnswerEntity> savedAnsList, int requiredCorrectAns, boolean isEnterprise)
-            throws Exception;
+            throws BasicDataServiceException;
     Integer count(final IdentityQuestionSearchBean searchBean);
     List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size);
-    List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)
-            throws Exception;
-    void saveQuestion(final IdentityQuestionEntity entity) throws Exception;
-    void deleteQuestion(final String questionId) throws Exception;
+    List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size) throws BasicDataServiceException;
+    void saveQuestion(final IdentityQuestionEntity entity) throws BasicDataServiceException;
+    void deleteQuestion(final String questionId) throws BasicDataServiceException;
     IdentityQuestionEntity getQuestion(final String questionId);
-    void saveAnswer(final UserIdentityAnswerEntity answer) throws Exception;
-    void deleteAnswer(final String answerId) throws Exception;
-    void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception;
-	boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception;
+    void saveAnswer(final UserIdentityAnswerEntity answer) throws BasicDataServiceException;
+    void deleteAnswer(final String answerId) throws BasicDataServiceException;
+    void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws BasicDataServiceException;
+	boolean isUserAnsweredSecurityQuestions(final String userId) throws BasicDataServiceException;
     public Integer getNumOfRequiredQuestions(final String userId, boolean isEnterprise);
     public Integer getNumOfCorrectAnswers(final String userId, boolean isEnterprise);
     void resetQuestionsForUser(final String userId);
