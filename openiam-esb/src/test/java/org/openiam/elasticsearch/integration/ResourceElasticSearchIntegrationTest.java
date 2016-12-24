@@ -49,7 +49,7 @@ public class ResourceElasticSearchIntegrationTest extends AbstractMetdataTypeEla
 	
 	@Test
 	public void testExcludeResourceType() {
-		final Set<String> excludeIds = resourceDataService.findResourceTypes(null, 0, Integer.MAX_VALUE, getDefaultLanguage())
+		final Set<String> excludeIds = resourceDataService.findResourceTypes(null, 0, Integer.MAX_VALUE)
 						   .stream()
 						   .filter(e -> !e.getId().equals(getDTO().getResourceType().getId()))
 						   .map(e -> e.getId())
@@ -79,7 +79,7 @@ public class ResourceElasticSearchIntegrationTest extends AbstractMetdataTypeEla
 
 	@Override
 	protected List<Resource> findBeans(ResourceSearchBean searchBean) {
-		return resourceDataService.findBeans(searchBean, 0, 10, getDefaultLanguage());
+		return resourceDataService.findBeans(searchBean, 0, 10);
 	}
 
 	@Override
@@ -88,11 +88,11 @@ public class ResourceElasticSearchIntegrationTest extends AbstractMetdataTypeEla
 		resource.setDescription(getRandomName());
 		resource.setDisplayOrder(1);
 		resource.setRisk(ResourceRisk.HIGH);
-		resource.setResourceType(resourceDataService.findResourceTypes(null, 0, 1, null).get(0));
+		resource.setResourceType(resourceDataService.findResourceTypes(null, 0, 1).get(0));
 		//resource.addResourceProp(generateResourceProp());
 		final Response response = resourceDataService.saveResource(resource);
 		assertSuccess(response);
-		final Resource dto = resourceDataService.getResource((String)response.getResponseValue(), getDefaultLanguage());
+		final Resource dto = resourceDataService.getResource((String)response.getResponseValue());
 		Assert.assertNotNull(dto);
 		return dto;
 	}

@@ -139,7 +139,7 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
                 throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
                         "ResourceID is not defined in the ManagedSys Object");
 
-            final Resource res = resourceDataService.findResourceDtoById(managedSys.getResource().getId(), null);
+            final Resource res = resourceDataService.findResourceDtoById(managedSys.getResource().getId());
             if (res == null)
                 throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
                         "No resource for managed resource found");

@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.jws.WebMethod;
 import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
@@ -14,11 +13,9 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
-import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourcePropSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
@@ -26,8 +23,6 @@ import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -39,7 +34,6 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.mq.constants.queue.am.AMQueue;
 import org.openiam.mq.constants.queue.am.ResourceQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.srvc.audit.IdmAuditLogWebDataService;
@@ -57,21 +51,13 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     private ResourceDozerConverter resourceConverter;
 
     @Autowired
-    private ResourcePropDozerConverter resourcePropConverter;
-
-    @Autowired
     private UserDataService userDataService;
     @Autowired
     private ResourceService resourceService;
     @Autowired
     private RoleDataService roleService;
     @Autowired
-    private GroupDataService groupDataService;
-    @Autowired
     private ResourceTypeDozerConverter resourceTypeConverter;
-    
-    @Autowired
-    private LanguageDozerConverter languageConverter;
 
     @Autowired
     protected SysConfiguration sysConfiguration;
@@ -97,15 +83,15 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     }
 
     @Override
-    public Resource getResource(final String resourceId, final Language language) {
-        Resource resource = resourceService.findResourceDtoById(resourceId, language);
+    public Resource getResource(final String resourceId) {
+        Resource resource = resourceService.findResourceDtoById(resourceId);
         return resource;
     }
 
     @Override
     //@LocalizedServiceGet
     //@Transactional(readOnly=true)
-    public List<Resource> getResourcesByIds(final List<String> resourceIds, final Language language) {
+    public List<Resource> getResourcesByIds(final List<String> resourceIds) {
         /*List<Resource> resourceList = null;
         try {
             if (CollectionUtils.isNotEmpty(resourceIds)) {
@@ -117,7 +103,7 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
         } catch (Throwable e) {
             log.error("Exception", e);
         }*/
-        return resourceService.findResourcesDtoByIds(resourceIds, language);
+        return resourceService.findResourcesDtoByIds(resourceIds);
     }
 
     @Override
@@ -128,8 +114,8 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<ResourceEntity> entityList = resourceService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
+    public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
+        final List<ResourceEntity> entityList = resourceService.findBeans(searchBean, from, size);
         final List<Resource> dtoList = resourceConverter.convertToDTOList(entityList,searchBean.isDeepCopy());
         accessRightProcessor.process(searchBean, dtoList, entityList);
         return dtoList;
@@ -201,10 +187,10 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
 
     @Override
     //@LocalizedServiceGet
-    public List<ResourceType> getAllResourceTypes(final Language language) {
+    public List<ResourceType> getAllResourceTypes() {
         List<ResourceType> resourceTypeList = null;
         try {
-            resourceTypeList = resourceService.getAllResourceTypesDto(language);
+            resourceTypeList = resourceService.getAllResourceTypesDto();
         } catch (Throwable e) {
             log.error("Can't get all resource types", e);
         }
@@ -313,11 +299,11 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     @LocalizedServiceGet
     @Deprecated
-    public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size, final Language language) {
+    public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size) {
         final ResourceSearchBean sb = new ResourceSearchBean();
         sb.addParentId(resourceId);
         sb.setDeepCopy(deepFlag);
-        return findBeans(sb, from, size, language);
+        return findBeans(sb, from, size);
     }
 
     @Override
@@ -331,11 +317,11 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     @LocalizedServiceGet
     @Deprecated
-    public List<Resource> getParentResources(final String resourceId, final int from, final int size, final Language language) {
+    public List<Resource> getParentResources(final String resourceId, final int from, final int size) {
         final ResourceSearchBean sb = new ResourceSearchBean();
         sb.addChildId(resourceId);
         sb.setDeepCopy(false);
-        return findBeans(sb, from, size, language);
+        return findBeans(sb, from, size);
     }
 
     @Override
@@ -428,8 +414,8 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     @Deprecated
     //@LocalizedServiceGet
-    public List<Resource> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
-        return resourceService.getResourcesDtoForRole(roleId, from, size, searchBean, language);
+    public List<Resource> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean) {
+        return resourceService.getResourcesDtoForRole(roleId, from, size, searchBean);
     }
     @Override
     @Deprecated
@@ -442,8 +428,8 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     //@LocalizedServiceGet
     @Deprecated
-    public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
-        return resourceService.getResourcesDtoForGroup(groupId, from, size, searchBean, language);
+    public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean) {
+        return resourceService.getResourcesDtoForGroup(groupId, from, size, searchBean);
     }
 
     @Override
@@ -457,16 +443,16 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     //@LocalizedServiceGet
     @Deprecated
-    public List<Resource> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
-        return resourceService.getResourcesDtoForUser(userId, from, size, searchBean, language);
+    public List<Resource> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean) {
+        return resourceService.getResourcesDtoForUser(userId, from, size, searchBean);
     }
 
     @Override
     //@LocalizedServiceGet
     //@Transactional(readOnly=true)
     @Deprecated
-    public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId, final ResourceSearchBean searchBean, final Language language) {
-      return resourceService.getResourcesDtoForUserByType(userId, resourceTypeId, searchBean, language);
+    public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId, final ResourceSearchBean searchBean) {
+      return resourceService.getResourcesDtoForUserByType(userId, resourceTypeId, searchBean);
     }
 
     @Override
@@ -520,7 +506,7 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly=true)
-    public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size, final Language language) {
+    public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size) {
         final boolean deepCopy = (searchBean != null) ? searchBean.isDeepCopy() : false;
         final List<ResourceTypeEntity> entityList = resourceService.findResourceTypes(searchBean, from, size);
         return resourceTypeConverter.convertToDTOList(entityList, deepCopy);

@@ -166,7 +166,7 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
                 metadataTypeSearchBean.setGrouping(MetadataTypeGrouping.RESOURCE_TYPE);
                 List<MetadataType> resourceMetadataTypes = metadataService.findBeans(metadataTypeSearchBean, -1, -1, null);
                 //fill managed systems
-                List<ResourceType> resourceTypes = resourceDataService.getAllResourceTypes(null);
+                List<ResourceType> resourceTypes = resourceDataService.getAllResourceTypes();
                 this.fillNamedTypes(compiledSet, managedSysEntities, roleMetadataTypes, groupMetadataTypes, resourceMetadataTypes, resourceTypes, accessRights);
                 this.fillNamedTypes(directSet, managedSysEntities, roleMetadataTypes, groupMetadataTypes, resourceMetadataTypes, resourceTypes, accessRights);
             }

@@ -1,20 +1,20 @@
 package org.openiam.srvc.am;
 
-import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.ResourcePropSearchBean;
-import org.openiam.idm.searchbeans.ResourceSearchBean;
-import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.res.dto.*;
-import org.openiam.idm.srvc.role.dto.Role;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.ResourcePropSearchBean;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
+import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.res.dto.ResourceType;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/res/service", name = "ResourceDataWebService")
 public interface ResourceDataService {
@@ -64,8 +64,7 @@ public interface ResourceDataService {
      */
     @WebMethod
     Resource getResource(
-    		@WebParam(name = "resourceId", targetNamespace = "") String resourceId,
-    		final @WebParam(name = "lang", targetNamespace = "") Language language);
+    		@WebParam(name = "resourceId", targetNamespace = "") String resourceId);
     
     
     /**
@@ -84,8 +83,7 @@ public interface ResourceDataService {
      * @return resource
      */
     @WebMethod
-    List<Resource> getResourcesByIds(final @WebParam(name = "resourceIds", targetNamespace = "") List<String> resourceIds,
-                                     final @WebParam(name = "lang", targetNamespace = "") Language language);
+    List<Resource> getResourcesByIds(final @WebParam(name = "resourceIds", targetNamespace = "") List<String> resourceIds);
 
     @WebMethod
     List<ResourceProp> findResourceProps(final ResourcePropSearchBean sb, final int from, final int size);
@@ -96,10 +94,10 @@ public interface ResourceDataService {
      * @return the all resource types
      */
     @WebMethod
-    List<ResourceType> getAllResourceTypes(final Language language);
+    List<ResourceType> getAllResourceTypes();
 
     @WebMethod
-    List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size, final Language language);
+    List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size);
 
 
     /**
@@ -160,8 +158,7 @@ public interface ResourceDataService {
     	final @WebParam(name = "roleId", targetNamespace = "") String roleId,
     	final @WebParam(name = "from", targetNamespace = "") int from,
 	    final @WebParam(name = "size", targetNamespace = "") int size,
-	    final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean,
-	    final @WebParam(name = "lang", targetNamespace = "") Language language
+	    final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean
     );
 
     /**
@@ -179,8 +176,7 @@ public interface ResourceDataService {
     List<Resource> findBeans(
     			final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean,
     			final @WebParam(name = "from", targetNamespace = "") int from,
-    			final @WebParam(name = "size", targetNamespace = "") int size,
-    			final @WebParam(name = "lang", targetNamespace = "") Language language
+    			final @WebParam(name = "size", targetNamespace = "") int size
     );
 
     /**
@@ -211,8 +207,7 @@ public interface ResourceDataService {
     List<Resource> getChildResources(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
     								 final @WebParam(name = "deepFlag", targetNamespace = "") Boolean deepFlag,
     								 final @WebParam(name = "from", targetNamespace = "") int from,
-    								 final @WebParam(name = "size", targetNamespace = "") int size,
-    								 final @WebParam(name = "lang", targetNamespace = "") Language language);
+    								 final @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Gets the number of child resources for a particular Resource
@@ -240,8 +235,7 @@ public interface ResourceDataService {
     @Deprecated
     List<Resource> getParentResources(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
     								  final @WebParam(name = "from", targetNamespace = "") int from,
-    								  final @WebParam(name = "size", targetNamespace = "") int size,
-    								  final @WebParam(name = "lang", targetNamespace = "") Language language);
+    								  final @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Gets the number of parent resources for a particular Resource
@@ -376,8 +370,7 @@ public interface ResourceDataService {
     		final @WebParam(name = "groupId", targetNamespace = "") String groupId,
     		final @WebParam(name = "from", targetNamespace = "") int from,
     		final @WebParam(name = "size", targetNamespace = "") int size,
-    		final@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean,
-    		final @WebParam(name = "lang", targetNamespace = "") Language language);
+    		final@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 
     /**
@@ -409,8 +402,7 @@ public interface ResourceDataService {
     		final @WebParam(name = "userId", targetNamespace = "") String userId,
     		final @WebParam(name = "from", targetNamespace = "") int from,
     		final @WebParam(name = "size", targetNamespace = "") int size,
-    		final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean,
-    		final @WebParam(name = "lang", targetNamespace = "") Language language);
+    		final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
     /**
      * Gets Resources that a User is entitled to by Resource type
@@ -426,8 +418,7 @@ public interface ResourceDataService {
     List<Resource> getResourcesForUserByType(
             final @WebParam(name = "userId", targetNamespace = "") String userId,
             final @WebParam(name = "resourceTypeId", targetNamespace = "") String resourceTypeId,
-            final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean,
-            final @WebParam(name = "lang", targetNamespace = "") Language language);
+            final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
     /**
      * Tells the caller if the user can be entitled to this resource

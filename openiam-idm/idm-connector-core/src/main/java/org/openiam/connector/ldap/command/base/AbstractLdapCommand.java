@@ -69,7 +69,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     }
 
     public Set<ResourceProp> getResourceAttributes(String resId) {
-        Resource r = resourceDataService.findResourceDtoById(resId, null);
+        Resource r = resourceDataService.findResourceDtoById(resId);
         if (r != null) {
             return r.getResourceProps();
         }

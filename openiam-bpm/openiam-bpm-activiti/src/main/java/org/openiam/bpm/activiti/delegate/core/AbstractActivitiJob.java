@@ -171,11 +171,11 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	}
 	
 	protected Resource getResource(final String resourceId) {
-		return resourceDataService.findResourceDtoById(resourceId, null);
+		return resourceDataService.findResourceDtoById(resourceId);
 	}
 
     protected List<Resource> getResources(final List<String> resourceIds) {
-        return resourceDataService.findResourcesDtoByIds(resourceIds, null);
+        return resourceDataService.findResourcesDtoByIds(resourceIds);
     }
     
     protected void addUsersToProtectingResource(final DelegateTask task, final Collection<String> userIds, final Set<String> rightIds) {

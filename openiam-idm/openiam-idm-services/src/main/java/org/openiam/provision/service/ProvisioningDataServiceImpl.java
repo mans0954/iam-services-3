@@ -175,7 +175,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         for (String roleId : roles) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesDtoForRole(roleId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -189,7 +189,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         for (String groupId : groups) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<Resource> resources = resourceService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesDtoForGroup(groupId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -204,7 +204,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
             rsb.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-            List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesDtoForRole(roleId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -218,7 +218,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         for (String groupId : groupList) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<Resource> resources = resourceService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesDtoForGroup(groupId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -930,7 +930,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             for (final RoleEntity role : roleList) {
             	final ResourceSearchBean rsb = new ResourceSearchBean();
             	rsb.setDeepCopy(false);
-                final List<Resource> resourceList = resourceService.getResourcesForRoleNoLocalized(role.getId(), 0, Integer.MAX_VALUE, rsb);
+                final List<Resource> resourceList = resourceService.getResourcesDtoForRole(role.getId(), 0, Integer.MAX_VALUE, rsb);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
                         ManagedSysDto managedSys = managedSystemService.getManagedSysDtoByResource(resource.getId());
@@ -2290,7 +2290,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
                     //findBeansLocalizedDto
-                    List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
+                    List<Resource> resources = resourceService.getResourcesDtoForRole(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         for (Resource r : resources) {
                             r.setOperation(rl.getOperation()); // get operation value from role
@@ -2314,7 +2314,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-                    List<Resource> resources = resourceService.getResourcesForGroupNoLocalized(gr.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
+                    List<Resource> resources = resourceService.getResourcesDtoForGroup(gr.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         resourceSet.addAll(resources);
                     }

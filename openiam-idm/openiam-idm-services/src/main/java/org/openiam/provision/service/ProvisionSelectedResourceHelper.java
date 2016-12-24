@@ -97,7 +97,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                             for (String resId : resourceList) {
                                 // skip provisioning for resource if it in NotProvisioning
                                 // set
-                                Resource res = resourceService.findResourceDtoById(resId, null);
+                                Resource res = resourceService.findResourceDtoById(resId);
                                 try {
                                     Map<String, Object> bindingMap = new HashMap<>();
                                     bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());

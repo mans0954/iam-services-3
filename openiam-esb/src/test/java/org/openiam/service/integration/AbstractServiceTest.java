@@ -500,11 +500,11 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		Resource resource = new Resource();
 		final ResourceTypeSearchBean resourceTypeSearchBean = new ResourceTypeSearchBean();
 		resourceTypeSearchBean.setSupportsHierarchy(true);
-		resource.setResourceType(resourceDataService.findResourceTypes(resourceTypeSearchBean, 0, 1, null).get(0));
+		resource.setResourceType(resourceDataService.findResourceTypes(resourceTypeSearchBean, 0, 1).get(0));
 		resource.setName(getRandomName());
 		Response wsResponse = resourceDataService.saveResource(resource);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", resource, wsResponse));
-		resource = resourceDataService.getResource((String)wsResponse.getResponseValue(), getDefaultLanguage());
+		resource = resourceDataService.getResource((String)wsResponse.getResponseValue());
 		
 		if(user != null) {
 			final ApproverAssociation association = new ApproverAssociation();

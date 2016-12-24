@@ -601,7 +601,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 	private ResourceType getMenuResourceType() {
 		final ResourceTypeSearchBean resourceTypeSearchBean = new ResourceTypeSearchBean();
 		resourceTypeSearchBean.addKey("MENU_ITEM");
-		return resourceDataService.findResourceTypes(resourceTypeSearchBean, 0, 1, null).get(0);
+		return resourceDataService.findResourceTypes(resourceTypeSearchBean, 0, 1).get(0);
 	}
 	
 	private AuthorizationMenu generateMenuRoot() {

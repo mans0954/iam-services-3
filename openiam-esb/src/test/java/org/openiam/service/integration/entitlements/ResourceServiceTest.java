@@ -54,7 +54,7 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 	@Override
 	protected Resource newInstance() {
 		final Resource resource = new Resource();
-		resource.setResourceType(resourceDataService.findResourceTypes(null, 0, Integer.MAX_VALUE, null).stream().filter(e -> e.isSupportsHierarchy()).findFirst().get());
+		resource.setResourceType(resourceDataService.findResourceTypes(null, 0, Integer.MAX_VALUE).stream().filter(e -> e.isSupportsHierarchy()).findFirst().get());
 		resource.setCoorelatedName(getRandomName());
 		resource.setDescription(getRandomName());
 		resource.setDisplayOrder(RandomUtils.nextInt(100));
@@ -84,12 +84,12 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 
 	@Override
 	protected Resource get(String key) {
-		return resourceDataService.getResource(key, null);
+		return resourceDataService.getResource(key);
 	}
 
 	@Override
 	public List<Resource> find(ResourceSearchBean searchBean, int from, int size) {
-		return resourceDataService.findBeans(searchBean, from, size, null);
+		return resourceDataService.findBeans(searchBean, from, size);
 	}
 	
 	@Test

@@ -90,7 +90,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                             for (String resId : resourceList) {
                                 // skip provisioning for resource if it in NotProvisioning
                                 // set
-                                Resource res = resourceService.findResourceDtoById(resId, null);
+                                Resource res = resourceService.findResourceDtoById(resId);
                                 try {
                                     Map<String, Object> bindingMap = new HashMap<String, Object>(); //TODO: check if enough bindingMap data for UPDATE
                                     ProvisionDataContainer data = deprovisionResourceDataPrepare(res, userEntity, new ProvisionUser(user), SpringSecurityHelper.getRequestorUserId(),  bindingMap);
@@ -287,7 +287,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
             bindingMap.put("IDENTITY", lg);
             //bindingMap.put("RESOURCE", res);
 
-            Resource res = resourceService.findResourceDtoById(resourceId, null);
+            Resource res = resourceService.findResourceDtoById(resourceId);
             if (res != null) {
                 String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
                 if (preProcessScript != null && !preProcessScript.isEmpty()) {

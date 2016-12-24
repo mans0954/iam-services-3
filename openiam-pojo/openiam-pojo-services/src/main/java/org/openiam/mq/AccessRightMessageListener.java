@@ -56,7 +56,7 @@ public class AccessRightMessageListener extends AbstractListener<AccessRightAPI>
                 switch (api){
                     case FindBeans:
                          response = new AccessRightListResponse();
-                        ((AccessRightListResponse)response).setAccessRightList(accessRightService.findBeans(((BaseSearchServiceRequest<AccessRightSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize(), request.getLanguage()));
+                        ((AccessRightListResponse)response).setAccessRightList(accessRightService.findBeans(((BaseSearchServiceRequest<AccessRightSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize()));
                         break;
                     case Count:
                         response = new IntResponse();

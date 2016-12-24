@@ -26,7 +26,7 @@ public class Resource2OrganizationEntitlementsTest extends AbstractEntitlementsT
 
 	@Override
 	protected Resource getChildById(Resource child) {
-		return resourceDataService.getResource(child.getId(), getDefaultLanguage());
+		return resourceDataService.getResource(child.getId());
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class Resource2OrganizationEntitlementsTest extends AbstractEntitlementsT
 		searchBean.addOrganizationId(parent.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
-		final List<Resource> dtos = resourceDataService.findBeans(searchBean, 0, 100, getDefaultLanguage());
+		final List<Resource> dtos = resourceDataService.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Resource> optional = dtos.stream().filter(e -> e.getId().equals(child.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find parent"), optional.isPresent());

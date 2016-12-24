@@ -56,7 +56,7 @@ public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Reso
 		searchBean.addUserId(child.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
-		final List<Resource> dtos = resourceDataService.findBeans(searchBean, 0, 100, getDefaultLanguage());
+		final List<Resource> dtos = resourceDataService.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Resource> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(optional.isPresent(), String.format("Can't find parent"));
@@ -96,7 +96,7 @@ public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Reso
 
 	@Override
 	protected Resource getParentById(Resource parent) {
-		return resourceDataService.getResource(parent.getId(), getDefaultLanguage());
+		return resourceDataService.getResource(parent.getId());
 	}
 
 	@Override

@@ -130,7 +130,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     public ReconciliationResponse startReconciliation(final ReconciliationConfig config, final IdmAuditLogEntity idmAuditLog) throws IOException, ScriptEngineException {
         Date startDate = new Date();
 
-        Resource res = resourceService.findResourceDtoById(config.getResourceId(), null);
+        Resource res = resourceService.findResourceDtoById(config.getResourceId());
 
         ManagedSysDto mSys = managedSystemService.getManagedSysDtoByResource(res.getId());
         if (mSys == null) {

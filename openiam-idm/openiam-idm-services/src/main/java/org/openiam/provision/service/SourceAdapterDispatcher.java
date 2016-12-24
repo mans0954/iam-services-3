@@ -936,7 +936,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 if (!isFound) {
                     ResourceSearchBean rsb = new ResourceSearchBean();
                     rsb.setNameToken(new SearchParam(resource.getName(), MatchType.EXACT));
-                    List<Resource> dbResource = resourceDataService.findBeansDTO(rsb, -1, -1, null);
+                    List<Resource> dbResource = resourceDataService.findBeansDTO(rsb, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbResource)) {
                         if (dbResource.size() > 1) {
                             warnings.append(this.getWarning("Not unique name. Skip it. Resource Name=" + resource.getName()));

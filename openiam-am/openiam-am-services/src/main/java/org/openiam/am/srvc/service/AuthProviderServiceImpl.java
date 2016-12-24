@@ -587,7 +587,7 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly=true)
-    public List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language) throws BasicDataServiceException {
+    public List<Resource> getScopesForAuthrorization(String clientId, String userId) throws BasicDataServiceException {
         AuthProvider provider = getOAuthClient(clientId);
         Set<String> clientScopesIds = null;
         // determine if the client is authorized for some scopes
@@ -640,9 +640,10 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
         }
     }
 
+    @Override
     @LocalizedServiceGet
     @Transactional(readOnly=true)
-    public List<Resource> getAuthorizedScopes(String clientId, OAuthToken token, Language language){
+    public List<Resource> getAuthorizedScopes(String clientId, OAuthToken token){
         //TODO: need to review scope authorization and add scopes to token as a link.
         //TODO: this will allow to handle scope arg in token endpoint
         if("RESOURCE_OWNER".equals(token.getGrandFlow().trim())){
@@ -662,13 +663,13 @@ public class AuthProviderServiceImpl implements AuthProviderService, Sweepable {
                 return resourceDozerConverter.convertToDTOList(resourceService.findResourcesByIds(authorizedResourcesIds), false);
             }
         } else {
-            return getAuthorizedScopesByUser(clientId, token.getUserId(), language);
+            return getAuthorizedScopesByUser(clientId, token.getUserId());
         }
         return  null;
     }
     @LocalizedServiceGet
     @Transactional(readOnly=true)
-    public List<Resource> getAuthorizedScopesByUser(String clientId, String userId, Language language){
+    public List<Resource> getAuthorizedScopesByUser(String clientId, String userId){
         List<OAuthUserClientXrefEntity> authorizedResources = oauthUserClientXrefDao.getByClientAndUser(clientId, userId, true);
         if(CollectionUtils.isNotEmpty(authorizedResources)){
             Set<String> authorizedResourcesIds = authorizedResources.stream().map(xref -> xref.getScope().getId()).collect(Collectors.toSet());

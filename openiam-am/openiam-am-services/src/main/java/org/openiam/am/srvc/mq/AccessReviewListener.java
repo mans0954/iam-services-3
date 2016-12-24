@@ -41,11 +41,11 @@ public class AccessReviewListener extends AbstractListener<AccessReviewAPI> {
                 AccessViewResponse response;
                 switch (api){
                     case AccessReviewTree:
-                        response = accessReviewService.getAccessReviewTree(request.getFilterBean(), request.getViewType(), request.getDate(), request.getLanguage());
+                        response = accessReviewService.getAccessReviewTree(request.getFilterBean(), request.getViewType(), request.getDate());
                         break;
                     case AccessReviewSubTree:
                         response = accessReviewService.getAccessReviewSubTree(request.getParentId(), request.getParentBeanType(), request.isRootOnly(),
-                                request.getFilterBean(), request.getViewType(), request.getDate(), request.getLanguage());
+                                request.getFilterBean(), request.getViewType(), request.getDate());
                         break;
                     default:
                         throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());

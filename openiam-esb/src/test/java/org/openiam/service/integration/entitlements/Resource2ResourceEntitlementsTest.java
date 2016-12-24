@@ -51,7 +51,7 @@ public class Resource2ResourceEntitlementsTest extends AbstractCircularEntitleme
 		ResourceSearchBean searchBean = new ResourceSearchBean();
 		searchBean.addChildId(child.getId());
 		searchBean.setIncludeAccessRights(true);
-		final List<Resource> resources = resourceDataService.findBeans(searchBean, 0, 100, getDefaultLanguage());
+		final List<Resource> resources = resourceDataService.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(resources)) {
 			final Optional<Resource> optional = resources.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child resource"), optional.isPresent());
@@ -72,7 +72,7 @@ public class Resource2ResourceEntitlementsTest extends AbstractCircularEntitleme
 		ResourceSearchBean searchBean = new ResourceSearchBean();
 		searchBean.addParentId(parent.getId());
 		searchBean.setIncludeAccessRights(true);
-		final List<Resource> resources = resourceDataService.findBeans(searchBean, 0, 100, getDefaultLanguage());
+		final List<Resource> resources = resourceDataService.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(resources)) {
 			final Optional<Resource> optional = resources.stream().filter(e -> e.getId().equals(child.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find parent resource"), optional.isPresent());
@@ -93,11 +93,11 @@ public class Resource2ResourceEntitlementsTest extends AbstractCircularEntitleme
 
 	@Override
 	protected Resource getParentById(Resource parent) {
-		return resourceDataService.getResource(parent.getId(), getDefaultLanguage());
+		return resourceDataService.getResource(parent.getId());
 	}
 
 	@Override
 	protected Resource getChildById(Resource child) {
-		return resourceDataService.getResource(child.getId(), getDefaultLanguage());
+		return resourceDataService.getResource(child.getId());
 	}
 }

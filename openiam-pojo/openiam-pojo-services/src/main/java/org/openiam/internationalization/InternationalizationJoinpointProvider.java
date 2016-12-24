@@ -17,6 +17,7 @@ import org.openiam.base.domain.KeyEntity;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,28 +87,7 @@ public class InternationalizationJoinpointProvider implements InitializingBean, 
 	
 	@AfterReturning(pointcut="@annotation(org.openiam.internationalization.LocalizedServiceGet)", returning="returnValue")
 	public void afterServiceGet(final JoinPoint joinPoint, final Object returnValue) {		
-        final Object lastArgument = joinPoint.getArgs()[joinPoint.getArgs().length - 1];
-        final Object firstArgument = joinPoint.getArgs()[0];
-
-        String languageId = null;
-        if(firstArgument != null) {
-        	if(firstArgument instanceof AbstractSearchBean) {
-        		languageId = ((AbstractSearchBean)firstArgument).getLanguageId();
-        	}
-        } 
-        
-        if(languageId == null) {
-        	if(lastArgument != null) {
-            	if((lastArgument instanceof Language) || (lastArgument instanceof LanguageEntity)) {
-	                if(lastArgument instanceof Language) {
-	                    languageId = ((Language)lastArgument).getId();
-	                }
-	                if(lastArgument instanceof LanguageEntity) {
-	                    languageId = ((LanguageEntity)lastArgument).getId();
-	                }
-	            }
-        	}
-        }
+        final String languageId = SpringSecurityHelper.getLanguageId();
 
         if(languageId != null) {
             if(returnValue != null) {

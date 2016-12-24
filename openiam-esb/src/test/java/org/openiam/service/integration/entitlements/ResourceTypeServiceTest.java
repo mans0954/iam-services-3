@@ -49,7 +49,7 @@ public class ResourceTypeServiceTest extends AbstractKeyServiceTest<ResourceType
 	@Override
 	public List<ResourceType> find(ResourceTypeSearchBean searchBean, int from,
 			int size) {
-		return resourceDataService.findResourceTypes(searchBean, from, size, getDefaultLanguage());
+		return resourceDataService.findResourceTypes(searchBean, from, size);
 	}
 
 /*	@Override

@@ -10,7 +10,6 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.dto.AccessRight;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,7 +59,7 @@ public class AccessRightServiceImpl implements AccessRightService {
 	@Override
 	@Transactional(readOnly=true)
 	@LocalizedServiceGet
-	public List<AccessRight> findBeans(AccessRightSearchBean sb, int from, int size, final Language language) {
+	public List<AccessRight> findBeans(AccessRightSearchBean sb, int from, int size) {
 		return converter.convertToDTOList(dao.getByExample(sb, from, size), true);
 	}
 

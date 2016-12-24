@@ -130,13 +130,13 @@ public class OAuthListener extends AbstractListener<OAuthAPI> {
                 ((OAuthScopesResponse)response).setClientId(request.getClientId());
                 switch (api) {
                     case GetAuthorizedScopes:
-                        ((OAuthScopesResponse) response).setList(authProviderService.getAuthorizedScopes(request.getClientId(), request.getToken(), request.getLanguage()));
+                        ((OAuthScopesResponse) response).setList(authProviderService.getAuthorizedScopes(request.getClientId(), request.getToken()));
                         break;
                     case GetAuthorizedScopesByUser:
-                        ((OAuthScopesResponse) response).setList(authProviderService.getAuthorizedScopesByUser(request.getClientId(), request.getUserId(), request.getLanguage()));
+                        ((OAuthScopesResponse) response).setList(authProviderService.getAuthorizedScopesByUser(request.getClientId(), request.getUserId()));
                         break;
                     case GetScopesForAuthrorization:
-                        ((OAuthScopesResponse) response).setList(authProviderService.getScopesForAuthrorization(request.getClientId(), request.getUserId(), request.getLanguage()));
+                        ((OAuthScopesResponse) response).setList(authProviderService.getScopesForAuthrorization(request.getClientId(), request.getUserId()));
                         break;
                     case DeAuthorizeClient:
                         authProviderService.deAuthorizeClient(request.getClientId(), request.getUserId());

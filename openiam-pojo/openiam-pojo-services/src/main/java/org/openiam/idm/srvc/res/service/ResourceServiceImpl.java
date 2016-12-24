@@ -1,5 +1,12 @@
 package org.openiam.idm.srvc.res.service;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -18,12 +25,12 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.cache.CacheKeyEvictions;
+import org.openiam.cache.LanguageCacheKey;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.elasticsearch.converter.ResourceDocumentToEntityConverter;
 import org.openiam.elasticsearch.dao.ResourceElasticSearchRepository;
-import org.openiam.elasticsearch.model.GroupDoc;
 import org.openiam.elasticsearch.model.ResourceDoc;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
@@ -33,15 +40,11 @@ import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
@@ -82,8 +85,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
 
 @Service("resourceService")
 public class ResourceServiceImpl implements ResourceService, ApplicationContextAware {
@@ -374,8 +375,9 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value = "resources", key = "{ #resourceId,#language}")
-    public Resource findResourceDtoById(String resourceId, Language language) {
+    @Cacheable(value = "resources", key = "{ #resourceId}")
+    @LanguageCacheKey
+    public Resource findResourceDtoById(String resourceId) {
         Resource resource = null;
         if (resourceId != null) {
             ResourceEntity resourceEntity = this.findResourceById(resourceId);
@@ -386,12 +388,6 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         }
         return resource;
     }
-
-/*    @Override
-    @Transactional(readOnly = true)
-    public ResourceEntity findResourceByIdNoLocalized(String resourceId) {
-        return resourceDao.findByIdNoLocalized(resourceId);
-    }*/
 
     @Override
     @Transactional(readOnly = true)
@@ -446,7 +442,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<ResourceType> getAllResourceTypesDto(final Language language) {
+    public List<ResourceType> getAllResourceTypesDto() {
         //List<ResourceTypeEntity> resourceTypeEntityList = resourceTypeDao.findAll();
         List<ResourceTypeEntity> resourceTypeEntityList = this.getProxyService().getAllResourceTypes();
         return resourceTypeConverter.convertToDTOList(resourceTypeEntityList, false);
@@ -582,20 +578,6 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             role.removeResource(resource);
             roleDao.update(role);
         }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Resource> getResourcesForRoleNoLocalized(String roleId, int from, int size, ResourceSearchBean searchBean) {
-        List<ResourceEntity> resourceEntities = resourceDao.getResourcesForRoleNoLocalized(roleId, from, size, searchBean);
-        return resourceConverter.convertToDTOList(resourceEntities, searchBean.isDeepCopy());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Resource> getResourcesForGroupNoLocalized(String groupId, int from, int size, ResourceSearchBean searchBean) {
-        List<ResourceEntity> resourceEntities = resourceDao.getResourcesForGroupNoLocalized(groupId, from, size, searchBean);
-        return resourceConverter.convertToDTOList(resourceEntities, searchBean.isDeepCopy());
     }
 
     @Override
@@ -815,7 +797,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<ResourceType> findResourceTypesDto(final ResourceTypeSearchBean searchBean, int from, int size, Language language) {
+    public List<ResourceType> findResourceTypesDto(final ResourceTypeSearchBean searchBean, int from, int size) {
         //List<ResourceTypeEntity> resourceTypeEntityList = resourceTypeDao.getByExample(searchBean, from, size);
         List<ResourceTypeEntity> resourceTypeEntityList = this.getProxyService().findResourceTypes(searchBean, from, size);
         return resourceTypeConverter.convertToDTOList(resourceTypeEntityList, searchBean.isDeepCopy());
@@ -881,7 +863,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<Resource> getResourcesDtoForGroup(String groupId, int from, int size,
-                                                  final ResourceSearchBean searchBean, Language language) {
+                                                  final ResourceSearchBean searchBean) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForGroup(groupId, from, size, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, false);
     }
@@ -889,7 +871,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Resource> findResourcesDtoByIds(Collection<String> resourceIdCollection, final Language language) {
+    public List<Resource> findResourcesDtoByIds(Collection<String> resourceIdCollection) {
         List<Resource> resourceList = null;
         try {
             if (CollectionUtils.isNotEmpty(resourceIdCollection)) {
@@ -911,7 +893,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<Resource> getResourcesDtoForRole(String roleId, int from, int size,
-                                                 final ResourceSearchBean searchBean, Language language) {
+                                                 final ResourceSearchBean searchBean) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForRole(roleId, from, size, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, false);
     }
@@ -920,7 +902,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<Resource> getResourcesDtoForUser(String userId, int from, int size,
-                                                 final ResourceSearchBean searchBean, Language language) {
+                                                 final ResourceSearchBean searchBean) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForUser(userId, from, size, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, false);
     }
@@ -929,8 +911,8 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     /* AM-851 */
-    //@Cacheable(value = "resourceEntities", key = "{ #searchBean,#from,#size,#lang}", condition="{#searchBean != null and #searchBean.findInCache}")
-    public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
+    //@Cacheable(value = "resourceEntities", key = "{ #searchBean,#from,#size}", condition="{#searchBean != null and #searchBean.findInCache}")
+    public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
     	if(searchBean != null) {
     		if(CollectionUtils.isNotEmpty(searchBean.getKeySet())) {
     			return resourceDao.findByIds(searchBean.getKeySet());
@@ -954,9 +936,10 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "resources", key = "{ #searchBean, #from, #size, #language}")
-    public List<Resource> findBeansDTO(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-    	final List<ResourceEntity> entities = this.getProxyService().findBeans(searchBean, from, size, language);
+    @Cacheable(value = "resources", key = "{ #searchBean, #from, #size}")
+    @LanguageCacheKey
+    public List<Resource> findBeansDTO(final ResourceSearchBean searchBean, final int from, final int size) {
+    	final List<ResourceEntity> entities = this.getProxyService().findBeans(searchBean, from, size);
     	return resourceConverter.convertToDTOList(entities, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
 
@@ -964,7 +947,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<Resource> getResourcesDtoForUserByType(String userId, String resourceTypeId,
-                                                       final ResourceSearchBean searchBean, Language language) {
+                                                       final ResourceSearchBean searchBean) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForUserByType(userId, resourceTypeId, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, true);
     }
@@ -991,7 +974,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
         Group group = groupDataService.getGroupDTO(groupId);
         idmAuditLog.setTargetGroup(groupId, group.getName());
-        Resource resource = findResourceDtoById(resourceId, null);
+        Resource resource = findResourceDtoById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resource.getName());
 
         idmAuditLog.setAuditDescription(String.format("Add group: %s to resource: %s", groupId, resourceId));

@@ -1665,7 +1665,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             for (final UserToResourceMembershipXref xref : pUser.getResources()) {
                 final AttributeOperationEnum operation = xref.getOperation();
                 final String resourceId = xref.getEntityId();
-                final Resource r = resourceService.findResourceDtoById(resourceId, null);
+                final Resource r = resourceService.findResourceDtoById(resourceId);
                 if (operation == null) {
                     continue;
                 } else if (operation == AttributeOperationEnum.ADD) {

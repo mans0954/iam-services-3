@@ -75,7 +75,7 @@ public class SpringSecurityHelper {
 	}
 	
 	public static void setAuthenticationInformation(final String userId, final String languageId) {
-		System.out.println(String.format("UserID: %s, Language ID: %s", userId, languageId));
+		//System.out.println(String.format("UserID: %s, Language ID: %s", userId, languageId));
 		final SecurityContext context = new SecurityContextImpl();
 		
 		final AbstractAuthenticationToken authentication = new PreAuthenticatedAuthenticationToken(new CXFAuthentication(userId, null), new CXFAuthentication(userId, null));

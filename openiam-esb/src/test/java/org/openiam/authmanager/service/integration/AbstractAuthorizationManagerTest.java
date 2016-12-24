@@ -51,7 +51,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		publicResource = super.createResource();
 		publicResource.setIsPublic(true);
 		assertSuccess(resourceDataService.saveResource(publicResource));
-		publicResource = resourceDataService.getResource(publicResource.getId(), getDefaultLanguage());
+		publicResource = resourceDataService.getResource(publicResource.getId());
 		Assert.assertNotNull(publicResource);
 		Assert.assertTrue(publicResource.getIsPublic());
 		refreshAuthorizationManager(); /* new reosurce created - make sure it's cached */

@@ -1,43 +1,47 @@
 package org.openiam.am.srvc.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
-import org.openiam.base.request.EmptyServiceRequest;
-import org.openiam.constants.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
-import org.openiam.base.request.IdServiceRequest;
-import org.openiam.base.request.TaskSearchRequest;
-import org.openiam.base.response.list.ManagedSysListResponse;
-import org.openiam.base.response.list.TaskListResponse;
-import org.openiam.base.response.data.TaskWrapperResponse;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.model.AccessViewBean;
-import org.openiam.model.AccessViewFilterBean;
-import org.openiam.model.AccessViewResponse;
 import org.openiam.access.review.strategy.AccessReviewStrategy;
 import org.openiam.activiti.model.dto.TaskSearchBean;
-import org.openiam.idm.srvc.access.service.AccessRightService;
-import org.openiam.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
+import org.openiam.base.request.EmptyServiceRequest;
+import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.request.TaskSearchRequest;
+import org.openiam.base.response.TaskWrapper;
+import org.openiam.base.response.data.TaskWrapperResponse;
+import org.openiam.base.response.list.ManagedSysListResponse;
+import org.openiam.base.response.list.TaskListResponse;
+import org.openiam.constants.AccessReviewConstant;
+import org.openiam.idm.searchbeans.AccessRightSearchBean;
+import org.openiam.idm.srvc.access.dto.AccessRight;
+import org.openiam.idm.srvc.access.service.AccessRightService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
+import org.openiam.idm.srvc.res.dto.ResourceType;
+import org.openiam.idm.srvc.res.service.ResourceService;
+import org.openiam.model.AccessViewBean;
+import org.openiam.model.AccessViewFilterBean;
+import org.openiam.model.AccessViewResponse;
+import org.openiam.model.UserEntitlementsMatrix;
 import org.openiam.mq.constants.api.ActivitiAPI;
 import org.openiam.mq.constants.api.idm.ManagedSystemAPI;
 import org.openiam.mq.constants.queue.activiti.ActivitiServiceQueue;
 import org.openiam.mq.constants.queue.idm.ManagedSysQueue;
 import org.openiam.mq.utils.RabbitMQSender;
-import org.openiam.base.response.TaskWrapper;
-import org.openiam.idm.searchbeans.AccessRightSearchBean;
-import org.openiam.idm.srvc.access.dto.AccessRight;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
-import org.openiam.idm.srvc.res.dto.ResourceType;
-import org.openiam.idm.srvc.res.service.ResourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,10 +79,10 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     }
 
     @Override
-    public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType, final Date date, final Language language) {
+    public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType, final Date date) {
         final StopWatch sw = new StopWatch();
         sw.start();
-        AccessReviewStrategy strategy = getAccessReviewStrategy(filter, viewType, date, language);
+        AccessReviewStrategy strategy = getAccessReviewStrategy(filter, viewType, date);
         List<TreeNode<AccessViewBean>> dataList = new ArrayList<>();
         List<TreeNode<AccessViewBean>> exceptionList = null;
         if(strategy!=null) {
@@ -100,8 +104,8 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     }
 
     @Override
-    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType,  final Date date, Language language) {
-        AccessViewResponse response = this.getAccessReviewTree(filter, viewType, date, language);
+    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType, final Date date) {
+        AccessViewResponse response = this.getAccessReviewTree(filter, viewType, date);
         List<TreeNode<AccessViewBean>> childrenList = new ArrayList<>();
         if(response==null)
             return AccessViewResponse.EMPTY_RESPONSE;
@@ -134,9 +138,9 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         return new AccessViewResponse(childrenList, childrenList.size(), response.getExceptions());
     }
 
-    private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Date date, Language language) {
+    private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Date date) {
         final List<LoginEntity> loginList = loginDS.getLoginByUser(filter.getUserId());
-        final List<AccessRight> accessRights = accessRightDataService.findBeans(new AccessRightSearchBean(), 0, Integer.MAX_VALUE, language);
+        final List<AccessRight> accessRights = accessRightDataService.findBeans(new AccessRightSearchBean(), 0, Integer.MAX_VALUE);
         UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId(), date);
 
         if(StringUtils.isNotBlank(filter.getAttestationTaskId())){
@@ -156,7 +160,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         accessReviewData.setMatrix(userEntitlementsMatrix);
         accessReviewData.setFilter(filter);
         accessReviewData.setMngsysMap(getManagedSysMap());
-        accessReviewData.setResourceTypeMap(getResourceTypeMap(language));
+        accessReviewData.setResourceTypeMap(getResourceTypeMap());
         accessReviewData.setView(viewType);
         accessReviewData.setLoginList((CollectionUtils.isNotEmpty(loginList)) ? loginList : null);
         accessReviewData.setDefaultManagedSysId(sysConfiguration.getDefaultManagedSysId());
@@ -206,9 +210,9 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         return managedSysMap;
     }
 
-    private Map<String, ResourceType> getResourceTypeMap(final Language language){
+    private Map<String, ResourceType> getResourceTypeMap(){
         Map<String, ResourceType> resourceTypeMap = new HashMap<String, ResourceType>();
-        final List<org.openiam.idm.srvc.res.dto.ResourceType> resourceTypeList = resourceService.getAllResourceTypesDto(language);
+        final List<org.openiam.idm.srvc.res.dto.ResourceType> resourceTypeList = resourceService.getAllResourceTypesDto();
 
         if (CollectionUtils.isNotEmpty(resourceTypeList)) {
             for(ResourceType resourceType : resourceTypeList){

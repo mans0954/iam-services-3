@@ -77,7 +77,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 		ResourceSearchBean rsb = new ResourceSearchBean();
 		rsb.setResourceTypeId("URL_PATTERN");
 
-		resourceList = resourceServiceClient.findBeans(rsb,0,MAX_SCOPE_LIST_SIZE,null);
+		resourceList = resourceServiceClient.findBeans(rsb,0,MAX_SCOPE_LIST_SIZE);
 		StringBuilder scopeBuilder = new StringBuilder();
 
 		Assert.assertEquals(CollectionUtils.isNotEmpty(resourceList), true, "Cannot find any scope");
@@ -94,7 +94,7 @@ public class OAuthServiceTest extends AbstractServiceTest {
 
 		rsb = new ResourceSearchBean();
 		rsb.setResourceTypeId("OAUTH_SCOPE");
-		roleResourceList = resourceServiceClient.findBeans(rsb,0,MAX_ROLE_SCOPE_LIST_SIZE,null);
+		roleResourceList = resourceServiceClient.findBeans(rsb,0,MAX_ROLE_SCOPE_LIST_SIZE);
 		role = createRole();
 		for(Resource r: roleResourceList){
 			resourceServiceClient.addRoleToResource(r.getId(), role.getId(), null, null, null);

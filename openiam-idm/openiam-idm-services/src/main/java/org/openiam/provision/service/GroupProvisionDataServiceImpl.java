@@ -951,7 +951,7 @@ public class GroupProvisionDataServiceImpl implements ObjectProvisionDataService
         }
         // pre-processing
         String resourceId = mSys.getResourceId();
-        Resource res = resourceService.findResourceDtoById(resourceId, null);
+        Resource res = resourceService.findResourceDtoById(resourceId);
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES, res);
 
         bindingMap.put("operation", "DELETE");

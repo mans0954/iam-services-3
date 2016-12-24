@@ -28,6 +28,7 @@ import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.util.AuditLogHelper;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
@@ -59,6 +60,8 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 
 	private AuditLogHelper auditLogHelper;
 	private Map<String, Set<Object>> cacheManagementCache;
+	
+	private final Map<InvocationKey, Boolean> languageAnnotationCache = new HashMap<>();
 	
 	private HazelcastConfiguration hazelcastConfiguration;
 	
@@ -405,6 +408,23 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 			isHazelcastCache = (cacheManager.getClass().getCanonicalName().endsWith("HazelcastCacheManager"));
 		}
 		
+		private boolean isLanguageCacheKey() {
+			final InvocationKey key = new InvocationKey(this.getTarget(), this.getMethod());
+			if(languageAnnotationCache.containsKey(key)) {
+				return languageAnnotationCache.get(key).booleanValue();
+			} else {
+				Method method = null;
+				try {
+					method = getTargetClass(this.getTarget()).getMethod(this.getMethod().getName(), this.getMethod().getParameterTypes());
+				} catch (Throwable e) {
+					LOG.error(String.format("Unkonwn error while trying to resolve method.  Target: %s, Method: %s", this.getTarget(), this.getMethod()), e);
+				}
+				final Boolean isAnnotationPresent = Boolean.valueOf(method.isAnnotationPresent(LanguageCacheKey.class));
+				languageAnnotationCache.put(key, isAnnotationPresent);
+				return isAnnotationPresent.booleanValue();
+			}
+		}
+		
 		public Object getKey() {
 			return this.generateKey(null);
 		}
@@ -446,12 +466,64 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 							sb.append(k).append(";");
 						}
 					}
+					if(isLanguageCacheKey()) {
+						sb.append(SpringSecurityHelper.getLanguageId());
+					}
 					return sb.toString();
 				}
 			}
 			return key;
 		}
+	}
+	
+	private class InvocationKey {
 		
+		private Object target;
+		private Method method;
+		
+		InvocationKey(final Object target, final Method method) {
+			this.target = target;
+			this.method = method;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getOuterType().hashCode();
+			result = prime * result + ((method == null) ? 0 : method.hashCode());
+			result = prime * result + ((target == null) ? 0 : target.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			InvocationKey other = (InvocationKey) obj;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
+			if (method == null) {
+				if (other.method != null)
+					return false;
+			} else if (!method.equals(other.method))
+				return false;
+			if (target == null) {
+				if (other.target != null)
+					return false;
+			} else if (!target.equals(other.target))
+				return false;
+			return true;
+		}
+
+		private OpeniamCacheInterceptor getOuterType() {
+			return OpeniamCacheInterceptor.this;
+		}
+
 		
 	}
 	

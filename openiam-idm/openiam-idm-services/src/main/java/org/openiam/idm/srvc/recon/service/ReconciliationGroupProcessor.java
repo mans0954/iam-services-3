@@ -114,7 +114,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 	        log.debug("Reconciliation started for configId=" + config.getId() + " - resource="
 	                + config.getResourceId());
     	}
-        Resource res = resourceDataService.findResourceDtoById(config.getResourceId(), null);
+        Resource res = resourceDataService.findResourceDtoById(config.getResourceId());
 
         ManagedSysDto mSys = managedSystemService.getManagedSysDtoByResource(res.getId());
 		if (mSys == null) {
