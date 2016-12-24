@@ -76,7 +76,7 @@ public class RoleListener extends AbstractListener<RoleAPI> {
                 switch (api){
                     case GetRoleLocalized:
                         response = new RoleResponse();
-                        ((RoleResponse)response).setValue(roleDataService.getRoleDtoLocalized(request.getId(), request.getLanguage()));
+                        ((RoleResponse)response).setValue(roleDataService.getRoleDTO(request.getId()));
                         break;
                     case GetRoleAttributes:
                         response = new RoleAttributeListResponse();

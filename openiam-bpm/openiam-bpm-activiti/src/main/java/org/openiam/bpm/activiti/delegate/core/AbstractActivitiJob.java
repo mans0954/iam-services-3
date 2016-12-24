@@ -159,7 +159,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	}
 	
 	protected Role getRole(final String roleId) {
-		return roleDataService.getRoleDtoLocalized(roleId, null);
+		return roleDataService.getRoleDTO(roleId);
 	}
 	
 	protected Group getGroup(final String groupId) {

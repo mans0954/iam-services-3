@@ -1,10 +1,17 @@
 package org.openiam.idm.srvc.role.service;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.cxf.common.i18n.Exception;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.MatchType;
@@ -27,20 +34,16 @@ import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
@@ -65,12 +68,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service("roleDataService")
 public class RoleDataServiceImpl implements RoleDataService {
@@ -146,13 +145,10 @@ public class RoleDataServiceImpl implements RoleDataService {
         this.ac = ac;
     }
 
-    @Autowired
-    protected LanguageDAO languageDAO;
-
     private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
-    @Deprecated
     @Override
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
     public RoleEntity getRole(String roleId) {
         if (DelegationFilterHelper.isAllowed(roleId, getDelegationFilter())) {
@@ -160,22 +156,13 @@ public class RoleDataServiceImpl implements RoleDataService {
         }
         return null;
     }
+    
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public RoleEntity getRoleLocalized(final String roleId, final Language language) {
-        if (DelegationFilterHelper.isAllowed(roleId, getDelegationFilter())) {
-            return roleDao.findById(roleId);
-        }
-        return null;
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public Role getRoleDtoLocalized(final String roleId, final Language language) {
-        RoleEntity roleEntity = this.getProxyService().getRoleLocalized(roleId, language);
+    public Role getRoleDTO(String id) {
+    	RoleEntity roleEntity = this.getProxyService().getRole(id);
         if (roleEntity != null) {
             return roleDozerConverter.convertToDTO(roleEntity, true);
         }
@@ -657,12 +644,6 @@ public class RoleDataServiceImpl implements RoleDataService {
             }
         }
         return retval;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Role getRoleDTO(String id) {
-        return roleDozerConverter.convertToDTO(roleDao.findById(id), true);
     }
 
     @Override

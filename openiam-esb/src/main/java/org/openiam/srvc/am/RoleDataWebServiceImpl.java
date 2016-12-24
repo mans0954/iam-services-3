@@ -31,7 +31,6 @@ import org.openiam.base.response.list.RoleAttributeListResponse;
 import org.openiam.base.response.list.RoleListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.mq.constants.api.RoleAPI;
@@ -74,15 +73,6 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
     }
 
     @Override
-    public Role getRoleLocalized(String roleId, Language language) {
-        IdServiceRequest request = new IdServiceRequest();
-        request.setId(roleId);
-        request.setLanguage(language);
-        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
-        return this.getValue(RoleAPI.GetRoleLocalized, request, RoleResponse.class);
-    }
-
-    @Override
     public List<RoleAttribute> getRoleAttributes(String roleId) {
         IdServiceRequest request = new IdServiceRequest();
         request.setId(roleId);
@@ -107,7 +97,10 @@ public class RoleDataWebServiceImpl extends AbstractApiService implements RoleDa
 
     @Override
     public Role getRole(String roleId) {
-        return this.getRoleLocalized(roleId, null);
+    	IdServiceRequest request = new IdServiceRequest();
+        request.setId(roleId);
+        request.setRequesterId(SpringSecurityHelper.getRequestorUserId());
+        return this.getValue(RoleAPI.GetRoleLocalized, request, RoleResponse.class);
     }
 
     @Override

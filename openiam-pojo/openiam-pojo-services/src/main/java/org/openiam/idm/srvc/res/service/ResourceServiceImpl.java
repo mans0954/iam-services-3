@@ -1154,7 +1154,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
                 throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
 
-            final RoleEntity roleEntity = roleService.getRoleLocalized(roleId, null);
+            final RoleEntity roleEntity = roleService.getRole(roleId);
             if(roleEntity == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }

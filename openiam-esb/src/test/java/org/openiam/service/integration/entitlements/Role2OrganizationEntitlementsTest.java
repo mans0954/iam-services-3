@@ -26,7 +26,7 @@ public class Role2OrganizationEntitlementsTest extends AbstractEntitlementsTest<
 
 	@Override
 	protected Role getChildById(Role child) {
-		return roleServiceClient.getRoleLocalized(child.getId(), getDefaultLanguage());
+		return roleServiceClient.getRole(child.getId());
 	}
 
 	@Override

@@ -2,9 +2,7 @@ package org.openiam.srvc.am;
 
 import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.Response;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 
@@ -32,17 +30,6 @@ public interface RoleDataWebService {
 	@WebMethod
     Response validateDelete(final String roleId);
 	
-    /**
-     * This method retrieves an existing Role object. Dependent objects such as
-     * users are also retrieved. Null is returned if the Role is not found.
-     *
-     * @param roleId - the Role ID
-     * @return - a Role Object if it is found, otherwise null will be returned.
-     */
-    @WebMethod
-    Role getRoleLocalized(@WebParam(name = "roleId", targetNamespace = "") String roleId,
-                 		  @WebParam(name="lang", targetNamespace="") Language language);
-
     @WebMethod
     List<RoleAttribute> getRoleAttributes(@WebParam(name = "roleId", targetNamespace = "") String roleId);
 

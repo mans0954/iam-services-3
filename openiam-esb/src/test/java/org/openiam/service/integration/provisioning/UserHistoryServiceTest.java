@@ -70,10 +70,10 @@ public class UserHistoryServiceTest extends AbstractServiceTest {
         User foundUser3 = getAndAssert(user.getId());
         Assert.assertNotNull(foundUser3.getFirstName());
 
-        Role role = roleServiceClient.getRoleLocalized(ROLE_ID, getDefaultLanguage());
+        Role role = roleServiceClient.getRole(ROLE_ID);
         role.setOperation(AttributeOperationEnum.ADD);
         Assert.assertNotNull(role, "Cann't find role with ID :" + ROLE_ID);
-        Role role2 = roleServiceClient.getRoleLocalized(ROLE_ID2, getDefaultLanguage());
+        Role role2 = roleServiceClient.getRole(ROLE_ID2);
         role2.setOperation(AttributeOperationEnum.ADD);
         Assert.assertNotNull(role2, "Cann't find role with ID :" + ROLE_ID2);
 

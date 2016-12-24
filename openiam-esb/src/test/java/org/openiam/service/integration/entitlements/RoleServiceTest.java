@@ -67,7 +67,7 @@ public class RoleServiceTest extends AbstractAttributeServiceTest<Role, RoleSear
 
 	@Override
 	protected Role get(String key) {
-		return roleServiceClient.getRoleLocalized(key, null);
+		return roleServiceClient.getRole(key);
 	}
 
 	@Override

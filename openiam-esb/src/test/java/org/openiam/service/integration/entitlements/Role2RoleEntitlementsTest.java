@@ -91,11 +91,11 @@ public class Role2RoleEntitlementsTest extends AbstractCircularEntitlementTest<R
 
 	@Override
 	protected Role getParentById(Role parent) {
-		return roleServiceClient.getRoleLocalized(parent.getId(), getDefaultLanguage());
+		return roleServiceClient.getRole(parent.getId());
 	}
 
 	@Override
 	protected Role getChildById(Role child) {
-		return roleServiceClient.getRoleLocalized(child.getId(), getDefaultLanguage());
+		return roleServiceClient.getRole(child.getId());
 	}
 }

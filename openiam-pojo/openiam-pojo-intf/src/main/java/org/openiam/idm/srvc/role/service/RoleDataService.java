@@ -4,8 +4,6 @@ import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -24,14 +22,9 @@ import java.util.Set;
  */
 public interface RoleDataService {
 
-    @Deprecated
     public RoleEntity getRole(String roleId);
 
     public RoleEntity getRoleByNameAndManagedSysId(final String roleName, final String managedSysId);
-
-    public RoleEntity getRoleLocalized(final String roleId, final Language language);
-
-    public Role getRoleDtoLocalized(final String roleId, final Language language);
 
     public void saveRole(final RoleEntity role) throws BasicDataServiceException;
 
