@@ -46,7 +46,7 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
             if (wsResponse.isSuccess()) {
                 String groupId = (String) wsResponse.getResponseValue();
 
-                Group createdGroup  = groupDataService.getGroupDtoLocalize(groupId, null);
+                Group createdGroup  = groupDataService.getGroupDTO(groupId);
                 ProvisionGroup provisionGroup = new ProvisionGroup(createdGroup);
                 Response groupResponse = (isNew) ? groupProvisionService.add(provisionGroup) :
                         groupProvisionService.modify(provisionGroup);

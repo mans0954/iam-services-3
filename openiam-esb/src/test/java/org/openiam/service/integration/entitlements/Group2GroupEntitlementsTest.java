@@ -101,11 +101,11 @@ public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest
 
 	@Override
 	protected Group getParentById(Group parent) {
-		return groupServiceClient.getGroupLocalize(parent.getId(), getDefaultLanguage());
+		return groupServiceClient.getGroup(parent.getId());
 	}
 
 	@Override
 	protected Group getChildById(Group child) {
-		return groupServiceClient.getGroupLocalize(child.getId(), getDefaultLanguage());
+		return groupServiceClient.getGroup(child.getId());
 	}
 }

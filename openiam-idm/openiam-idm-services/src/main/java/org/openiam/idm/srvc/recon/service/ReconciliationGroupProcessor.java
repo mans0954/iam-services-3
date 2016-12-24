@@ -478,7 +478,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                     // processed
                     return targetGroupPrincipal;
                 }
-                Group gr = groupDataWebService.getGroupDTOLocalize(grp.getId(), null);
+                Group gr = groupDataWebService.getGroupDTO(grp.getId());
 
                 IdentityDto identityDto = identityService.getIdentityByManagedSys(gr.getId(), mSys.getId());
                 if (identityDto == null) {

@@ -104,6 +104,6 @@ public class Group2OrganizationEntitlementsTest extends AbstractEntitlementsTest
 
 	@Override
 	protected Group getChildById(Group child) {
-		return groupServiceClient.getGroupLocalize(child.getId(), getDefaultLanguage());
+		return groupServiceClient.getGroup(child.getId());
 	}
 }

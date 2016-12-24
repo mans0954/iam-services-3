@@ -95,7 +95,7 @@ public class Group2ResourceEntitlementsTest extends AbstractEntitlementsTest<Gro
 
 	@Override
 	protected Group getParentById(Group parent) {
-		return groupServiceClient.getGroupLocalize(parent.getId(), getDefaultLanguage());
+		return groupServiceClient.getGroup(parent.getId());
 	}
 
 	@Override

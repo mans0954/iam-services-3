@@ -135,7 +135,7 @@ public class NewUserModelToProvisionConverter {
 
 			if(CollectionUtils.isNotEmpty(request.getGroupIds())) {
 				for(final String groupId : request.getGroupIds()) {
-					final GroupEntity entity = groupDataService.getGroupLocalize(groupId, null);
+					final GroupEntity entity = groupDataService.getGroup(groupId);
 					if(entity != null) {
 						final Group group = groupDozerConverter.convertToDTO(entity, false);
                         user.addGroup(group, null, null, null);

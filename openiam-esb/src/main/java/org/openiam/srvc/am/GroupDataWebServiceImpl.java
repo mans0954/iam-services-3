@@ -12,7 +12,6 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.GroupAttributeDozerConverter;
 import org.openiam.dozer.converter.GroupDozerConverter;
@@ -27,8 +26,6 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.lang.service.LanguageDataService;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -77,12 +74,6 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     protected SysConfiguration sysConfiguration;
 
     @Autowired
-    private LanguageDozerConverter languageConverter;
-
-    @Autowired
-    protected LanguageDataService languageDataService;
-    
-    @Autowired
     private AuditLogHelper auditLogHelper;
     
     @Autowired
@@ -93,11 +84,6 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     public GroupDataWebServiceImpl(GroupQueue queue) {
         super(queue);
     }
-
-    protected Language getDefaultLanguage() {
-        return languageDataService.getDefaultLanguage();
-    }
-
     @Override
     public Response validateEdit(Group group) {
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -151,7 +137,7 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
             throw new BasicDataServiceException(ResponseCode.NO_NAME);
         }
 
-        final GroupEntity nameEntity = groupManager.getGroupByNameAndManagedSystem(entity.getName(), entity.getManagedSysId(), null);
+        final GroupEntity nameEntity = groupManager.getGroupByNameAndManagedSystem(entity.getName(), entity.getManagedSysId());
         if(nameEntity != null) {
 			if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
 				throw new BasicDataServiceException(ResponseCode.CONSTRAINT_VIOLATION, "Role Name + Managed Sys combination taken");
@@ -169,19 +155,7 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     @Override
     @Transactional(readOnly=true)
     public  Group getGroup(final String groupId) {
-        return getGroupLocalize(groupId, getDefaultLanguage());
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly=true)
-    public Group getGroupLocalize(final String groupId, final Language language) {
-        Group retVal = null;
-        if (StringUtils.isNotBlank(groupId)) {
-            final GroupEntity entity = groupManager.getGroupLocalize(groupId, languageConverter.convertToEntity(language, false));
-            retVal = groupDozerConverter.convertToDTO(entity, true);
-        }
-        return retVal;
+    	return groupManager.getGroupDTO(groupId);
     }
 
     @Override
@@ -212,21 +186,13 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     }
 
     @Override
+    @LocalizedServiceGet
     @Deprecated
     public List<Group> getChildGroups(final String groupId, final Boolean deepFlag,
             final int from, final int size) {
-        return getChildGroupsLocalize(groupId, deepFlag, from, size, getDefaultLanguage());
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Deprecated
-    public List<Group> getChildGroupsLocalize(final String groupId, final Boolean deepFlag,
-                                      final int from, final int size, final Language language) {
-        final GroupSearchBean sb = new GroupSearchBean();
+    	final GroupSearchBean sb = new GroupSearchBean();
         sb.addParentId(groupId);
         sb.setDeepCopy(deepFlag);
-        sb.setLanguage(getDefaultLanguage());
         return findBeans(sb, from, size);
     }
 
@@ -239,18 +205,11 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     }
 
     @Override
-    @Deprecated
-    public List<Group> getParentGroups(final String groupId, final int from, final int size) {
-        return getParentGroupsLocalize(groupId, from, size, getDefaultLanguage());
-    }
-
-    @Override
     @LocalizedServiceGet
     @Deprecated
-    public List<Group> getParentGroupsLocalize(final String groupId, final int from, final int size, final Language language) {
+    public List<Group> getParentGroups(final String groupId, final int from, final int size) {
     	final GroupSearchBean sb = new GroupSearchBean();
         sb.addChildId(groupId);
-        sb.setLanguage(language);
         return findBeans(sb, from, size);
     }
 
@@ -292,7 +251,7 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
             }
             
-            final GroupEntity groupEntity = groupManager.getGroupLocalize(groupId, null);
+            final GroupEntity groupEntity = groupManager.getGroup(groupId);
             if(groupEntity != null) {
             	auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
             	auditLog.setTargetUser(userId, null);
@@ -415,24 +374,13 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
 
 
     @Override
+    @LocalizedServiceGet
     /**
      * Without localization proxy, for internal use only
      */
     public List<Group> getGroupsForUser(final String userId, Boolean deepFlag,
             final int from, final int size) {
         return groupManager.getGroupsDtoForUser(userId, from, size);
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Deprecated
-    public List<Group> getGroupsForUserLocalize(final String userId, Boolean deepFlag,
-                                        final int from, final int size, final Language language) {
-    	final GroupSearchBean sb = new GroupSearchBean();
-    	sb.addUserId(userId);
-    	sb.setDeepCopy(deepFlag);
-    	sb.setLanguage(language);
-    	return findBeans(sb, from, size);
     }
 
     @Override
@@ -444,21 +392,13 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     }
 
     @Override
+    @LocalizedServiceGet
     @Deprecated
     public List<Group> getGroupsForResource(final String resourceId, final boolean deepFlag,
         final int from, final int size) {
-        return getGroupsForResourceLocalize(resourceId, deepFlag, from, size, null);
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Deprecated
-    public List<Group> getGroupsForResourceLocalize(final String resourceId, final boolean deepFlag,
-                                            final int from, final int size, final Language language) {
     	final GroupSearchBean sb = new GroupSearchBean();
         sb.addResourceId(resourceId);
         sb.setDeepCopy(deepFlag);
-        sb.setLanguage(language);
         return findBeans(sb, from, size);
     }
 
@@ -471,19 +411,12 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     }
 
     @Override
-    @Deprecated
-    public List<Group> getGroupsForRole(final String roleId, final int from, final int size,
-            boolean deepFlag) {
-        return getGroupsForRoleLocalize(roleId, from, size, deepFlag, getDefaultLanguage());
-    }
-
-    @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     @Deprecated
-    public List<Group> getGroupsForRoleLocalize(final String roleId, final int from, final int size,
-                                        boolean deepFlag, final Language language) {
-        final GroupSearchBean sb = new GroupSearchBean();
+    public List<Group> getGroupsForRole(final String roleId, final int from, final int size,
+            boolean deepFlag) {
+    	final GroupSearchBean sb = new GroupSearchBean();
         sb.addRoleId(roleId);
         sb.setDeepCopy(deepFlag);
         return findBeans(sb, from, size);
@@ -583,17 +516,10 @@ public class GroupDataWebServiceImpl extends AbstractApiService implements Group
     }
 
     @Override
-    @Deprecated
-    public List<Group> findGroupsByAttributeValue(String attrName, String attrValue) {
-        return findGroupsByAttributeValueLocalize(attrName, attrValue, getDefaultLanguage());
-    }
-
-    @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Group> findGroupsByAttributeValueLocalize(String attrName, String attrValue, final Language language) {
-        return groupDozerConverter.convertToDTOList(
-                groupManager.findGroupsByAttributeValueLocalize(attrName, attrValue, languageConverter.convertToEntity(language, false)), true);
+    public List<Group> findGroupsByAttributeValue(String attrName, String attrValue) {
+    	 return groupDozerConverter.convertToDTOList(groupManager.findGroupsByAttributeValue(attrName, attrValue), true);
     }
 
 	@Override

@@ -1509,7 +1509,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             for (final UserToGroupMembershipXref xref : pUser.getGroups()) {
             	final AttributeOperationEnum operation = xref.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
-                	final GroupEntity groupEntity = groupManager.getGroupLocalize(xref.getEntityId(), null);
+                	final GroupEntity groupEntity = groupManager.getGroup(xref.getEntityId());
                 	userEntity.addGroup(groupEntity, accessRightDAO.findByIds(xref.getAccessRightIds()), xref.getStartDate(), xref.getEndDate());
                     // Audit Log ---------------------------------------------------
                     final IdmAuditLogEntity auditLog = auditLogHelper.newInstance();
@@ -1523,7 +1523,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     //--------------------------------------------------------------
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                	final GroupEntity ge = groupManager.getGroupLocalize(xref.getEntityId(), null);
+                	final GroupEntity ge = groupManager.getGroup(xref.getEntityId());
                 	userEntity.removeGroup(ge);
                     final Group dg = groupDozerConverter.convertToDTO(ge, false);
                     dg.setOperation(operation);

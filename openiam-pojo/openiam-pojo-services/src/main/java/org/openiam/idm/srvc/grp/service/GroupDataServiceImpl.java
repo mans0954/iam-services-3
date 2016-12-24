@@ -16,9 +16,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.response.SetStringResponse;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.response.SetStringResponse;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -27,18 +27,17 @@ import org.openiam.base.ws.SearchParam;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.elasticsearch.converter.GroupDocumentToEntityConverter;
-import org.openiam.elasticsearch.converter.RoleDocumentToEntityConverter;
 import org.openiam.elasticsearch.dao.GroupElasticSearchRepository;
 import org.openiam.elasticsearch.model.GroupDoc;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EsbErrorToken;
+import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.IdentityEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
@@ -50,13 +49,9 @@ import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupOwner;
 import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
-import org.openiam.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
@@ -90,7 +85,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -154,9 +148,6 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     private IdentityDAO identityDAO;
 
     @Autowired
-    protected LanguageDAO languageDAO;
-
-    @Autowired
     protected AuditLogHelper auditLogHelper;
     
     @Autowired
@@ -202,16 +193,11 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
 	}
 
-    protected LanguageEntity getDefaultLanguage() {
-        return languageDAO.getDefaultLanguage();
-    }
-
-
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public GroupEntity getGroupLocalize(String id, LanguageEntity language) {
-        if(DelegationFilterHelper.isAllowed(id, getDelegationFilter())){
+    public GroupEntity getGroup(final String id) {
+    	if(DelegationFilterHelper.isAllowed(id, getDelegationFilter())){
             return groupDao.findById(id);
         }
         return null;
@@ -220,50 +206,19 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public Group getGroupDtoLocalize(final String id, final Language language) {
-        /*if(DelegationFilterHelper.isAllowed(id, getDelegationFilter(requesterId))){*/
-
-        //GroupDataService bean = (GroupDataService)ac.getBean("groupManager");
-        GroupEntity groupEntity = this.getProxyService().getGroupLocalize(id, languageConverter.convertToEntity(language, false));
-
-        if(groupEntity != null){
-            //GroupEntity groupEntity = groupDao.findById(id);
-            return groupDozerConverter.convertToDTO(groupEntity, true);
-        }
-        return null;
-    }
-
-    @Override
-    @Deprecated
-    @Transactional(readOnly = true)
-    public GroupEntity getGroup(final String id) {
-        return getGroupLocalize(id, getDefaultLanguage());
-    }
-
-    @Override
-    @Deprecated
-    @Transactional(readOnly = true)
     public GroupEntity getGroupByName(final String groupName) {
-        return getGroupByNameLocalize(groupName, getDefaultLanguage());
+    	 final GroupSearchBean searchBean = new GroupSearchBean();
+         searchBean.setNameToken(new SearchParam(groupName, MatchType.EXACT));
+         final List<GroupEntity> foundList = this.findBeans(searchBean, 0, 1);
+         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
     }
 
     @Override
     @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public GroupEntity getGroupByNameLocalize(final String groupName, final LanguageEntity language) {
-        final GroupSearchBean searchBean = new GroupSearchBean();
-        searchBean.setNameToken(new SearchParam(groupName, MatchType.EXACT));
-        final List<GroupEntity> foundList = this.findBeans(searchBean, 0, 1);
-        return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
-    }
-
-    @Override
-    @LocalizedServiceGet
-    public GroupEntity getGroupByNameAndManagedSystem(final String groupName, final String managedSystemId, final LanguageEntity language) {
+    public GroupEntity getGroupByNameAndManagedSystem(final String groupName, final String managedSystemId) {
         final GroupSearchBean searchBean = new GroupSearchBean();
         searchBean.setNameToken(new SearchParam(groupName, MatchType.EXACT));
         searchBean.setManagedSysId(managedSystemId);
-        searchBean.setLanguage(language);
         
         /* can only ever return 1 due to DB constraint */
         final List<GroupEntity> foundList = findBeans(searchBean, 0, Integer.MAX_VALUE);
@@ -271,44 +226,31 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     }
 
     @Override
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<GroupEntity> getChildGroups(final String groupId, final int from, final int size) {
-        return getChildGroupsLocalize(groupId, from, size, getDefaultLanguage());
+    	return groupDao.getChildGroups(groupId, getDelegationFilter(), from, size);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<GroupEntity> getChildGroupsLocalize(final String groupId, final int from, final int size, final LanguageEntity language) {
-        return groupDao.getChildGroups(groupId, getDelegationFilter(), from, size);
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<Group> getChildGroupsDtoLocalize(final String groupId, final int from, final int size, final Language language) {
+    public List<Group> getChildGroupsDto(final String groupId, final int from, final int size) {
         List<GroupEntity> groupEntities = groupDao.getChildGroups(groupId, getDelegationFilter(), from, size);
         return groupDozerConverter.convertToDTOList(groupEntities, false);
     }
 
     @Override
-    @Deprecated
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<GroupEntity> getParentGroups(final String groupId, final int from, final int size) {
-        return getParentGroupsLocalize(groupId, from, size, getDefaultLanguage());
+    	 return groupDao.getParentGroups(groupId, getDelegationFilter(), from, size);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<GroupEntity> getParentGroupsLocalize(final String groupId, final int from, final int size, final LanguageEntity language) {
-        return groupDao.getParentGroups(groupId, getDelegationFilter(), from, size);
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<Group> getParentGroupsDtoLocalize(final String groupId, final int from, final int size, final Language language) {
+    public List<Group> getParentGroupsDto(final String groupId, final int from, final int size) {
         List<GroupEntity> groupEntities = groupDao.getParentGroups(groupId, getDelegationFilter(), from, size);
         return groupDozerConverter.convertToDTOList(groupEntities, false);
     }
@@ -352,13 +294,6 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         } else {
         	return groupDao.getByExample(searchBean, from, size);
         }
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, int from, int size, final LanguageEntity language) {
-        return getGroupEntities(searchBean, from, size);
     }
 
     @Override
@@ -408,68 +343,38 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     }
 
     @Override
-    /**
-     * without localization, for internal use only
-     */
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<GroupEntity> getGroupsForUser(final String userId, int from, int size) {
-        return getGroupsForUserLocalize(userId, from, size, getDefaultLanguage());
+    	return groupDao.getGroupsForUser(userId, getDelegationFilter(), from, size);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<GroupEntity> getGroupsForUserLocalize(final String userId, int from, int size, LanguageEntity language) {
-        return groupDao.getGroupsForUser(userId, getDelegationFilter(), from, size);
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<Group> getGroupsDtoForUserLocalize(final String userId, int from, int size, Language language) {
-        List<GroupEntity> groupEntities = groupDao.getGroupsForUser(userId, getDelegationFilter(), from, size);
-        return groupDozerConverter.convertToDTOList(groupEntities, false);
-    }
-
-    @Override
-    @Deprecated
     public List<GroupEntity> getGroupsForResource(final String resourceId, final int from, final int size) {
-        return getGroupsForResourceLocalize(resourceId, from, size, getDefaultLanguage());
+    	return groupDao.getGroupsForResource(resourceId, getDelegationFilter(), from, size);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<GroupEntity> getGroupsForResourceLocalize(final String resourceId, final int from, final int size, LanguageEntity language) {
-        return groupDao.getGroupsForResource(resourceId, getDelegationFilter(), from, size);
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<Group> getGroupsDtoForResourceLocalize(final String resourceId, final int from, final int size, Language language) {
+    public List<Group> getGroupsDtoForResource(final String resourceId, final int from, final int size) {
         List<GroupEntity> groupEntities = groupDao.getGroupsForResource(resourceId, getDelegationFilter(), from, size);
         return groupDozerConverter.convertToDTOList(groupEntities, false);
     }
 
     @Override
-    @Deprecated
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<GroupEntity> getGroupsForRole(final String roleId, int from, int size) {
-        return getGroupsForRoleLocalize(roleId, from, size, getDefaultLanguage());
+    	return groupDao.getGroupsForRole(roleId, getDelegationFilter(), from, size);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<GroupEntity> getGroupsForRoleLocalize(final String roleId, int from, int size, LanguageEntity language) {
-        return groupDao.getGroupsForRole(roleId, getDelegationFilter(), from, size);
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<Group> getGroupsDtoForRoleLocalize(final String roleId, int from, int size, boolean deepFlag, Language language) {
+    public List<Group> getGroupsDtoForRole(final String roleId, int from, int size, boolean deepFlag) {
         List<GroupEntity> groupEntities = groupDao.getGroupsForRole(roleId, getDelegationFilter(), from, size);
         return groupDozerConverter.convertToDTOList(groupEntities, deepFlag);
     }
@@ -602,19 +507,11 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     }
 
     @Override
-    @Deprecated
-    @Transactional(readOnly = true)
-    public List<Group> getCompiledGroupsForUser(final String userId) {
-        return getCompiledGroupsForUserLocalize(userId, getDefaultLanguage());
-    }
-
-    @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language) {
+    public List<Group> getCompiledGroupsForUser(final String userId) {
     	final GroupSearchBean sb = new GroupSearchBean();
     	sb.addUserId(userId);
-    	sb.setLanguage(language);
         final List<GroupEntity> groupList = findBeans(sb, 0, Integer.MAX_VALUE);
         final Set<GroupEntity> visitedSet = new HashSet<GroupEntity>();
         if(CollectionUtils.isNotEmpty(groupList)) {
@@ -1149,29 +1046,22 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 	}
 
 	@Override
-    @Deprecated
+	@LocalizedServiceGet
+	@Transactional(readOnly=true)
 	public Group getGroupDTO(String groupId) {
-		return getGroupDTOLocalize(groupId, getDefaultLanguage());
+		final GroupEntity groupEntity = this.getProxyService().getGroup(groupId);
+
+        if(groupEntity != null){
+            //GroupEntity groupEntity = groupDao.findById(id);
+            return groupDozerConverter.convertToDTO(groupEntity, true);
+        }
+        return null;
 	}
 
     @Override
+    @Transactional(readOnly = true)
     @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public Group getGroupDTOLocalize(String groupId, LanguageEntity language) {
-        return groupDozerConverter.convertToDTO(groupDao.findById(groupId), true);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Deprecated
     public List<GroupEntity> findGroupsByAttributeValue(String attrName, String attrValue) {
-        return findGroupsByAttributeValueLocalize(attrName, attrValue, getDefaultLanguage());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @LocalizedServiceGet
-    public List<GroupEntity> findGroupsByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language) {
     	final GroupSearchBean searchBean = new GroupSearchBean();
     	searchBean.addAttribute(attrName, attrValue);
         return groupDao.getByExample(searchBean);
@@ -1338,7 +1228,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
             }
 
-            final GroupEntity groupEntity = this.getGroupLocalize(groupId, null);
+            final GroupEntity groupEntity = this.getGroup(groupId);
             if(groupEntity != null) {
                 auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
                 auditLog.setTargetUser(userId, null);
@@ -1382,8 +1272,8 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                 throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
 
-            GroupEntity groupEntity = this.getGroupLocalize(groupId, null);
-            GroupEntity groupEntityChild = this.getGroupLocalize(childGroupId, null);
+            GroupEntity groupEntity = this.getGroup(groupId);
+            GroupEntity groupEntityChild = this.getGroup(childGroupId);
             if(groupEntity == null || groupEntityChild == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
@@ -1474,7 +1364,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             throw new BasicDataServiceException(ResponseCode.NO_NAME);
         }
 
-        final GroupEntity nameEntity = this.getGroupByNameAndManagedSystem(entity.getName(), entity.getManagedSystem().getId(), null);
+        final GroupEntity nameEntity = this.getGroupByNameAndManagedSystem(entity.getName(), entity.getManagedSystem().getId());
         if(nameEntity != null) {
             if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
                 throw new BasicDataServiceException(ResponseCode.CONSTRAINT_VIOLATION, "Role Name + Managed Sys combination taken");

@@ -12,8 +12,6 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupOwner;
 import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 
 /**
@@ -27,17 +25,12 @@ import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
  */
 
 public interface GroupDataService {
-	@Deprecated
     public GroupEntity getGroup(final String id);
 	
-	public GroupEntity getGroupByNameAndManagedSystem(final String groupName, final String managedSystemId, final LanguageEntity language);
+	public GroupEntity getGroupByNameAndManagedSystem(final String groupName, final String managedSystemId);
     public List<Group> getCompiledGroupsForUser(final String userId);
     public GroupEntity getGroupByName(final String groupName);
-    public GroupEntity getGroupLocalize(final String id, final LanguageEntity language);
-    public Group getGroupDtoLocalize(final String id, final Language language);
 
-    public GroupEntity getGroupByNameLocalize(final String groupName, final LanguageEntity language);
-    public List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language);
     /**
      * Returns a list of Group objects that satisfy the search criteria defined through the GroupSearch parameter.
      *
@@ -56,17 +49,10 @@ public interface GroupDataService {
     public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size);
     public List<GroupEntity> getGroupsForRole(final String roleId, final int from, final int size);
 
-    public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, final int from, final int size, final LanguageEntity language);
-    public List<GroupEntity> getChildGroupsLocalize(final String groupId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getChildGroupsDtoLocalize(final String groupId, final int from, final int size, final Language language);
-    public List<GroupEntity> getParentGroupsLocalize(final String groupId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getParentGroupsDtoLocalize(final String groupId, final int from, final int size, final Language language);
-    public List<GroupEntity> getGroupsForResourceLocalize(final String resourceId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getGroupsDtoForResourceLocalize(final String resourceId, final int from, final int size, final Language language);
-    public List<GroupEntity> getGroupsForUserLocalize(final String userId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getGroupsDtoForUserLocalize(final String userId, final int from, final int size, final Language language);
-    public List<GroupEntity> getGroupsForRoleLocalize(final String roleId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getGroupsDtoForRoleLocalize(final String roleId, final int from, final int size, boolean deepFlag, final Language language);
+    public List<Group> getChildGroupsDto(final String groupId, final int from, final int size);
+    public List<Group> getParentGroupsDto(final String groupId, final int from, final int size);
+    public List<Group> getGroupsDtoForResource(final String resourceId, final int from, final int size);
+    public List<Group> getGroupsDtoForRole(final String roleId, final int from, final int size, boolean deepFlag);
 
     public Set<String> getGroupIdList();
 
@@ -114,8 +100,6 @@ public interface GroupDataService {
     public Group getGroupDTO(final String groupId);
     public List<GroupEntity> findGroupsByAttributeValue(String attrName, String attrValue);
 
-    public Group getGroupDTOLocalize(final String groupId, LanguageEntity language);
-    public List<GroupEntity> findGroupsByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language);
     //public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity lang);
 
     public int countGroupsForOwner(GroupSearchBean searchBean, String ownerId);
