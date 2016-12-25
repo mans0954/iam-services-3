@@ -154,17 +154,17 @@ public class UserAccessControlServiceImpl implements UserAccessControlService {
                 AccessRightSearchBean accessRightSearchBean = new AccessRightSearchBean();
                 accessRightSearchBean.setFindInCache(true);
                 accessRightSearchBean.setDeepCopy(false);
-                List<AccessRight> accessRights = accessRightDataService.findBeans(accessRightSearchBean, -1, -1, null);
+                List<AccessRight> accessRights = accessRightDataService.findBeans(accessRightSearchBean, -1, -1);
                 List<ManagedSysEntity> managedSysEntities = managedSystemService.getAllManagedSys();
                 MetadataTypeSearchBean metadataTypeSearchBean = new MetadataTypeSearchBean();
                 metadataTypeSearchBean.setDeepCopy(false);
                 metadataTypeSearchBean.setFindInCache(true);
                 metadataTypeSearchBean.setGrouping(MetadataTypeGrouping.ROLE_TYPE);
-                List<MetadataType> roleMetadataTypes = metadataService.findBeans(metadataTypeSearchBean, -1, -1, null);
+                List<MetadataType> roleMetadataTypes = metadataService.findBeans(metadataTypeSearchBean, -1, -1);
                 metadataTypeSearchBean.setGrouping(MetadataTypeGrouping.GROUP_TYPE);
-                List<MetadataType> groupMetadataTypes = metadataService.findBeans(metadataTypeSearchBean, -1, -1, null);
+                List<MetadataType> groupMetadataTypes = metadataService.findBeans(metadataTypeSearchBean, -1, -1);
                 metadataTypeSearchBean.setGrouping(MetadataTypeGrouping.RESOURCE_TYPE);
-                List<MetadataType> resourceMetadataTypes = metadataService.findBeans(metadataTypeSearchBean, -1, -1, null);
+                List<MetadataType> resourceMetadataTypes = metadataService.findBeans(metadataTypeSearchBean, -1, -1);
                 //fill managed systems
                 List<ResourceType> resourceTypes = resourceDataService.getAllResourceTypes();
                 this.fillNamedTypes(compiledSet, managedSysEntities, roleMetadataTypes, groupMetadataTypes, resourceMetadataTypes, resourceTypes, accessRights);

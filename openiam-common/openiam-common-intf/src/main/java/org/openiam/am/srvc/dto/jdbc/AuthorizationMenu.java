@@ -212,10 +212,10 @@ public class AuthorizationMenu implements Serializable {
 		}
 	}
     
-    public void localize(final Language language) {
-    	if(language != null) {
+    public void localize(final String languageId) {
+    	if(languageId != null) {
     		if(displayNameMap != null) {
-    			final LanguageMapping mapping = displayNameMap.get(language.getId());
+    			final LanguageMapping mapping = displayNameMap.get(languageId);
     			if(mapping != null) {
     				displayName = mapping.getValue();
     			}

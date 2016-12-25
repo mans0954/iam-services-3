@@ -55,7 +55,6 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 		searchBean.addUserId(child.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
-		searchBean.setLanguage(getDefaultLanguage());
 		final List<Organization> dtos = organizationServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();

@@ -54,7 +54,6 @@ public class Group2OrganizationEntitlementsTest extends AbstractEntitlementsTest
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
 		searchBean.addGroupId(child.getId());
 		searchBean.setIncludeAccessRights(true);
-		searchBean.setLanguage(getDefaultLanguage());
 		final List<Organization> dtos = organizationServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
@@ -77,7 +76,6 @@ public class Group2OrganizationEntitlementsTest extends AbstractEntitlementsTest
 		final GroupSearchBean searchBean = new GroupSearchBean();
 		searchBean.addOrganizationId(parent.getId());
 		searchBean.setIncludeAccessRights(true);
-		searchBean.setLanguage(getDefaultLanguage());
 		final List<Group> dtos = groupServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Group> optional = dtos.stream().filter(e -> e.getId().equals(child.getId())).findAny();

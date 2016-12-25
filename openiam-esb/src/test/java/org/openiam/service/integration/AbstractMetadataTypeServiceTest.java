@@ -19,7 +19,7 @@ public abstract class AbstractMetadataTypeServiceTest<T extends AbstractMetadata
 		T instance = key.getDto();
 		S searchBean = key.getSearchBean();
 		
-		instance.setMdTypeId(metadataServiceClient.findTypeBeans(null, 0, 1, null).get(0).getId());
+		instance.setMdTypeId(metadataServiceClient.findTypeBeans(null, 0, 1).get(0).getId());
     	Response response = saveAndAssert(instance);
     	instance = assertClusteredSave(searchBean);
     	

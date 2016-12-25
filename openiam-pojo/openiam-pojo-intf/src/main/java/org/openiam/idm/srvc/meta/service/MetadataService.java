@@ -5,7 +5,6 @@ import java.util.List;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
@@ -22,19 +21,19 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
  */
 
 public interface MetadataService {
-    MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping, final Language language);
+    MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping);
 
 	List<MetadataElement> findElementByName(final String name);
 
-    MetadataElement findElementById(final String id, Language language);
+    MetadataElement findElementById(final String id);
 
     MetadataType findById(final String id);
 
-	List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language);
+	List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
 
-	List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
+	List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size);
 	List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
-	List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
+	List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size);
 	int count(final MetadataElementSearchBean searchBean);
 	List<MetadataType> findBeansNoLocalize(final MetadataTypeSearchBean searchBean, final int from, final int size);
 	int count(final MetadataTypeSearchBean searchBean);

@@ -132,7 +132,6 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
     	request.setPrincipal("snelson");
     	request.setSkipPasswordCheck(true);
     	request.setAuthPolicyId(null);
-		request.setLanguageId(getDefaultLanguage().getId());
     	AuthenticationResponse response = authServiceClient.login(request);
     	Assert.assertNotNull(response);
     	Assert.assertTrue(response.getStatus().equals(ResponseStatus.SUCCESS));

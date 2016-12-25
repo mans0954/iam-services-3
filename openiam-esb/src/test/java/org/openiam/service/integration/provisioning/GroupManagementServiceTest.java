@@ -439,7 +439,6 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     private void deleteGroupsByName(final String name) {
     	final GroupSearchBean sb = new GroupSearchBean();
     	sb.setNameToken(new SearchParam(name, MatchType.EXACT));
-    	sb.setLanguage(getDefaultLanguage());
     	final List<Group> groups = groupServiceClient.findBeans(sb, 0, Integer.MAX_VALUE);
     	if(CollectionUtils.isNotEmpty(groups)) {
     		groups.forEach(e -> {

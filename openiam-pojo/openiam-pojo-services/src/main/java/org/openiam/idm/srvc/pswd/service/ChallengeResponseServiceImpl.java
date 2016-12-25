@@ -1,5 +1,11 @@
 package org.openiam.idm.srvc.pswd.service;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -11,9 +17,6 @@ import org.openiam.dozer.converter.UserIdentityAnswerDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
-import org.openiam.idm.srvc.key.constant.KeyName;
-import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
@@ -24,15 +27,12 @@ import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
 
 @Service
 //@Transactional
@@ -51,13 +51,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     private UserDataService userMgr;
 
     @Autowired
-    private UserDAO userDAO;
-
-    @Autowired
     private PasswordService passwordMgr;
-
-    @Autowired
-    private KeyManagementService keyManagementService;
     
     @Autowired
     private IdentityQuestGroupDozerConverter groupDozerConverter;
@@ -88,7 +82,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<IdentityQuestion> findQuestionBeans(IdentityQuestionSearchBean searchBean, int from, int size, final Language language) {
+    public List<IdentityQuestion> findQuestionBeans(IdentityQuestionSearchBean searchBean, int from, int size) {
         List<IdentityQuestionEntity> beans = getResponseValidator().findQuestionBeans(searchBean, from, size);
         return (beans != null) ? questionDozerConverter.convertToDTOList(beans, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
     }
@@ -96,7 +90,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public IdentityQuestion getQuestion(final String questionId, final Language language) {
+    public IdentityQuestion getQuestion(final String questionId) {
         IdentityQuestionEntity question = getResponseValidator().getQuestion(questionId);
         return (question != null) ? questionDozerConverter.convertToDTO(question, false) : null;
     }

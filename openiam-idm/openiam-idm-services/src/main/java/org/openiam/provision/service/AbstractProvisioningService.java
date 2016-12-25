@@ -2059,7 +2059,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         }
 
 
-        List<MetadataTypeEntity> metaDataTypes = metadataService.findEntityBeans(sb, -1, -1, null);
+        List<MetadataTypeEntity> metaDataTypes = metadataService.findEntityBeans(sb, -1, -1);
 
         if(CollectionUtils.isNotEmpty(metaDataTypes)){
             for(MetadataTypeEntity typeEntity: metaDataTypes){
@@ -2110,7 +2110,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             sb.addKey(pUser.getUserSubTypeId());
         }
 
-        List<MetadataTypeEntity> metaDataTypes = metadataService.findEntityBeans(sb, -1, -1, null);
+        List<MetadataTypeEntity> metaDataTypes = metadataService.findEntityBeans(sb, -1, -1);
 
         if(CollectionUtils.isNotEmpty(metaDataTypes)){
             for(MetadataTypeEntity typeEntity: metaDataTypes){

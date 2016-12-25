@@ -16,7 +16,6 @@ import org.openiam.mq.constants.queue.am.AMMenuQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.openiam.base.response.MenuSaveResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +35,7 @@ public class AuthorizationManagerMenuWebServiceImpl  extends AbstractApiService 
 	}
 
 	@Override
-	public AuthorizationMenu getMenuTreeForUserId(final MenuRequest request, final Language language) {
-		request.setLanguage(language);
+	public AuthorizationMenu getMenuTreeForUserId(final MenuRequest request) {
 		AuthorizationMenuResponse response= this.manageApiRequest(AMMenuAPI.MenuTreeForUser, request, AuthorizationMenuResponse.class);
 		if(response.isFailure()){
 			return null;
@@ -46,10 +44,9 @@ public class AuthorizationManagerMenuWebServiceImpl  extends AbstractApiService 
 	}
 
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuId, final Language language) {
+	public AuthorizationMenu getMenuTree(final String menuId) {
 		MenuRequest request = new MenuRequest();
 		request.setMenuRoot(menuId);
-		request.setLanguage(language);
 
 		AuthorizationMenuResponse response= this.manageApiRequest(AMMenuAPI.MenuTree, request, AuthorizationMenuResponse.class);
 		if(response.isFailure()){
@@ -60,12 +57,11 @@ public class AuthorizationManagerMenuWebServiceImpl  extends AbstractApiService 
 	
 
 	@Override
-	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType, final Language language) {
+	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType) {
 		MenuRequest request = new MenuRequest();
 		request.setMenuRoot(menuId);
 		request.setPrincipalId(principalId);
 		request.setPrincipalType(principalType);
-		request.setLanguage(language);
 
 		AuthorizationMenuResponse response= this.manageApiRequest(AMMenuAPI.NonCachedMenuTree, request, AuthorizationMenuResponse.class);
 		if(response.isFailure()){

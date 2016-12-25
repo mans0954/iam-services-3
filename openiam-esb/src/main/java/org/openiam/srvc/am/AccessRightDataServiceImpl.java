@@ -15,7 +15,6 @@ import org.openiam.base.response.data.IntResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.mq.constants.api.AccessRightAPI;
 import org.openiam.mq.constants.queue.am.AccessRightQueue;
@@ -57,13 +56,11 @@ public class AccessRightDataServiceImpl extends AbstractApiService implements Ac
 
 	@Override
 	@LocalizedServiceGet
-	public List<AccessRight> findBeans(final AccessRightSearchBean searchBean, final int from, final int size, final Language language) {
+	public List<AccessRight> findBeans(final AccessRightSearchBean searchBean, final int from, final int size) {
 		final BaseSearchServiceRequest<AccessRightSearchBean> request = new BaseSearchServiceRequest();
 		request.setSearchBean(searchBean);
 		request.setFrom(from);
 		request.setSize(size);
-		request.setLanguage(language);
-
 
 		final AccessRightListResponse response = this.manageApiRequest(AccessRightAPI.FindBeans, request, AccessRightListResponse.class);
 		if(response.isFailure()){

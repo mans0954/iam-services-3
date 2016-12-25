@@ -53,7 +53,6 @@ public class Organization2OrganizationEntitlementsTest extends AbstractCircularE
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
 		searchBean.addChildId(child.getId());
 		searchBean.setIncludeAccessRights(true);
-		searchBean.setLanguage(getDefaultLanguage());
 		final List<Organization> dtos = organizationServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
@@ -75,7 +74,6 @@ public class Organization2OrganizationEntitlementsTest extends AbstractCircularE
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
 		searchBean.addParentId(parent.getId());
 		searchBean.setIncludeAccessRights(true);
-		searchBean.setLanguage(getDefaultLanguage());
 		final List<Organization> dtos = organizationServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(child.getId())).findAny();

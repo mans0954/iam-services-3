@@ -50,7 +50,7 @@ public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, M
 		final MetadataTypeSearchBean searchBean = newSearchBean();
 		searchBean.addKey(key);
 		searchBean.setDeepCopy(true);
-		final List<MetadataType> results = metadataServiceClient.findTypeBeans(searchBean, 0, 1, null);
+		final List<MetadataType> results = metadataServiceClient.findTypeBeans(searchBean, 0, 1);
 		return (CollectionUtils.isNotEmpty(results)) ? results.get(0) : null;
 	}
 
@@ -58,7 +58,7 @@ public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, M
 	public List<MetadataType> find(MetadataTypeSearchBean searchBean, int from,
 			int size) {
 		searchBean.setDeepCopy(true);
-		return metadataServiceClient.findTypeBeans(searchBean, from, size, getDefaultLanguage());
+		return metadataServiceClient.findTypeBeans(searchBean, from, size);
 	}
 	
 	@Test

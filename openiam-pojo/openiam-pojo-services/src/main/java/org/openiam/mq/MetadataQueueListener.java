@@ -52,7 +52,7 @@ public class MetadataQueueListener extends AbstractListener<MetadataAPI> {
                     case FindElementBeans:
                         response = new MetadataElementListResponse();
                         ((MetadataElementListResponse)response).setList(metadataService.findBeans(((MetadataElementSearchBean)request.getSearchBean()),
-                                request.getFrom(), request.getSize(), request.getLanguage()));
+                                request.getFrom(), request.getSize()));
                         break;
                     case CountElementBeans:
                         response = new IntResponse();
@@ -61,7 +61,7 @@ public class MetadataQueueListener extends AbstractListener<MetadataAPI> {
                     case FindTypeBeans:
                         response = new MetadataTypeListResponse();
                         ((MetadataTypeListResponse)response).setList(metadataService.findBeans(((MetadataTypeSearchBean)request.getSearchBean()),
-                                request.getFrom(), request.getSize(), request.getLanguage()));
+                                request.getFrom(), request.getSize()));
                         break;
                     case CountTypeBeans:
                         response = new IntResponse();
@@ -82,7 +82,7 @@ public class MetadataQueueListener extends AbstractListener<MetadataAPI> {
                 switch (api){
                     case GetMetadataElement:
                         response = new MetadataElementResponse();
-                        ((MetadataElementResponse)response).setValue(metadataService.findElementById(request.getId(), request.getLanguage()));
+                        ((MetadataElementResponse)response).setValue(metadataService.findElementById(request.getId()));
                         break;
                     case GetMetadataType:
                         response = new MetadataTypeResponse();

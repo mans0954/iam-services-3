@@ -62,7 +62,7 @@ public class OrganizationDisplayMapper extends AbstractActivitiJob {
 		metadataMap.put("Is Selectable", Boolean.valueOf(organization.isSelectable()).toString());
 		
 		if(StringUtils.isNotBlank(organization.getOrganizationTypeId())) {
-			final OrganizationType organizationType = organizationTypeService.findById(organization.getOrganizationTypeId(), null);
+			final OrganizationType organizationType = organizationTypeService.findById(organization.getOrganizationTypeId());
 			if(organizationType != null) {
 				metadataMap.put("Organization Type", organizationType.getName());
 			}

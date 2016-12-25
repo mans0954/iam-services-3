@@ -22,38 +22,37 @@ import org.openiam.am.srvc.dto.jdbc.AuthorizationResource;
 import org.openiam.am.srvc.dto.jdbc.xref.ResourceResourceXref;
 import org.openiam.authmanager.dao.MembershipDAO;
 import org.openiam.authmanager.dao.ResourcePropDAO;
-import org.openiam.base.request.MenuRequest;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.exception.AuthorizationMenuException;
-import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.lang.dto.LanguageMapping;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
-import org.openiam.idm.srvc.res.dto.ResourceRisk;
-import org.openiam.idm.srvc.res.service.ResourceService;
-import org.openiam.model.MenuEntitlementType;
-import org.openiam.model.ResourceEntitlementToken;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.request.MenuEntitlementsRequest;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.AuthorizationMenuException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.res.dto.ResourceRisk;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.membership.MembershipDTO;
+import org.openiam.model.MenuEntitlementType;
+import org.openiam.model.ResourceEntitlementToken;
 import org.openiam.util.AuthorizationConstants;
 import org.openiam.util.SpringContextProvider;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,8 +175,10 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	
 	@Override
 	@Transactional(readOnly = true)
-	public AuthorizationMenu getMenuTree(final String menuId) {
-		return getAllMenuTress().get(menuId);
+	public AuthorizationMenu getMenuTree(final String menuId){
+		final AuthorizationMenu menu = this.getMenuTree(menuId);
+		localize(menu);
+		return menu;
 	}
 	
 	private void doEntitlementsCheck(final AuthorizationMenu menu, final ResourceEntitlementToken token) {
@@ -644,8 +645,10 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 
         return retVal;
     }
+    
+    @Override
 	@Transactional(readOnly = true)
-	public AuthorizationMenu getMenuTreeForUserId(final String menuId, final String menuName, final String userId, final Language language){
+	public AuthorizationMenu getMenuTreeForUserId(final String menuId, final String menuName, final String userId){
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		AuthorizationMenu retVal = null;
@@ -660,17 +663,13 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		if(log.isInfoEnabled()) {
 			log.info(String.format("getMenuTreeForUserId: {menuId: %s, menuName: %s, userId: %s}, time: %s ms", menuId, menuName, userId, sw.getTime()));
 		}
-		localize(retVal, language);
+		localize(retVal);
 		return retVal;
 	}
+    
+    @Override
 	@Transactional(readOnly = true)
-	public AuthorizationMenu getMenuTree(final String menuId, final Language language){
-		final AuthorizationMenu menu = this.getMenuTree(menuId);
-		localize(menu, language);
-		return menu;
-	}
-	@Transactional(readOnly = true)
-	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType, final Language language){
+	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType){
 		final AuthorizationMenu menu = getMenuTree(menuId);
 		ResourceEntitlementToken token = null;
 		final Date now = new Date();
@@ -688,7 +687,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 
 		doEntitlementsCheck(menu, token);
 
-		localize(menu, language);
+		localize(menu);
 		return menu;
 	}
 	@Transactional
@@ -1003,17 +1002,18 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		return convertedMap;
 	}
 
-	private void localize(final AuthorizationMenu menu, final Language language) {
-		if(menu != null && language != null) {
-			menu.localize(language);
+	private void localize(final AuthorizationMenu menu) {
+		final String languageId = SpringSecurityHelper.getLanguageId();
+		if(menu != null && languageId != null) {
+			menu.localize(languageId);
 
 			AuthorizationMenu sibling = menu.getNextSibling();
 			while(sibling != null) {
-				localize(sibling, language);
+				localize(sibling);
 				sibling = sibling.getNextSibling();
 			}
 
-			localize(menu.getFirstChild(), language);
+			localize(menu.getFirstChild());
 		}
 	}
 

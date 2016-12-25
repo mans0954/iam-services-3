@@ -2,7 +2,6 @@ package org.openiam.idm.srvc.org.service;
 
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -16,9 +15,9 @@ public interface OrganizationTypeService {
 
 	OrganizationTypeEntity findByName(final String name);
 	
-	OrganizationType findById(final String id, final Language language);
+	OrganizationType findById(final String id);
 	
-	List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size, final Language language);
+	List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size);
 	
 	int count(final OrganizationTypeSearchBean searchBean);
 	
@@ -30,13 +29,13 @@ public interface OrganizationTypeService {
 	
 	void removeChild(final String id, final String childId) throws BasicDataServiceException;
 
-    List<OrganizationType> getAllowedParents(String organizationTypeId, final Language language);
+    List<OrganizationType> getAllowedParents(String organizationTypeId);
 
     Set<String> getAllowedParentsIds(String organizationTypeId);
 
     Set<String> getAllowedParentsIds(String organizationTypeId, Map<String, UserAttribute> requesterAttributes);
 
-    List<OrganizationType> findAllowedChildrenByDelegationFilter(String requesterId, final Language language);
+    List<OrganizationType> findAllowedChildrenByDelegationFilter(String requesterId);
 
     Set<String> findAllowedChildrenByDelegationFilter(Map<String, UserAttribute> userAttributeMap);
 	

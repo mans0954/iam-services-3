@@ -20,7 +20,7 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 	protected MetadataElement newInstance() {
 		final MetadataElement element = new MetadataElement();
 		element.setAttributeName(getRandomName());
-		element.setMetadataTypeId(metadataServiceClient.findTypeBeans(new MetadataTypeSearchBean(), 0, 1, null).get(0).getId());
+		element.setMetadataTypeId(metadataServiceClient.findTypeBeans(new MetadataTypeSearchBean(), 0, 1).get(0).getId());
 		return element;
 	}
 	
@@ -60,7 +60,7 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 	@Override
 	public List<MetadataElement> find(MetadataElementSearchBean searchBean,
 			int from, int size) {
-		return metadataServiceClient.findElementBeans(searchBean, from, size, null);
+		return metadataServiceClient.findElementBeans(searchBean, from, size);
 	}
 
 	@Test
@@ -68,7 +68,7 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 		final MetadataElement e = newInstance();
 		final MetadataTypeSearchBean sb = new MetadataTypeSearchBean();
 		sb.setGrouping(MetadataTypeGrouping.GROUP_TYPE);
-		e.setMetadataTypeId(metadataServiceClient.findTypeBeans(sb, 0, 1, getDefaultLanguage()).get(0).getId());
+		e.setMetadataTypeId(metadataServiceClient.findTypeBeans(sb, 0, 1).get(0).getId());
 		e.setRequired(true);
 		assertSuccess(save(e));
 	}

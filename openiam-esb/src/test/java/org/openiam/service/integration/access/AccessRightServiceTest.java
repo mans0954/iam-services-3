@@ -47,7 +47,7 @@ public class AccessRightServiceTest extends AbstractKeyNameServiceTest<AccessRig
 	@Override
 	public List<AccessRight> find(AccessRightSearchBean searchBean, int from,
 			int size) {
-		return accessRightServiceClient.findBeans(searchBean, from, size, getDefaultLanguage());
+		return accessRightServiceClient.findBeans(searchBean, from, size);
 	}
 
 	@Test

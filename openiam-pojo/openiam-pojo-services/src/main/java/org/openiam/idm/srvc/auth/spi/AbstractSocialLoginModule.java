@@ -230,7 +230,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
         final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
         searchBean.setGrouping(MetadataTypeGrouping.EMAIL);
         searchBean.setActive(true);
-        final List<MetadataType> types = metadataService.findBeans(searchBean, 0, Integer.MAX_VALUE, null);
+        final List<MetadataType> types = metadataService.findBeans(searchBean, 0, Integer.MAX_VALUE);
 
         EmailAddressEntity email = new EmailAddressEntity();
         email.setEmailAddress(profile.getEmail());

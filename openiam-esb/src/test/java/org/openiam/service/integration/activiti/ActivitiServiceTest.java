@@ -300,7 +300,6 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 		request.setLoginList(loginList);
 		
 		//request.setGroupIds(groupIds);
-		request.setLanguageId(getDefaultLanguage().getId());
 		//request.setOrganizationIds(organizationIds);
 		//request.setPageTemplate(pageTemplate);
 		//request.setRoleIds(roleIds);

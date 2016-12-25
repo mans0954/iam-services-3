@@ -54,7 +54,6 @@ public class Group2ResourceEntitlementsTest extends AbstractEntitlementsTest<Gro
 		searchBean.addResourceId(child.getId());
 		searchBean.setIncludeAccessRights(true);
 		searchBean.setDeepCopy(false);
-		searchBean.setLanguage(getDefaultLanguage());
 		final List<Group> dtos = groupServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Group> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();

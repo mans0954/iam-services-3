@@ -196,7 +196,7 @@ public class UserProvisionServiceTest extends AbstractTestNGSpringContextTests {
         final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
         searchBean.setGrouping(grouping);
         searchBean.setActive(true);
-        final List<MetadataType> types = metadataServiceClient.findTypeBeans(searchBean, 0, Integer.MAX_VALUE, getDefaultLanguage());
+        final List<MetadataType> types = metadataServiceClient.findTypeBeans(searchBean, 0, Integer.MAX_VALUE);
         return types;
     }
 }

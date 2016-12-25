@@ -190,7 +190,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	protected Language defaultLanguage;
 	
 	protected MetadataType getRandomMetadataType() {
-		final List<MetadataType> types = metadataServiceClient.findTypeBeans(null, 0, 10, getDefaultLanguage());
+		final List<MetadataType> types = metadataServiceClient.findTypeBeans(null, 0, 10);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(types));
 		return types.get(RandomUtils.nextInt(0, types.size()));
 	}
@@ -206,7 +206,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected Set<String> getRightIdsNotIn(final Set<String> rightIds) {
-		return accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage())
+		return accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE)
 									   .stream()
 									   .map(e -> e.getId())
 									   .filter(e -> !rightIds.contains(e))
@@ -214,7 +214,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 
 	protected Set<String> getRightIds() {
-		final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage());
+		final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE);
 		final Set<String> rightIds = rights.subList(0, rights.size() / 2).stream().map(e -> e.getId()).collect(Collectors.toSet());
 		rightIds.removeAll(rightsToIgnore());
 		return rightIds;
@@ -225,7 +225,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected Set<String> getAllRightIds() {
-		final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage());
+		final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE);
 		final Set<String> rightIds = rights.stream().map(e -> e.getId()).collect(Collectors.toSet());
 		rightIds.removeAll(rightsToIgnore());
 		return rightIds;
@@ -265,7 +265,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
     	final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
     	searchBean.setGrouping(grouping);
     	searchBean.setActive(true);
-        final List<MetadataType> types = metadataServiceClient.findTypeBeans(searchBean, 0, Integer.MAX_VALUE, getDefaultLanguage());
+        final List<MetadataType> types = metadataServiceClient.findTypeBeans(searchBean, 0, Integer.MAX_VALUE);
         return types;
     }
 	
@@ -333,7 +333,6 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		final AuthenticationRequest authenticatedRequest = new AuthenticationRequest();
 		authenticatedRequest.setPassword(password);
 		authenticatedRequest.setPrincipal(login.getLogin());
-		authenticatedRequest.setLanguageId(getDefaultLanguage().getId());
 		try {
 			authenticatedRequest.setNodeIP(InetAddress.getLocalHost().getHostAddress());
 		} catch (UnknownHostException e) {
@@ -473,9 +472,9 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected Organization createOrganization() {
-		final List<MetadataType> types = metadataServiceClient.findTypeBeans(null, 0, 10, getDefaultLanguage());
+		final List<MetadataType> types = metadataServiceClient.findTypeBeans(null, 0, 10);
 		Organization organization = new Organization();
-		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, null).get(0).getId());
+		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1).get(0).getId());
 		organization.setName(getRandomName());
 		organization.setMdTypeId(types.get(RandomUtils.nextInt(0, types.size())).getId());
 		Response wsResponse = organizationServiceClient.saveOrganization(organization);

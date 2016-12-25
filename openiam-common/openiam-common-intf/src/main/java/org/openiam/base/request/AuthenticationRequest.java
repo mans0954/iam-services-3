@@ -14,7 +14,6 @@ import javax.xml.bind.annotation.XmlType;
         "clientIP",
         "nodeIP",
         "requestSource",
-        "languageId",
         "patternId",
         "methodId",
         "socialUserProfile",
@@ -23,7 +22,6 @@ import javax.xml.bind.annotation.XmlType;
         "skipUserStatusCheck"
 })
 public class AuthenticationRequest  extends BaseServiceRequest  {
-	private String languageId;
     private String principal;
     private String password;
     private String clientIP;
@@ -81,14 +79,6 @@ public class AuthenticationRequest  extends BaseServiceRequest  {
         this.requestSource = requestSource;
     }
 
-	public String getLanguageId() {
-		return languageId;
-	}
-
-	public void setLanguageId(String languageId) {
-		this.languageId = languageId;
-	}
-
 	public String getPatternId() {
 		return patternId;
 	}
@@ -141,7 +131,6 @@ public class AuthenticationRequest  extends BaseServiceRequest  {
     public String toString() {
         final StringBuffer sb = new StringBuffer("AuthenticationRequest{");
         sb.append(super.toString());
-        sb.append(", languageId='").append(languageId).append('\'');
         sb.append(", principal='").append(principal).append('\'');
         sb.append(", password='").append(password).append('\'');
         sb.append(", clientIP='").append(clientIP).append('\'');

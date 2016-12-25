@@ -23,7 +23,6 @@ import org.openiam.idm.srvc.lang.dto.Language;
         "deepCopy",
         "sortBy",
         "findInCache",
-        "languageId",
         "useElasticSearch"
 })
 public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType>, Serializable {
@@ -37,9 +36,6 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 	 * if set to true, the implementer *should* use ElasticSearch to search for the ojbect
 	 */
 	private boolean useElasticSearch;
-	
-	/* if set, the provider SHOULD return a localized object */
-	private String languageId;
 
     private List<SortParam> sortBy;
     
@@ -105,25 +101,6 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 		this.findInCache = findInCache;
 	}
 
-	public String getLanguageId() {
-		return languageId;
-	}
-
-	public void setLanguage(final Language language) {
-		if(language != null) {
-			this.languageId = language.getId();
-		}
-	}
-	
-	public void setLanguage(final LanguageEntity language) {
-		if(language != null) {
-			this.languageId = language.getId();
-		}
-	}
-	
-	public void setLanguageId(String languageId) {
-		this.languageId = languageId;
-	}
 
 	public boolean isUseElasticSearch() {
 		return useElasticSearch;
@@ -140,8 +117,6 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 		result = prime * result + (deepCopy ? 1231 : 1237);
 		result = prime * result + (findInCache ? 1231 : 1237);
 		result = prime * result + ((keySet == null) ? 0 : keySet.hashCode());
-		result = prime * result
-				+ ((languageId == null) ? 0 : languageId.hashCode());
 		result = prime * result + ((sortBy == null) ? 0 : sortBy.hashCode());
 		result = prime * result + (useElasticSearch ? 1231 : 1237);
 		return result;
@@ -165,11 +140,6 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 				return false;
 		} else if (!keySet.equals(other.keySet))
 			return false;
-		if (languageId == null) {
-			if (other.languageId != null)
-				return false;
-		} else if (!languageId.equals(other.languageId))
-			return false;
 		if (sortBy == null) {
 			if (other.sortBy != null)
 				return false;
@@ -184,7 +154,7 @@ public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, Ke
 	public String toString() {
 		return "AbstractSearchBean [deepCopy=" + deepCopy + ", keySet=" + keySet
 				+ ", findInCache=" + findInCache + ", useElasticSearch="
-				+ useElasticSearch + ", languageId=" + languageId + ", sortBy="
+				+ useElasticSearch + ", sortBy="
 				+ sortBy + "]";
 	}
 

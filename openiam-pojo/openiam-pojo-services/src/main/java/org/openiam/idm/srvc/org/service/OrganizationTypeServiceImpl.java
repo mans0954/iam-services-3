@@ -58,7 +58,7 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 
 	@Override
     @Transactional(readOnly = true)
-	public OrganizationType findById(String id, final Language language) {
+	public OrganizationType findById(String id) {
         OrganizationTypeEntity entity = organizationTypeDAO.findById(id);
         return (entity != null) ? dozerConverter.convertToDTO(entity, true) : null;
 	}
@@ -73,7 +73,7 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 
 	@Override
     @LocalizedServiceGet
-	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, int from, int size, final Language language) {
+	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, int from, int size) {
 //        return organizationTypeDAO.getByExample(searchBean, from, size);
         return dozerConverter.convertToDTOList(organizationTypeDAO.getByExample(searchBean, from, size), (searchBean != null) ? searchBean.isDeepCopy() : false);
 	}
@@ -219,10 +219,10 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 	}
     @Override
     @LocalizedServiceGet
-    public List<OrganizationType> getAllowedParents(String organizationTypeId, final Language language){
+    public List<OrganizationType> getAllowedParents(String organizationTypeId){
         OrganizationTypeSearchBean searchBean = new OrganizationTypeSearchBean();
         searchBean.setKeySet(getAllowedParentsIds(organizationTypeId));
-        return findBeans(searchBean, 0, Integer.MAX_VALUE,language);
+        return findBeans(searchBean, 0, Integer.MAX_VALUE);
     }
 
     @Override
@@ -286,7 +286,7 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
     }
     @Override
     @LocalizedServiceGet
-    public List<OrganizationType> findAllowedChildrenByDelegationFilter(String requesterId, final Language language){
+    public List<OrganizationType> findAllowedChildrenByDelegationFilter(String requesterId){
         Set<String> allowedTypeIds = new HashSet<String>();
         if(StringUtils.isNotBlank(requesterId)){
             Map<String, UserAttribute> userAttributeMap = userDataService.getUserAttributesDto(requesterId);
@@ -294,7 +294,7 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
         }
         OrganizationTypeSearchBean searchBean = new OrganizationTypeSearchBean();
         searchBean.setKeySet(allowedTypeIds);
-        return findBeans(searchBean, 0, Integer.MAX_VALUE,language);
+        return findBeans(searchBean, 0, Integer.MAX_VALUE);
     }
 
     @Override

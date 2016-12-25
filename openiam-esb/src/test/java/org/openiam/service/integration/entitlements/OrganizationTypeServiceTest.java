@@ -41,13 +41,13 @@ public class OrganizationTypeServiceTest extends AbstractKeyNameServiceTest<Orga
 
 	@Override
 	protected OrganizationType get(String key) {
-		return organizationTypeClient.findById(key, getDefaultLanguage());
+		return organizationTypeClient.findById(key);
 	}
 
 	@Override
 	public List<OrganizationType> find(OrganizationTypeSearchBean searchBean,
 			int from, int size) {
-		return organizationTypeClient.findBeans(searchBean, from, size, getDefaultLanguage());
+		return organizationTypeClient.findBeans(searchBean, from, size);
 	}
 
 	@Test

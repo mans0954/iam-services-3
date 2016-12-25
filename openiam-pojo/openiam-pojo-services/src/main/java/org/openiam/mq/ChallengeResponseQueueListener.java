@@ -71,7 +71,7 @@ public class ChallengeResponseQueueListener extends AbstractListener<ChallengeRe
                     case FindQuestionBeans:
                         response=new IdentityQuestionListResponse();
                         ((IdentityQuestionListResponse)response).setList(challengeResponseService.findQuestionBeans((IdentityQuestionSearchBean)request.getSearchBean(), request.getFrom(),
-                                request.getSize(),request.getLanguage()));
+                                request.getSize()));
                         break;
                     case FindAnswerBeans:
                         response=new UserIdentityAnswerListResponse();
@@ -99,7 +99,7 @@ public class ChallengeResponseQueueListener extends AbstractListener<ChallengeRe
                 switch (api){
                     case GetQuestion:
                         response=new IdentityQuestionResponse();
-                        response.setValue(challengeResponseService.getQuestion(request.getId(), request.getLanguage()));
+                        response.setValue(challengeResponseService.getQuestion(request.getId()));
                         break;
                     default:
                         throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Unknown API name: " + api.name());

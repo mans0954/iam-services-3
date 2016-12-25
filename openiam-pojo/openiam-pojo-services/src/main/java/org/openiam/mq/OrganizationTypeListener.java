@@ -48,16 +48,16 @@ public class OrganizationTypeListener extends AbstractListener<OrganizationTypeA
                 switch (api){
                     case FindBeans:
                         response = new OrganizationTypeListResponse();
-                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.findBeans(req.getSearchBean(), request.getFrom(), request.getSize(), request.getLanguage()));
+                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.findBeans(req.getSearchBean(), request.getFrom(), request.getSize()));
                         break;
                     case FindAllowedChildren:
                         response = new OrganizationTypeListResponse();
-                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.findAllowedChildrenByDelegationFilter(request.getRequesterId(), request.getLanguage()));
+                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.findAllowedChildrenByDelegationFilter(request.getRequesterId()));
                         break;
                     case GetAllowedParents:
                         response = new OrganizationTypeListResponse();
                         final String id = (CollectionUtils.isNotEmpty((req.getSearchBean().getKeySet()))) ? req.getSearchBean().getKeySet().iterator().next() : null;
-                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.getAllowedParents(id, request.getLanguage()));
+                        ((OrganizationTypeListResponse)response).setList(organizationTypeService.getAllowedParents(id));
                         break;
                     case Count:
                         response = new IntResponse();
@@ -75,7 +75,7 @@ public class OrganizationTypeListener extends AbstractListener<OrganizationTypeA
             @Override
             public Response doProcess(OrganizationTypeAPI api, IdServiceRequest request) throws BasicDataServiceException {
                 OrganizationTypeResponse response = new OrganizationTypeResponse();
-                response.setValue(organizationTypeService.findById(request.getId(), request.getLanguage()));
+                response.setValue(organizationTypeService.findById(request.getId()));
                 return response;
             }
         };

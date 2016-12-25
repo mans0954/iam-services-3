@@ -39,7 +39,7 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 		organization.setDescription(getRandomName());
 		organization.setDomainName(getRandomName());
 		organization.setLdapStr(getRandomName());
-		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, getDefaultLanguage()).get(0).getId());
+		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1).get(0).getId());
 		final Response response = organizationServiceClient.saveOrganization(organization);
 		assertSuccess(response);
 		organization = organizationServiceClient.getOrganization((String)response.getResponseValue());
@@ -62,7 +62,6 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 
 	private OrganizationSearchBean newSearchBean() {
 		final OrganizationSearchBean sb = new OrganizationSearchBean();
-		sb.setLanguage(getDefaultLanguage());
 		sb.setUseElasticSearch(true);
 		return sb;
 	}

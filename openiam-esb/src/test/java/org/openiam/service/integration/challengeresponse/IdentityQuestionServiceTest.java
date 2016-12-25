@@ -37,13 +37,13 @@ public class IdentityQuestionServiceTest extends AbstractChallengeResponseServic
 
 	@Override
 	protected IdentityQuestion get(String key) {
-		return challengeResponseServiceClient.getQuestion(key, getDefaultLanguage());
+		return challengeResponseServiceClient.getQuestion(key);
 	}
 
     @Override
     public List<IdentityQuestion> find(IdentityQuestionSearchBean searchBean,
                                        int from, int size) {
-        return challengeResponseServiceClient.findQuestionBeans(searchBean, from, size, getDefaultLanguage());
+        return challengeResponseServiceClient.findQuestionBeans(searchBean, from, size);
     }
 
 /*    @Override

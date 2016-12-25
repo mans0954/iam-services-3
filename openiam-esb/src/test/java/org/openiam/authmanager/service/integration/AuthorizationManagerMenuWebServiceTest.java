@@ -85,12 +85,12 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 		request.setNewlyEntitled(new LinkedList<String>(Arrays.asList(new String [] {toEntitle.getId()})));
 		Assert.assertTrue(menuWebService.entitle(request).isSuccess());
 		refreshAuthorizationManager();
-		AuthorizationMenu authorizedRoot = menuWebService.getNonCachedMenuTree(root.getId(), principalId, principalType, getDefaultLanguage());
+		AuthorizationMenu authorizedRoot = menuWebService.getNonCachedMenuTree(root.getId(), principalId, principalType);
 		Assert.assertTrue(authorizedRoot.getEntitlementTypeList() != null && authorizedRoot.getEntitlementTypeList().contains(MenuEntitlementType.IMPLICIT));
 		Assert.assertTrue(getNSibling(authorizedRoot, 3).getEntitlementTypeList() != null && getNSibling(authorizedRoot, 3).getEntitlementTypeList().contains(MenuEntitlementType.EXPLICIT));
 		
 		if(!StringUtils.equalsIgnoreCase("user", principalType)) {
-			authorizedRoot = menuWebService.getNonCachedMenuTree(root.getId(), user.getId(), "user", getDefaultLanguage());
+			authorizedRoot = menuWebService.getNonCachedMenuTree(root.getId(), user.getId(), "user");
 			Assert.assertTrue(authorizedRoot.getEntitlementTypeList() != null && authorizedRoot.getEntitlementTypeList().contains(MenuEntitlementType.IMPLICIT));
 			Assert.assertTrue(getNSibling(authorizedRoot, 3).getEntitlementTypeList() != null && getNSibling(authorizedRoot, 3).getEntitlementTypeList().contains(MenuEntitlementType.IMPLICIT));
 		}
@@ -109,7 +109,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 		request.setNewlyEntitled(new LinkedList<String>(Arrays.asList(new String [] {toEntitle.getId()})));
 		Assert.assertTrue(menuWebService.entitle(request).isSuccess());
 		refreshAuthorizationManager();
-		AuthorizationMenu authorizedRoot = menuWebService.getNonCachedMenuTree(root.getId(), targetPrincipal.getId(), targetPrincipal.getClass().getSimpleName().toLowerCase(), getDefaultLanguage());
+		AuthorizationMenu authorizedRoot = menuWebService.getNonCachedMenuTree(root.getId(), targetPrincipal.getId(), targetPrincipal.getClass().getSimpleName().toLowerCase());
 		Assert.assertTrue(authorizedRoot.getEntitlementTypeList() != null && authorizedRoot.getEntitlementTypeList().contains(MenuEntitlementType.IMPLICIT));
 		Assert.assertTrue(getNSibling(authorizedRoot, 3).getEntitlementTypeList() != null && getNSibling(authorizedRoot, 3).getEntitlementTypeList().contains(MenuEntitlementType.IMPLICIT));
 	}
@@ -507,7 +507,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 		final MenuRequest request = new MenuRequest();
 		request.setMenuRoot("IDM");
 		request.setUserId("3000");
-		final AuthorizationMenu menu = menuWebService.getMenuTreeForUserId(request, null);
+		final AuthorizationMenu menu = menuWebService.getMenuTreeForUserId(request);
 		Assert.assertNotNull(menu);
 		if(menu != null) {
 			Assert.assertNotNull(menu.getFirstChild());
@@ -525,13 +525,13 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			/* tests delete */
 			root.getFirstChild().getNextSibling().setNextSibling(root.getFirstChild().getNextSibling().getNextSibling().getNextSibling());
 			Assert.assertTrue(menuWebService.saveMenuTree(root).isSuccess());
-			dbRoot = menuWebService.getMenuTree(root.getId(), getDefaultLanguage());
+			dbRoot = menuWebService.getMenuTree(root.getId());
 			assertEquals(dbRoot, root, 4);
 			
 			/* tests re-settting head */
 			root.setFirstChild(root.getFirstChild().getNextSibling());
 			Assert.assertTrue(menuWebService.saveMenuTree(root).isSuccess());
-			dbRoot = menuWebService.getMenuTree(root.getId(), getDefaultLanguage());
+			dbRoot = menuWebService.getMenuTree(root.getId());
 			assertEquals(dbRoot, root, 3);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -548,17 +548,17 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 				prev = generateMenu(i);
 				root.setFirstChild(prev);
 				Assert.assertTrue(menuWebService.saveMenuTree(root).isSuccess());
-				root = menuWebService.getMenuTree(root.getId(), getDefaultLanguage());
+				root = menuWebService.getMenuTree(root.getId());
 				prev = root.getFirstChild();
 			} else {
 				AuthorizationMenu next = generateMenu(i);
 				prev.setNextSibling(next);
 				Assert.assertTrue(menuWebService.saveMenuTree(root).isSuccess());
-				root = menuWebService.getMenuTree(root.getId(), getDefaultLanguage());
+				root = menuWebService.getMenuTree(root.getId());
 				prev = findMenu(root, next);
 			}
 		}
-		AuthorizationMenu dbRoot = menuWebService.getMenuTree(root.getId(), getDefaultLanguage());
+		AuthorizationMenu dbRoot = menuWebService.getMenuTree(root.getId());
 		assertEquals(dbRoot, root, numOfChildren);
 		return new Tuple<AuthorizationMenu, AuthorizationMenu>(root, dbRoot);
 	}
@@ -612,7 +612,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 		root.setName(getRandomName());
 		root.setURL(getRandomName());
 		final Response response = resourceDataService.saveResource(root);
-		final AuthorizationMenu menu = menuWebService.getMenuTree((String)response.getResponseValue(), getDefaultLanguage());
+		final AuthorizationMenu menu = menuWebService.getMenuTree((String)response.getResponseValue());
 		Assert.assertNotNull(menu);
 		return menu;
 	}

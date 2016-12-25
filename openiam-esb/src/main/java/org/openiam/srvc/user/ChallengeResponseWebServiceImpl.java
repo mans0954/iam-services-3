@@ -20,9 +20,17 @@
  */
 package org.openiam.srvc.user;
 
+import java.util.List;
+
+import javax.jws.WebService;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.request.*;
+import org.openiam.base.request.BaseSearchServiceRequest;
+import org.openiam.base.request.ChallengeResponseCountRequest;
+import org.openiam.base.request.EmptyServiceRequest;
+import org.openiam.base.request.IdServiceRequest;
+import org.openiam.base.request.UserIdentityAnswerListCrudRequest;
 import org.openiam.base.response.data.IdentityQuestionResponse;
 import org.openiam.base.response.list.IdentityQuestGroupListResponse;
 import org.openiam.base.response.list.IdentityQuestionListResponse;
@@ -30,7 +38,6 @@ import org.openiam.base.response.list.UserIdentityAnswerListResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
@@ -39,10 +46,6 @@ import org.openiam.mq.constants.queue.user.ChallengeResponseQueue;
 import org.openiam.srvc.AbstractApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.jws.WebService;
-
-import java.util.List;
 
 @Service("challengeResponse")
 @WebService(endpointInterface = "org.openiam.srvc.user.ChallengeResponseWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "ChallengeResponseWebServicePort", serviceName = "ChallengeResponseWebService")
@@ -77,16 +80,15 @@ public class ChallengeResponseWebServiceImpl extends AbstractApiService implemen
 	}
 	
 	@Override
-	public IdentityQuestion getQuestion(final String questionId, final Language language) {
+	public IdentityQuestion getQuestion(final String questionId) {
 		IdServiceRequest request = new IdServiceRequest();
 		request.setId(questionId);
-		request.setLanguage(language);
 		return this.getValue(ChallengeResponseAPI.GetQuestion, request, IdentityQuestionResponse.class);
 	}
 
 	@Override
-	public List<IdentityQuestion> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size, final Language language) {
-		return this.getValueList(ChallengeResponseAPI.FindQuestionBeans, new BaseSearchServiceRequest<>(searchBean, from, size, language), IdentityQuestionListResponse.class);
+	public List<IdentityQuestion> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size) {
+		return this.getValueList(ChallengeResponseAPI.FindQuestionBeans, new BaseSearchServiceRequest<>(searchBean, from, size), IdentityQuestionListResponse.class);
 	}
 
 	@Override

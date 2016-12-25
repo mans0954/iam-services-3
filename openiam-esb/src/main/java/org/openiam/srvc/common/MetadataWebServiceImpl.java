@@ -55,11 +55,6 @@ import org.springframework.stereotype.Service;
 @WebService(endpointInterface = "org.openiam.srvc.common.MetadataWebService", targetNamespace = "urn:idm.openiam.org/srvc/meta/service", portName = "MetadataWebServicePort", serviceName = "MetadataWebService")
 @Service("metadataWS")
 public class MetadataWebServiceImpl extends AbstractApiService implements MetadataWebService {
-    @Autowired
-    private MetadataService metadataService;
-
-    @Autowired
-    private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
 
     private static final Log LOG = LogFactory.getLog(MetadataWebServiceImpl.class);
 
@@ -69,14 +64,13 @@ public class MetadataWebServiceImpl extends AbstractApiService implements Metada
     }
 
     @Override
-    public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
-        return this.getValueList(MetadataAPI.FindElementBeans, new BaseSearchServiceRequest<>(searchBean, from, size, language),MetadataElementListResponse.class);
+    public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size) {
+        return this.getValueList(MetadataAPI.FindElementBeans, new BaseSearchServiceRequest<>(searchBean, from, size),MetadataElementListResponse.class);
     }
 
     @Override
-    public MetadataElement getMetadataElement(String id, Language language) {
+    public MetadataElement getMetadataElement(String id) {
         IdServiceRequest request = new IdServiceRequest(id);
-        request.setLanguage(language);
         return this.getValue(MetadataAPI.GetMetadataElement, request, MetadataElementResponse.class);
     }
     @Override
@@ -90,8 +84,8 @@ public class MetadataWebServiceImpl extends AbstractApiService implements Metada
         return this.getValue(MetadataAPI.GetMetadataType, request, MetadataTypeResponse.class);
     }
     @Override
-    public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
-        return this.getValueList(MetadataAPI.FindTypeBeans, new BaseSearchServiceRequest<>(searchBean, from, size, language),MetadataTypeListResponse.class);
+    public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size) {
+        return this.getValueList(MetadataAPI.FindTypeBeans, new BaseSearchServiceRequest<>(searchBean, from, size),MetadataTypeListResponse.class);
     }
     @Override
     public int countTypeBeans(final MetadataTypeSearchBean searchBean) {

@@ -171,7 +171,6 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 				StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editUser")
 			).forEach(e -> {
 				final TemplateRequest templateRequest = new TemplateRequest();
-				templateRequest.setLanguageId(getDefaultLanguage().getId());
 				templateRequest.setPatternId(e.getId());
 				templateRequest.setTargetObjectId("3000");
 				final PageTempate template = metadataTemplateServiceClient.getTemplate(templateRequest);
@@ -188,7 +187,6 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 				StringUtils.startsWithIgnoreCase(e.getPattern(), "/webconsole/editGroup")
 			).forEach(e -> {
 				final TemplateRequest templateRequest = new TemplateRequest();
-				templateRequest.setLanguageId(getDefaultLanguage().getId());
 				templateRequest.setPatternId(e.getId());
 				templateRequest.setTargetObjectId("3000");
 				final PageTempate template = metadataTemplateServiceClient.getTemplate(templateRequest);

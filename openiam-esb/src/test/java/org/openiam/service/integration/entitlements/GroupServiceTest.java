@@ -130,7 +130,7 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 			group.setName(getRandomName());
 			group.setDescription(getRandomName());
 			final Organization org1 = organizationServiceClient.findBeans(null, 0, 1).get(0);
-			final Set<String> rightIds = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage()).stream().map(e -> e.getId()).collect(Collectors.toSet());
+			final Set<String> rightIds = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE).stream().map(e -> e.getId()).collect(Collectors.toSet());
 			group.addOrganization(org1, rightIds);
 			group = saveAndAssert(org1, group, rightIds);
 		} finally {
@@ -149,8 +149,8 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 			Response response = saveAndAssert(group);
 			group = get((String)response.getResponseValue());
 			final Organization org1 = organizationServiceClient.findBeans(null, 0, 1).get(0);
-			final Set<String> rightIds = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage()).stream().map(e -> e.getId()).collect(Collectors.toSet());
-			final Set<String> modifiedRights = accessRightServiceClient.findBeans(null, 0, rightIds.size() - 1, getDefaultLanguage()).stream().map(e -> e.getId()).collect(Collectors.toSet());
+			final Set<String> rightIds = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE).stream().map(e -> e.getId()).collect(Collectors.toSet());
+			final Set<String> modifiedRights = accessRightServiceClient.findBeans(null, 0, rightIds.size() -1).stream().map(e -> e.getId()).collect(Collectors.toSet());
 			group.addOrganization(org1, rightIds);
 			group = saveAndAssert(org1, group, rightIds);
 			

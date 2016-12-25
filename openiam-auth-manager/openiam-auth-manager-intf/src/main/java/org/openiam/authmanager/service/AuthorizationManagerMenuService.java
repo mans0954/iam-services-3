@@ -4,18 +4,15 @@ import java.util.List;
 
 import org.openiam.am.srvc.dto.jdbc.AuthorizationMenu;
 import org.openiam.base.request.MenuEntitlementsRequest;
-import org.openiam.base.request.MenuRequest;
 import org.openiam.exception.AuthorizationMenuException;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.thread.Sweepable;
 
 public interface AuthorizationManagerMenuService extends Sweepable {
 
-	public AuthorizationMenu getMenuTreeForUserId(final String menuId, final String menuName, final String userId, final Language language);
-	public AuthorizationMenu getMenuTree(final String menuId, final Language language);
-	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType, final Language language);
+	public AuthorizationMenu getMenuTreeForUserId(final String menuId, final String menuName, final String userId);
+	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType);
 	public void deleteMenuTree(final String menuId) throws AuthorizationMenuException;
 	public void saveMenuTree(final AuthorizationMenu root) throws AuthorizationMenuException;
 	public void entitle(final MenuEntitlementsRequest menuEntitlementsRequest) throws BasicDataServiceException;

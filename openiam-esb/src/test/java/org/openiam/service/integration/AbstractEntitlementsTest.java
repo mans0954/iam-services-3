@@ -47,7 +47,7 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 		try {
 			parent = createParent();
 			child = createChild();
-			final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, 1, getDefaultLanguage());
+			final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, 1);
 			doAddChildToParent(parent, child, getRequestorId(), rights.stream().map(e -> e.getId()).collect(Collectors.toSet()), startDate, endDate);
 			
 			if(parent != null) { /* should still work - relationship should be removed */
@@ -100,7 +100,7 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 		try {
 			parent = createParent();
 			child = createChild();
-			final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, 1, getDefaultLanguage());
+			final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, 1);
 			doAddChildToParent(parent, child, getRequestorId(), rights.stream().map(e -> e.getId()).collect(Collectors.toSet()), startDate, endDate);
 			
 			if(child != null) {
@@ -153,7 +153,7 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 		try {
 			parent = createParent();
 			child = createChild();
-			final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, 1, getDefaultLanguage());
+			final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, 1);
 			doAddAndRemove(parent, child, getRequestorId(), null, startDate, endDate);
 			
 			final Set<String> rightIds = rights.stream().map(e -> e.getId()).collect(Collectors.toSet());

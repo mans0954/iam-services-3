@@ -3,20 +3,15 @@ package org.openiam.srvc.common;
 
 import java.util.List;
 
-import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.MetadataElementSearchBean;
-import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
-import org.openiam.idm.srvc.meta.dto.MetadataElement;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.meta.dto.PageTempate;
-import org.openiam.idm.srvc.meta.dto.TemplateRequest;
-
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
+import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.meta.dto.MetadataElement;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 
 /**
  * Web service interface for Metadata. Metadata is used in OpenIAM to create
@@ -37,11 +32,9 @@ public interface MetadataWebService {
     @WebMethod
     List<MetadataElement> findElementBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataElementSearchBean searchBean,
                                            final @WebParam(name = "from", targetNamespace = "") int from,
-                                           final @WebParam(name = "size", targetNamespace = "") int size,
-                                           final @WebParam(name = "lang", targetNamespace = "") Language language);
+                                           final @WebParam(name = "size", targetNamespace = "") int size);
     @WebMethod
-    MetadataElement getMetadataElement(final @WebParam(name = "id", targetNamespace = "") String id,
-                                           final @WebParam(name = "lang", targetNamespace = "") Language language);
+    MetadataElement getMetadataElement(final @WebParam(name = "id", targetNamespace = "") String id);
 
     @WebMethod
     MetadataType getMetadataType(final @WebParam(name = "id", targetNamespace = "") String id);
@@ -49,8 +42,7 @@ public interface MetadataWebService {
     @WebMethod
     List<MetadataType> findTypeBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTypeSearchBean searchBean,
                                      final @WebParam(name = "from", targetNamespace = "") int from,
-                                     final @WebParam(name = "size", targetNamespace = "") int size,
-                                     final @WebParam(name = "lang", targetNamespace = "") Language language);
+                                     final @WebParam(name = "size", targetNamespace = "") int size);
     
     @WebMethod
     int countElementBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataElementSearchBean searchBean);

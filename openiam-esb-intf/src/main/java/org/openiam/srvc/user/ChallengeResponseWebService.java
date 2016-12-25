@@ -24,9 +24,6 @@ package org.openiam.srvc.user;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
-import org.openiam.idm.searchbeans.PolicySearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
@@ -61,8 +58,7 @@ public interface ChallengeResponseWebService {
 	@WebMethod
 	List<IdentityQuestion> findQuestionBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean,
 											 @WebParam(name = "from", targetNamespace = "") int from,
-											 @WebParam(name = "size", targetNamespace = "") int size,
-											 @WebParam(name = "lang", targetNamespace = "") final Language language);
+											 @WebParam(name = "size", targetNamespace = "") int size);
 	
 	@WebMethod
 	Response saveQuestion(@WebParam(name = "question", targetNamespace = "") final IdentityQuestion question);
@@ -72,8 +68,7 @@ public interface ChallengeResponseWebService {
 	
 	@WebMethod
 	IdentityQuestion getQuestion(
-			@WebParam(name = "questionId", targetNamespace = "") final String questionId,
-			@WebParam(name = "lang", targetNamespace = "") final Language language);
+			@WebParam(name = "questionId", targetNamespace = "") final String questionId);
 	
 	@WebMethod
 	List<UserIdentityAnswer> findAnswerBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityAnswerSearchBean searchBean,

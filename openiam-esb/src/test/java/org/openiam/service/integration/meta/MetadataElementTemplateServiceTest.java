@@ -43,7 +43,7 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 	}
 	
 	private List<MetadataElement> getAllMetadataElement(final int from, final int size) {
-		return metadataServiceClient.findElementBeans(null, from, size, getDefaultLanguage());
+		return metadataServiceClient.findElementBeans(null, from, size);
 	}
 	
 	private List<URIPattern> getAllURIPatterns(final int from, final int size) {

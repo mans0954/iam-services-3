@@ -43,7 +43,6 @@ public abstract class AbstractKeyDocElasticSearchIntegrationTest<D extends Abstr
 			throw new RuntimeException(e);
 		}
 		searchBean.setUseElasticSearch(true);
-		searchBean.setLanguage(getDefaultLanguage());
 		return searchBean;
 	}
 	

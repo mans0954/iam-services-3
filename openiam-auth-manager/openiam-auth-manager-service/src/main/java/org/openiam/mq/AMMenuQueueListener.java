@@ -45,15 +45,15 @@ public class AMMenuQueueListener extends AbstractListener<AMMenuAPI> {
                 switch (api){
                     case MenuTree:
                         response = new AuthorizationMenuResponse();
-                        ((AuthorizationMenuResponse)response).setMenu(menuService.getMenuTree(request.getMenuRoot(), request.getLanguage()));
+                        ((AuthorizationMenuResponse)response).setMenu(menuService.getMenuTree(request.getMenuRoot()));
                         break;
                     case MenuTreeForUser:
                         response = new AuthorizationMenuResponse();
-                        ((AuthorizationMenuResponse)response).setMenu(menuService.getMenuTreeForUserId(request.getMenuRoot(), request.getMenuName(), request.getUserId(), request.getLanguage()));
+                        ((AuthorizationMenuResponse)response).setMenu(menuService.getMenuTreeForUserId(request.getMenuRoot(), request.getMenuName(), request.getUserId()));
                         break;
                     case NonCachedMenuTree:
                         response = new AuthorizationMenuResponse();
-                        ((AuthorizationMenuResponse)response).setMenu(menuService.getNonCachedMenuTree(request.getMenuRoot(), request.getPrincipalId(), request.getPrincipalType(), request.getLanguage()));
+                        ((AuthorizationMenuResponse)response).setMenu(menuService.getNonCachedMenuTree(request.getMenuRoot(), request.getPrincipalId(), request.getPrincipalType()));
                         break;
                     case IsUserAuthenticatedToMenuWithURL:
                         response = new BooleanResponse();

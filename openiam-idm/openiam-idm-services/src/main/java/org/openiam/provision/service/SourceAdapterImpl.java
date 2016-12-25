@@ -138,7 +138,7 @@ public class SourceAdapterImpl implements SourceAdapter {
 
     private String getNote(MetadataTypeSearchBean metadataTypeSearchBean, MetadataTypeGrouping name) {
         metadataTypeSearchBean.setGrouping(name);
-        List<MetadataType> types = metadataDS.findBeans(metadataTypeSearchBean, 0, Integer.MAX_VALUE, null);
+        List<MetadataType> types = metadataDS.findBeans(metadataTypeSearchBean, 0, Integer.MAX_VALUE);
         StringBuilder sb = new StringBuilder();
         sb.append("\nAvailable types for ");
         sb.append(name.name());

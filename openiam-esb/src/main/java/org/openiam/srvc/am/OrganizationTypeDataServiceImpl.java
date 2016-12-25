@@ -32,24 +32,21 @@ public class OrganizationTypeDataServiceImpl extends AbstractApiService implemen
 	}
 
 	@Override
-	public OrganizationType findById(final String id, final Language language) {
+	public OrganizationType findById(final String id) {
 		IdServiceRequest request = new IdServiceRequest(id);
-		request.setLanguage(language);
 		return this.getValue(OrganizationTypeAPI.GetById, request, OrganizationTypeResponse.class);
 	}
 	
 	@Override
-	public List<OrganizationType> findAllowedChildrenByDelegationFilter(final String requesterId, final Language language) {
+	public List<OrganizationType> findAllowedChildrenByDelegationFilter(final String requesterId) {
 		BaseSearchServiceRequest<OrganizationTypeSearchBean> request = new BaseSearchServiceRequest<>(new OrganizationTypeSearchBean());
-		request.setLanguage(language);
 		request.setRequesterId(requesterId);
 		return this.getValueList(OrganizationTypeAPI.FindAllowedChildren, request, OrganizationTypeListResponse.class);
 	}
 
 	@Override
-	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size, final Language language) {
+	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size) {
 		BaseSearchServiceRequest<OrganizationTypeSearchBean> request = new BaseSearchServiceRequest<>(searchBean, from, size);
-		request.setLanguage(language);
 		return this.getValueList(OrganizationTypeAPI.FindBeans, request, OrganizationTypeListResponse.class);
 	}
 
@@ -88,12 +85,11 @@ public class OrganizationTypeDataServiceImpl extends AbstractApiService implemen
 	}
 
     @Override
-    public List<OrganizationType> getAllowedParents(final String organizationTypeId, final Language language){
+    public List<OrganizationType> getAllowedParents(final String organizationTypeId){
 		OrganizationTypeSearchBean searchBean = new OrganizationTypeSearchBean();
 		searchBean.addKey(organizationTypeId);
 
 		BaseSearchServiceRequest<OrganizationTypeSearchBean> request = new BaseSearchServiceRequest<>(searchBean);
-		request.setLanguage(language);
 		return this.getValueList(OrganizationTypeAPI.GetAllowedParents, request, OrganizationTypeListResponse.class);
     }
 }

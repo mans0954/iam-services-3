@@ -211,7 +211,6 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	public void testEquality() {
 		final TemplateRequest request = new TemplateRequest();
 		request.setTargetObjectId(userId);
-		request.setLanguageId(languageId);
 		request.setPatternId(pattern.getId());
 		final PageTempate tempalteByPattern = templateWebService.getTemplate(request);
 		Assert.assertNotNull(tempalteByPattern);
@@ -228,7 +227,6 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	public void testTextCorrectness() {
 		final TemplateRequest request = new TemplateRequest();
 		request.setTargetObjectId(userId);
-		request.setLanguageId(languageId);
 		request.setPatternId(pattern.getId());
 		final PageTempate template = templateWebService.getTemplate(request);
 		Assert.assertNotNull(template);
@@ -334,6 +332,6 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		searchBean.setSyncManagedSys(true);
 		searchBean.setSyncManagedSys(false);
 		searchBean.setGrouping(MetadataTypeGrouping.UI_WIDGET);
-		return metadataWebService.findTypeBeans(searchBean, 0, Integer.MAX_VALUE, null);
+		return metadataWebService.findTypeBeans(searchBean, 0, Integer.MAX_VALUE);
 	}
 }

@@ -22,7 +22,7 @@ public abstract class AbstractChallengeResponseServiceTest<T extends KeyDTO, S e
     protected PolicyDataService policyServiceClient;
 
     protected IdentityQuestion getFirstQuestion() {
-        return challengeResponseServiceClient.findQuestionBeans(new IdentityQuestionSearchBean(), 0, 1, getDefaultLanguage()).get(0);
+        return challengeResponseServiceClient.findQuestionBeans(new IdentityQuestionSearchBean(), 0, 1).get(0);
     }
 
     protected Policy getDefaultPasswordPolicy() {

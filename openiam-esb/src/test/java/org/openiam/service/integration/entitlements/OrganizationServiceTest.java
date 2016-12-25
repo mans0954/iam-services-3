@@ -56,7 +56,7 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 	@Override
 	protected Organization newInstance() {
 		final Organization organization = new Organization();
-		organization.setOrganizationTypeId(organizationTypeClient.findBeans(new OrganizationTypeSearchBean(), 0, 1, null).get(0).getId());
+		organization.setOrganizationTypeId(organizationTypeClient.findBeans(new OrganizationTypeSearchBean(), 0, 1).get(0).getId());
 		organization.setPolicyId(getPasswordPolicy().getId());
 		return organization;
 	}
@@ -84,7 +84,6 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 	@Override
 	public List<Organization> find(OrganizationSearchBean searchBean, int from,
 			int size) {
-		searchBean.setLanguage(getDefaultLanguage());
 		return organizationServiceClient.findBeans(searchBean, from, size);
 	}
 
@@ -105,7 +104,7 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 	@Test
 	public void testContraintViolationWithManagedSystem() {
 		final String name = getRandomName();
-		final String typeId = organizationTypeClient.findBeans(null, 0, 10, null).get(0).getId();
+		final String typeId = organizationTypeClient.findBeans(null, 0, 10).get(0).getId();
 		Organization r1 = newInstance();
 		Organization r2 = newInstance();
 		
@@ -126,9 +125,9 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 		Organization r2 = newInstance();
 		
 		r1.setName(name);
-		r1.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 10, null).get(0).getId());
+		r1.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 10).get(0).getId());
 		r2.setName(name);
-		r2.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 10, null).get(1).getId());
+		r2.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 10).get(1).getId());
 		Response response = organizationServiceClient.saveOrganization(r1);
 		assertSuccess(response);
 		response = organizationServiceClient.saveOrganization(r2);

@@ -2,7 +2,6 @@ package org.openiam.srvc.am;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
 
 import javax.jws.WebMethod;
@@ -13,17 +12,14 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationTypeDataService")
 public interface OrganizationTypeDataService {
 
-	OrganizationType findById(final @WebParam(name = "id", targetNamespace = "") String id,
-									   final @WebParam(name = "lang", targetNamespace = "") Language language);
+	OrganizationType findById(final @WebParam(name = "id", targetNamespace = "") String id);
 	
-	List<OrganizationType> findAllowedChildrenByDelegationFilter(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-																		  final @WebParam(name = "lang", targetNamespace = "") Language language);
+	List<OrganizationType> findAllowedChildrenByDelegationFilter(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 	
 	@WebMethod
 	List<OrganizationType> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
 									 final @WebParam(name = "from", targetNamespace = "") int from,
-									 final @WebParam(name = "size", targetNamespace = "") int size,
-									 final @WebParam(name = "lang", targetNamespace = "") Language language);
+									 final @WebParam(name = "size", targetNamespace = "") int size);
 	
 	@WebMethod
 	int count(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean);
@@ -43,6 +39,5 @@ public interface OrganizationTypeDataService {
 						 final @WebParam(name = "childId", targetNamespace = "") String childId);
 
     @WebMethod
-	List<OrganizationType> getAllowedParents(final @WebParam(name = "organizationTypeId", targetNamespace = "") String organizationTypeId,
-											 final @WebParam(name = "lang", targetNamespace = "") Language language);
+	List<OrganizationType> getAllowedParents(final @WebParam(name = "organizationTypeId", targetNamespace = "") String organizationTypeId);
 }

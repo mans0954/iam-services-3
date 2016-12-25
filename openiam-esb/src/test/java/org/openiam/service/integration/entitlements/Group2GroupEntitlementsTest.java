@@ -57,7 +57,6 @@ public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest
 		GroupSearchBean searchBean = new GroupSearchBean();
 		searchBean.addChildId(child.getId());
 		searchBean.setIncludeAccessRights(true);
-		searchBean.setLanguage(getDefaultLanguage());
 		final List<Group> groups = groupServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(groups)) {
 			final Optional<Group> optional = groups.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
@@ -79,7 +78,6 @@ public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest
 		GroupSearchBean searchBean = new GroupSearchBean();
 		searchBean.addParentId(parent.getId());
 		searchBean.setIncludeAccessRights(true);
-		searchBean.setLanguage(getDefaultLanguage());
 		final List<Group> groups = groupServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(groups)) {
 			final Optional<Group> optional = groups.stream().filter(e -> e.getId().equals(child.getId())).findAny();
