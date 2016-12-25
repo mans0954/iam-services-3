@@ -1,11 +1,14 @@
 package org.openiam.idm.srvc.org.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
-import org.openiam.idm.srvc.continfo.domain.AddressEntity;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
@@ -14,63 +17,40 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jws.WebParam;
-
 public interface OrganizationService {
-    @Deprecated
 	public Organization getOrganizationDTO(final String orgId);
 
-    @Deprecated
     public OrganizationEntity getOrganization(final String orgId);
 
-    @Deprecated
     public OrganizationEntity getOrganizationByName(final String name);
 
-    @Deprecated
     public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId);
 
-    @Deprecated
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue);
 
     public void fireUpdateOrgMap();
-
-    public Organization getOrganizationDTO(final String orgId, final LanguageEntity langauge);
-
-    public Organization getOrganizationLocalizedDto(String orgId, final LanguageEntity language);
-
-    public OrganizationEntity getOrganizationByName(final String name, final LanguageEntity language);
 
    // public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity lang);
 
     //public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size);
 
-    public List<Organization> getOrganizationsDtoForUser(String userId, final int from, final int size, final LanguageEntity language);
+    public List<Organization> getOrganizationsDtoForUser(String userId, final int from, final int size);
 
-    public List<OrganizationEntity> getParentOrganizations(final String orgId, final int from, final int size, final LanguageEntity language);
+    public List<OrganizationEntity> getParentOrganizations(final String orgId, final int from, final int size);
 
-    public List<Organization> getParentOrganizationsDto(String orgId, int from, int size, final LanguageEntity language);
+    public List<Organization> getParentOrganizationsDto(String orgId, int from, int size);
 
     //public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity lang);
 
    // public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity lang);
 
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, final int from, final int size);
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, final int from, final int size, final LanguageEntity language);
+    public List<OrganizationEntity> getOrganizationsForUser(String userId, final int from, final int size);
 
 
-    public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, int from, int size, final LanguageEntity language);
+    public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, int from, int size);
 
-    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, final LanguageEntity language);
-
-    public List<Organization> getAllowedParentOrganizationsDtoForType(final String orgTypeId, final LanguageEntity language);
-
-    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity language);
+    public List<Organization> getAllowedParentOrganizationsDtoForType(final String orgTypeId);
 
     /*public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity lang);
 
@@ -142,10 +122,9 @@ public interface OrganizationService {
     public void addRoleToOrganization(final String organizationId, final String roleId, final Set<String> rightIds, final Date startDate, final Date endDate);
     public void removeRoleFromOrganization(final String organizationId, final String roleId);
 
-    public List<Organization> getUserAffiliationsByType(String userId, String typeId, final int from, final int size, final LanguageEntity language);
+    public List<Organization> getUserAffiliationsByType(String userId, String typeId, final int from, final int size);
 
     public List<OrganizationAttribute> getOrgAttributesDtoList(String orgId);
-    public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge);
     public void saveAttribute(final OrganizationAttributeEntity attribute);
 
 

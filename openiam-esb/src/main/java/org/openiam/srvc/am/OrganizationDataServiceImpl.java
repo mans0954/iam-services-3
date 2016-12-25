@@ -1,11 +1,19 @@
 package org.openiam.srvc.am;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.dozer.converter.OrganizationUserDozerConverter;
@@ -13,7 +21,6 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -25,11 +32,6 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
-import java.util.*;
 
 //import diamelle.common.continfo.*;
 //import diamelle.base.prop.*;
@@ -64,9 +66,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Autowired
     private OrganizationDozerConverter organizationDozerConverter;
-
-    @Autowired
-    private LanguageDozerConverter languageConverter;
     
     @Autowired
     private AccessRightProcessor accessRightProcessor;
@@ -76,21 +75,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     OrganizationUserDozerConverter organizationUserDozerConverter;
 
     @Override
-    /**
-     * Only for internal system use, without @LocalizedServiceGet
-     */
     public Organization getOrganization(final String orgId) {
-        return this.getOrganizationLocalized(orgId, getDefaultLanguage());
-    }
-
-    @Override
-    //@LocalizedServiceGet
-    //@Transactional(readOnly = true)
-    public Organization getOrganizationLocalized(final String orgId, final Language language) {
-        final OrganizationEntity entity = organizationService.getOrganizationLocalized(orgId, languageConverter.convertToEntity(language, false));
+    	final OrganizationEntity entity = organizationService.getOrganization(orgId);
         return organizationDozerConverter.convertToDTO(entity, true);
     }
-    
+
     @Override
     @Deprecated
 	public int getNumOfOrganizationsForUser(final String userId) {
@@ -101,21 +90,8 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
     @Override
-    /**
-     * for internal use only, without  @LocalizedServiceGet
-     */
-    @Deprecated
     public List<Organization> getOrganizationsForUser(final String userId, final int from, final int size) {
-    	final OrganizationSearchBean sb = new OrganizationSearchBean();
-    	sb.addUserId(userId);
-    	sb.setDeepCopy(false);
-    	return findBeans(sb, from, size);
-    }
-
-    @Override
-    //@LocalizedServiceGet
-    public List<Organization> getOrganizationsForUserLocalized(final String userId, final int from, final int size, final Language language) {
-        return organizationService.getOrganizationsDtoForUser(userId, from, size, languageConverter.convertToEntity(language, false));
+    	return organizationService.getOrganizationsDtoForUser(userId, from, size);
     }
 
     @Override
@@ -128,34 +104,19 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @Deprecated
-    public List<Organization> getParentOrganizations(String orgId, final int from, final int size) {
-        return this.getParentOrganizationsLocalized(orgId, from, size, getDefaultLanguage());
-    }
-
-    @Override
     @LocalizedServiceGet
     @Deprecated
-    public List<Organization> getParentOrganizationsLocalized(String orgId, final int from, final int size, final Language language) {
-        final OrganizationSearchBean sb = new OrganizationSearchBean();
+    public List<Organization> getParentOrganizations(String orgId, final int from, final int size) {
+    	final OrganizationSearchBean sb = new OrganizationSearchBean();
         sb.addChildId(orgId);
-        sb.setLanguage(language);
         return findBeans(sb, from, size);
     }
 
     @Override
-    @Deprecated
-    public List<Organization> getChildOrganizations(String orgId, final int from, final int size) {
-        return this.getChildOrganizationsLocalized(orgId, from, size, getDefaultLanguage());
-    }
-
-    @Override
     @LocalizedServiceGet
-    @Deprecated
-    public List<Organization> getChildOrganizationsLocalized(String orgId, final int from, final int size, final Language language) {
-        final OrganizationSearchBean sb = new OrganizationSearchBean();
+    public List<Organization> getChildOrganizations(String orgId, final int from, final int size) {
+    	final OrganizationSearchBean sb = new OrganizationSearchBean();
         sb.addParentId(orgId);
-        sb.setLanguage(language);
         return findBeans(sb, from, size);
     }
 
@@ -180,15 +141,8 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @Deprecated
     public List<Organization> getAllowedParentOrganizationsForType(final String orgTypeId){
-        return this.getAllowedParentOrganizationsForTypeLocalized(orgTypeId, getDefaultLanguage());
-    }
-
-    @Override
-    //@LocalizedServiceGet
-    public List<Organization> getAllowedParentOrganizationsForTypeLocalized(final String orgTypeId, final Language language) {
-        return organizationService.getAllowedParentOrganizationsDtoForType(orgTypeId, languageConverter.convertToEntity(language, false));
+    	return organizationService.getAllowedParentOrganizationsDtoForType(orgTypeId);
     }
 
   /*  @Override
@@ -206,21 +160,14 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
 
     @Override
-    @Deprecated
-    public List<Organization> getOrganizationsForUserByType(final String userId, final String organizationTypeId) {
-        return this.getOrganizationsForUserByTypeLocalized(userId, organizationTypeId, getDefaultLanguage());
-    }
-
-	@Override
 	@LocalizedServiceGet
-	public List<Organization> getOrganizationsForUserByTypeLocalized(final String userId, final String organizationTypeId, final Language language) {
-		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
+    public List<Organization> getOrganizationsForUserByType(final String userId, final String organizationTypeId) {
+    	final OrganizationSearchBean searchBean = new OrganizationSearchBean();
 		searchBean.addUserId(userId);
 		searchBean.setOrganizationTypeId(organizationTypeId);
 		searchBean.setDeepCopy(false);
-		searchBean.setLanguage(language);
 		return findBeans(searchBean, 0, Integer.MAX_VALUE);
-	}
+    }
 
     @Override
     public Response addUserToOrg(final String orgId, 
@@ -234,12 +181,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
     public Response removeUserFromOrg(String orgId, String userId) {
         return organizationService.removeUserFromOrg(orgId, userId);
-    }
-
-    private Language getDefaultLanguage(){
-        Language lang = new Language();
-        lang.setId("1");
-        return lang;
     }
 
     @Override
@@ -711,8 +652,8 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public List<Organization> getUserAffiliationsByType(final String userId, final String typeId, int from, int size, final Language language) {
-        return organizationService.getUserAffiliationsByType(userId, typeId, from, size, languageConverter.convertToEntity(language, false));
+    public List<Organization> getUserAffiliationsByType(final String userId, final String typeId, int from, int size) {
+        return organizationService.getUserAffiliationsByType(userId, typeId, from, size);
     }
 
     public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId){

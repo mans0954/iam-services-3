@@ -480,7 +480,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		organization.setMdTypeId(types.get(RandomUtils.nextInt(0, types.size())).getId());
 		Response wsResponse = organizationServiceClient.saveOrganization(organization);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", organization, wsResponse));
-		organization = organizationServiceClient.getOrganizationLocalized((String)wsResponse.getResponseValue(), getDefaultLanguage());
+		organization = organizationServiceClient.getOrganization((String)wsResponse.getResponseValue());
 		
 		if(user != null) {
 			final ApproverAssociation association = new ApproverAssociation();

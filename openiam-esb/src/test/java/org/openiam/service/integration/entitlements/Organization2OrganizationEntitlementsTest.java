@@ -94,11 +94,11 @@ public class Organization2OrganizationEntitlementsTest extends AbstractCircularE
 
 	@Override
 	protected Organization getParentById(Organization parent) {
-		return organizationServiceClient.getOrganizationLocalized(parent.getId(), getDefaultLanguage());
+		return organizationServiceClient.getOrganization(parent.getId());
 	}
 
 	@Override
 	protected Organization getChildById(Organization child) {
-		return organizationServiceClient.getOrganizationLocalized(child.getId(), getDefaultLanguage());
+		return organizationServiceClient.getOrganization(child.getId());
 	}
 }

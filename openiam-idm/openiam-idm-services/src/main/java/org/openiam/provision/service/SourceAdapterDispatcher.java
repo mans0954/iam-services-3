@@ -664,7 +664,7 @@ public class SourceAdapterDispatcher implements Runnable {
             osb.addAttribute(org.getAttributeLookup().getName(), org.getAttributeLookup().getValue());
         }
         osb.setDeepCopy(false);
-        organization = organizationDataService.findBeansDto(osb, 0, Integer.MAX_VALUE, null);
+        organization = organizationDataService.findBeansDto(osb, 0, Integer.MAX_VALUE);
         return organization;
     }
 

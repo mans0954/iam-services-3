@@ -78,7 +78,7 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 
 	@Override
 	protected Organization get(String key) {
-		return organizationServiceClient.getOrganizationLocalized(key, null);
+		return organizationServiceClient.getOrganization(key);
 	}
 
 	@Override

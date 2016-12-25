@@ -1622,7 +1622,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         if (CollectionUtils.isNotEmpty(pUser.getAffiliations())) {
             for (final UserToOrganizationMembershipXref xref : pUser.getAffiliations()) {
                 final AttributeOperationEnum operation = xref.getOperation();
-                final OrganizationEntity org = organizationService.getOrganizationLocalized(xref.getEntityId(), null);
+                final OrganizationEntity org = organizationService.getOrganization(xref.getEntityId());
                 if (operation == AttributeOperationEnum.ADD) {
                     userEntity.addAffiliation(org, accessRightDAO.findByIds(xref.getAccessRightIds()), xref.getStartDate(), xref.getEndDate());
                     // Audit Log ---------------------------------------------------

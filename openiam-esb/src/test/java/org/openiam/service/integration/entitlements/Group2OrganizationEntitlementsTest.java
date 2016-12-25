@@ -99,7 +99,7 @@ public class Group2OrganizationEntitlementsTest extends AbstractEntitlementsTest
 
 	@Override
 	protected Organization getParentById(Organization parent) {
-		return organizationServiceClient.getOrganizationLocalized(parent.getId(), getDefaultLanguage());
+		return organizationServiceClient.getOrganization(parent.getId());
 	}
 
 	@Override

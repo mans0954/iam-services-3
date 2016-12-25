@@ -1006,7 +1006,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         // bind the objects to the scripting engine
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", organizationService.getOrganizationDTO(sysConfiguration.getAffiliationPrimaryTypeId(), null));
+        bindingMap.put("org", organizationService.getOrganization(sysConfiguration.getAffiliationPrimaryTypeId()));
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
         bindingMap.put(USER, pUser);
         bindingMap.put("sendActivationLink", propertyValueSweeper.getBoolean("org.openiam.send.user.activation.link"));
@@ -2812,7 +2812,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                     break;
                                 case ORGANIZATION:
                                     // MUST USE WITH ORG_DTO
-                                    Organization organization = organizationService.getOrganizationDTO(ob.getObjectId(), null);
+                                    Organization organization = organizationService.getOrganizationDTO(ob.getObjectId());
                                     Iterator<String> organizationUserDTOIterator = existingOrganizations.iterator();
                                     boolean toDelete = false;
                                     String retVal = null;

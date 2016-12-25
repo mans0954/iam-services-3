@@ -255,7 +255,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             }
         }
 
-        List<Organization> orgEntities = orgManager.findBeansDto(searchBean, 0, Integer.MAX_VALUE, null);
+        List<Organization> orgEntities = orgManager.findBeansDto(searchBean, 0, Integer.MAX_VALUE);
         if (orgEntities != null && !orgEntities.isEmpty()) {
             System.out.println("Organization matched with existing role...");
             return orgEntities.get(0);

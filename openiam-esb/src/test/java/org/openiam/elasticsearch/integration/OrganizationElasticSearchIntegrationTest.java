@@ -42,7 +42,7 @@ public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTyp
 		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, getDefaultLanguage()).get(0).getId());
 		final Response response = organizationServiceClient.saveOrganization(organization);
 		assertSuccess(response);
-		organization = organizationServiceClient.getOrganizationLocalized((String)response.getResponseValue(), getDefaultLanguage());
+		organization = organizationServiceClient.getOrganization((String)response.getResponseValue());
 		Assert.assertNotNull(organization);
 		
 		final String organizationId = organization.getId();

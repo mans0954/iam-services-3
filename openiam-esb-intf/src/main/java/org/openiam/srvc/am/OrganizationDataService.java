@@ -3,8 +3,6 @@ package org.openiam.srvc.am;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
-import org.openiam.idm.srvc.continfo.dto.Address;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
@@ -28,12 +26,7 @@ public interface OrganizationDataService {
 	public Response validateDelete(final @WebParam(name = "orgId", targetNamespace = "") String id);
 
     @WebMethod
-    @Deprecated
     public Organization getOrganization(final @WebParam(name = "orgId", targetNamespace = "") String orgId);
-
-    @WebMethod
-    public Organization getOrganizationLocalized(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                        final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     @Deprecated
@@ -46,20 +39,8 @@ public interface OrganizationDataService {
                                                                final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
-    @Deprecated
-    public List<Organization> getOrganizationsForUserLocalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
-                                                      final @WebParam(name = "from", targetNamespace = "") int from,
-                                                      final @WebParam(name = "size", targetNamespace = "") int size,
-                                                      final @WebParam(name = "lang", targetNamespace = "") Language language);
-
-    @WebMethod
-    @Deprecated
     public List<Organization> getOrganizationsForUserByType(final @WebParam(name = "userId", targetNamespace = "") String userId,
                                                                      final @WebParam(name="organizationTypeId", targetNamespace = "") String organizationTypeId);
-    @WebMethod
-    public List<Organization> getOrganizationsForUserByTypeLocalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
-                                                      		final @WebParam(name="organizationTypeId", targetNamespace = "") String organizationTypeId,
-                                                      		final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     public List<Organization> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean,
@@ -74,24 +55,9 @@ public interface OrganizationDataService {
                                                               final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
-    @Deprecated
-    public List<Organization> getParentOrganizationsLocalized(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                                     final @WebParam(name = "from", targetNamespace = "") int from,
-                                                     final @WebParam(name = "size", targetNamespace = "") int size,
-                                                     final @WebParam(name = "lang", targetNamespace = "") Language language);
-
-    @WebMethod
-    @Deprecated
     public List<Organization> getChildOrganizations(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
                                                              final @WebParam(name = "from", targetNamespace = "") int from,
                                                              final @WebParam(name = "size", targetNamespace = "") int size);
-
-    @WebMethod
-    @Deprecated
-    public List<Organization> getChildOrganizationsLocalized(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                                    final @WebParam(name = "from", targetNamespace = "") int from,
-                                                    final @WebParam(name = "size", targetNamespace = "") int size,
-                                                    final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     @WebMethod
     int count(@WebParam(name="searchBean", targetNamespace="") OrganizationSearchBean searchBean);
@@ -186,12 +152,8 @@ public interface OrganizationDataService {
             									@WebParam(name = "userId", targetNamespace = "") String userId);
 
     @WebMethod
-    @Deprecated
     public List<Organization> getAllowedParentOrganizationsForType(final @WebParam(name = "orgTypeId", targetNamespace = "") String orgTypeId);
 
-    @WebMethod
-    public List<Organization> getAllowedParentOrganizationsForTypeLocalized(final @WebParam(name = "orgTypeId", targetNamespace = "") String orgTypeId,
-                                                                   final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     /*@WebMethod
     @Deprecated
@@ -249,8 +211,7 @@ public interface OrganizationDataService {
     public List<Organization> getUserAffiliationsByType(@WebParam(name = "userId", targetNamespace = "") final String userId,
                                                         @WebParam(name = "typeId", targetNamespace = "") final String typeId,
                                                         @WebParam(name = "from", targetNamespace = "") int from,
-                                                        @WebParam(name = "size", targetNamespace = "") int size,
-                                                        @WebParam(name = "lang", targetNamespace = "") final Language language);
+                                                        @WebParam(name = "size", targetNamespace = "") int size);
     @WebMethod
     public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId);
     
