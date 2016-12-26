@@ -30,13 +30,26 @@ import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.core.domain.UserKey;
-import org.openiam.dozer.converter.*;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.SupervisorDozerConverter;
+import org.openiam.dozer.converter.UserAttributeDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.elasticsearch.dao.EmailElasticSearchRepository;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
 import org.openiam.elasticsearch.dao.PhoneElasticSearchRepository;
 import org.openiam.elasticsearch.dao.UserElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.searchbeans.AddressSearchBean;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
+import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
+import org.openiam.idm.searchbeans.EmailSearchBean;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.PhoneSearchBean;
+import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
+import org.openiam.idm.searchbeans.SupervisorSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -59,7 +72,6 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
@@ -80,7 +92,11 @@ import org.openiam.idm.srvc.user.domain.SupervisorIDEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
-import org.openiam.idm.srvc.user.dto.*;
+import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+import org.openiam.idm.srvc.user.dto.Supervisor;
+import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
@@ -913,14 +929,6 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             return userDozerConverter.convertToDTOList(userEntityList, false);
         }
         return new ArrayList<User>(0);
-    }
-
-    @Transactional(readOnly = true)
-    @LocalizedServiceGet
-    public List<UserAttribute> getUserAttributeDtoList(String userId, final LanguageEntity language) {
-        //List<UserAttributeEntity> userAttributeEntityList =  userAttributeDao.findUserAttributes(userId);
-        List<UserAttributeEntity> userAttributeEntityList = this.getProxyService().getUserAttributeList(userId, language);
-        return userAttributeDozerConverter.convertToDTOList(userAttributeEntityList, true);
     }
 
     @Override
@@ -2458,15 +2466,18 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return attributeMap;
     }
 
+    @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language) {
+    public List<UserAttributeEntity> getUserAttributeList(String userId) {
     	return userAttributeDao.findUserAttributes(userId);
     }
 
+    @Override
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<UserAttribute> getUserAttributesDtoList(String userId) {
-        List<UserAttributeEntity> attributeEntities = userAttributeDao.findUserAttributes(userId);
+        List<UserAttributeEntity> attributeEntities = this.getProxyService().getUserAttributeList(userId);
         return userAttributeDozerConverter.convertToDTOList(attributeEntities, false);
     }
 

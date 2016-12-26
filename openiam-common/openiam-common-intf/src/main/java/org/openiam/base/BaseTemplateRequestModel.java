@@ -15,13 +15,11 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "BaseTemplateRequestModel",
         propOrder = {
                 "activitiRequestType",
-                "pageTemplate",
-                "languageId"
+                "pageTemplate"
         })
 public abstract class BaseTemplateRequestModel<TargetObject extends KeyDTO> extends KeyDTO  {
     private ActivitiRequestType activitiRequestType;
     private PageTempate pageTemplate;
-    private String languageId;
 
     public ActivitiRequestType getActivitiRequestType() {
         return activitiRequestType;
@@ -42,43 +40,39 @@ public abstract class BaseTemplateRequestModel<TargetObject extends KeyDTO> exte
     public abstract TargetObject getTargetObject();
     public abstract void setTargetObject(TargetObject obj);
 
-    public String getLanguageId() {
-        return languageId;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((activitiRequestType == null) ? 0 : activitiRequestType.hashCode());
+		result = prime * result + ((pageTemplate == null) ? 0 : pageTemplate.hashCode());
+		return result;
+	}
 
-    public void setLanguageId(String languageId) {
-        this.languageId = languageId;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BaseTemplateRequestModel other = (BaseTemplateRequestModel) obj;
+		if (activitiRequestType != other.activitiRequestType)
+			return false;
+		if (pageTemplate == null) {
+			if (other.pageTemplate != null)
+				return false;
+		} else if (!pageTemplate.equals(other.pageTemplate))
+			return false;
+		return true;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+	@Override
+	public String toString() {
+		return "BaseTemplateRequestModel [activitiRequestType=" + activitiRequestType + ", pageTemplate=" + pageTemplate
+				+ "]";
+	}
 
-        BaseTemplateRequestModel that = (BaseTemplateRequestModel) o;
-
-        if (activitiRequestType != that.activitiRequestType) return false;
-        if (pageTemplate != null ? !pageTemplate.equals(that.pageTemplate) : that.pageTemplate != null) return false;
-        return languageId != null ? languageId.equals(that.languageId) : that.languageId == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (activitiRequestType != null ? activitiRequestType.hashCode() : 0);
-        result = 31 * result + (pageTemplate != null ? pageTemplate.hashCode() : 0);
-        result = 31 * result + (languageId != null ? languageId.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "BaseRequestModel{" +
-                "activitiRequestType=" + activitiRequestType +
-                ", pageTemplate=" + pageTemplate +
-                ", languageId='" + languageId + '\'' +
-                '}';
-    }
+    
 }

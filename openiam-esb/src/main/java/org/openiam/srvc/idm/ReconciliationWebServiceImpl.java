@@ -91,7 +91,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
     }
 
     @Override
-    public ReconciliationConfigResponse findReconConfig(ReconConfigSearchBean searchBean, int from, int size, Language language) {
+    public ReconciliationConfigResponse findReconConfig(ReconConfigSearchBean searchBean, int from, int size) {
         List<ReconciliationConfig> cfgList = reconConfigService.findReconConfig(searchBean, from, size);
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(ResponseStatus.SUCCESS);
         response.setConfigList(cfgList);

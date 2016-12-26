@@ -36,7 +36,7 @@ public interface ReconciliationWebService {
             @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
     @WebMethod
-    ReconciliationConfigResponse findReconConfig(final ReconConfigSearchBean searchBean, final int from, final int size, final Language language);
+    ReconciliationConfigResponse findReconConfig(final ReconConfigSearchBean searchBean, final int from, final int size);
 
     @WebMethod
     int countReconConfig(@WebParam(name = "searchBean", targetNamespace = "") ReconConfigSearchBean searchBean);

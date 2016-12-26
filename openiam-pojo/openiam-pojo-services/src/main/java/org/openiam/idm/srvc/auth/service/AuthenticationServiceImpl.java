@@ -83,6 +83,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.util.UserUtils;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.BeansException;
@@ -267,7 +268,7 @@ public class AuthenticationServiceImpl implements AuthenticationServiceService, 
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "AuthenticationRequest is null or empty");
         }
 
-        if (StringUtils.isBlank(request.getLanguageId())) {
+        if (StringUtils.isBlank(SpringSecurityHelper.getLanguageId())) {
             throw new BasicDataServiceException(ResponseCode.LANGUAGE_REQUIRED, "Language is a required parameter for AuthenticationRequest");
         }
 

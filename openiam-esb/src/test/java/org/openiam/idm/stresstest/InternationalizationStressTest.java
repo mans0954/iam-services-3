@@ -59,11 +59,9 @@ public class InternationalizationStressTest extends AbstractTestNGSpringContextT
 		final int userIdx = atomicUserInt.incrementAndGet() % userIds.size();
 		final String userId = userIds.get(userIdx);
 		
-		final Language language = new Language();
-		language.setId("1");
 		final StopWatch sw = new StopWatch();
 		sw.start();
-		userServiceClient.getUserAttributesInternationalized(userId, language);
+		userServiceClient.getUserAttributes(userId);
 		sw.stop();
 		//if(sw.getTime() > 20000) {
 			System.out.println(String.format("IDX: %s, %s ms.  UID: %s", userIdx, sw.getTime(), userId));

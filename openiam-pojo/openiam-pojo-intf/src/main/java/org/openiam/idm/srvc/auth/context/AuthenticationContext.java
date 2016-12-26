@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.auth.context;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.util.SpringSecurityHelper;
 import org.openiam.base.request.AuthenticationRequest;
 
 public class AuthenticationContext extends AuthenticationRequest {
@@ -38,7 +39,6 @@ public class AuthenticationContext extends AuthenticationRequest {
 	public AuthenticationContext(final AuthenticationRequest request) {
 		super.setClientIP(request.getClientIP());
 		super.setPatternId(request.getPatternId());
-		super.setLanguageId(request.getLanguageId());
 		super.setNodeIP(request.getNodeIP());
 		super.setPassword(request.getPassword());
 		super.setPrincipal(request.getPrincipal());

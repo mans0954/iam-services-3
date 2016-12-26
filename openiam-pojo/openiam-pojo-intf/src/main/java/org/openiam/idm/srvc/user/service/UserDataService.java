@@ -7,20 +7,28 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.searchbeans.AddressSearchBean;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
+import org.openiam.idm.searchbeans.EmailSearchBean;
+import org.openiam.idm.searchbeans.PhoneSearchBean;
+import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
+import org.openiam.idm.searchbeans.SupervisorSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
-import org.openiam.idm.srvc.user.dto.*;
+import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+import org.openiam.idm.srvc.user.dto.Supervisor;
+import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 /**
  * Service interface that clients will access to gain information about users
@@ -287,9 +295,7 @@ public interface UserDataService {
 
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
     
-    public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language);
-
-    public List<UserAttribute> getUserAttributeDtoList(String userId, final LanguageEntity language);
+    public List<UserAttributeEntity> getUserAttributeList(String userId);
 
     public List<UserAttribute> getUserAttributesDtoList(String userId);
 

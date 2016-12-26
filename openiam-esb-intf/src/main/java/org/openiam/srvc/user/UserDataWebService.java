@@ -144,10 +144,6 @@ public interface UserDataWebService {
      */
     @WebMethod
     public List<UserAttribute> getUserAttributes(@WebParam(name = "userId", targetNamespace = "") String userId);
-    
-    @WebMethod
-    public List<UserAttribute> getUserAttributesInternationalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
-    															  final @WebParam(name = "lang", targetNamespace = "") Language language);
 
     /*
      * @WebMethod public Response addNote(@WebParam(name = "note",

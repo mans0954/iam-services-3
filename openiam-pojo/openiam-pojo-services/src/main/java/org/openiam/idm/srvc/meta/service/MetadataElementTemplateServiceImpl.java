@@ -54,6 +54,7 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.service.UserAttributeDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -485,7 +486,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	public void validate(BaseTemplateRequestModel request) throws Exception {
 		final PageTempate pageTemplate = request.getPageTemplate();
 		final String objectId = (request.getTargetObject() != null) ? request.getTargetObject().getId() : null;
-		final LanguageEntity targetLanguage = getLanguage(request.getLanguageId());
+		final LanguageEntity targetLanguage = getLanguage(SpringSecurityHelper.getLanguageId());
 	
 		if(pageTemplate != null) {
 			if(request.getTargetObject() == null || targetLanguage == null) {
@@ -579,7 +580,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		
 		final PageTempate pageTemplate = request.getPageTemplate();
 		final String objectId = request.getTargetObject().getId();
-		final LanguageEntity targetLanguage = getLanguage(request.getLanguageId());
+		final LanguageEntity targetLanguage = getLanguage(SpringSecurityHelper.getLanguageId());
 		
 		if(pageTemplate != null) {
 			if(request.getTargetObject() == null || targetLanguage == null) {

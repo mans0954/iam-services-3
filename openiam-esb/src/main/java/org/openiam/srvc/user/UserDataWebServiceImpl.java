@@ -36,7 +36,6 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.AddressDozerConverter;
 import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.ProfilePictureDozerConverter;
 import org.openiam.dozer.converter.SupervisorDozerConverter;
@@ -55,7 +54,6 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.exception.PageTemplateException;
 import org.openiam.base.request.NotificationParam;
@@ -116,9 +114,6 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
 
     @Autowired
     private EmailAddressDozerConverter emailAddressDozerConverter;
-
-    @Autowired
-    private LanguageDozerConverter languageConverter;
 
     @Autowired
     private ProfilePictureDozerConverter profilePictureDozerConverter;
@@ -1153,13 +1148,6 @@ public class UserDataWebServiceImpl extends AbstractApiService implements UserDa
     @Override
     public List<UserAttribute> getUserAttributes(final String userId) {
         return userManager.getUserAttributesDtoList(userId);
-    }
-
-    @Override
-    //@Transactional(readOnly = true)
-    public List<UserAttribute> getUserAttributesInternationalized(final String userId, final Language language) {
-        final List<UserAttribute> retval = userManager.getUserAttributeDtoList(userId, languageConverter.convertToEntity(language, false));
-        return retval;
     }
 
     @Override
