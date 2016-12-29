@@ -104,5 +104,20 @@
         <url-pattern>/source/*</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>restfulservlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:openiam-esb-restful-api-servlet.xml</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>restfulservlet</servlet-name>
+        <url-pattern>/auth/*</url-pattern>
+    </servlet-mapping>
+
 
 </web-app>

@@ -9,17 +9,17 @@ import java.io.Serializable;
  * Created by zaporozhec on 10/29/15.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterKey  implements Serializable {
+public class UserSearchKey implements Serializable {
     @XmlElement(required = true)
-    SourceAdapterKeyEnum name;
+    UserSearchKeyEnum name;
     @XmlElement(required = true)
     String value;
 
-    public SourceAdapterKeyEnum getName() {
+    public UserSearchKeyEnum getName() {
         return name;
     }
 
-    public void setName(SourceAdapterKeyEnum name) {
+    public void setName(UserSearchKeyEnum name) {
         this.name = name;
     }
 

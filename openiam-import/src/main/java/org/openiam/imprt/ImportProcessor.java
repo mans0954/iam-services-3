@@ -4,16 +4,17 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.id.UUIDGen;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditResult;
+import org.openiam.idm.srvc.audit.service.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.IdmAuditLogCustom;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
-import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
@@ -22,7 +23,7 @@ import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.imprt.audit.AuditWSClient;
 import org.openiam.imprt.constant.ImportPropertiesKey;
 import org.openiam.imprt.custom.MailboxHelper;
 import org.openiam.imprt.jdbc.DataSource;
@@ -32,7 +33,6 @@ import org.openiam.imprt.model.Attribute;
 import org.openiam.imprt.model.LastRecordTime;
 import org.openiam.imprt.model.LineObject;
 import org.openiam.imprt.query.Restriction;
-import org.openiam.imprt.query.SelectQueryBuilder;
 import org.openiam.imprt.query.expression.Column;
 import org.openiam.imprt.util.DataHolder;
 import org.openiam.imprt.util.Transformation;
@@ -47,6 +47,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.*;
 import java.io.*;
+import java.net.InetAddress;
 import java.util.*;
 
 /**
@@ -59,6 +60,7 @@ public class ImportProcessor {
     private final static boolean debugMode = true;
     double mostRecentRecord = 0L;
     String lastRecProcessed = null;
+    private AuditWSClient auditWSClien = null;
 
     public ImportProcessor() {
         init();
@@ -78,6 +80,7 @@ public class ImportProcessor {
             if (!esbLocation.contains("openiam-esb/idmsrvc")) {
                 esbLocation += "/openiam-esb/idmsrvc/";
             }
+            auditWSClien = new AuditWSClient(esbLocation + "AuditService?wsdl");
             DataHolder.getInstance().setProperty(ImportPropertiesKey.KEY_SERVICE_WSDL, esbLocation + "KeyManagementWS?wsdl");
             DataHolder.getInstance().setProperty(ImportPropertiesKey.KEYSTORE, confPath + "/conf/cacerts");
             // init data source.
@@ -237,19 +240,11 @@ public class ImportProcessor {
         //FIXME - PRE IMPORT BLOCK. NEED TO MOVE IT TO SINGLE PLACE
         //FIXME SINGLE BLOKC VVVVVVVVV
         //Init required fields for dependencies
-        List<Column> companyColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.COMPANY_COMPANY_ID,
-                ImportPropertiesKey.COMPANY_COMPANY_NAME,
-                ImportPropertiesKey.COMPANY_INTERNAL_COMPANY_ID});
+        List<Column> companyColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.COMPANY_COMPANY_ID, ImportPropertiesKey.COMPANY_COMPANY_NAME, ImportPropertiesKey.COMPANY_INTERNAL_COMPANY_ID});
 
-        List<Column> companyAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.T_COMPANY_ATTRIBUTE_ID,
-                ImportPropertiesKey.T_COMPANY_ATTRIBUTE_COMPANY_ID,
-                ImportPropertiesKey.T_COMPANY_ATTRIBUTE_NAME,
-                ImportPropertiesKey.T_COMPANY_ATTRIBUTE_VALUE});
+        List<Column> companyAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.T_COMPANY_ATTRIBUTE_ID, ImportPropertiesKey.T_COMPANY_ATTRIBUTE_COMPANY_ID, ImportPropertiesKey.T_COMPANY_ATTRIBUTE_NAME, ImportPropertiesKey.T_COMPANY_ATTRIBUTE_VALUE});
 
-        List<Column> groupAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.T_GRP_ATTRIBUTES_GRP_ID,
-                ImportPropertiesKey.T_GRP_ATTRIBUTES_ID,
-                ImportPropertiesKey.T_GRP_ATTRIBUTES_NAME,
-                ImportPropertiesKey.T_GRP_ATTRIBUTES_ATTR_VALUE});
+        List<Column> groupAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.T_GRP_ATTRIBUTES_GRP_ID, ImportPropertiesKey.T_GRP_ATTRIBUTES_ID, ImportPropertiesKey.T_GRP_ATTRIBUTES_NAME, ImportPropertiesKey.T_GRP_ATTRIBUTES_ATTR_VALUE});
 
         // Define SQL query for dependency select
         final String getUserByLoginSQL = "SELECT %s FROM LOGIN l JOIN USERS u ON l.USER_ID=u.USER_ID WHERE l.MANAGED_SYS_ID='0' AND l.LOWERCASE_LOGIN='%s'";
@@ -318,7 +313,6 @@ public class ImportProcessor {
         MailboxHelper mailboxHelper = new MailboxHelper(skipUTF8BOM("/home/OpenIAM/data/openiam/upload/sync/AN_Exchange_DBs.csv"));
         bindingMap.put("MAILBOX_HELPER", mailboxHelper);
 
-
         //FIXME SINGLE BLOCK ^^^^^^^^^^^
         if (debugMode) {
             System.out.println("Time=" + (System.currentTimeMillis() - time1) + "ms");
@@ -342,26 +336,14 @@ public class ImportProcessor {
                 if (sAMAccountNameAttribute != null && sAMAccountNameAttribute.getValue() != null) {
                     time1 = System.currentTimeMillis();
                     //FIXME should be common search in OpenIAM
-                    users = userEntityParser.get(
-                            String.format(getUserByLoginSQL,
-                                    Utils.columnsToSelectFields(ImportPropertiesKey.USERS, "u"),
-                                    sAMAccountNameAttribute.getValue()), userColumns);
+                    users = userEntityParser.get(String.format(getUserByLoginSQL, Utils.columnsToSelectFields(ImportPropertiesKey.USERS, "u"), sAMAccountNameAttribute.getValue()), userColumns);
                     if (CollectionUtils.isEmpty(users)) {
                         user = new UserEntity();
                         user.setOrganizationUser(new HashSet<OrganizationUserEntity>());
                     } else {
                         user = users.get(0);
                         //fill user with data
-                        fillUserWithDependenies(user,
-                                userEntityParser,
-                                loginEntityParser,
-                                organizationUserEntityParser,
-                                roleEntityParser,
-                                groupEntityParser,
-                                userAttributeEntityParser,
-                                emailAddressEntityParser,
-                                phoneEntityParser,
-                                addressEntityParser);
+                        fillUserWithDependenies(user, userEntityParser, loginEntityParser, organizationUserEntityParser, roleEntityParser, groupEntityParser, userAttributeEntityParser, emailAddressEntityParser, phoneEntityParser, addressEntityParser);
                     }
                     LastRecordTime lrt = getRowTime(lo);
                     if (mostRecentRecord < lrt.getMostRecentRecord()) {
@@ -373,13 +355,7 @@ public class ImportProcessor {
                         System.out.println("Fail Transform for " + sAMAccountNameAttribute.getValue());
                     }
 
-                    saveChanges(newUserIds, user,
-                            userEntityParser,
-                            loginEntityParser,
-                            userAttributeEntityParser,
-                            emailAddressEntityParser,
-                            phoneEntityParser,
-                            addressEntityParser);
+                    saveChanges(newUserIds, user, userEntityParser, loginEntityParser, userAttributeEntityParser, emailAddressEntityParser, phoneEntityParser, addressEntityParser);
                     if (debugMode) {
                         System.out.println("User " + sAMAccountNameAttribute.getValue() + " processing time=" + (System.currentTimeMillis() - time1) + "ms");
                     }
@@ -388,7 +364,7 @@ public class ImportProcessor {
         }
         //**************************************************************************************************************
         syncConfig.setLastRecProcessed(lastRecProcessed);
-        new SyncConfigEntityParser().update(syncConfig, syncConfig.getSynchConfigId() );
+        new SyncConfigEntityParser().update(syncConfig, syncConfig.getSynchConfigId());
         // do generate user keys
         KeyManagementWSClient keyManagementWSClient = new KeyManagementWSClient(DataHolder.getInstance().getProperty(ImportPropertiesKey.KEY_SERVICE_WSDL));
         keyManagementWSClient.generateKeysForUserList(newUserIds);
@@ -396,16 +372,7 @@ public class ImportProcessor {
         // for now need to restart jboss ))) not enough time to integrate lucene
     }
 
-    private void fillUserWithDependenies(UserEntity user,
-                                         UserEntityParser userEntityParser,
-                                         LoginEntityParser loginEntityParser,
-                                         OrganizationUserEntityParser organizationUserEntityParser,
-                                         RoleEntityParser roleEntityParser,
-                                         GroupEntityParser groupEntityParser,
-                                         UserAttributeEntityParser userAttributeEntityParser,
-                                         EmailAddressEntityParser emailAddressEntityParser,
-                                         PhoneEntityParser phoneEntityParser,
-                                         AddressEntityParser addressEntityParser) throws Exception {
+    private void fillUserWithDependenies(UserEntity user, UserEntityParser userEntityParser, LoginEntityParser loginEntityParser, OrganizationUserEntityParser organizationUserEntityParser, RoleEntityParser roleEntityParser, GroupEntityParser groupEntityParser, UserAttributeEntityParser userAttributeEntityParser, EmailAddressEntityParser emailAddressEntityParser, PhoneEntityParser phoneEntityParser, AddressEntityParser addressEntityParser) throws Exception {
         final String getUserOrganizationsSQL = "SELECT %s FROM USER_AFFILIATION c WHERE c.USER_ID='%s'";
         final String getUserAttributesSQL = "SELECT %s FROM USER_ATTRIBUTES c WHERE c.USER_ID='%s'";
         final String getUserRoleSQL = "SELECT %s FROM ROLE c JOIN USER_ROLE j on j.ROLE_ID=c.ROLE_ID WHERE j.USER_ID='%s'";
@@ -415,58 +382,38 @@ public class ImportProcessor {
         final String getAddressesSQL = "SELECT %s FROM ADDRESS c WHERE  c.PARENT_ID='%s'";
         final String getSupervisorsSQL = "SELECT %s FROM USERS u JOIN ORG_STRUCTURE os ON os.SUPERVISOR_ID = u.USER_ID  WHERE os.STAFF_ID='%s'";
 
-        final List<Column> organizationUserColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_AFFILIATION_COMPANY_ID,
-                ImportPropertiesKey.USER_AFFILIATION_METADATA_TYPE_ID});
+        final List<Column> organizationUserColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_AFFILIATION_COMPANY_ID, ImportPropertiesKey.USER_AFFILIATION_METADATA_TYPE_ID});
 
-        final List<Column> userAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_ATTRIBUTES_ID, ImportPropertiesKey.USER_ATTRIBUTES_USER_ID,
-                ImportPropertiesKey.USER_ATTRIBUTES_NAME,
-                ImportPropertiesKey.USER_ATTRIBUTES_VALUE});
+        final List<Column> userAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_ATTRIBUTES_ID, ImportPropertiesKey.USER_ATTRIBUTES_USER_ID, ImportPropertiesKey.USER_ATTRIBUTES_NAME, ImportPropertiesKey.USER_ATTRIBUTES_VALUE});
 
-        final List<Column> roleColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.ROLE_ROLE_ID,
-                ImportPropertiesKey.ROLE_ROLE_NAME,
-                ImportPropertiesKey.ROLE_TYPE_ID,
-                ImportPropertiesKey.ROLE_DESCRIPTION,
-        });
+        final List<Column> roleColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.ROLE_ROLE_ID, ImportPropertiesKey.ROLE_ROLE_NAME, ImportPropertiesKey.ROLE_TYPE_ID, ImportPropertiesKey.ROLE_DESCRIPTION,});
 
-        final List<Column> groupColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.GRP_GRP_ID,
-                ImportPropertiesKey.GRP_GRP_NAME,
-                ImportPropertiesKey.GRP_GROUP_DESC
-        });
+        final List<Column> groupColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.GRP_GRP_ID, ImportPropertiesKey.GRP_GRP_NAME, ImportPropertiesKey.GRP_GROUP_DESC});
 
-        final List<Column> supervisorsColumns = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USERS_USER_ID,
-                ImportPropertiesKey.USERS_EMPLOYEE_ID
-        });
+        final List<Column> supervisorsColumns = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USERS_USER_ID, ImportPropertiesKey.USERS_EMPLOYEE_ID});
 
         //add  Organizations
-        List<OrganizationUserEntity> organizationUserEntityList = organizationUserEntityParser.get(
-                String.format(getUserOrganizationsSQL, Utils.columnsToSelectFields(organizationUserColumnList, "c"),
-                        user.getId()),
-                organizationUserColumnList
-        );
+        List<OrganizationUserEntity> organizationUserEntityList = organizationUserEntityParser.get(String.format(getUserOrganizationsSQL, Utils.columnsToSelectFields(organizationUserColumnList, "c"), user.getId()), organizationUserColumnList);
         if (organizationUserEntityList != null) {
             user.setOrganizationUser(new HashSet<OrganizationUserEntity>(organizationUserEntityList));
         }
 
         //add User Attributes
-        List<UserAttributeEntity> userAttributeEntityList = userAttributeEntityParser.get(
-                String.format(getUserAttributesSQL, Utils.columnsToSelectFields(userAttributeColumnList, "c"),
-                        user.getId()), userAttributeColumnList);
+        List<UserAttributeEntity> userAttributeEntityList = userAttributeEntityParser.get(String.format(getUserAttributesSQL, Utils.columnsToSelectFields(userAttributeColumnList, "c"), user.getId()), userAttributeColumnList);
         if (userAttributeEntityList != null) {
             for (UserAttributeEntity ua : userAttributeEntityList) {
                 user.getUserAttributes().put(ua.getName(), ua);
             }
         }
         //add Roles
-        List<RoleEntity> roleEntityList = roleEntityParser.get(String.format(getUserRoleSQL, Utils.columnsToSelectFields(roleColumnList, "c"),
-                user.getId()), roleColumnList);
+        List<RoleEntity> roleEntityList = roleEntityParser.get(String.format(getUserRoleSQL, Utils.columnsToSelectFields(roleColumnList, "c"), user.getId()), roleColumnList);
 
         if (roleEntityList != null) {
             user.setRoles(new HashSet<RoleEntity>(roleEntityList));
         }
 
         //add Groups
-        List<GroupEntity> groupEntityList = groupEntityParser.get(String.format(getUserGroupSQL, Utils.columnsToSelectFields(groupColumnList, "c"),
-                user.getId()), groupColumnList);
+        List<GroupEntity> groupEntityList = groupEntityParser.get(String.format(getUserGroupSQL, Utils.columnsToSelectFields(groupColumnList, "c"), user.getId()), groupColumnList);
 
         if (groupEntityList != null) {
             user.setGroups(new HashSet<GroupEntity>(groupEntityList));
@@ -476,26 +423,22 @@ public class ImportProcessor {
         List<LoginEntity> loginEntityList = loginEntityParser.get(Restriction.eq(ImportPropertiesKey.LOGIN_USER_ID, user.getId()));
         user.setPrincipalList(loginEntityList);
 
-        List<EmailAddressEntity> emailAddressEntities = emailAddressEntityParser.get(String.format(getEmailsSQL, Utils.columnsToSelectFields(ImportPropertiesKey.EMAIL_ADDRESS, "c"),
-                user.getId()), Utils.getColumnsForTable(ImportPropertiesKey.EMAIL_ADDRESS));
+        List<EmailAddressEntity> emailAddressEntities = emailAddressEntityParser.get(String.format(getEmailsSQL, Utils.columnsToSelectFields(ImportPropertiesKey.EMAIL_ADDRESS, "c"), user.getId()), Utils.getColumnsForTable(ImportPropertiesKey.EMAIL_ADDRESS));
         if (emailAddressEntities != null) {
             user.setEmailAddresses(new HashSet<EmailAddressEntity>(emailAddressEntities));
         }
 
-        List<PhoneEntity> phoneEntities = phoneEntityParser.get(String.format(getPhonesSQL, Utils.columnsToSelectFields(ImportPropertiesKey.PHONE, "c"),
-                user.getId()), Utils.getColumnsForTable(ImportPropertiesKey.PHONE));
+        List<PhoneEntity> phoneEntities = phoneEntityParser.get(String.format(getPhonesSQL, Utils.columnsToSelectFields(ImportPropertiesKey.PHONE, "c"), user.getId()), Utils.getColumnsForTable(ImportPropertiesKey.PHONE));
         if (phoneEntities != null) {
             user.setPhones(new HashSet<PhoneEntity>(phoneEntities));
         }
 
-        List<AddressEntity> address = addressEntityParser.get(String.format(getAddressesSQL, Utils.columnsToSelectFields(ImportPropertiesKey.ADDRESS, "c"),
-                user.getId()), Utils.getColumnsForTable(ImportPropertiesKey.ADDRESS));
+        List<AddressEntity> address = addressEntityParser.get(String.format(getAddressesSQL, Utils.columnsToSelectFields(ImportPropertiesKey.ADDRESS, "c"), user.getId()), Utils.getColumnsForTable(ImportPropertiesKey.ADDRESS));
         if (address != null) {
             user.setAddresses(new HashSet<AddressEntity>(address));
         }
 
-        List<UserEntity> supervisors = userEntityParser.get(String.format(getSupervisorsSQL, Utils.columnsToSelectFields(supervisorsColumns, "u"),
-                user.getId()), supervisorsColumns);
+        List<UserEntity> supervisors = userEntityParser.get(String.format(getSupervisorsSQL, Utils.columnsToSelectFields(supervisorsColumns, "u"), user.getId()), supervisorsColumns);
         if (supervisors != null) {
             Set<SupervisorEntity> supervisorEntities = new HashSet<SupervisorEntity>();
             for (UserEntity ue : supervisors) {
@@ -558,12 +501,7 @@ public class ImportProcessor {
         return input;
     }
 
-    private void saveChanges(List<String> newUserIds, UserEntity user, UserEntityParser userEntityParser,
-                             LoginEntityParser loginEntityParser,
-                             UserAttributeEntityParser userAttributeEntityParser,
-                             EmailAddressEntityParser emailAddressEntityParser,
-                             PhoneEntityParser phoneEntityParser,
-                             AddressEntityParser addressEntityParser) {
+    private void saveChanges(List<String> newUserIds, UserEntity user, UserEntityParser userEntityParser, LoginEntityParser loginEntityParser, UserAttributeEntityParser userAttributeEntityParser, EmailAddressEntityParser emailAddressEntityParser, PhoneEntityParser phoneEntityParser, AddressEntityParser addressEntityParser) {
 
 
         String userId = null;
@@ -575,49 +513,92 @@ public class ImportProcessor {
             retVal = userEntityParser.add(user);
         } else {
             userId = user.getId();
-            System.out.println("Partner Name="+user.getPartnerName());
-            System.out.println("Prefix Partner Name="+user.getPrefixPartnerName());
+            System.out.println("Partner Name=" + user.getPartnerName());
+            System.out.println("Prefix Partner Name=" + user.getPrefixPartnerName());
             retVal = userEntityParser.update(user, userId);
+        }
+        IdmAuditLog log = new IdmAuditLog();
+        log.setUserId(userId);
+        log.setAction(AuditAction.SYNCH_USER.value());
+        log.setSource("AD IMPORT MODULE");
+        try {
+            log.setNodeIP(InetAddress.getLocalHost().getHostAddress());
+        } catch (Exception e) {
+            System.out.println(e);
         }
         if (retVal == 0) {
             try {
-                saveLogins(user, loginEntityParser);
+                saveLogins(user, loginEntityParser, log);
             } catch (Exception e) {
+                IdmAuditLogCustom error = new IdmAuditLogCustom();
+                error.setKey("Can't save logins!");
+                error.setValue(e.getMessage());
+                log.getCustomRecords().add(error);
                 System.out.println("Can't save logins!");
             }
 
             try {
-                saveUserAttributes(user, userAttributeEntityParser);
+                saveUserAttributes(user, userAttributeEntityParser, log);
             } catch (Exception e) {
+                IdmAuditLogCustom error = new IdmAuditLogCustom();
+                error.setKey("Can't save UserAttributes!");
+                error.setValue(e.getMessage());
+                log.getCustomRecords().add(error);
                 System.out.println("Can't save UserAttributes!");
             }
 
             try {
                 saveEmails(user, emailAddressEntityParser);
             } catch (Exception e) {
+                IdmAuditLogCustom error = new IdmAuditLogCustom();
+                error.setKey("Can't save emailAddress!");
+                error.setValue(e.getMessage());
+                log.getCustomRecords().add(error);
                 System.out.println("Can't save emailAddress!");
             }
             try {
                 savePhones(user, phoneEntityParser);
             } catch (Exception e) {
+                IdmAuditLogCustom error = new IdmAuditLogCustom();
+                error.setKey("Can't save phoneEntity!");
+                error.setValue(e.getMessage());
+                log.getCustomRecords().add(error);
                 System.out.println("Can't save phoneEntity!");
             }
 
             try {
                 saveAddressEntity(user, addressEntityParser);
             } catch (Exception e) {
+                IdmAuditLogCustom error = new IdmAuditLogCustom();
+                error.setKey("Can't save AddressEntity!");
+                error.setValue(e.getMessage());
+                log.getCustomRecords().add(error);
                 System.out.println("Can't save AddressEntity!");
             }
             saveUserGroups(user, userEntityParser);
             saveUserRoles(user, userEntityParser);
             saveUserOrganizations(user, userEntityParser);
             saveUserSupervisors(user, userEntityParser);
+            log.setResult(AuditResult.SUCCESS.value());
         } else {
-            System.out.println("Break save. See problem above ^");
+            log.setResult(AuditResult.FAILURE.value());
+            IdmAuditLogCustom error = new IdmAuditLogCustom();
+            error.setKey("Error");
+            error.setValue("Import has been broken");
+            log.getCustomRecords().add(error);
+            System.out.println("Break save. See problem above ");
         }
+        auditWSClien.addLog(log);
     }
 
-    private void saveLogins(UserEntity user, LoginEntityParser loginEntityParser) throws Exception {
+    private IdmAuditLogCustom getCustomLog(String key, String value) {
+        IdmAuditLogCustom logCustom = new IdmAuditLogCustom();
+        logCustom.setKey(key);
+        logCustom.setValue(value);
+        return logCustom;
+    }
+
+    private void saveLogins(UserEntity user, LoginEntityParser loginEntityParser, IdmAuditLog log) throws Exception {
         List<LoginEntity> forADD = new ArrayList<LoginEntity>();
         Map<String, LoginEntity> forUpdate = new HashMap<String, LoginEntity>();
         if (user.getPrincipalList() != null) {
@@ -627,8 +608,10 @@ public class ImportProcessor {
                 if (loginEntity.getLoginId() == null) {
                     loginEntity.setLoginId(UUIDGen.getUUID());
                     forADD.add(loginEntity);
+                    log.getCustomRecords().add(this.getCustomLog("Add Login", loginEntity.getLogin()));
                 } else if ("DELETE_FROM_DB".equals(loginEntity.getLogin())) {
                     loginEntityParser.delete(loginEntity.getLoginId());
+                    log.getCustomRecords().add(this.getCustomLog("Delete Login", loginEntity.getLoginId()));
                 } else {
                     forUpdate.put(loginEntity.getLoginId(), loginEntity);
                 }
@@ -639,7 +622,7 @@ public class ImportProcessor {
 
     }
 
-    private void saveUserAttributes(UserEntity user, UserAttributeEntityParser userAttributeEntityParser) throws Exception {
+    private void saveUserAttributes(UserEntity user, UserAttributeEntityParser userAttributeEntityParser, IdmAuditLog log) throws Exception {
         List<UserAttributeEntity> forADD = new ArrayList<UserAttributeEntity>();
         Map<String, UserAttributeEntity> forUpdate = new HashMap<String, UserAttributeEntity>();
 
@@ -653,6 +636,7 @@ public class ImportProcessor {
                     userAttributeEntity.setId(UUIDGen.getUUID());
                     userAttributeEntity.setUserId(user.getId());
                     forADD.add(userAttributeEntity);
+                    log.getCustomRecords().add(this.getCustomLog("Add Attribute", String.format("%s:%s", userAttributeEntity.getName(), userAttributeEntity.getValue())));
                 } else {
                     forUpdate.put(userAttributeEntity.getId(), userAttributeEntity);
                 }

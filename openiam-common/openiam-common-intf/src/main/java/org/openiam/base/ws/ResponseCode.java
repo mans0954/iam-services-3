@@ -41,6 +41,21 @@ public enum ResponseCode {
     @XmlEnumValue("invalidRoleDomain")
     INVALID_ROLE_DOMAIN("invalidRoleDomain"),
 
+    @XmlEnumValue("METADATA_INVALID")
+    METADATA_INVALID("METADATA_INVALID"),
+
+    @XmlEnumValue("CERT_CONFIG_INVALID")
+    CERT_CONFIG_INVALID("CERT_CONFIG_INVALID"),
+
+    @XmlEnumValue("CERT_CLIENT_INVALID")
+    CERT_CLIENT_INVALID("CERT_CLIENT_INVALID"),
+
+    @XmlEnumValue("CERT_CA_INVALID")
+    CERT_CA_INVALID("CERT_CA_INVALID"),
+
+    @XmlEnumValue("CERT_INVALID_VERIFY_WITH_CA")
+    CERT_INVALID_VERIFY_WITH_CA("CERT_INVALID_VERIFY_WITH_CA"),
+
     @XmlEnumValue("noName")
     NO_NAME("noName"),
 
@@ -118,6 +133,9 @@ public enum ResponseCode {
     FAIL_PASSWORD_POLICY("failPasswordPolicy"),
 
     // AUTHENTICATION ERROR CODES
+    @XmlEnumValue("INVALID_LOGIN")
+    INVALID_LOGIN("INVALID_LOGIN"),
+
 
     // GROUP ERROR CODES
     @XmlEnumValue("groupIdNull")

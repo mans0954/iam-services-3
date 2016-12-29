@@ -1514,7 +1514,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                                 LoginEntity loginSupervisor = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
                                 auditLog.setTargetUser(userEntity.getId(), loginStr);
-                                auditLog.setTargetUser(se.getId(), login != null ? loginSupervisor.getLogin() : StringUtils.EMPTY);
+                                auditLog.setTargetUser(se.getId(), loginSupervisor != null ?  loginSupervisor.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.DELETE_SUPERVISOR.value());
 
                                 auditLog.addCustomRecord("SUPERVISOR", loginSupervisor != null ? loginSupervisor.getLogin() : se.getId());
@@ -1687,18 +1687,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     }
                 }
             }
-            if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
-                for (final RoleEntity ure : userEntity.getRoles()) {
-                    final Role ar = roleDozerConverter.convertToDTO(ure, false);
-                    for (final Role r : pUser.getRoles()) {
-                        if (StringUtils.equals(r.getId(), ar.getId())) {
-                            ar.setOperation(r.getOperation()); // get operation value from pUser
-                            break;
-                        }
+        }
+        if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
+            for (final RoleEntity ure : userEntity.getRoles()) {
+                final Role ar = roleDozerConverter.convertToDTO(ure, false);
+                for (final Role r : pUser.getRoles()) {
+                    if (StringUtils.equals(r.getId(), ar.getId())) {
+                        ar.setOperation(r.getOperation()); // get operation value from pUser
+                        break;
                     }
-                    roleSet.add(ar);
                 }
+                roleSet.add(ar);
             }
+
         }
     }
 

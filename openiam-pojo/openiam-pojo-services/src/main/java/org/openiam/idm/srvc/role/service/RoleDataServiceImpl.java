@@ -12,6 +12,8 @@ import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
+import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -30,6 +32,7 @@ import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
+import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -98,6 +101,9 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Value("${org.openiam.resource.admin.resource.type.id}")
     private String adminResourceTypeId;
 
+    @Autowired
+    private AccessRightProcessor accessRightProcessor;
+
     private ApplicationContext ac;
 
 
@@ -111,6 +117,8 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Autowired
     protected AuditLogService auditLogService;
 
+    @Autowired
+    private AccessRightDAO accessRightDAO;
     /**
      * Cache for whole roles hierarchy
      * Used when Roles number > 250k records
@@ -173,9 +181,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "roleEntities", allEntries = true),
-    })
+    @Caching(evict = {@CacheEvict(value = "roleEntities", allEntries = true),})
     public void removeRole(String roleId) {
         if (roleId != null) {
             final RoleEntity roleEntity = roleDao.findById(roleId);
@@ -221,10 +227,8 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Override
     @Transactional
     public void assocUserToRole(String userId, String roleId) {
-        if (roleId == null)
-            throw new IllegalArgumentException("role is null");
-        if (userId == null)
-            throw new IllegalArgumentException("user object is null");
+        if (roleId == null) throw new IllegalArgumentException("role is null");
+        if (userId == null) throw new IllegalArgumentException("user object is null");
         UserEntity userEntity = userDAO.findById(userId);
         RoleEntity roleEntity = roleDao.findById(roleId);
         userEntity.getRoles().add(roleEntity);
@@ -233,10 +237,8 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Override
     @Transactional
     public void addUserToRole(String roleId, String userId) {
-        if (roleId == null)
-            throw new IllegalArgumentException("role is null");
-        if (userId == null)
-            throw new IllegalArgumentException("user object is null");
+        if (roleId == null) throw new IllegalArgumentException("role is null");
+        if (userId == null) throw new IllegalArgumentException("user object is null");
 
         UserEntity userEntity = userDAO.findById(userId);
         RoleEntity roleEntity = roleDao.findById(roleId);
@@ -246,14 +248,13 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Override
     @Transactional
     public void removeUserFromRole(String roleId, String userId) {
-        if (roleId == null)
-            throw new IllegalArgumentException("role is null");
-        if (userId == null)
-            throw new IllegalArgumentException("user object is null");
+        if (roleId == null) throw new IllegalArgumentException("role is null");
+        if (userId == null) throw new IllegalArgumentException("user object is null");
         UserEntity userEntity = userDAO.findById(userId);
         RoleEntity roleEntity = roleDao.findById(roleId);
         userEntity.getRoles().remove(roleEntity);
     }
+
 
     private void visitChildRoles(final String id, final Set<RoleEntity> visitedSet) {
         if (id != null) {
@@ -263,8 +264,10 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
                     if (!visitedSet.contains(role)) {
                         visitedSet.add(role);
                         if (CollectionUtils.isNotEmpty(role.getChildRoles())) {
-                            for (final RoleEntity child : role.getChildRoles()) {
-                                visitChildRoles(child.getId(), visitedSet);
+                            for (RoleToRoleMembershipXrefEntity e : role.getChildRoles()) {
+                                if (e.getMemberEntity() != null) {
+                                    visitChildRoles(e.getMemberEntity().getId(), visitedSet);
+                                }
                             }
                         }
                     }
@@ -273,23 +276,6 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
         }
     }
 
-    private void visitParentRoles(final String id, final Set<RoleEntity> visitedSet) {
-        if (id != null) {
-            if (visitedSet != null) {
-                final RoleEntity role = roleDao.findById(id);
-                if (role != null) {
-                    if (!visitedSet.contains(role)) {
-                        visitedSet.add(role);
-                        if (CollectionUtils.isNotEmpty(role.getParentRoles())) {
-                            for (final RoleEntity child : role.getParentRoles()) {
-                                visitParentRoles(child.getId(), visitedSet);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -299,9 +285,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "roleEntities", allEntries = true),
-    })
+    @Caching(evict = {@CacheEvict(value = "roleEntities", allEntries = true),})
     public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
         if (role != null && entityValidator.isValid(role)) {
             if (role.getManagedSystem() != null && role.getManagedSystem().getId() != null) {
@@ -574,8 +558,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     //@Cacheable(value = "roleEntities", key = "{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
     public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId);
-        if (StringUtils.isBlank(searchBean.getKey()))
-            searchBean.setKeys(filter);
+        if (StringUtils.isBlank(searchBean.getKey())) searchBean.setKeys(filter);
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
             return new ArrayList<RoleEntity>(0);
         }
@@ -586,26 +569,17 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Transactional(readOnly = true)
     @Cacheable(value = "roleEntities", key = "{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
     public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size) {
-/*		Set<String> filter = getDelegationFilter(requesterId);
-        if(StringUtils.isBlank(searchBean.getKey()))
-			searchBean.setKeys(filter);
-		else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
-			return new ArrayList<Role>(0);
-		}
-		List<RoleEntity> roleEntityList = roleDao.getByExample(searchBean, from, size);*/
-
-        //RoleDataService bean = (RoleDataService)ac.getBean("roleDataService");
         List<RoleEntity> roleEntityList = findBeans(searchBean, requesterId, from, size);
-
-        return roleDozerConverter.convertToDTOList(roleEntityList, false);
+        List<Role> roleDtoList = roleDozerConverter.convertToDTOList(roleEntityList, searchBean.isDeepCopy());
+        accessRightProcessor.process(searchBean, roleDtoList, roleEntityList);
+        return roleDtoList;
     }
 
     @Override
     @Transactional(readOnly = true)
     public int countBeans(RoleSearchBean searchBean, final String requesterId) {
         Set<String> filter = getDelegationFilter(requesterId);
-        if (StringUtils.isBlank(searchBean.getKey()))
-            searchBean.setKeys(filter);
+        if (StringUtils.isBlank(searchBean.getKey())) searchBean.setKeys(filter);
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
             return 0;
         }
@@ -688,16 +662,16 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional
-    public void addChildRole(final String id, final String childRoleId) {
+    public void addChildRole(final String id, final String childRoleId, final Set<String> rights) throws BasicDataServiceException {
         if (id != null && childRoleId != null && !id.equals(childRoleId)) {
             final RoleEntity child = roleDao.findById(childRoleId);
             final RoleEntity parent = roleDao.findById(id);
-            if (parent != null && child != null && !parent.hasChildRole(child.getId())) {
-                parent.addChildRole(child);
+            if (parent != null && child != null) {
+                parent.addChild(child, accessRightDAO.findByIds(rights));
             }
             roleDao.update(parent);
-            roleDao.evictCache();
-        }
+        } else
+            throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD, "Could not process such combination of parent/child ids");
     }
 
     @Override
@@ -707,12 +681,12 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
             final RoleEntity child = roleDao.findById(childRoleId);
             final RoleEntity parent = roleDao.findById(id);
             if (parent != null && child != null) {
-                parent.removeChildRole(child.getId());
+                parent.removeChild(child);
             }
             roleDao.update(parent);
-            roleDao.evictCache();
         }
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -750,8 +724,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     private Set<String> getDelegationFilter(String requesterId) {
         Set<String> filterData = null;
         if (StringUtils.isNotBlank(requesterId)) {
-            filterData = new HashSet<String>(
-                    DelegationFilterHelper.getRoleFilterFromString(userDataService.getUserAttributesDto(requesterId)));
+            filterData = new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(userDataService.getUserAttributesDto(requesterId)));
         }
         return filterData;
     }
@@ -770,10 +743,6 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
             throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
         }
 
-        if (parent.hasChildRole(child.getId())) {
-            throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
-        }
-
         if (StringUtils.equals(parentId, memberId)) {
             throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
         }
@@ -785,7 +754,8 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
             if (!visitedSet.contains(child)) {
                 visitedSet.add(child);
                 if (CollectionUtils.isNotEmpty(parent.getParentRoles())) {
-                    for (final RoleEntity entity : parent.getParentRoles()) {
+                    for (final RoleToRoleMembershipXrefEntity xref : parent.getParentRoles()) {
+                        final RoleEntity entity = xref.getEntity();
                         retval = entity.getId().equals(child.getId());
                         if (retval) {
                             break;
@@ -813,8 +783,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional
-    public void validateGroup2RoleAddition(String roleId, String groupId)
-            throws BasicDataServiceException {
+    public void validateGroup2RoleAddition(String roleId, String groupId) throws BasicDataServiceException {
         if (roleId == null || groupId == null) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
         }
@@ -834,8 +803,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Override
     @Transactional
     public void addAttribute(RoleAttributeEntity attribute) {
-        if (attribute == null)
-            throw new NullPointerException("Attribute can not be null");
+        if (attribute == null) throw new NullPointerException("Attribute can not be null");
 
         if (attribute.getRole() == null || StringUtils.isBlank(attribute.getRole().getId())) {
             throw new NullPointerException("Role has not been associated with this attribute.");
@@ -856,8 +824,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Override
     @Transactional
     public void updateAttribute(RoleAttributeEntity attribute) {
-        if (attribute == null)
-            throw new NullPointerException("Attribute can not be null");
+        if (attribute == null) throw new NullPointerException("Attribute can not be null");
 
         if (attribute.getRole() == null || StringUtils.isBlank(attribute.getRole().getId())) {
             throw new NullPointerException("Role has not been associated with this attribute.");
@@ -886,7 +853,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
         roleDao.rolesHierarchyRebuild();
         log.info("Role Hierarchy Cache preparation done.");
     }
-    
+
     @Override
     //AM-852 - @Cacheable should *NEVER* cache Entity Objects
     //@Cacheable(value = "roleEntities", key = "{#ids}")

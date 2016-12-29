@@ -58,7 +58,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
     protected String clientIP;
     protected String nodeIP;
     protected boolean skipPasswordCheck;
-
+    protected boolean skipUserStatusCheck;
 
 	
 	private static final Log log = LogFactory.getLog(AuthenticationContextImpl.class);
@@ -68,7 +68,17 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	public void AuthenticationContext() {
 		
 	}
+
+	@Override
+	public boolean isSkipUserStatusCheck() {
+		return skipUserStatusCheck;
+	}
 	
+	@Override
+	public void setSkipUserStatusCheck(boolean skipUserStatusCheck) {
+		this.skipUserStatusCheck = skipUserStatusCheck;
+	}
+
 	@Override
 	public void setSkipPasswordCheck(boolean skipPasswordCheck) {
 		this.skipPasswordCheck = skipPasswordCheck;

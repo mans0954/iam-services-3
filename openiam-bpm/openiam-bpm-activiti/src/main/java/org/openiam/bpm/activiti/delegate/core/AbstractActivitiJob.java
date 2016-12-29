@@ -169,6 +169,11 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 		final Object obj = execution.getVariable(key.getName());
 		return (obj instanceof ActivitiJSONStringWrapper) ? ((ActivitiJSONStringWrapper)obj).getObject(key.getName(), customJacksonMapper, clazz) : null;
 	}
+
+	protected Set<String> getAccessRights(final DelegateExecution execution) {
+		final Object obj = execution.getVariable(ActivitiConstants.ACCESS_RIGHTS.getName());
+		return (obj != null && obj instanceof Set) ? (Set<String>)obj : null;
+	}
 	
 	public String getStringVariable(final DelegateExecution execution, final ActivitiConstants key) {
 		try {

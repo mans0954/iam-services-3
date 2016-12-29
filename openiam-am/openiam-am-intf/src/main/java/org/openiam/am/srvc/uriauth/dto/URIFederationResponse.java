@@ -29,7 +29,8 @@ import org.openiam.base.ws.ResponseStatus;
 	"patternId",
 	"cpId",
 	"loginURL",
-	"postbackURLParamName"
+	"postbackURLParamName",
+    "authProviderId"
 })
 public class URIFederationResponse extends Response {
 
@@ -45,7 +46,8 @@ public class URIFederationResponse extends Response {
 	private String cpId;
 	private String loginURL;
 	private String postbackURLParamName;
-	
+    private String authProviderId;
+
 	public ResponseStatus getStatus() {
 		return status;
 	}
@@ -124,7 +126,15 @@ public class URIFederationResponse extends Response {
 		this.postbackURLParamName = postbackURLParamName;
 	}
 
-	@Override
+    public String getAuthProviderId() {
+        return authProviderId;
+    }
+
+    public void setAuthProviderId(String authProviderId) {
+        this.authProviderId = authProviderId;
+    }
+
+    @Override
 	public String toString() {
 		return String
 				.format("URIFederationResponse [ruleTokenList=%s, server=%s, status=%s, errorCode=%s, errorText=%s, responseValue=%s]",

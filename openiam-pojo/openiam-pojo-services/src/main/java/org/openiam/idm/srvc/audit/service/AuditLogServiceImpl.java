@@ -16,6 +16,7 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
+import org.openiam.idm.srvc.audit.syslogs.AuditSysLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -47,7 +48,10 @@ import java.util.*;
  */
 @Service("auditDataService")
 public class AuditLogServiceImpl implements AuditLogService {
-    
+
+    @Autowired
+    private AuditSysLog auditSysLog;
+
 	@Autowired
     private JmsTemplate jmsTemplate;
 	
@@ -211,6 +215,14 @@ public class AuditLogServiceImpl implements AuditLogService {
 	}
 	
 	 private void send(final IdmAuditLog log) {
+//         AuditSysLog auditSysLog = new AuditSysLog( "testSysLog", 0, AuditSysLog.LOG_INFO );
+//         auditSysLog.AuditSysLog(AuditSysLog.LOG_ERR, "Hello.My_test_log");
+         if (auditSysLog.isEnable()) {
+             if (auditSysLog.hasAction(log.getAction())) {
+                 auditSysLog.sendSysLog(log);
+             }
+         }
+
 		 jmsTemplate.send(queue, new MessageCreator() {
 			 public javax.jms.Message createMessage(Session session) throws JMSException {
 				 javax.jms.Message message = session.createObjectMessage(log);

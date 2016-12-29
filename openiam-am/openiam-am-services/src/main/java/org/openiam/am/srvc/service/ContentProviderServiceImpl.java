@@ -86,6 +86,9 @@ public class ContentProviderServiceImpl implements ContentProviderService, Initi
     private MetadataTypeDAO typeDAO;
 
     @Autowired
+    private AuthProviderDao authProviderDao;
+
+    @Autowired
     @Qualifier("defaultPatternResoruce")
     private Resource defaultPatternResoruce;
 
@@ -135,7 +138,7 @@ public class ContentProviderServiceImpl implements ContentProviderService, Initi
     public void saveContentProvider(ContentProviderEntity provider) {
 
         UIThemeEntity theme = null;
-        final ManagedSysEntity managedSys = managedSysDAO.findById(provider.getManagedSystem().getId());
+        //final ManagedSysEntity managedSys = managedSysDAO.findById(provider.getManagedSystem().getId());
         if (provider.getUiTheme() != null) {
             theme = uiThemeDAO.findById(provider.getUiTheme().getId());
         }
@@ -166,11 +169,12 @@ public class ContentProviderServiceImpl implements ContentProviderService, Initi
             resourceDao.save(resource);
 
             provider.setResource(resource);
-            provider.setManagedSystem(managedSys);
+            //provider.setManagedSystem(managedSys);
             provider.setUiTheme(theme);
 
             final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = new HashSet<>(provider.getGroupingXrefs());
             provider.setGroupingXrefs(null);
+            provider.setAuthProvider(authProviderDao.findById(provider.getAuthProvider().getProviderId()));
             contentProviderDao.save(provider);
             if (CollectionUtils.isNotEmpty(incomingXrefs)) {
                 for (final AuthLevelGroupingContentProviderXrefEntity xref : incomingXrefs) {
@@ -183,7 +187,7 @@ public class ContentProviderServiceImpl implements ContentProviderService, Initi
             provider.setGroupingXrefs(incomingXrefs);
             contentProviderDao.merge(provider);
         } else {
-            // update provider
+            // update providerconten
             final ContentProviderEntity dbEntity = contentProviderDao.findById(provider.getId());
             if (dbEntity != null) {
                 dbEntity.setDomainPattern(provider.getDomainPattern());
@@ -193,7 +197,7 @@ public class ContentProviderServiceImpl implements ContentProviderService, Initi
                 dbEntity.setName(provider.getName());
                 dbEntity.getResource().setURL(cpURL);
                 dbEntity.getResource().setCoorelatedName(provider.getName());
-                dbEntity.setManagedSystem(managedSys);
+                //dbEntity.setManagedSystem(managedSys);
                 dbEntity.setUiTheme(theme);
                 dbEntity.setShowOnApplicationPage(provider.isShowOnApplicationPage());
                 dbEntity.setLoginURL(provider.getLoginURL());

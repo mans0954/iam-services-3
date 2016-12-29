@@ -186,7 +186,6 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     private Boolean isLuceneEnabled;
 
 
-
     @Autowired
     @Qualifier("authorizationManagerService")
     private AuthorizationManagerService authorizationManagerService;
@@ -585,8 +584,6 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     }
 
 
-
-
     @Transactional(readOnly = true)
     private List<String> getUserIds(final UserSearchBean searchBean) throws BasicDataServiceException {
         final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
@@ -702,6 +699,19 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                 nonEmptyListOfLists.add(userIds);
             }
         }
+
+        if (searchBean.getPrincipalList() != null) {
+
+            for (LoginSearchBean login : searchBean.getPrincipalList()) {
+
+                List<String> userIds = loginDao.getUserIds(login);
+                userIds = (userIds != null) ? userIds : Collections.EMPTY_LIST;
+                nonEmptyListOfLists.add(userIds);
+
+            }
+
+        }
+
 
         if (searchBean.getEmailAddressMatchToken() != null && searchBean.getEmailAddressMatchToken().isValid()) {
             final EmailSearchBean emailSearchBean = new EmailSearchBean();

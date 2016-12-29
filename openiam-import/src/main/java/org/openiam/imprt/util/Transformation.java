@@ -39,12 +39,13 @@ public class Transformation {
     private final String AD_MNG_SYS_ID = "DD6CA4CC8BBC4D78A5879D93CEBC8A29";
     private final String PDD_EMAIL = "PDDUser@cog.akzonobel.com";
 
+    final String g_GSS_EUS_Intune_enable = "g_GSS_EUS_Intune_enable".toLowerCase();
     final String ARCHIVE_CACHE_ENABLED = "g_gss_eus_maas_vaultcache_enabled - vv";
     final String g_GSS_MDMUsers = "g_GSS_MDMUsers".toLowerCase();
     final String g_GSS_MDMEmailWMS = "g_GSS_MDMEmailWMS".toLowerCase();
     final String ARCHIVE_CACHE_DISABLED = "g_gss_eus_maas_vaultcache_disabled - vv";
     final String INTERNET_GROUP_MASK = "a_.*_internetaccess";
-
+    final String serverMode = DataHolder.getInstance().getProperty(ImportPropertiesKey.SERVER_MODE);
     final String UNITY_ROLE_ID = "2c94b2574be50e06014be569449302ed";
     final String LYNC_MNG_SYS_ID = "2c94b25748eaf9ef01492d5507100273";
     final String EXCH_MNG_SYS_ID = "2c94b25748eaf9ef01492d5312d3026d";
@@ -57,6 +58,7 @@ public class Transformation {
 
     public int execute(LineObject rowObj, UserEntity user, Map<String, Object> bindingMap) {
         try {
+            System.out.println("Server Mode=" + serverMode);
             populateObject(rowObj, user, bindingMap);
         } catch (Exception ex) {
             System.out.println(ex.getCause());
@@ -125,39 +127,40 @@ public class Transformation {
             while (emplId.length() < 8) emplId = "0" + emplId;
         }
         user.setEmployeeId(emplId);
+        if (StringUtils.isBlank(user.getId())) {
+            //First Name
+            String fn = this.getValue(lo.get("givenName"));
+            if (StringUtils.isNotBlank(fn)) {
+                user.setFirstName(fn.substring(0, 1).toUpperCase() + fn.substring(1));
+            } else {
+                user.setFirstName("Admin");
+            }
+            //Initials
+            String initials = this.getValue(lo.get("initials"));
+            if (StringUtils.isBlank(initials) || "null".equalsIgnoreCase(initials)) {
+                initials = user.getFirstName().substring(0, 1);
+            }
+            initials = initials.replace(" ", "");
+            user.setMiddleInit(initials);
 
-        //First Name
-        String fn = this.getValue(lo.get("givenName"));
-        if (StringUtils.isNotBlank(fn)) {
-            user.setFirstName(fn.substring(0, 1).toUpperCase() + fn.substring(1));
+            //displayName
+            String displayName = this.getValue(lo.get("displayName"));
+            if (StringUtils.isBlank(displayName) || "null".equalsIgnoreCase(displayName)) {
+                displayName = genName(user.getLastName(), user.getFirstName(), user.getMiddleInit(), user.getPrefixLastName());
+            }
+
+            //NickName
+            user.setNickname(displayName);
+            addUserAttribute(user, new UserAttributeEntity("displayName", displayName));
+            //Last Name
+            String surname = this.getValue(lo.get("sn"));
+            if (StringUtils.isNotBlank(surname)) {
+                this.processLastName(user, surname, displayName);
+            } else {
+                user.setLastName(samAccountName);
+            }
         } else {
-            user.setFirstName("Admin");
-        }
-
-
-        //Initials
-        String initials = this.getValue(lo.get("initials"));
-        if (StringUtils.isBlank(initials) || "null".equalsIgnoreCase(initials)) {
-            initials = user.getFirstName().substring(0, 1);
-        }
-        initials = initials.replace(" ", "");
-        user.setMiddleInit(initials);
-
-        //displayName
-        String displayName = this.getValue(lo.get("displayName"));
-        if (StringUtils.isBlank(displayName) || "null".equalsIgnoreCase(displayName)) {
-            displayName = genName(user.getLastName(), user.getFirstName(), user.getMiddleInit(), user.getPrefixLastName());
-        }
-
-        //NickName
-        user.setNickname(displayName);
-        addUserAttribute(user, new UserAttributeEntity("displayName", displayName));
-        //Last Name
-        String surname = this.getValue(lo.get("sn"));
-        if (StringUtils.isNotBlank(surname)) {
-            this.processLastName(user, surname, displayName);
-        } else {
-            user.setLastName(samAccountName);
+            System.out.println("Update - skip Name parts import");
         }
         //Title
         user.setTitle(this.getValue(lo.get("title")));
@@ -204,9 +207,48 @@ public class Transformation {
             addUserAttribute(user, new UserAttributeEntity("localEmployeeNumber", attr));
         }
 
+        boolean isService = false;
+
+        attr = this.getValue(lo.get("extensionAttribute14"));
+        addUserAttribute(user, new UserAttributeEntity("extensionAttribute14", attr));
+        String classification = attr == null ? "None" : attr;
+        addUserAttribute(user, new UserAttributeEntity("classification", attr));
+        if (samAccountName.length() > 4) {
+            switch (samAccountName.substring(0, 4).toLowerCase()) {
+                case "adm_":
+                    mdTypeId = "AKZONOBEL_ADM_ACCOUNT";
+                    classification = "ADM";
+                    break;
+                case "srv_":
+                    mdTypeId = "AKZONOBEL_SRV_ACCOUNT";
+                    classification = "SVC";
+                    isService = true;
+                    break;
+                case "tst_":
+                    mdTypeId = "AKZONOBEL_TST_ACCOUNT";
+                    classification = "TST";
+                    isService = true;
+                    break;
+                case "rsc_":
+                    mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+                    classification = "RSC";
+                    isService = true;
+                    break;
+                case "pos_":
+                    mdTypeId = "AKZONOBEL_POS_ACCOUNT";
+                    classification = "POS";
+                    isService = true;
+                    break;
+            }
+        }
+
         attr = this.getValue(lo.get("employeeType"));
         if (StringUtils.isNotBlank(attr)) {
-            if (attr.contains("Long Term Absence")) {
+            if (attr.toLowerCase().contains("Shared \\ Departmental".toLowerCase())) {
+                addUserAttribute(user, new UserAttributeEntity("mailboxType", "Shared \\ Departmental"));
+                mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+                classification = "RSC";
+            } else if (attr.contains("Long Term Absence")) {
                 addUserAttribute(user, new UserAttributeEntity("employeeType", "Employee"));
                 addUserAttribute(user, new UserAttributeEntity("longTermAbsence", "On"));
             } else {
@@ -214,7 +256,19 @@ public class Transformation {
                 addUserAttribute(user, new UserAttributeEntity("longTermAbsence", "Off"));
             }
         }
-
+        attr = this.getValue(lo.get("msExchResourceMetaData"));
+        if (StringUtils.isNotBlank(attr)) {
+            if (attr.toLowerCase().contains("resourcetype:room")) {
+                addUserAttribute(user, new UserAttributeEntity("mailboxType", "Room"));
+                mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+                classification = "RSC";
+            }
+            if (attr.toLowerCase().contains("resourcetype:equipment")) {
+                addUserAttribute(user, new UserAttributeEntity("mailboxType", "Equipment"));
+                mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+                classification = "RSC";
+            }
+        }
         attr = this.getValue(lo.get("otherName"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("otherName", attr));
@@ -319,7 +373,6 @@ public class Transformation {
             isDefaultSet = !hideMobilePhone;
         }
 
-
         if (StringUtils.isNotBlank(officePhone)) {
             addUserAttribute(user, new UserAttributeEntity("OfficePhone", officePhone));
             isDefaultSet = hideMobilePhone || StringUtils.isBlank(mobilePhoneExt);
@@ -374,10 +427,14 @@ public class Transformation {
         attr = this.getValue(lo.get("homeDirectory"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("homeDirectory", attr));
+        } else {
+            addUserAttribute(user, new UserAttributeEntity("homeDirectory", ""));
         }
         attr = this.getValue(lo.get("homeDrive"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("homeDrive", attr));
+        } else {
+            addUserAttribute(user, new UserAttributeEntity("homeDrive", ""));
         }
 
         attr = this.getValue(lo.get("extensionAttribute1"));
@@ -393,40 +450,7 @@ public class Transformation {
         String siteCode = attr;
         addUserAttribute(user, new UserAttributeEntity("siteCode", attr));
 
-        boolean isService = false;
 
-        attr = this.getValue(lo.get("extensionAttribute14"));
-        addUserAttribute(user, new UserAttributeEntity("extensionAttribute14", attr));
-        String classification = attr == null ? "None" : attr;
-        addUserAttribute(user, new UserAttributeEntity("classification", attr));
-        if (samAccountName.length() > 4) {
-            switch (samAccountName.substring(0, 4).toLowerCase()) {
-                case "adm_":
-                    mdTypeId = "AKZONOBEL_ADM_ACCOUNT";
-                    classification = "ADM";
-                    break;
-                case "srv_":
-                    mdTypeId = "AKZONOBEL_SRV_ACCOUNT";
-                    classification = "SVC";
-                    isService = true;
-                    break;
-                case "tst_":
-                    mdTypeId = "AKZONOBEL_TST_ACCOUNT";
-                    classification = "TST";
-                    isService = true;
-                    break;
-                case "rsc_":
-                    mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
-                    classification = "RSC";
-                    isService = true;
-                    break;
-                case "pos_":
-                    mdTypeId = "AKZONOBEL_POS_ACCOUNT";
-                    classification = "POS";
-                    isService = true;
-                    break;
-            }
-        }
 
         String mbType = this.getValue(lo.get("msExchRecipientTypeDetails"));
         System.out.println("mailbox type=" + mbType);
@@ -485,17 +509,18 @@ public class Transformation {
             }
         }
 
-        boolean isMDM = containsNameGroup(memberOf, groupsMap, g_GSS_MDMEmailWMS)
-                || containsNameGroup(memberOf, groupsMap, g_GSS_MDMUsers);
+        boolean isMDM = containsNameGroup(memberOf, groupsMap, g_GSS_MDMEmailWMS) || containsNameGroup(memberOf, groupsMap, g_GSS_MDMUsers);
         boolean isCacheEnabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_ENABLED);
         boolean isCacheDisabled = containsNameGroup(memberOf, groupsMap, ARCHIVE_CACHE_DISABLED);
         boolean isInternet = containsMaskGroup(memberOf, groupsMap, INTERNET_GROUP_MASK);
+        boolean isIntune = containsNameGroup(memberOf, groupsMap, g_GSS_EUS_Intune_enable);
 //
         boolean isPDD = ("AKZONOBEL_USER_NO_MBX".equals(mdTypeId) && PDD_EMAIL.equalsIgnoreCase(emailAddressValue));
-//        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("internetAccess", isInternet ? "On" : null));
         addUserAttribute(user, new UserAttributeEntity("mdm", isMDM ? "On" : null));
         //  addUserAttribute(user, new UserAttributeEntity("activeSync", isMDM ? "Off" : null));
         addUserAttribute(user, new UserAttributeEntity("PDDAccount", isPDD ? "On" : null));
+        addUserAttribute(user, new UserAttributeEntity("intune", isIntune ? "On" : null));
 //
         if (isCacheEnabled) {
             addUserAttribute(user, new UserAttributeEntity("archieve", "Cached - Laptop"));
@@ -511,6 +536,11 @@ public class Transformation {
             addRoleId(user, "MDM_ROLE_ID");
         } else {
             removeRoleId(user, "MDM_ROLE_ID");
+        }
+        if (isIntune) {
+            addRoleId(user, "INTUNE_ROLE_ID");
+        } else {
+            removeRoleId(user, "INTUNE_ROLE_ID");
         }
         try {
             mergeGroups(memberOf, groupsMapEntities, user);
@@ -529,8 +559,7 @@ public class Transformation {
         //For AD
         addRoleId(user, "8a8da02e51a28fd20151a291ce360002");
 
-        String accessRoleId = ("AKZONOBEL_USER_MBX".equals(mdTypeId) ||
-                "AKZONOBEL_USER_NO_MBX".equals(mdTypeId)) ? "1" : "AKZONOBEL_ADM_ACCOUNT".equals(mdTypeId) ? "SUPPORT_ADMIN_ROLE_ID" : "SERVICE_ROLE_ID";
+        String accessRoleId = ("AKZONOBEL_USER_MBX".equals(mdTypeId) || "AKZONOBEL_USER_NO_MBX".equals(mdTypeId)) ? "1" : "AKZONOBEL_ADM_ACCOUNT".equals(mdTypeId) ? "SUPPORT_ADMIN_ROLE_ID" : "SERVICE_ROLE_ID";
         if (StringUtils.isNotBlank(accessRoleId)) {
             addRoleId(user, accessRoleId);
         }
@@ -552,11 +581,12 @@ public class Transformation {
         String userPrincipalName = this.getValue(lo.get("userPrincipalName"));
 
         // PROD
-        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
-
-        // STAGING
-//        updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
-
+        if ("PROD".equalsIgnoreCase(serverMode)) {
+            updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "EXCHANGE_ROLE_ID");
+        } else if ("STAGING".equalsIgnoreCase(serverMode)) {
+            // STAGING
+            updateLoginAndRole(StringUtils.isNotBlank(homeMDB) ? userPrincipalName : null, EXCH_MNG_SYS_ID, user, "8a8da02e5497f2b90154a6c24d142340");
+        }
         // lync
         String sipAddress = this.getValue(lo.get("msRTCSIP-PrimaryUserAddress"));
         sipAddress = StringUtils.isNotBlank(sipAddress) && sipAddress.startsWith("sip:") ? sipAddress.substring(4) : null;
@@ -602,6 +632,38 @@ public class Transformation {
             }
             addUserAttribute(user, userAttributeEntity);
         }
+
+    }
+
+    private void addGroup(String id, UserEntity user) {
+        if (user.getGroups() == null) {
+            user.setGroups(new HashSet<GroupEntity>());
+        }
+        boolean groupExists = false;
+        for (GroupEntity groupEntity : user.getGroups()) {
+            if (id.equalsIgnoreCase(groupEntity.getId())) {
+                groupExists = true;
+                break;
+            }
+        }
+        if (!groupExists) {
+            GroupEntity newGroup = new GroupEntity();
+            newGroup.setId(id);
+            newGroup.setName("ADD_TO_DB");
+            user.getGroups().add(newGroup);
+        }
+    }
+
+    private void deleteGroup(String id, UserEntity user) {
+        if (user.getGroups() == null) {
+            return;
+        }
+        for (GroupEntity groupEntity : user.getGroups()) {
+            if (id.equalsIgnoreCase(groupEntity.getId())) {
+                groupEntity.setName("DELETE_FROM_DB");
+                break;
+            }
+        }
     }
 
     private void processSecondaryEmails(List<String> values, UserEntity user) {
@@ -624,6 +686,10 @@ public class Transformation {
                     secEmail.setIsActive(true);
                     secEmail.setEmailAddress(email);
                     user.getEmailAddresses().add(secEmail);
+                } else if (val.startsWith("SMTP:")) {
+                    String email = val.substring("SMTP:".length());
+                    System.out.println("Update Primary email from SMTP proxy Address=" + email);
+                    addEmail(user, email);
                 }
 
             }
@@ -661,11 +727,11 @@ public class Transformation {
                 }
                 addRoleId(user, roleId);
             } else {
-                if (lg != null) {
-                    lg.setLogin("DELETE_FROM_DB");
-                }
-                if (userRole != null)
-                    removeRoleId(user, userRole.getId());
+                //due to problems with mailboxes it may be an issue
+//                if (lg != null) {
+//                    lg.setLogin("DELETE_FROM_DB");
+//                }
+//                if (userRole != null) removeRoleId(user, userRole.getId());
             }
         } catch (Exception e) {
             System.out.println("Problems inside of updateLoginAndRole ");
@@ -674,8 +740,7 @@ public class Transformation {
 
     public boolean containsNameGroup(String[] userADNames, Map<String, String> groupsMap, String toFind) {
         boolean retVal = false;
-        if (userADNames == null)
-            return false;
+        if (userADNames == null) return false;
         try {
             String dn = groupsMap.get(toFind);
 
@@ -689,8 +754,7 @@ public class Transformation {
     }
 
     public boolean containsMaskGroup(String[] userADNames, Map<String, String> groupsMap, String mask) {
-        if (userADNames == null)
-            return false;
+        if (userADNames == null) return false;
         try {
             List<String> userADNamesList = Arrays.asList(userADNames);
             Pattern pattern = Pattern.compile(mask);
@@ -712,8 +776,12 @@ public class Transformation {
     }
 
     private void mergeGroups(String[] membersOf, Map<String, GroupEntity> groupsEntities, UserEntity user) {
-        if (membersOf == null)
-            return;
+        if (user.getGroups() != null) {
+            for (GroupEntity g : user.getGroups()) {
+                g.setName("DELETE_FROM_DB");
+            }
+        }
+        if (membersOf == null) return;
         for (String member : membersOf) {
             GroupEntity groupEntity = groupsEntities.get(member.toLowerCase());
             if (groupEntity != null) {
@@ -724,6 +792,7 @@ public class Transformation {
                 for (GroupEntity gr : user.getGroups()) {
                     if (gr.getId().equals(groupEntity.getId())) {
                         isFind = true;
+                        gr.setName("");
                         break;
                     }
                 }
@@ -885,17 +954,12 @@ public class Transformation {
         ph.setMetadataType(metatype);
         ph.setIsDefault(defaultPhone);
         ph.setIsActive(true);
-        String[] parts = phoneValue.split(" ");
-        if (parts != null && parts.length > 1) {
-            String newP = "";
-            for (int i = 1; i < parts.length; i++) {
-                newP += parts[i];
-            }
-            ph.setPhoneNbr(fixNull(newP));
-            ph.setCountryCd(parts[0]);
-        } else {
-            ph.setPhoneNbr(fixNull(phoneValue));
+        phoneValue = phoneValue.replace("-", "").replace("_", "").replace("(", "").replace(")", "").replace(".", "");
+        phoneValue = phoneValue.replace(" ", "").trim();
+        if (!phoneValue.startsWith("+")) {
+            phoneValue = "+" + phoneValue;
         }
+        ph.setPhoneNbr(fixNull(phoneValue));
         addPhone(user, ph);
     }
 
@@ -940,17 +1004,13 @@ public class Transformation {
             return;
         }
 
-        final List<Column> userAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_ATTRIBUTES_ID, ImportPropertiesKey.USER_ATTRIBUTES_USER_ID,
-                ImportPropertiesKey.USER_ATTRIBUTES_NAME,
-                ImportPropertiesKey.USER_ATTRIBUTES_VALUE});
+        final List<Column> userAttributeColumnList = Utils.getColumns(new ImportPropertiesKey[]{ImportPropertiesKey.USER_ATTRIBUTES_ID, ImportPropertiesKey.USER_ATTRIBUTES_USER_ID, ImportPropertiesKey.USER_ATTRIBUTES_NAME, ImportPropertiesKey.USER_ATTRIBUTES_VALUE});
 
         final String getUserAttributeByUserDN = "SELECT %s FROM USER_ATTRIBUTES ua WHERE ua.NAME='distinguishedName' AND ua.VALUE='%s'";
         UserAttributeEntityParser attributeEntityParser = new UserAttributeEntityParser();
         String userId = null;
         try {
-            List<UserAttributeEntity> userAttributeEntityList = attributeEntityParser.get(
-                    String.format(getUserAttributeByUserDN, Utils.columnsToSelectFields(userAttributeColumnList, "ua"),
-                            dn), userAttributeColumnList);
+            List<UserAttributeEntity> userAttributeEntityList = attributeEntityParser.get(String.format(getUserAttributeByUserDN, Utils.columnsToSelectFields(userAttributeColumnList, "ua"), dn), userAttributeColumnList);
             if (CollectionUtils.isNotEmpty(userAttributeColumnList)) {
                 userId = userAttributeEntityList.get(0).getUserId();
             }
@@ -1040,8 +1100,7 @@ public class Transformation {
             attributeValue = adPath + ("," + baseDN.toLowerCase());
         }
 
-        this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM",
-                String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", attributeValue, MatchType.END_WITH)));
+        this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM", String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", attributeValue, MatchType.END_WITH)));
     }
 
     private void getLinkedOrganization(String distinguishedName, String site, String bu, String country, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
@@ -1097,8 +1156,7 @@ public class Transformation {
                 for (LocationEntity l : locations) {
                     if (siteEntity.getId().equals(l.getOrganizationId())) {
                         addUserAttribute(user, new UserAttributeEntity("LOCATION_ID", l.getLocationId()));
-                        if (country == null)
-                            addUserAttribute(user, new UserAttributeEntity("COUNTRY", l.getCountry()));
+                        if (country == null) addUserAttribute(user, new UserAttributeEntity("COUNTRY", l.getCountry()));
                     }
                 }
             }
@@ -1144,7 +1202,6 @@ public class Transformation {
 
 
     private void processLastName(UserEntity user, String surname, String displayName) {
-        System.out.println("Surname=" + surname);
         List<String> formatValues = Arrays.asList("00", "0", "50", "51", "52", "53");
         UserAttributeEntity a = this.getUserAttributeByName(user, "USER_DISPLAY_NAME");
         UserAttributeEntity savedFormat = this.getUserAttributeByName(user, "USER_SAVED_NAME");
@@ -1165,7 +1222,6 @@ public class Transformation {
                 format = "50";
             }
         }
-        System.out.println("Format=" + format);
         if ("51".equals(format.trim())) { //LastName + "-" + partnerInfix + " "+partnerName +", " + infix
             String[] snParts = surname.split("-");
             if (snParts != null) {

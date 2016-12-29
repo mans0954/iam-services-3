@@ -50,16 +50,16 @@ public class BatchTaskEntity implements Serializable {
 	@Column(name = "STATUS", length=20)
     private String status;
     
-	@Column(name = "PARAM1", length=255)
+	@Column(name = "PARAM1", length=4000)
 	private String param1;
     
-	@Column(name = "PARAM2", length=255)
+	@Column(name = "PARAM2", length=4000)
 	private String param2;
 	
-	@Column(name = "PARAM3", length=255)
+	@Column(name = "PARAM3", length=4000)
     private String param3;
 	
-	@Column(name = "PARAM4", length=255)
+	@Column(name = "PARAM4", length=4000)
     private String param4;
 	
 	@Column(name = "EXECUTION_ORDER")

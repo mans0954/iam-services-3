@@ -21,8 +21,7 @@
  */
 package org.openiam.idm.srvc.synch.srcadapter;
 
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
+import com.jcraft.jsch.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.logging.Log;
@@ -31,7 +30,6 @@ import org.mule.util.StringUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-
 import org.openiam.idm.parser.csv.CSVHelper;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
@@ -39,12 +37,7 @@ import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.util.RemoteFileStorageManager;
-import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.ProvisionService;
-import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -91,9 +84,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
     @Override
     public SyncResponse startSynch(final SynchConfig config, SynchReviewEntity sourceReview, final SynchReviewEntity resultReview) {
-    	if(log.isDebugEnabled()) {
-    		log.debug("CSV startSynch CALLED.^^^^^^^^");
-    	}
+        if (log.isDebugEnabled()) {
+            log.debug("CSV startSynch CALLED.^^^^^^^^");
+        }
         System.out.println("CSV startSynch CALLED.^^^^^^^^");
 
         SyncResponse res = new SyncResponse(ResponseStatus.SUCCESS);
@@ -125,8 +118,10 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
             CSVHelper parser;
             String csvFileName = config.getFileName();
+            Session session = null;
             if (useRemoteFilestorage) {
-                input = remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName);
+                session = remoteFileStorageManager.getSession();
+                input = this.downloadFile(session, SYNC_DIR, csvFileName);
                 parser = new CSVHelper(input, "UTF-8");
             } else {
                 String fileName = uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName;
@@ -135,7 +130,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
             }
 
             final String[][] rows = parser.getAllValues();
-
+            if (session != null) {
+                session.disconnect();
+            }
             //Get Header
             final LineObject rowHeader = populateTemplate(rows[0]);
             rowHeaderForReport = rowHeader;
@@ -213,8 +210,8 @@ public class CSVAdapter extends AbstractSrcAdapter {
 //            auditLogProvider.persist(auditBuilder);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
-            if(log.isDebugEnabled()) {
-            	log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if (log.isDebugEnabled()) {
+                log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
             }
             return resp;
 
@@ -226,8 +223,8 @@ public class CSVAdapter extends AbstractSrcAdapter {
 			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
-            if(log.isDebugEnabled()) {
-            	log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if (log.isDebugEnabled()) {
+                log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
             }
             return resp;
         } catch (SftpException sftpe) {
@@ -239,8 +236,8 @@ public class CSVAdapter extends AbstractSrcAdapter {
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             sftpe.printStackTrace();
-            if(log.isDebugEnabled()) {
-            	log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if (log.isDebugEnabled()) {
+                log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
             }
         } catch (JSchException jsche) {
             log.error(jsche);
@@ -251,8 +248,8 @@ public class CSVAdapter extends AbstractSrcAdapter {
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             jsche.printStackTrace();
-            if(log.isDebugEnabled()) {
-            	log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if (log.isDebugEnabled()) {
+                log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
             }
         } finally {
             if (resultReview != null) {
@@ -269,11 +266,22 @@ public class CSVAdapter extends AbstractSrcAdapter {
             }
         }
 
-        if(log.isDebugEnabled()) {
-        	log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
+        if (log.isDebugEnabled()) {
+            log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
         }
 //        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
         return new SyncResponse(ResponseStatus.SUCCESS);
+    }
+
+
+    //Download Attachment from remote host
+    public InputStream downloadFile(Session session, final String destSubDirectory, final String destFile) throws JSchException, SftpException {
+        String destFilePath = remoteFileStorageManager.getRemoteFilestorageDir() + "/" + destSubDirectory + "/" + destFile;
+        Channel channel = session.openChannel("sftp");
+        channel.connect();
+        ChannelSftp sftpChannel = (ChannelSftp) channel;
+        InputStream is = sftpChannel.get(destFilePath);
+        return is;
     }
 
     public Response testConnection(SynchConfig config) {
@@ -281,8 +289,11 @@ public class CSVAdapter extends AbstractSrcAdapter {
         try {
             String csvFileName = config.getFileName();
             if (useRemoteFilestorage) {
-                InputStream is = remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName);
+                log.info("Use remove storage! ");
+                Session session = remoteFileStorageManager.getSession();
+                InputStream is = this.downloadFile(session, SYNC_DIR, csvFileName);
                 reader = new InputStreamReader(is);
+                session.disconnect();
             } else {
                 File file = new File(uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName);
                 reader = new FileReader(file);

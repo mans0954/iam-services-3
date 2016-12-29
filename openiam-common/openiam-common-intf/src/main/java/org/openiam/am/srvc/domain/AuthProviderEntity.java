@@ -57,12 +57,29 @@ public class AuthProviderEntity implements Serializable {
     @Lob
     private byte[] privateKey=null;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @Column(name = "CA_CERT", nullable = true)
+    @Lob
+    private byte[] caCert=null;
+
+    @Column(name="SUPPORTS_CERT_AUTH")
+    @Type(type = "yes_no")
+    private boolean supportsCertAuth;
+
+    @Column(name="CERT_AUTH_REGEX",length=19)
+    private String certRegex;
+
+    @Column(name="CERT_AUTH_REGEX_SCRIPT",length=19)
+    private String certGroovyScript;
+
+    @Column(name="CERT_AUTH_CA_VALIDATE_SCRIPT",length=19)
+    private String caValidateGroovyScript;
+
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="PROVIDER_TYPE", referencedColumnName = "PROVIDER_TYPE", insertable = false, updatable = false)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private AuthProviderTypeEntity type;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = false, updatable = false)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ManagedSysEntity managedSys;
@@ -78,13 +95,15 @@ public class AuthProviderEntity implements Serializable {
     private ResourceEntity resource;
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
-    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<AuthProviderAttributeEntity> providerAttributeSet;
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
     @MapKey(name = "targetAttributeName")
-    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMapEntity>(0);
+
+    @OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "authProvider")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<ContentProviderEntity> contentProviders;
 
     public String getProviderId() {
         return providerId;
@@ -109,16 +128,6 @@ public class AuthProviderEntity implements Serializable {
     public void setManagedSysId(String managedSysId) {
         this.managedSysId = managedSysId;
     }
-
-    /*
-    public String getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
-    }
-    */
 
     public String getName() {
         return name;
@@ -158,6 +167,14 @@ public class AuthProviderEntity implements Serializable {
 
     public void setPrivateKey(byte[] privateKey) {
         this.privateKey = privateKey;
+    }
+
+    public byte[] getCaCert() {
+        return caCert;
+    }
+
+    public void setCaCert(byte[] caCert) {
+        this.caCert = caCert;
     }
 
     public AuthProviderTypeEntity getType() {
@@ -216,11 +233,59 @@ public class AuthProviderEntity implements Serializable {
 		this.nextAuthProvider = nextAuthProvider;
 	}
 
+    public boolean isSupportsCertAuth() {
+        return supportsCertAuth;
+    }
+
+    public void setSupportsCertAuth(boolean supportsCertAuth) {
+        this.supportsCertAuth = supportsCertAuth;
+    }
+
+    public String getCertRegex() {
+        return certRegex;
+    }
+
+    public void setCertRegex(String certRegex) {
+        this.certRegex = certRegex;
+    }
+
+    public String getCertGroovyScript() {
+        return certGroovyScript;
+    }
+
+    public void setCertGroovyScript(String certGroovyScript) {
+        this.certGroovyScript = certGroovyScript;
+    }
+
+    public String getCaValidateGroovyScript() {
+        return caValidateGroovyScript;
+    }
+
+    public void setCaValidateGroovyScript(String caValidateGroovyScript) {
+        this.caValidateGroovyScript = caValidateGroovyScript;
+    }
+
+    public Set<ContentProviderEntity> getContentProviders() {
+        return contentProviders;
+    }
+
+    public void setContentProviders(Set<ContentProviderEntity> contentProviders) {
+        this.contentProviders = contentProviders;
+    }
+    
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (chained ? 1231 : 1237);
+        result = prime
+                * result
+                + ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+        result = prime
+                * result
+                + ((caValidateGroovyScript == null) ? 0 : caValidateGroovyScript.hashCode());
+        result = prime * result
+                + ((certRegex == null) ? 0 : certRegex.hashCode());
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result + (isSignRequest ? 1231 : 1237);
@@ -233,11 +298,13 @@ public class AuthProviderEntity implements Serializable {
 				* result
 				+ ((nextAuthProvider == null) ? 0 : nextAuthProvider.hashCode());
 		result = prime * result + Arrays.hashCode(privateKey);
+        result = prime * result + Arrays.hashCode(caCert);
 		result = prime * result
 				+ ((providerId == null) ? 0 : providerId.hashCode());
 		result = prime * result
 				+ ((providerType == null) ? 0 : providerType.hashCode());
 		result = prime * result + Arrays.hashCode(publicKey);
+        result = prime * result + (supportsCertAuth ? 1231 : 1237);
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -284,6 +351,8 @@ public class AuthProviderEntity implements Serializable {
 			return false;
 		if (!Arrays.equals(privateKey, other.privateKey))
 			return false;
+        if (!Arrays.equals(caCert, other.caCert))
+            return false;
 		if (providerId == null) {
 			if (other.providerId != null)
 				return false;
@@ -306,6 +375,23 @@ public class AuthProviderEntity implements Serializable {
 				return false;
 		} else if (!type.equals(other.type))
 			return false;
+        if (certGroovyScript == null) {
+            if (other.certGroovyScript != null)
+                return false;
+        } else if (!certGroovyScript.equals(other.certGroovyScript))
+            return false;
+        if (caValidateGroovyScript == null) {
+            if (other.caValidateGroovyScript != null)
+                return false;
+        } else if (!caValidateGroovyScript.equals(other.caValidateGroovyScript))
+            return false;
+        if (certRegex == null) {
+            if (other.certRegex != null)
+                return false;
+        } else if (!certRegex.equals(other.certRegex))
+            return false;
+        if (supportsCertAuth != other.supportsCertAuth)
+            return false;
 		return true;
 	}
     

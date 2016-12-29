@@ -70,12 +70,19 @@ public class BuildUserPolicyMapHelper {
             return null;
         }
 
+        /*  Take about 3 sec for some customers
         List<AttributeMapEntity> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
         for (AttributeMapEntity ame : attrMapEntities) {
             if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
                 requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
             }
+        }
+        */
+        List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
+        List<String> attrNames = managedSystemService.getAttrNameByMngSysIdWithParams(managedSysId, "USER", "ACTIVE");
+        for (String attrName : attrNames) {
+            requestedExtensibleAttributes.add(new ExtensibleAttribute(attrName, null));
         }
 
         List<ExtensibleAttribute> mngSysAttrs = new ArrayList<ExtensibleAttribute>();

@@ -133,6 +133,7 @@ public class URIPattern implements Serializable {
 	public void setResourceCoorelatedName(String resourceCoorelatedName) {
 		this.resourceCoorelatedName = resourceCoorelatedName;
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

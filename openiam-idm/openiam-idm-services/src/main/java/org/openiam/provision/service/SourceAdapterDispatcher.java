@@ -42,7 +42,6 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -716,7 +715,9 @@ public class SourceAdapterDispatcher implements Runnable {
         }
         Organization orgDB = null;
         if (organization.size() > 1) {
-            orgDB = organization.get(0);
+            warnings.append(getWarning("Could not define unique organization based on request " + org.toString()));
+            warnings.append(getWarning("Found "+organization.size()+" organizations. Skip Orgs processing." ));
+            return null;
         }
         orgDB = organization.get(0);
 
@@ -730,7 +731,7 @@ public class SourceAdapterDispatcher implements Runnable {
 
     private void fillAlternativeContact(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
             Exception {
-        SourceAdapterKey alternativeContact = request.getAlternativeContact();
+        UserSearchKey alternativeContact = request.getAlternativeContact();
         if (alternativeContact == null || alternativeContact.getName() == null || StringUtils.isBlank(alternativeContact.getValue())) {
             return;
         }
@@ -1076,7 +1077,7 @@ public class SourceAdapterDispatcher implements Runnable {
         return (source == null || "NULL".equals(source)) ? null : source;
     }
 
-    private User getUser(SourceAdapterKey keyPair, SourceAdapterRequest request, boolean deepCopy) throws Exception {
+    private User getUser(UserSearchKey keyPair, SourceAdapterRequest request, boolean deepCopy) throws Exception {
         if (keyPair == null && SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
             //create
             return new User();
@@ -1085,7 +1086,7 @@ public class SourceAdapterDispatcher implements Runnable {
             return new User();
         } else if (keyPair != null && keyPair.getName() == null && StringUtils.isNotBlank(keyPair.getValue())) {
             User u = null;
-            for (SourceAdapterKeyEnum keyEnum : SourceAdapterKeyEnum.values()) {
+            for (UserSearchKeyEnum keyEnum : UserSearchKeyEnum.values()) {
                 u = this.findByKey(keyEnum, keyPair.getValue(), request, deepCopy);
                 if (u != null) {
                     break;
@@ -1101,19 +1102,19 @@ public class SourceAdapterDispatcher implements Runnable {
     }
 
 
-    private User findByKey(SourceAdapterKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request, boolean deepCopy) throws Exception {
+    private User findByKey(UserSearchKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request, boolean deepCopy) throws Exception {
         UserSearchBean searchBean = new UserSearchBean();
-        if (SourceAdapterKeyEnum.USERID.equals(matchAttrName)) {
+        if (UserSearchKeyEnum.USERID.equals(matchAttrName)) {
             searchBean.setKey(matchAttrValue);
             searchBean.setUserId(matchAttrValue);
-        } else if (SourceAdapterKeyEnum.PRINCIPAL.equals(matchAttrName)) {
+        } else if (UserSearchKeyEnum.PRINCIPAL.equals(matchAttrName)) {
             LoginSearchBean lsb = new LoginSearchBean();
             lsb.setLoginMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
             lsb.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
             searchBean.setPrincipal(lsb);
-        } else if (SourceAdapterKeyEnum.EMAIL.equals(matchAttrName)) {
+        } else if (UserSearchKeyEnum.EMAIL.equals(matchAttrName)) {
             searchBean.setEmailAddressMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
-        } else if (SourceAdapterKeyEnum.EMPLOYEE_ID.equals(matchAttrName)) {
+        } else if (UserSearchKeyEnum.EMPLOYEE_ID.equals(matchAttrName)) {
             searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         }
         searchBean.setDeepCopy(deepCopy);

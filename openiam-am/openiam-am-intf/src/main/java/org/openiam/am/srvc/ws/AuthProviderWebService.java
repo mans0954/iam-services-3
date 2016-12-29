@@ -69,6 +69,10 @@ public interface AuthProviderWebService {
                                                     @WebParam(name = "size", targetNamespace = "")Integer size,
                                                     @WebParam(name = "from", targetNamespace = "")Integer from);
     @WebMethod
+    public List<AuthProvider> findAuthProviderBeansSB(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean,
+                                                    @WebParam(name = "size", targetNamespace = "")Integer size,
+                                                    @WebParam(name = "from", targetNamespace = "")Integer from);
+    @WebMethod
     public Integer getNumOfAuthProviderBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean);
 
     @WebMethod

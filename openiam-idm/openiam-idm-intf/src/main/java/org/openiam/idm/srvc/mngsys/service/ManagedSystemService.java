@@ -90,4 +90,6 @@ public interface ManagedSystemService {
     List<ManagedSysEntity> getAllManagedSysNames();
 
     public String getResourceIdByManagedSysId(final String managedSysId);
+
+    public List<String> getAttrNameByMngSysIdWithParams(String managedSysId, String objType, String status);
 }

@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.Set;
         "sortBy",
         "findInCache"
 })
-public abstract class AbstractSearchBean<T, KeyType> {
+public abstract class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType>, Serializable {
 
 	private boolean deepCopy = true;
 	private KeyType key;

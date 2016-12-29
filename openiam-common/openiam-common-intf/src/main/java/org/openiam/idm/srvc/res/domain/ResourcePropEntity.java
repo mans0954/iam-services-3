@@ -1,19 +1,14 @@
 package org.openiam.idm.srvc.res.domain;
 
-import javax.persistence.*;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 
+import javax.persistence.*;
 import java.util.List;
 
 @Entity

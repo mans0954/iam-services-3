@@ -30,4 +30,10 @@ public class ResourcePropDAOImpl extends BaseDaoImpl<ResourcePropEntity, String>
                 .setProjection(Projections.property("value"));
         return (String) criteria.uniqueResult();
     }
+
+    public List<ResourcePropEntity> getProperties(String resourceId) {
+        Criteria criteria = getCriteria()
+                .add(Restrictions.eq("resource.id", resourceId));
+        return (List<ResourcePropEntity>) criteria.list();
+    }
 }

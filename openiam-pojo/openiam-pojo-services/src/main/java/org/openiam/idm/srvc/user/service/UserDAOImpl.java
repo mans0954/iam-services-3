@@ -1192,7 +1192,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             return null;
         }
         String sql = "SELECT ua.ID as id," +
-                "ua.VALUE as value, uav.VALUE as " + ("PostgreSQL".equals(this.dbType) ? "values" : "'values'") +
+                "ua.VALUE as value, uav.VALUE as \"values\" " +
                 ", ua.IS_MULTIVALUED as isMultivalued, ua.USER_ID as userId, ua.NAME as name " +
                 " FROM USER_ATTRIBUTES ua LEFT JOIN  USER_ATTRIBUTE_VALUES uav ON uav.USER_ATTRIBUTE_ID" +
                 "=ua.ID WHERE ua.USER_ID='%s' AND ua.NAME IN" +

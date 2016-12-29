@@ -37,6 +37,10 @@ public class AuthProviderTypeEntity extends KeyEntity {
     @Column(name="IS_CHAINABLE")
     @Type(type = "yes_no")
     private boolean chainable;
+
+	@Column(name="SUPPORTS_CERT_AUTH")
+	@Type(type = "yes_no")
+	private boolean supportsCertAuth;
     
     @OneToMany(mappedBy = "type", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<AuthAttributeEntity> attributeSet;
@@ -98,6 +102,14 @@ public class AuthProviderTypeEntity extends KeyEntity {
 
 	public void setChainable(boolean chainable) {
 		this.chainable = chainable;
+	}
+
+	public boolean isSupportsCertAuth() {
+		return supportsCertAuth;
+	}
+
+	public void setSupportsCertAuth(boolean supportsCertAuth) {
+		this.supportsCertAuth = supportsCertAuth;
 	}
 
 	@Override

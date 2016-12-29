@@ -2,7 +2,6 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.impl.el.FixedValue;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.access.review.constant.AccessReviewConstant;
 import org.openiam.access.review.model.AccessViewBean;
@@ -18,20 +17,17 @@ import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
     @Autowired
@@ -48,6 +44,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
         Response response = null;
         final String associationId = getAssociationId(execution);
         final String memberAssociationId = getMemberAssociationId(execution);
+        final Set<String> rights = getAccessRights(execution);
 
         Group group = null;
         Role role = null;
@@ -89,7 +86,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                         break;
                     case ADD_ROLE_TO_ROLE:
                         action = AuditAction.ADD_CHILD_ROLE;
-                        response = roleDataService.addChildRole(associationId, memberAssociationId, systemUserId);
+                        response = roleDataService.addChildRole(associationId, memberAssociationId, systemUserId, rights);
                         break;
                     case REMOVE_ROLE_FROM_ROLE:
                         action = AuditAction.REMOVE_CHILD_ROLE;
@@ -97,7 +94,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                         break;
                     case ENTITLE_RESOURCE_TO_ROLE:
                         action = AuditAction.ADD_ROLE_TO_RESOURCE;
-                        response = resourceDataService.addRoleToResource(associationId, memberAssociationId, systemUserId);
+                        response = resourceDataService.addRoleToResource(associationId, memberAssociationId, rights, systemUserId);
                         break;
                     case DISENTITLE_RESOURCE_FROM_ROLE:
                         action = AuditAction.REMOVE_ROLE_FROM_RESOURCE;
@@ -105,7 +102,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                         break;
                     case ADD_RESOURCE_TO_RESOURCE:
                         action = AuditAction.ADD_CHILD_RESOURCE;
-                        response = resourceDataService.addChildResource(associationId, memberAssociationId, systemUserId);
+                        response = resourceDataService.addChildResource(associationId, memberAssociationId, systemUserId, rights);
                         break;
                     case REMOVE_RESOURCE_FROM_RESOURCE:
                         action = AuditAction.REMOVE_CHILD_RESOURCE;
