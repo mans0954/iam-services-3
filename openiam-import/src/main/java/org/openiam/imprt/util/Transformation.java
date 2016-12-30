@@ -242,6 +242,9 @@ public class Transformation {
             }
         }
 
+        String extensionAttribute12 = this.getValue(lo.get("extensionAttribute12"));
+        addUserAttribute(user, new UserAttributeEntity("ORG_BA_SHORT_NAME", extensionAttribute12));
+
         attr = this.getValue(lo.get("employeeType"));
         if (StringUtils.isNotBlank(attr)) {
             if (attr.toLowerCase().contains("Shared \\ Departmental".toLowerCase())) {
