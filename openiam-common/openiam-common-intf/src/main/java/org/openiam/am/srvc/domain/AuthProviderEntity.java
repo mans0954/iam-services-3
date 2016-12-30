@@ -65,13 +65,16 @@ public class AuthProviderEntity implements Serializable {
     @Type(type = "yes_no")
     private boolean supportsCertAuth;
 
-    @Column(name="CERT_AUTH_REGEX",length=19)
+    @Column(name="CERT_AUTH_REGEX",length=100)
     private String certRegex;
 
-    @Column(name="CERT_AUTH_REGEX_SCRIPT",length=19)
+    @Column(name="CERT_AUTH_REGEX_SCRIPT",length=100)
     private String certGroovyScript;
 
-    @Column(name="CERT_AUTH_CA_VALIDATE_SCRIPT",length=19)
+    @Column(name="CERT_DER_PATH",length=100)
+    private String derPath;
+
+    @Column(name="CERT_AUTH_CA_VALIDATE_SCRIPT",length=100)
     private String caValidateGroovyScript;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
@@ -257,6 +260,14 @@ public class AuthProviderEntity implements Serializable {
         this.certGroovyScript = certGroovyScript;
     }
 
+    public String getDerPath() {
+        return derPath;
+    }
+
+    public void setDerPath(String derPath) {
+        this.derPath = derPath;
+    }
+
     public String getCaValidateGroovyScript() {
         return caValidateGroovyScript;
     }
@@ -281,6 +292,9 @@ public class AuthProviderEntity implements Serializable {
         result = prime
                 * result
                 + ((certGroovyScript == null) ? 0 : certGroovyScript.hashCode());
+        result = prime
+                * result
+                + ((derPath == null) ? 0 : derPath.hashCode());
         result = prime
                 * result
                 + ((caValidateGroovyScript == null) ? 0 : caValidateGroovyScript.hashCode());
@@ -379,6 +393,11 @@ public class AuthProviderEntity implements Serializable {
             if (other.certGroovyScript != null)
                 return false;
         } else if (!certGroovyScript.equals(other.certGroovyScript))
+            return false;
+        if (derPath == null) {
+            if (other.derPath != null)
+                return false;
+        } else if (!derPath.equals(other.derPath))
             return false;
         if (caValidateGroovyScript == null) {
             if (other.caValidateGroovyScript != null)

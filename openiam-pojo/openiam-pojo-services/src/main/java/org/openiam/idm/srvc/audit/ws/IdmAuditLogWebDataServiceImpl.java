@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -112,6 +113,11 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 	public IdmAuditLog getLogRecord(final String id) {
 		final IdmAuditLog entity = auditLogService.findById(id);
 		return entity;
+	}
+
+	@Override
+	public void deleteOlderThan(Date date){
+		auditLogService.deleteOlderThan(date);
 	}
 
 }

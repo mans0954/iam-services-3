@@ -32,7 +32,7 @@ public class MetadataElementEntity extends KeyEntity {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "DESCRIPTION", length = 40)
+    @Column(name = "DESCRIPTION", length = 100)
     private String description;
     
     @Column(name = "ATTRIBUTE_NAME", length = 100)

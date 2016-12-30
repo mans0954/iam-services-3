@@ -7,12 +7,14 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractAttributeDTO", propOrder = {
         "metadataId",
-        "metadataName"
+        "metadataName",
+		"metadataDescription"
 })
 public abstract class AbstractAttributeDTO extends AbstactKeyNameValueDTO {
 
 	protected String metadataId;
 	protected String metadataName;
+	protected String metadataDescription;
 	
 	public String getMetadataId() {
 		return this.metadataId;
@@ -30,6 +32,10 @@ public abstract class AbstractAttributeDTO extends AbstactKeyNameValueDTO {
 		this.metadataName = metadataName;
 	}
 
+	public String getMetadataDescription() {return metadataDescription;}
+
+	public void setMetadataDescription(String metadataDescription) {this.metadataDescription = metadataDescription;}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -38,6 +44,8 @@ public abstract class AbstractAttributeDTO extends AbstactKeyNameValueDTO {
 				+ ((metadataId == null) ? 0 : metadataId.hashCode());
 		result = prime * result
 				+ ((metadataName == null) ? 0 : metadataName.hashCode());
+		result = prime * result
+				+ ((metadataDescription == null) ? 0 : metadataDescription.hashCode());
 		return result;
 	}
 
@@ -60,14 +68,19 @@ public abstract class AbstractAttributeDTO extends AbstactKeyNameValueDTO {
 				return false;
 		} else if (!metadataName.equals(other.metadataName))
 			return false;
+		if (metadataDescription == null) {
+			if (other.metadataDescription != null)
+				return false;
+			} else if (!metadataDescription.equals(other.metadataDescription))
+				return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return String
-				.format("AbstractAttributeDTO [metadataId=%s, metadataName=%s, toString()=%s]",
-						metadataId, metadataName, super.toString());
+				.format("AbstractAttributeDTO [metadataId=%s, metadataName=%s, metadataDescription=%s, toString()=%s]",
+							metadataId, metadataName, metadataDescription, super.toString());
 	}
 
 	

@@ -3,19 +3,18 @@ package org.openiam.am.cert.groovy;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.SysConfiguration;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.cert.service.CertDataService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.security.cert.X509Certificate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class DefaultCACertCheck {
 
@@ -25,18 +24,14 @@ public class DefaultCACertCheck {
 
 	protected X509Certificate caCert;
 
-	@Autowired
-	protected LoginDataService loginDataWebService;
+	protected String crlPath;
 
 	@Autowired
-	@Qualifier("userManager")
-	protected UserDataService userManager;
-
-	@Autowired
-	protected SysConfiguration sysConfiguration;
+	@Qualifier("certManager")
+	protected CertDataService certManager;
 
 	public DefaultCACertCheck() {
-		
+
 	}
 
 	public final void setCertficiate(final X509Certificate cert) {
@@ -51,13 +46,18 @@ public class DefaultCACertCheck {
 	public void setCACert(final X509Certificate caCert) {
 		this.caCert = caCert;
 	}
-	
+
+	public void setCrlPath(String crlPath) {
+		this.crlPath = crlPath;
+	}
+
 	/**
 	 * Returns the Login associated with the X509Certificate
 	 * @return
 	 */
 	public Boolean resolve() throws BasicDataServiceException {
-/*		if (caCert != null) {
+		/*
+		if (caCert != null) {
 			try {
 				caCert.checkValidity();
 			} catch (Exception ex) {
@@ -70,12 +70,25 @@ public class DefaultCACertCheck {
 					throw new BasicDataServiceException(ResponseCode.CERT_CLIENT_INVALID, ex.getMessage());
 				}
 				try {
-					caCert.verify(clientCert.getPublicKey());
+					clientCert.verify(caCert.getPublicKey());
 				} catch (Exception ex) {
 					throw new BasicDataServiceException(ResponseCode.CERT_INVALID_VERIFY_WITH_CA, ex.getMessage());
 				}
+
+				try {
+					certManager.verifyCertificateNotRevoked(caCert, clientCert);
+				} catch (Exception ex) {
+					if (StringUtils.isBlank(crlPath)) {
+						List<X509CRLHolder> crlList = new ArrayList<X509CRLHolder>();
+						// "file://crl.der"    "https://lnx1.openiamdemo.com/crl"
+						crlList.add(certManager.downloadCRL(crlPath));
+						certManager.verifyCertificateNotRevoked(crlList, caCert, clientCert);
+					}
+				}
+
 			}
-		}*/
-		return true;
+		}
+		*/
+			return true;
 	}
 }

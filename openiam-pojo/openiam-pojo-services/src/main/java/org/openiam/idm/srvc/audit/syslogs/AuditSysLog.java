@@ -1,4 +1,5 @@
 package org.openiam.idm.srvc.audit.syslogs;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -9,14 +10,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 @Service("auditSysLogService")
-public class AuditSysLog
-{
+public class AuditSysLog {
     private static final Log log = LogFactory.getLog(AuditSysLog.class);
 
 
@@ -48,48 +51,48 @@ public class AuditSysLog
     private String messageOrder;
 
     // Option flags.
-    public static final int LOG_PID	= 0x01; // log the pid with each message
-    public static final int LOG_CONS	= 0x02; // log on the console if errors
-    public static final int LOG_NDELAY	= 0x08; // don't delay open
-    public static final int LOG_NOWAIT	= 0x10; // don't wait for console forks
+    public static final int LOG_PID = 0x01; // log the pid with each message
+    public static final int LOG_CONS = 0x02; // log on the console if errors
+    public static final int LOG_NDELAY = 0x08; // don't delay open
+    public static final int LOG_NOWAIT = 0x10; // don't wait for console forks
 
     public static final int LOG_PRIMASK = 0x0007; // mask to extract priority
-    public static final int LOG_FACMASK	= 0x03F8; // mask to extract facility
+    public static final int LOG_FACMASK = 0x03F8; // mask to extract facility
 
-    private String		ident;
-    private int			logopt;
-    private int			facility;
-    private int			priority;
+    private String ident;
+    private int logopt;
+    private int facility;
+    private int priority;
 
     private Set<String> actions;
-    private boolean     isEnable = false;
-    private int         port = 514;
-    private String[]    dataOrder;
+    private boolean isEnable = false;
+    private int port = 514;
+    private String[] dataOrder;
 
-    private InetAddress		address;
-    private DatagramPacket	packet;
-    private DatagramSocket	socket;
+    private InetAddress address;
+    private DatagramPacket packet;
+    private DatagramSocket socket;
 
     public AuditSysLog() {
     }
 
     @PostConstruct
-    public void init(){
+    public void init() {
         actions = new HashSet<String>();
-        String[] splitActions = logActions.replaceAll(" ","").split(",");
+        String[] splitActions = logActions.replaceAll(" ", "").split(",");
         if (splitActions.length > 0) {
             for (String act : splitActions) {
                 actions.add(AuditAction.valueOf(act).value());
             }
         }
 
-        this.dataOrder = messageOrder.replace(" ","").toLowerCase().split(",");
+        this.dataOrder = messageOrder.replace(" ", "").toLowerCase().split(",");
 
         if ("true".equalsIgnoreCase(defIsEnable)) {
             isEnable = true;
         }
 
-        if ( defIdent == null ) {
+        if (defIdent == null) {
             this.ident = new String(Thread.currentThread().getName());
         } else {
             this.ident = defIdent;
@@ -118,30 +121,24 @@ public class AuditSysLog
             this.port = Integer.parseInt(defPort);
         }
 
-        try
-        {
+        try {
             if (defHostName == null) {
                 address = InetAddress.getLocalHost();
             } else {
                 address = InetAddress.getByName(defHostName);
             }
-        }
-        catch ( Exception e )
-        {
-            log.error("error locating localhost: " + e.getMessage() );
+        } catch (Exception e) {
+            log.error("error locating localhost: " + e.getMessage());
         }
 
-        try
-        {
+        try {
             socket = new DatagramSocket();
-        }
-        catch ( Exception e )
-        {
-            log.error("error creating syslog socket: " + e.getMessage() );
+        } catch (Exception e) {
+            log.error("error creating syslog socket: " + e.getMessage());
         }
     }
 
-     public void sendSysLog(final IdmAuditLog log) {
+    public void sendSysLog(final IdmAuditLog log) {
         StringBuilder logMessage = new StringBuilder();
         if (log != null) {
             for (String st : dataOrder) {
@@ -168,7 +165,11 @@ public class AuditSysLog
                         }
                         break;
                     case "datetime":
-                        logMessage.append(" DateTime:[").append(log.getTimestamp().toString()).append("]");
+                        if (log.getTimestamp() == null) {
+                            logMessage.append(" DateTime:[").append(new Date().toString()).append("]");
+                        } else {
+                            logMessage.append(" DateTime:[").append(log.getTimestamp().toString()).append("]");
+                        }
                         break;
                     case "description":
                         if (log.getCustomRecords() != null && log.getCustomRecords().size() > 0) {
@@ -199,25 +200,25 @@ public class AuditSysLog
         sendSysLog(SysLogSeverity.INFORMATIONAL.numericalCode(), logMessage.toString());
     }
 
-    public void sendSysLog( int priority, String msg ) {
-        int		pricode;
-        int		length;
-        int		idx;
-        byte[]	data;
-        String	strObj;
+    public void sendSysLog(int priority, String msg) {
+        int pricode;
+        int length;
+        int idx;
+        byte[] data;
+        String strObj;
 
-        pricode = MakePriorityCode( facility, priority );
-        Integer priObj = new Integer( pricode );
+        pricode = MakePriorityCode(facility, priority);
+        Integer priObj = new Integer(pricode);
 
         length = 4 + ident.length() + msg.length() + 1;
-        length += ( pricode > 99 ) ? 3 : ( ( pricode > 9 ) ? 2 : 1 );
+        length += (pricode > 99) ? 3 : ((pricode > 9) ? 2 : 1);
 
         data = new byte[length];
 
         idx = 0;
         data[idx++] = '<';
 
-        strObj = priObj.toString( priObj.intValue() );
+        strObj = priObj.toString(priObj.intValue());
         System.arraycopy(strObj.getBytes(), 0, data, idx, strObj.length());
         idx += strObj.length();
 
@@ -234,28 +235,24 @@ public class AuditSysLog
 
         data[idx] = 0;
 
-        packet = new DatagramPacket( data, length, address, port );
+        packet = new DatagramPacket(data, length, address, port);
 
-        try
-        {
-            socket.send( packet );
-        }
-        catch ( IOException e )
-        {
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
             log.error("error sending message: '" + e.getMessage() + "'");
         }
     }
 
-    private int MakePriorityCode( int facility, int priority )
-    {
-        return ( ( facility & LOG_FACMASK ) | priority );
+    private int MakePriorityCode(int facility, int priority) {
+        return ((facility & LOG_FACMASK) | priority);
     }
 
-    public boolean hasAction (String action) {
+    public boolean hasAction(String action) {
         return this.actions.contains(action);
     }
 
-    public boolean isEnable () {
+    public boolean isEnable() {
         return isEnable;
     }
 

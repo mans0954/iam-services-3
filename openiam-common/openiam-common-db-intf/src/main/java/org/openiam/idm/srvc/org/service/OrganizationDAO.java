@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.org.service;
 import org.hibernate.Criteria;
 import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Org2OrgXref;
 
@@ -40,5 +41,7 @@ public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
                                                               final int size);
 
     public void deleteOrganizationUserDependency(final String orgId) ;
+
+    public List<OrganizationAttributeEntity> findAttributesByOrgIdsAndAttributeName(final Set<String> ids, final String attrName);
 
 }

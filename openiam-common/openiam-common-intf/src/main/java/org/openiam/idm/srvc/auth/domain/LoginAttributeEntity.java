@@ -144,11 +144,9 @@ public class LoginAttributeEntity implements java.io.Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("LoginAttributeEntity [loginAttrId=%s, name=%s, value=%s, metadataId=%s, loginId=%s]",
+				.format("LoginAttributeEntity [loginAttrId=%s, name=%s, value=%s, loginId=%s]",
 						loginAttrId, name, value, loginId);
 	}
-
-    
 }
 
 
