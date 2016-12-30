@@ -28,6 +28,9 @@ public class OpeniamWebAuthenticationDetails extends WebAuthenticationDetails im
 	public OpeniamWebAuthenticationDetails(final HttpServletRequest request) {
 		super(request);
 		this.languageId = StringUtils.trimToNull(request.getHeader("x-openiam-language-id"));
+		if(StringUtils.isBlank(this.languageId)) {
+			this.languageId = "1";
+		}
 	}
 	
 	@Override
