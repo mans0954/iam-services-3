@@ -233,7 +233,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 
 	
 	protected String getString(final String key) {
-		return propertyValuerServiceClient.getCachedValue(key, getDefaultLanguage());
+		return propertyValuerServiceClient.getCachedValue(key);
 	}
 	
 	protected String getDefaultManagedSystemId() {
@@ -379,7 +379,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		if(defaultLanguage == null) {
 			final LanguageSearchBean searchBean = new LanguageSearchBean();
 			searchBean.addKey("1");
-			defaultLanguage = languageServiceClient.findBeans(searchBean, 0, 1, null).get(0);
+			defaultLanguage = languageServiceClient.findBeans(searchBean, 0, 1).get(0);
 		}
 		return defaultLanguage;
 	}
@@ -396,7 +396,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected final List<Language> getAllLanguages() {
-		return languageServiceClient.findBeans(null, 0, Integer.MAX_VALUE, null);
+		return languageServiceClient.findBeans(null, 0, Integer.MAX_VALUE);
 	}
 	
 	protected String getRandomName(final int count) {

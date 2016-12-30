@@ -3,20 +3,12 @@ package org.openiam.srvc.common;
 
 import java.util.List;
 
-import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.MetadataElementSearchBean;
-import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.dto.MetadataElement;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.meta.dto.PageTempate;
-import org.openiam.idm.srvc.meta.dto.TemplateRequest;
-import org.openiam.property.dto.PropertyValue;
-
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
+import org.openiam.base.ws.Response;
+import org.openiam.property.dto.PropertyValue;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/property/service", name = "PropertyValueWebService")
 public interface PropertyValueWebService {
@@ -28,6 +20,6 @@ public interface PropertyValueWebService {
     List<PropertyValue> getAll();
     
     @WebMethod
-    String getCachedValue(final String key, final Language language);
+    String getCachedValue(final String key);
     
 }

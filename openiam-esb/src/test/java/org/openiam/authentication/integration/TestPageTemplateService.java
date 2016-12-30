@@ -286,18 +286,6 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		return retVal;
 	}
 	
-	private Language getLanguageByLocale(final String locale) {
-		final List<Language> languageList = languageWS.getUsedLanguages(null);
-		Language language = null;
-		for(final Language l : languageList) {
-			if(l.hasLocale(locale)) {
-				language = l;
-				break;
-			}
-		}
-		return language;
-	}
-	
 	private MetadataElement getElement(final String elementId) {
 		MetadataElement element = null;
 		for(final MetadataElement e : elementList) {
@@ -307,31 +295,5 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 			}
 		}
 		return element;
-	}
-	
-	private Map<String, LanguageMapping> getLanguageMap(final List<Language> languageList) {
-		final Map<String, LanguageMapping> map = new HashMap<String, LanguageMapping>();
-		for(final Language language : languageList) {
-			 final LanguageMapping mapping = new LanguageMapping();
-			 mapping.setLanguageId(language.getId());
-			 mapping.setValue(RandomStringUtils.randomAlphabetic(5));
-			 map.put(language.getId(), mapping);
-		 }
-		return map;
-	}
-	 
-	 private void assertSuccess(final Response response) {
-		Assert.assertNotNull(response);
-		Assert.assertNotNull(response.getStatus());
-		Assert.assertEquals(response.getStatus(), ResponseStatus.SUCCESS);
-	}
-		
-	private List<MetadataType> getAllMetatypes() {
-		final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
-		searchBean.setActive(true);
-		searchBean.setSyncManagedSys(true);
-		searchBean.setSyncManagedSys(false);
-		searchBean.setGrouping(MetadataTypeGrouping.UI_WIDGET);
-		return metadataWebService.findTypeBeans(searchBean, 0, Integer.MAX_VALUE);
 	}
 }

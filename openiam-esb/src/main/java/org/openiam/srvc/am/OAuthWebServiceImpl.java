@@ -44,28 +44,25 @@ public class OAuthWebServiceImpl extends AbstractApiService implements OAuthWebS
         return this.getValue(OAuthAPI.GetClient, new IdServiceRequest(clientId), AuthProviderResponse.class);
     }
     @Override
-    public List<Resource> getAuthorizedScopes(String clientId, OAuthToken oAuthToken, Language language) {
+    public List<Resource> getAuthorizedScopes(String clientId, OAuthToken oAuthToken) {
         OAuthScopesRequest request = new OAuthScopesRequest();
         request.setToken(oAuthToken);
         request.setClientId(clientId);
-        request.setLanguage(language);
         return this.getValueList(OAuthAPI.GetAuthorizedScopes, request, OAuthScopesResponse.class);
     }
     @Override
-    public List<Resource> getAuthorizedScopesByUser(String clientId, String userId, Language language){
+    public List<Resource> getAuthorizedScopesByUser(String clientId, String userId){
         OAuthScopesRequest request = new OAuthScopesRequest();
         request.setUserId(userId);
         request.setClientId(clientId);
-        request.setLanguage(language);
         return this.getValueList(OAuthAPI.GetAuthorizedScopesByUser, request, OAuthScopesResponse.class);
     }
 
     @Override
-    public OAuthScopesResponse getScopesForAuthrorization(String clientId, String userId, Language language) {
+    public OAuthScopesResponse getScopesForAuthrorization(String clientId, String userId) {
         OAuthScopesRequest request = new OAuthScopesRequest();
         request.setUserId(userId);
         request.setClientId(clientId);
-        request.setLanguage(language);
         return this.getResponse(OAuthAPI.GetScopesForAuthrorization, request, OAuthScopesResponse.class);
     }
 

@@ -30,9 +30,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 	
 	@Test(threadPoolSize = 20, invocationCount = 100000, enabled=false)
 	public void stressTest() {
-		final Language language = new Language();
-		language.setId("1");;
-		Assert.assertTrue(StringUtils.isNotBlank(propertyValuerServiceClient.getCachedValue("org.openiam.ui.user.fullname.compose.rule", language)));
+		Assert.assertTrue(StringUtils.isNotBlank(propertyValuerServiceClient.getCachedValue("org.openiam.ui.user.fullname.compose.rule")));
 	}
 	
 	@Test

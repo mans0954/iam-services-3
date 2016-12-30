@@ -85,7 +85,7 @@ public class ProvisionServiceTest extends AbstractTestNGSpringContextTests {
 		final LanguageSearchBean searchBean = new LanguageSearchBean();
 		searchBean.addKey("1");
 		searchBean.setFindInCache(true);
-		return languageServiceClient.findBeans(searchBean, 0, 1, null).get(0);
+		return languageServiceClient.findBeans(searchBean, 0, 1).get(0);
 	}
 	
 	protected List<MetadataType> getMetadataTypesByGrouping(final MetadataTypeGrouping grouping) {

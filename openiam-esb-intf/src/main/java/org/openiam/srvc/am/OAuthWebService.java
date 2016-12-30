@@ -1,17 +1,18 @@
 package org.openiam.srvc.am;
 
-import org.openiam.am.srvc.dto.*;
-import org.openiam.base.ws.Response;
-import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.thread.Sweepable;
+import java.util.List;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import java.util.List;
+import org.openiam.am.srvc.dto.AuthProvider;
+import org.openiam.am.srvc.dto.OAuthCode;
+import org.openiam.am.srvc.dto.OAuthScopesResponse;
+import org.openiam.am.srvc.dto.OAuthToken;
+import org.openiam.am.srvc.dto.OAuthUserClientXref;
+import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.res.dto.Resource;
 
 /**
  * Created by alexander on 06/07/15.
@@ -24,8 +25,7 @@ public interface OAuthWebService {
 
     @WebMethod
     OAuthScopesResponse getScopesForAuthrorization(@WebParam(name = "clientId", targetNamespace = "") String clientId,
-                                              @WebParam(name = "userId", targetNamespace = "") String userId,
-                                              @WebParam(name = "lang", targetNamespace = "")  Language language);
+                                              @WebParam(name = "userId", targetNamespace = "") String userId);
 
     @WebMethod
     Response saveClientScopeAuthorization(@WebParam(name = "providerId", targetNamespace = "") String providerId,
@@ -49,12 +49,10 @@ public interface OAuthWebService {
 
     @WebMethod
     List<Resource> getAuthorizedScopes(@WebParam(name = "clientId", targetNamespace = "") String clientId,
-                                       @WebParam(name = "oAuthToken", targetNamespace = "")  OAuthToken oAuthToken,
-                                       @WebParam(name = "lang", targetNamespace = "")  Language language);
+                                       @WebParam(name = "oAuthToken", targetNamespace = "")  OAuthToken oAuthToken);
     @WebMethod
     List<Resource> getAuthorizedScopesByUser(@WebParam(name = "clientId", targetNamespace = "") String clientId,
-                                       @WebParam(name = "userId", targetNamespace = "")  String userId,
-                                       @WebParam(name = "lang", targetNamespace = "")  Language language);
+                                       @WebParam(name = "userId", targetNamespace = "")  String userId);
     
     AuthProvider getCachedOAuthProviderById(final String id);
     AuthProvider getCachedOAuthProviderByName(final String name);

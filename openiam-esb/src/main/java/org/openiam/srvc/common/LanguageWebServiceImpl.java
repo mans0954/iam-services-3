@@ -28,15 +28,14 @@ public class LanguageWebServiceImpl extends AbstractApiService implements Langua
     }
 
     @Override
-    public List<Language> getUsedLanguages(Language language) {
+    public List<Language> getUsedLanguages() {
         BaseSearchServiceRequest<LanguageSearchBean> request = new BaseSearchServiceRequest<LanguageSearchBean>();
-        request.setLanguage(language);
         return this.getValueList(LanguageAPI.GetUsedLanguages, request, LanguageListResponse.class);
     }
 
     @Override
-    public List<Language> findBeans(LanguageSearchBean searchBean, int from, int size, Language language) {
-        BaseSearchServiceRequest<LanguageSearchBean> request = new BaseSearchServiceRequest<LanguageSearchBean>(searchBean, from, size, language);
+    public List<Language> findBeans(LanguageSearchBean searchBean, int from, int size) {
+        BaseSearchServiceRequest<LanguageSearchBean> request = new BaseSearchServiceRequest<LanguageSearchBean>(searchBean, from, size);
         return this.getValueList(LanguageAPI.FindLanguages, request, LanguageListResponse.class);
     }
 

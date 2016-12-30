@@ -15,14 +15,13 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/lang/service", name = "LanguageWebService")
 public interface LanguageWebService {
     @WebMethod
-    List<Language> getUsedLanguages(final @WebParam(name = "lang", targetNamespace = "") Language language);
+    List<Language> getUsedLanguages();
 
     @WebMethod
     List<Language> findBeans(
             final @WebParam(name = "searchBean", targetNamespace = "") LanguageSearchBean searchBean,
             final @WebParam(name = "from", targetNamespace = "") int from,
-            final @WebParam(name = "size", targetNamespace = "") int size,
-            final @WebParam(name = "lang", targetNamespace = "") Language language);
+            final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     int count(final @WebParam(name = "searchBean", targetNamespace = "") LanguageSearchBean searchBean);

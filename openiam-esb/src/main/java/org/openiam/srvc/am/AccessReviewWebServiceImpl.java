@@ -24,17 +24,16 @@ public class AccessReviewWebServiceImpl extends AbstractApiService implements Ac
     }
 
     @Override
-    public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType, Date date, Language language) {
+    public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType, Date date) {
         AccessReviewRequest request = new AccessReviewRequest();
         request.setFilterBean(filter);
         request.setViewType(viewType);
         request.setDate(date);
-        request.setLanguage(language);
         return this.manageApiRequest(AccessReviewAPI.AccessReviewTree, request, AccessViewResponse.class);
     }
 
     @Override
-    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType, Date date, Language language) {
+    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType, Date date) {
         AccessReviewRequest request = new AccessReviewRequest();
         request.setParentId(parentId);
         request.setParentBeanType(parentBeanType);
@@ -42,7 +41,6 @@ public class AccessReviewWebServiceImpl extends AbstractApiService implements Ac
         request.setFilterBean(filter);
         request.setViewType(viewType);
         request.setDate(date);
-        request.setLanguage(language);
         return this.manageApiRequest(AccessReviewAPI.AccessReviewSubTree, request, AccessViewResponse.class);
     }
 }

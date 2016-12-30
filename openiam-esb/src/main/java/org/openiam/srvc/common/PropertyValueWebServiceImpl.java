@@ -47,10 +47,9 @@ public class PropertyValueWebServiceImpl extends AbstractApiService implements P
 	}
 
 	@Override
-	public String getCachedValue(final String key, final Language language) {
+	public String getCachedValue(final String key) {
 		IdServiceRequest request = new IdServiceRequest();
 		request.setId(key);
-		request.setLanguage(language);
 		return this.getValue(PropertyValueAPI.GetCachedValue, request, StringResponse.class);
 	}
 
