@@ -69,7 +69,6 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourcePropDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -668,7 +667,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                             if (resource != null) {
                                                 bindingMap.put(TARGET_SYS_RES, resource);
 
-                                                String preProcessScript = resourcePropDao.findValueByName(resourceId,"PRE_PROCESS"); //getResProperty(resource.getResourceProps(), "PRE_PROCESS");
+                                                String preProcessScript = resourcePropDao.findValueByName(resourceId, "PRE_PROCESS"); //getResProperty(resource.getResourceProps(), "PRE_PROCESS");
                                                 if (preProcessScript != null && !preProcessScript.isEmpty()) {
                                                     PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                                     if (ppScript != null) {
@@ -1765,7 +1764,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             log.debug(" - Managed System Id = " + managedSysId);
                             log.debug(" - Resource Id = " + res.getId());
                         }
-                        final boolean retval = loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(), encPassword, passwordSync.getUserActivateFlag());
+                        final boolean retval = loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(), encPassword, passwordSync.getUserActivateFlag(),passwordSync.getForceChange());
 
                         if (retval) {
                             if (log.isDebugEnabled()) {
@@ -2643,7 +2642,15 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     }
 
                     Login loginDTO = loginDozerConverter.convertToDTO(targetLoginEntity, false);
+                    passwordSync.setUserId(loginDTO.getUserId());
+                    passwordSync.setManagedSystemId(loginDTO.getManagedSysId());
+                    if (callPreProcessor("RESET_PASSWORD", null, null, passwordSync) != ProvisioningConstants.SUCCESS) {
+                        response.fail();
+                        response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                        return response;
+                    }
                     ResponseType resp = resetPassword(requestId, loginDTO, passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false), objectMatchDozerConverter.convertToDTO(matchObj, false), buildPolicyMapHelper.buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"), "SET_PASSWORD", passwordSync.getForceChange());
+
                     if (resp.getStatus() == StatusCodeType.SUCCESS) {
                         // SIA - 20150702: audit as a child
                         childAuditLog.succeed();

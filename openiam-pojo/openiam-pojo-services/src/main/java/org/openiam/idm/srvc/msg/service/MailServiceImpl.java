@@ -15,6 +15,7 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.EmailEntity;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.msg.dto.NotificationsRequest;
 import org.openiam.idm.srvc.sysprop.dto.SystemPropertyDto;
 import org.openiam.idm.srvc.sysprop.service.SystemPropertyService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -354,6 +355,34 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             return sendCustomEmail(req);
         }
         return false;
+    }
+
+    @Transactional
+    public boolean sendNotifications(NotificationsRequest req)
+    {
+        if (req == null) {
+            return false;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("sendNotifications called with notificationType = " + req.getNotificationType());
+        }
+
+        String[] emailDetails = fetchEmailDetails(req.getNotificationType());
+        if (emailDetails == null) {
+            return false;
+        }
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        bindingMap.put("req", req);
+
+        String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
+        if (emailBody != null) {
+            sendEmailsByDateTime(null, req.getTo().toArray(new String[req.getTo().size()]), req.getCc().toArray(new String[req.getCc().size()]), null, emailDetails[SUBJECT_IDX], emailBody,
+                    isHtmlFormat(emailDetails), null, req.getExecutionDateTime());
+            return true;
+
+        } else {
+            return false;
+        }
     }
 
     /**

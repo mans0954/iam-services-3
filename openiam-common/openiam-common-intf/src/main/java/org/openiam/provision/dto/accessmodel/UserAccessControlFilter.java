@@ -1,8 +1,9 @@
 package org.openiam.provision.dto.accessmodel;
 
+import org.openiam.provision.dto.srcadapter.UserSearchAttributeRequest;
+
 import javax.xml.bind.annotation.*;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by zaporozhec on 7/28/16.
@@ -39,6 +40,12 @@ public class UserAccessControlFilter {
             @XmlElement(name = "value")}
     )
     private List<String> resourceTypes;
+
+    @XmlElementWrapper(name = "attributes")
+    @XmlElements({
+            @XmlElement(name = "value")}
+    )
+    private List<UserSearchAttributeRequest> searchAttributes;
 
     private String resourceFilter;
     private String groupFIlter;
@@ -115,5 +122,13 @@ public class UserAccessControlFilter {
 
     public void setCommonNameFilter(String commonNameFilter) {
         this.commonNameFilter = commonNameFilter;
+    }
+
+    public List<UserSearchAttributeRequest> getSearchAttributes() {
+        return searchAttributes;
+    }
+
+    public void setSearchAttributes(List<UserSearchAttributeRequest> searchAttributes) {
+        this.searchAttributes = searchAttributes;
     }
 }

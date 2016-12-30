@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -110,7 +111,7 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
                     StringUtils.isNotBlank(auditSearch.getAttributeName())) {
                 criteria.createAlias("customRecords", "c");
                 if (StringUtils.isNotBlank(auditSearch.getAttributeValue())) {
-                    criteria.add(Restrictions.ilike("c.value", auditSearch.getAttributeValue(),MatchMode.ANYWHERE));
+                    criteria.add(Restrictions.ilike("c.value", auditSearch.getAttributeValue(), MatchMode.ANYWHERE));
                 }
 
                 if (StringUtils.isNotBlank(auditSearch.getAttributeName())) {
@@ -207,8 +208,16 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
     }
 
     @Override
+    public void deleteOlderThan(Date date) {
+        this.getSession().
+                createQuery("delete from " + this.domainClass.getName() + " obj where obj.timestamp < :timestamp")
+                .setParameter("timestamp", date).executeUpdate();
+    }
+
+    @Override
     protected String getPKfieldName() {
         return "id";
     }
+
 
 }

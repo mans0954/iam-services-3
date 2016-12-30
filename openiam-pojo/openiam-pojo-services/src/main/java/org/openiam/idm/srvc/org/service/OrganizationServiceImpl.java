@@ -35,7 +35,6 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.searchbean.converter.LocationSearchBeanConverter;
@@ -1522,6 +1521,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         return count;
     }
 
+
+    @Transactional(readOnly = true)
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size) {
         return locationDao.findByOrganizationList(orgsId, from, size);
     }
@@ -1553,9 +1554,26 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         return null;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrganizationAttribute> findAttributesDtoByOrgIdsAndAttributeName(final Set<String> ids, final String attrName) {
+        if (CollectionUtils.isNotEmpty(ids) && StringUtils.isNotBlank(attrName)) {
+            List<OrganizationAttribute> retVal = null;
+            List<OrganizationAttributeEntity> entities = orgDao.findAttributesByOrgIdsAndAttributeName(ids, attrName);
+            if (CollectionUtils.isNotEmpty(entities)) {
+                retVal = organizationAttributeDozerConverter.convertToDTOList(entities, false);
+            }
+            return retVal;
+        } else {
+            log.warn("Ids and AttrName must be specified");
+            return null;
+        }
+    }
+
     private OrganizationService getProxyService() {
         OrganizationService service = (OrganizationService) ac.getBean("organizationService");
         return service;
     }
+
 
 }

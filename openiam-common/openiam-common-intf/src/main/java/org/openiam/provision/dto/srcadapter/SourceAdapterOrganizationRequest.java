@@ -1,11 +1,6 @@
 package org.openiam.provision.dto.srcadapter;
 
-import org.openiam.base.AttributeOperationEnum;
-import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-
 import javax.xml.bind.annotation.*;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -17,14 +12,14 @@ import java.util.Set;
         "symbol", "status", "entityAttributes","attributeLookup"})
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SourceAdapterOrganizationRequest extends SourceAdapterEntityRequest {
-    private SourceAdapterAttributeRequest attributeLookup;
+    private UserSearchAttributeRequest attributeLookup;
     private String metadataTypeId;
     private String organizationTypeId;
     private String newName;
     private String alias;
     @XmlElementWrapper(name = "entity-attributes-set")
     @XmlElements({@XmlElement(name = "entity-attribute")})
-    private Set<SourceAdapterAttributeRequest> entityAttributes;
+    private Set<UserSearchAttributeRequest> entityAttributes;
     private String description;
     private String domainName;
     private String ldapString;
@@ -67,11 +62,11 @@ public class SourceAdapterOrganizationRequest extends SourceAdapterEntityRequest
         this.alias = alias;
     }
 
-    public Set<SourceAdapterAttributeRequest> getEntityAttributes() {
+    public Set<UserSearchAttributeRequest> getEntityAttributes() {
         return entityAttributes;
     }
 
-    public void setEntityAttributes(Set<SourceAdapterAttributeRequest> entityAttributes) {
+    public void setEntityAttributes(Set<UserSearchAttributeRequest> entityAttributes) {
         this.entityAttributes = entityAttributes;
     }
 
@@ -148,11 +143,11 @@ public class SourceAdapterOrganizationRequest extends SourceAdapterEntityRequest
         this.addIfNotExistsInOpenIAM = addIfNotExistsInOpenIAM;
     }
 
-    public SourceAdapterAttributeRequest getAttributeLookup() {
+    public UserSearchAttributeRequest getAttributeLookup() {
         return attributeLookup;
     }
 
-    public void setAttributeLookup(SourceAdapterAttributeRequest attributeLookup) {
+    public void setAttributeLookup(UserSearchAttributeRequest attributeLookup) {
         this.attributeLookup = attributeLookup;
     }
 

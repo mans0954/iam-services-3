@@ -645,13 +645,13 @@ public class SourceAdapterDispatcher implements Runnable {
 
 
         if (CollectionUtils.isNotEmpty(org.getEntityAttributes())) {
-            for (SourceAdapterAttributeRequest attributeRequest : org.getEntityAttributes()) {
+            for (UserSearchAttributeRequest attributeRequest : org.getEntityAttributes()) {
                 this.processAttribute(organizationDB.getAttributes(), attributeRequest, organizationDB.getId(), warnings);
             }
         }
     }
 
-    private void processAttribute(Set<OrganizationAttribute> attributes, SourceAdapterAttributeRequest attributeRequest, String orgId, StringBuilder warnings) {
+    private void processAttribute(Set<OrganizationAttribute> attributes, UserSearchAttributeRequest attributeRequest, String orgId, StringBuilder warnings) {
         if (attributeRequest == null || StringUtils.isBlank(attributeRequest.getName())) {
             return;
         }
@@ -957,7 +957,7 @@ public class SourceAdapterDispatcher implements Runnable {
     private static void fillUserAttribute(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder
             warnings) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getUserAttributes())) {
-            for (SourceAdapterAttributeRequest fromWS : request.getUserAttributes()) {
+            for (UserSearchAttributeRequest fromWS : request.getUserAttributes()) {
                 UserAttribute a = pUser.getAttribute(fromWS.getName());
                 if (a != null) {
                     if (AttributeOperationEnum.DELETE.equals(fromWS.getOperation())) {

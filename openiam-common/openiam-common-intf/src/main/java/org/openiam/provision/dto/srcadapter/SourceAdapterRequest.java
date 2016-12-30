@@ -84,7 +84,7 @@ public class SourceAdapterRequest implements Serializable {
     @XmlElements({
             @XmlElement(name = "user-attribute")}
     )
-    private Set<SourceAdapterAttributeRequest> userAttributes;
+    private Set<UserSearchAttributeRequest> userAttributes;
 
     @XmlElementWrapper(name = "user-emails-set")
     @XmlElements({
@@ -145,11 +145,11 @@ public class SourceAdapterRequest implements Serializable {
     private SourceAdapterPasswordRequest passwordRequest;
 
     //forceMode
-    public Set<SourceAdapterAttributeRequest> getUserAttributes() {
+    public Set<UserSearchAttributeRequest> getUserAttributes() {
         return userAttributes;
     }
 
-    public void setUserAttributes(Set<SourceAdapterAttributeRequest> userAttributes) {
+    public void setUserAttributes(Set<UserSearchAttributeRequest> userAttributes) {
         this.userAttributes = userAttributes;
     }
 

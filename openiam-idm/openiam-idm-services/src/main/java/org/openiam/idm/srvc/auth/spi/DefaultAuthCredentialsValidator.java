@@ -83,7 +83,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
         if (lg.getResetPassword() > 0) {
             Policy passwordPolicy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
             String chngPwdAttr = getPolicyAttribute(passwordPolicy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
-            if (StringUtils.isNotBlank(chngPwdAttr) && StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), chngPwdAttr)) {
+            if ((StringUtils.isNotBlank(chngPwdAttr) && ( "true".equalsIgnoreCase(chngPwdAttr))) || lg.getForceChangePassword()==1) {
                 throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
             }
         }

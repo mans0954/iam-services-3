@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.msg.service;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.continfo.domain.EmailEntity;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.msg.dto.NotificationsRequest;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -44,6 +45,14 @@ public interface MailService {
     boolean sendNotification(
             @WebParam(name = "req", targetNamespace = "")
             NotificationRequest req);
+
+    /**
+     * Sends an email at more than one user
+     */
+    @WebMethod
+    boolean sendNotifications(
+            @WebParam(name = "req", targetNamespace = "")
+            NotificationsRequest req);
 
     /**
      * sending a email to one user,cc and having one attachment at time.
