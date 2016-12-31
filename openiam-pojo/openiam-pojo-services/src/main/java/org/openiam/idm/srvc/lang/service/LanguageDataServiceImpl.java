@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
+import org.openiam.cache.LanguageCacheKey;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.LanguageLocaleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -74,8 +75,9 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value="localizedLanguages", key="{#language}")
-    public List<Language> getUsedLanguages(Language language) {
+    @Cacheable(value="localizedLanguages")
+    @LanguageCacheKey
+    public List<Language> getUsedLanguages() {
         List<LanguageEntity> languageEntities = languageDao.getUsedLanguages();
         return languageEntities != null ? languageDozerConverter.convertToDTOList(languageEntities, true) : null;
     }
@@ -109,18 +111,11 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value="languages",key="{ #searchBean, #from, #size}", condition="{#searchBean != null and #searchBean.findInCache}")
+    @LocalizedServiceGet
+    @LanguageCacheKey
     public List<Language> findBeans(final LanguageSearchBean searchBean, final int from, final int size) {
         List<LanguageEntity> languageEntities = languageDao.getByExample(searchBean, from, size);
         return languageEntities != null ? languageDozerConverter.convertToDTOList(languageEntities, true) : null;
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    @Cacheable(value="languages", key="{ #searchBean, #from, #size,#language}", condition="{#searchBean != null and #searchBean.findInCache}")
-    public List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size,
-            final Language language) {
-        return this.findBeans(searchBean, from, size);
     }
 
     private void updateLanguageLocale(LanguageLocaleEntity lgl) {

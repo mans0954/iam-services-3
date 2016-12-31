@@ -24,7 +24,7 @@ public interface LanguageDataService {
      * 
      * @return
      */
-    List<Language> getUsedLanguages(Language language);
+    List<Language> getUsedLanguages();
 
     /**
      * Returns the lang specified by the lang
@@ -35,9 +35,6 @@ public interface LanguageDataService {
     Language getLanguage(String id);
 
     List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size);
-
-    List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size,
-                             final Language language);
 
 
     Language getDefaultLanguage();

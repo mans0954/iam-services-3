@@ -12,6 +12,7 @@ import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.property.dto.PropertyValue;
 import org.openiam.thread.Sweepable;
+import org.openiam.util.SpringSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -56,7 +57,8 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
 		});
 	}
 
-	public String getValue(final String key, final Language language) {
+	@Override
+	public String getValue(final String key) {
 		if(key == null) {
 			throw new RuntimeException("Key is null");
 		}
@@ -66,7 +68,8 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
 			throw new RuntimeException(String.format("Key '%s' does not exist in cache", key));
 		}
 		
-		if(language == null) {
+		final String languageId = SpringSecurityHelper.getLanguageId();
+		if(StringUtils.isBlank(languageId)) {
 			if(value.isMultilangual()) {
 				log.error(String.format("Key '%s' has a value that is marked as multilangual, but the input lang is null", key));
 				return null;
@@ -76,7 +79,7 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
 		String retval = null;
 		if(value.isMultilangual()) {
 			if(value.getInternationalizedValues() != null) {
-				final LanguageMapping mapping = value.getInternationalizedValues().get(language.getId());
+				final LanguageMapping mapping = value.getInternationalizedValues().get(languageId);
 				if(mapping != null) {
 					retval = mapping.getValue();
 				}
@@ -89,7 +92,7 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
 
 	@Override
 	public String getString(String key) {
-		return getValue(key, null);
+		return getValue(key);
 	}
 
 	@Override

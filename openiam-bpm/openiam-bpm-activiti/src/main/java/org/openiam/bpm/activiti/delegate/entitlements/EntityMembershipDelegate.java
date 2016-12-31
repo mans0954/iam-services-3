@@ -161,7 +161,6 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 request.setFilterBean(filterBean);
                                 request.setViewType(AccessReviewConstant.RESOURCE_VIEW);
                                 request.setDate(null);
-                                request.setLanguage(null);
                                 AccessViewResponse accessViewResponse = rabbitMQSender.sendAndReceive(accessReviewQueue, AccessReviewAPI.AccessReviewSubTree, request, AccessViewResponse.class);
 
                                 if (accessViewResponse != null && CollectionUtils.isNotEmpty(accessViewResponse.getBeans())) {

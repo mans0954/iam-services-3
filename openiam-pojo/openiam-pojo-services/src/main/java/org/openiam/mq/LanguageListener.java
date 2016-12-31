@@ -43,11 +43,11 @@ public class LanguageListener extends AbstractListener<LanguageAPI> {
                 switch (api){
                     case GetUsedLanguages:
                         response = new LanguageListResponse();
-                        ((LanguageListResponse)response).setList(languageDataService.getUsedLanguages(request.getLanguage()));
+                        ((LanguageListResponse)response).setList(languageDataService.getUsedLanguages());
                         return response;
                     case FindLanguages:
                         response = new LanguageListResponse();
-                        ((LanguageListResponse)response).setList(languageDataService.findBeans(((BaseSearchServiceRequest<LanguageSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize(), request.getLanguage()));
+                        ((LanguageListResponse)response).setList(languageDataService.findBeans(((BaseSearchServiceRequest<LanguageSearchBean>)request).getSearchBean(), request.getFrom(), request.getSize()));
                         return response;
                     case CountLanguages:
                         response = new IntResponse();

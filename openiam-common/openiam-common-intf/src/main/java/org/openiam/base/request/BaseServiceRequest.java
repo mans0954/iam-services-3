@@ -45,13 +45,6 @@ public abstract class BaseServiceRequest implements Serializable{
         this.requesterId = requesterId;
     }
 
-    public Language getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(Language language) {
-        this.language = language;
-    }
 
     public void setLanguageId(String languageId) {
         this.language = new Language();

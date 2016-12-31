@@ -53,7 +53,7 @@ public class PropertyValueQueueListener extends AbstractListener<PropertyValueAP
             @Override
             public Response doProcess(PropertyValueAPI propertyValueAPI, IdServiceRequest request) throws BasicDataServiceException {
                 StringResponse response = new StringResponse();
-                response.setValue(propertyValueSweeper.getValue(request.getId(), request.getLanguage()));
+                response.setValue(propertyValueSweeper.getValue(request.getId()));
                 return response;
             }
         };
