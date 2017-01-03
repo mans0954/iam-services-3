@@ -20,5 +20,6 @@ sudo chef-client -o openiam-devops-properties::service-urls -j /etc/chef/attribu
 sudo chef-client -o openiam-devops-properties::rabbitmq -j /etc/chef/attributes.json
 sudo chef-client -o openiam-devops-conf -j /etc/chef/attributes.json
 sudo chef-client -o openiam-devops-hazelcast -j /etc/chef/attributes.json
+sudo chef-client -o openiam-devops-elasticsearch -j /etc/chef/attributes.json
 sudo chmod 777 /data/openiam/logs
 sudo chown ubuntu /data/openiam/logs
