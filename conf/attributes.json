@@ -27,15 +27,15 @@
 			"selinux":false,
 			"dependencies":false
 		},
-		"db_type" : "mariadb"
+		"db_type" : "mariadb",
+		"elasticsearch" : {
+			"install_kibana" : false
+		}
 	},
 	"rabbitmq":{
 		"user":"openiam",
 		"password":"passwd00"
 	},
 	"artifactory_username": "kitchen_test",
-	"artifactory_password": "k%t4en",
-	"elasticsearch" : {
-		"install_kibana" : false
-	}
+	"artifactory_password": "k%t4en"
 }
