@@ -34,5 +34,8 @@
 		"password":"passwd00"
 	},
 	"artifactory_username": "kitchen_test",
-	"artifactory_password": "k%t4en"
+	"artifactory_password": "k%t4en",
+	"elasticsearch" : {
+		"install_kibana" : false
+	}
 }
