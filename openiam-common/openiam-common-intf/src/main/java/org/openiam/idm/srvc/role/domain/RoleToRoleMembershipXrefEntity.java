@@ -39,15 +39,13 @@ public class RoleToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false, nullable=false)
-	//@ElasticsearchField(name = "entityId", bridge=@ElasticsearchFieldBridge(impl = RoleBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @ElasticsearchFieldBridge(impl = RoleBridge.class)
     private RoleEntity entity;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MEMBER_ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false, nullable=false)
-    //@ElasticsearchField(name = "memberEntityId", bridge=@ElasticsearchFieldBridge(impl = RoleBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @ElasticsearchFieldBridge(impl = RoleBridge.class)
     private RoleEntity memberEntity;
 

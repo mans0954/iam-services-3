@@ -39,15 +39,14 @@ public class OrgToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<O
     
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false, nullable=false)
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @ElasticsearchFieldBridge(impl = OrganizationBridge.class)
     private OrganizationEntity entity;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MEMBER_COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false, nullable=false)
-    //@ElasticsearchField(name = "memberEntityId", bridge=@ElasticsearchFieldBridge(impl = OrganizationBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @ElasticsearchFieldBridge(impl = OrganizationBridge.class)
     private OrganizationEntity memberEntity;
 

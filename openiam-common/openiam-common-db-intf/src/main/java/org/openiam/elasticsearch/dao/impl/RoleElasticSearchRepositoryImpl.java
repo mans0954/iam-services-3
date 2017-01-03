@@ -1,11 +1,10 @@
 package org.openiam.elasticsearch.dao.impl;
 
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.elasticsearch.dao.RoleElasticSearchRepositoryCustom;
 import org.openiam.elasticsearch.model.RoleDoc;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.stereotype.Repository;

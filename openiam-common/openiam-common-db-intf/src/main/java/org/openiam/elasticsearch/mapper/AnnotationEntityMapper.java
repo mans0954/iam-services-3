@@ -12,12 +12,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.elasticsearch.common.netty.util.internal.ConcurrentHashMap;
 import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
 import org.openiam.elasticsearch.annotation.NestedCollectionType;
 import org.openiam.elasticsearch.annotation.NestedMapType;
@@ -27,7 +27,6 @@ import org.openiam.elasticsearch.converter.FieldMapper;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.data.elasticsearch.annotations.FieldType;
-import org.springframework.data.elasticsearch.annotations.NestedField;
 import org.springframework.data.elasticsearch.core.EntityMapper;
 import org.springframework.util.ReflectionUtils;
 
@@ -118,10 +117,9 @@ public class AnnotationEntityMapper implements EntityMapper {
 	private Object getValue(final Field field, Object value) throws JsonParseException, JsonMappingException, IOException, InstantiationException, IllegalAccessException {
 		final org.springframework.data.elasticsearch.annotations.Field esField = 
 				field.getAnnotation(org.springframework.data.elasticsearch.annotations.Field.class);
-		final NestedField nestedField = field.getAnnotation(NestedField.class);
 		
 		if(esField != null && value != null) {
-			boolean isNestedField = (nestedField != null) || (FieldType.Nested.equals(esField.type()));
+			boolean isNestedField = (FieldType.Nested.equals(esField.type()));
 			if(isNestedField) {				
 				if(Collection.class.isAssignableFrom(field.getType())) {
 					final NestedCollectionType nestedFieldType = field.getAnnotation(NestedCollectionType.class);

@@ -99,7 +99,6 @@ public class OrganizationEntity extends AbstractEntitlementPolicyEntity {
     @Internationalized
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     //@ElasticsearchFieldBridge(impl = OrganizationTypeBridge.class)
-    //@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private OrganizationTypeEntity organizationType;
 
     @Column(name="ABBREVIATION", length=20)

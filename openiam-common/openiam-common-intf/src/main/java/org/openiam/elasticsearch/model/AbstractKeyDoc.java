@@ -16,7 +16,7 @@ public abstract class AbstractKeyDoc implements BaseIdentity {
 		this.id = entity.getId();
 	}
 
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store=true)
 	private String id;
 	
 	@Override

@@ -4,11 +4,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.MatchType;
 import org.openiam.elasticsearch.dao.PhoneElasticSearchRepositoryCustom;
 import org.openiam.idm.searchbeans.PhoneSearchBean;
-import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

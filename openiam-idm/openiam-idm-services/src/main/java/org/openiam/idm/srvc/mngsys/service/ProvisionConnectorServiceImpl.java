@@ -2,7 +2,7 @@ package org.openiam.idm.srvc.mngsys.service;
 
 import java.util.List;
 
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.dozer.converter.ProvisionConnectorConverter;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;

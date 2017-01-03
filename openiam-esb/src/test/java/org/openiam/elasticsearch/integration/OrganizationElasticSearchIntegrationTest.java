@@ -4,24 +4,15 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.elasticsearch.common.lang3.StringUtils;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.elasticsearch.model.OrganizationDoc;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.service.integration.AbstractServiceTest;
-import org.openiam.srvc.am.OrganizationDataService;
-import org.openiam.srvc.am.OrganizationTypeDataService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 public class OrganizationElasticSearchIntegrationTest extends AbstractMetdataTypeElasticSearchIntegrationTest<OrganizationDoc, OrganizationSearchBean, Organization> {

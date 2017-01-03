@@ -1,6 +1,6 @@
 package org.openiam.concurrent;
 
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseObject;
 import org.openiam.base.request.BaseServiceRequest;
 import org.openiam.util.SpringSecurityHelper;

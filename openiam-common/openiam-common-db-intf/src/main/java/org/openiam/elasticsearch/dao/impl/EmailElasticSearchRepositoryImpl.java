@@ -4,8 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.elasticsearch.common.lang3.StringUtils;
-import org.openiam.base.ws.MatchType;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.elasticsearch.dao.EmailElasticSearchRepositoryCustom;
 import org.openiam.idm.searchbeans.EmailSearchBean;
@@ -15,7 +14,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
-import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.stereotype.Repository;
 
 /* 

@@ -176,24 +176,6 @@
         </dependency>-->
 
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        
-        <dependency>
-   			<groupId>org.hibernate</groupId>
-   			<artifactId>hibernate-entitymanager</artifactId>
-   			<version>${hibernate.entity.manager.version}</version>
-   			<scope>compile</scope>
-		</dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>org.hibernate</groupId>-->
-            <!--<artifactId>hibernate-ehcache</artifactId>-->
-        <!--</dependency>-->
-
-        <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache-core</artifactId>
         </dependency>
@@ -229,10 +211,6 @@
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib-nodep</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.jms</groupId>
-            <artifactId>jms</artifactId>
         </dependency>
         <dependency>
             <groupId>antlr</groupId>
@@ -395,7 +373,7 @@
 
 		<dependency>
 			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-hibernate4</artifactId>
+			<artifactId>hazelcast-hibernate5</artifactId>
 		</dependency>
         <dependency>
             <groupId>wsdl4j</groupId>

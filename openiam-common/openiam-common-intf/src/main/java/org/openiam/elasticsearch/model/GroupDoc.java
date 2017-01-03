@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.elasticsearch.annotation.EntityRepresentation;
 import org.openiam.elasticsearch.annotation.NestedMapType;
 import org.openiam.elasticsearch.constants.ESIndexName;
@@ -25,11 +25,11 @@ public class GroupDoc extends AbstractMetadataTypeDoc {
 	
 	public GroupDoc() {}
 
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
 	private String managedSysId;
 	
 	@NestedMapType(keyMapper=StringMapper.class, valueMapper=ListOfStringMapper.class)
-	@Field(type = FieldType.Nested)
+	@Field(type = FieldType.Nested, store=false)
 	private Map<String, Set<String>> attributes;
 	
 	

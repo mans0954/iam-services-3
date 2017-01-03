@@ -16,7 +16,7 @@ public class MetadataTypeDoc extends AbstractKeyNameDoc {
 
 	public MetadataTypeDoc() {}
 	
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
 	private String grouping;
 
 	public String getGrouping() {

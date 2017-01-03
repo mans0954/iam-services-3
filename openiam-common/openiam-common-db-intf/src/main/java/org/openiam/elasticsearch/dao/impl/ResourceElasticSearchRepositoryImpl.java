@@ -3,12 +3,11 @@ package org.openiam.elasticsearch.dao.impl;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.elasticsearch.dao.ResourceElasticSearchRepositoryCustom;
 import org.openiam.elasticsearch.model.ResourceDoc;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;

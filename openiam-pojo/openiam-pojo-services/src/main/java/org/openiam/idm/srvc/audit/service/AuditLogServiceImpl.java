@@ -21,6 +21,7 @@ import org.openiam.elasticsearch.dao.OrganizationElasticSearchRepository;
 import org.openiam.elasticsearch.dao.ResourceElasticSearchRepository;
 import org.openiam.elasticsearch.dao.RoleElasticSearchRepository;
 import org.openiam.elasticsearch.model.GroupDoc;
+import org.openiam.elasticsearch.model.LoginDoc;
 import org.openiam.elasticsearch.model.OrganizationDoc;
 import org.openiam.elasticsearch.model.ResourceDoc;
 import org.openiam.elasticsearch.model.RoleDoc;
@@ -110,8 +111,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     				target.setLogId(auditLogEntity.getId());
                     if(StringUtils.isNotEmpty(target.getTargetId()) && StringUtils.isEmpty(target.getObjectPrincipal())) {
                         if(AuditTarget.USER.value().equals(target.getTargetType())) {
-                            final List<LoginEntity> principals = loginDAO.findByUserId(target.getTargetId());
-                            final LoginEntity loginEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
+                        	final LoginDoc loginEntity = loginDAO.findFirstByUserIdAndManagedSysId(target.getTargetId(), sysConfiguration.getDefaultManagedSysId());
                             if(loginEntity != null) {
                             	target.setObjectPrincipal(loginEntity.getLogin());
                             }
@@ -140,17 +140,10 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     		}
             if(StringUtils.isEmpty(auditLogEntity.getPrincipal()) && StringUtils.isNotEmpty(auditLogEntity.getUserId())) {
-                List<LoginEntity> principals = loginDAO.findByUserId(auditLogEntity.getUserId());
-                try {
-                	LoginEntity loginEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
-                	if (loginEntity != null) {
-                		auditLogEntity.setPrincipal(loginEntity.getLogin());
-                	}
-                } catch(Exception e) {
-                	//this will fail when inserting an audit lot during a unit test
-                	// if this fails, it's due to a missing managed system, and we have
-                	// bigger problems than audit log at that point.
-                }
+            	final LoginDoc loginEntity = loginDAO.findFirstByUserIdAndManagedSysId(auditLogEntity.getUserId(), sysConfiguration.getDefaultManagedSysId());
+            	if (loginEntity != null) {
+            		auditLogEntity.setPrincipal(loginEntity.getLogin());
+            	}
             }
             return auditLogEntity;
         }

@@ -89,7 +89,6 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
-//    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
     @Column(name = "POSTAL_CD", length = 100)

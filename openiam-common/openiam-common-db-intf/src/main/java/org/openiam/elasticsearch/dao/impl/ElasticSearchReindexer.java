@@ -2,6 +2,7 @@ package org.openiam.elasticsearch.dao.impl;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -12,7 +13,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dozer.Mapper;
-import org.elasticsearch.common.netty.util.internal.ConcurrentHashMap;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.concurrent.AuditLogHolder;
@@ -186,6 +186,9 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 		if(repo != null) {
 			elasticSearchTemplate.deleteIndex(documentClazz);
 			elasticSearchTemplate.createIndex(documentClazz);
+			//curl -XPUT "http://localhost:9200/my_index/_settings" -d '{ "index" : { "max_result_window" : 500000 } }'
+			elasticSearchTemplate.putMapping(documentClazz);
+			elasticSearchTemplate.refresh(documentClazz);
 			repo.deleteAll();
 			
 			Class<?> entityClass = documentClazz;

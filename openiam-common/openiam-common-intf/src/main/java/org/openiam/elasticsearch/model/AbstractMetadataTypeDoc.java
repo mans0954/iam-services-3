@@ -6,7 +6,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 public abstract class AbstractMetadataTypeDoc extends AbstractKeyNameDoc {
 
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
 	private String metadataTypeId;
 
 	public String getMetadataTypeId() {

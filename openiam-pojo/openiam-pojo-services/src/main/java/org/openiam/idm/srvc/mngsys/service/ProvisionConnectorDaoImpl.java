@@ -1,7 +1,9 @@
 package org.openiam.idm.srvc.mngsys.service;
 
+import java.util.List;
+
 import org.apache.commons.collections.CollectionUtils;
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
@@ -13,8 +15,6 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public class ProvisionConnectorDaoImpl extends BaseDaoImpl<ProvisionConnectorEntity, String> implements ProvisionConnectorDao {

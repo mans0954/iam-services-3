@@ -39,13 +39,13 @@ public class GroupToGroupMembershipXrefEntity extends AbstractMembershipXrefEnti
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "GROUP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false, nullable=false)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @ElasticsearchFieldBridge(impl = GroupBridge.class)
     private GroupEntity entity;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MEMBER_GROUP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false, nullable=false)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @ElasticsearchFieldBridge(impl = GroupBridge.class)
     private GroupEntity memberEntity;
     

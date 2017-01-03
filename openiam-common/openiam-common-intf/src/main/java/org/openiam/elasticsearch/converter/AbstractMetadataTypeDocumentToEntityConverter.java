@@ -1,6 +1,6 @@
 package org.openiam.elasticsearch.converter;
 
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.elasticsearch.model.AbstractMetadataTypeDoc;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;

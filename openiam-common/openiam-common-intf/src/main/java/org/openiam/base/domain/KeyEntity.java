@@ -21,7 +21,7 @@ public abstract class KeyEntity implements Serializable, BaseIdentity {
     @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @org.springframework.data.annotation.Id
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store=true)
     protected String id;
 
 	public String getId() {

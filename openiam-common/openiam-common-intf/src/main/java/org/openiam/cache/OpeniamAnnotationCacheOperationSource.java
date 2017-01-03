@@ -1,6 +1,7 @@
 package org.openiam.cache;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,10 +36,12 @@ public class OpeniamAnnotationCacheOperationSource extends AnnotationCacheOperat
 		 * The method is from the interface, which will *not* have the annotations that we
 		 * need.  As a result, let's get it from the class instead
 		 */
-		try {
-			method = targetClass.getMethod(method.getName(), method.getParameterTypes());
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
+		if(Modifier.isPublic(method.getModifiers())) {
+			try {
+				method = targetClass.getMethod(method.getName(), method.getParameterTypes());
+			} catch (Throwable e) {
+				throw new RuntimeException(String.format("Cannot get actual method: %s", method), e);
+			}
 		}
 		return method;
 	}
@@ -48,21 +51,18 @@ public class OpeniamAnnotationCacheOperationSource extends AnnotationCacheOperat
 		if(methodHasCacheEvictAnnotation(method, targetClass)) {
 			if(operations == null) {
 				operations = new ArrayList<CacheOperation>(1);
-				operations.add(new OpeniamCacheEviction());
+				operations.add(new OpeniamCacheEviction(new OpeniamCacheEviction.Builder()));
 			}
 		}
 		return operations;
 	}
 
 	private boolean methodHasCacheEvictAnnotation(Method method) {
-		return (method.getAnnotation(CacheKeyEviction.class) != null) || (method.getAnnotation(CacheKeyEvictions.class) != null);
+		return method != null && (method.getAnnotation(CacheKeyEviction.class) != null) || (method.getAnnotation(CacheKeyEvictions.class) != null);
 	}
 	
 	private boolean methodHasCacheEvictAnnotation(Method method, final Class<?> targetClass) {
-		if(methodHasCacheEvictAnnotation(method)) {
-			return true;
-		} else if((getActualMethod(method, targetClass).getAnnotation(CacheKeyEviction.class) != null) ||
-				  (getActualMethod(method, targetClass).getAnnotation(CacheKeyEvictions.class) != null)) {
+		if(methodHasCacheEvictAnnotation(method) || methodHasCacheEvictAnnotation(getActualMethod(method, targetClass))) {
 			return true;
 		} else {
 			return false;
@@ -101,7 +101,7 @@ public class OpeniamAnnotationCacheOperationSource extends AnnotationCacheOperat
 		Collection<CacheOperation> operations = new ArrayList<CacheOperation>();
 		if(methodHasCacheEvictAnnotation(method)) {
 			/* this is a placeholder, so that the OpeniamCacheInterceptor gets called */
-			operations.add(new OpeniamCacheEviction());
+			operations.add(new OpeniamCacheEviction(new OpeniamCacheEviction.Builder()));
 		}
 		
 		final Collection<CacheOperation> actualOperations =  super.findCacheOperations(method);

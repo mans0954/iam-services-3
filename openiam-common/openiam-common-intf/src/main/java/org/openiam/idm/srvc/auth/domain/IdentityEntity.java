@@ -28,15 +28,12 @@ import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 @AttributeOverride(name = "id", column = @Column(name = "IDENTITY_ID"))
 public class IdentityEntity extends KeyEntity  {
 
-//    @Field(name = "identity", analyze = Analyze.YES, store = Store.YES)
     @Column(name="IDENTIFICATION",length=320)
     private String identity;
 
-//    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
-//    @Field(name = "referredObjectId", analyze = Analyze.NO, store = Store.YES)
     @Column(name="REFERRED_OBJECT_ID",length=32)
     private String referredObjectId;
 

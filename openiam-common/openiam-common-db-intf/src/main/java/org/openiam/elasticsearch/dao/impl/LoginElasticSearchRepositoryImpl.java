@@ -2,24 +2,22 @@ package org.openiam.elasticsearch.dao.impl;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepositoryCustom;
+import org.openiam.elasticsearch.model.LoginDoc;
 import org.openiam.idm.searchbeans.LoginSearchBean;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class LoginElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<LoginEntity, String, LoginSearchBean> implements LoginElasticSearchRepositoryCustom {
+public class LoginElasticSearchRepositoryImpl extends AbstractElasticSearchRepository<LoginDoc, String, LoginSearchBean> implements LoginElasticSearchRepositoryCustom {
 
 	public LoginElasticSearchRepositoryImpl() {
 		super();
@@ -56,25 +54,25 @@ public class LoginElasticSearchRepositoryImpl extends AbstractElasticSearchRepos
 	@Override
 	public Page<String> findUserIds(final LoginSearchBean searchBean, final Pageable pageable) {
 		final CriteriaQuery criteria = getCriteria(searchBean);
-		Page<LoginEntity> page = null;
+		Page<LoginDoc> page = null;
 		if(criteria != null) {
 			criteria.addFields("userId");
 			criteria.setPageable(pageable);
-			page = elasticSearchTemplate.queryForPage(criteria, LoginEntity.class);
+			page = elasticSearchTemplate.queryForPage(criteria, LoginDoc.class);
 		} else {
-			page = new PageImpl<LoginEntity>(Collections.EMPTY_LIST);
+			page = new PageImpl<LoginDoc>(Collections.EMPTY_LIST);
 		}
 		final List<String> stringList = page.getContent().stream().map(e -> e.getUserId()).collect(Collectors.toList());
 		return new PageImpl<String>(stringList, pageable, page.getTotalElements());
 	}
 
 	@Override
-	public Class<LoginEntity> getDocumentClass() {
-		return LoginEntity.class;
+	public Class<LoginDoc> getDocumentClass() {
+		return LoginDoc.class;
 	}
 
 	@Override
-	public void prepare(LoginEntity entity) {
+	public void prepare(LoginDoc entity) {
 		// TODO Auto-generated method stub
 		
 	}

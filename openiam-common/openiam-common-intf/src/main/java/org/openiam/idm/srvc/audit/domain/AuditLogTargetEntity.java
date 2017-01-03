@@ -42,7 +42,7 @@ public class AuditLogTargetEntity extends KeyEntity {
     private IdmAuditLogEntity log;
     
     @Parent(type=ESIndexType.AUDIT_LOG)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Transient
     private String logId;
     

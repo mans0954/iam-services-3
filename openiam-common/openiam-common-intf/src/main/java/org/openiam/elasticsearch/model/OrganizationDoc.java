@@ -20,13 +20,13 @@ public class OrganizationDoc extends AbstractMetadataTypeDoc {
 		super();
 	}
 
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store=false)
 	private String organizationTypeId;
 	
-	@Field(type = FieldType.Object, index = FieldIndex.not_analyzed)
+	@Field(type = FieldType.String, index = FieldIndex.analyzed, store=false)
 	private List<String> parentIds;
 	
-	@Field(type = FieldType.Object, index = FieldIndex.not_analyzed)
+	@Field(type = FieldType.String, index = FieldIndex.analyzed, store=false)
 	private List<String> parentOrganizationTypeIds;
 	
 	

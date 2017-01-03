@@ -6,9 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.elasticsearch.annotation.EntityRepresentation;
-import org.openiam.elasticsearch.annotation.NestedCollectionType;
 import org.openiam.elasticsearch.annotation.NestedMapType;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
@@ -27,23 +26,23 @@ public class ResourceDoc extends AbstractMetadataTypeDoc {
 	
 	public ResourceDoc() {}
 	
-	@Field(type = FieldType.Object, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
 	private List<String> parentIds;
 	
-	@Field(type = FieldType.Object, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
 	private List<String> childIds;
 	
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
 	private String resourceTypeId;
 	
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
 	private String risk;
 	
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
 	private boolean root;
 	
 	@NestedMapType(keyMapper=StringMapper.class, valueMapper=ListOfStringMapper.class)
-	@Field(type = FieldType.Nested)
+	@Field(type = FieldType.Nested, store= false)
 	private Map<String, Set<String>> attributes;
 
 

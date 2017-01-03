@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchParam;
+import org.openiam.elasticsearch.model.LoginDoc;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -40,7 +41,7 @@ public class LoginElasticSearchRepositoryTest extends AbstractElasticSearchRepos
 	
 	@Test
 	public void testFindByUserId() {
-		final List<LoginEntity> logins = repo.findByUserId("3000");
+		final List<LoginDoc> logins = repo.findByUserId("3000");
 		Assert.assertTrue(CollectionUtils.isNotEmpty(logins));
 	}
 

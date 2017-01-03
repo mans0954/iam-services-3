@@ -5,7 +5,6 @@ import java.net.InetSocketAddress;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.node.NodeBuilder;
@@ -24,8 +23,10 @@ public class ElasticSearchConfig {
     private static final String WORK_DIR="work";
     private static final String LOG_DIR="logs";
 
+    /*
     @Value("${org.openiam.es.client}")
     private String clientType;
+    */
     
     @Value("${org.openiam.es.external.nodes}")
     private String esNodes;
@@ -40,15 +41,16 @@ public class ElasticSearchConfig {
 	public Client client() {
 		
 		Client client = null;
-		if(StringUtils.equalsIgnoreCase(clientType, "embedded")) {
+		/*if(StringUtils.equalsIgnoreCase(clientType, "embedded")) {
 			final NodeBuilder builder = NodeBuilder.nodeBuilder().clusterName(clusterName);
-			builder.settings(ImmutableSettings.builder().put("cluster.name", clusterName)
+			builder.settings(Settings.builder().put("cluster.name", clusterName)
 														.put("path.data", hibernateSearchBase + "/" + DATA_DIR)
 														.put("path.work", hibernateSearchBase + "/" + WORK_DIR)
+														//.put("path.home", hibernateSearchBase)
 														.put("path.logs", hibernateSearchBase + "/" + LOG_DIR).build());
 			client = builder.local(true).node().start().client();
-		} else { /* external */
-			client = new TransportClient(ImmutableSettings.builder().put("cluster.name", clusterName).build());
+		} else {*/ /* external */
+			client = TransportClient.builder().settings(Settings.builder().put("cluster.name", clusterName)).build();
 			//client = builder.local(false).client(true).build().client();
 			//if(!(client instanceof TransportClient)) {
 			//	throw new RuntimeException(String.format("Expected external elastic search to be of type: %s, but was: %s", TransportClient.class, client.getClass().getCanonicalName()));
@@ -67,7 +69,7 @@ public class ElasticSearchConfig {
 					((TransportClient)client).addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress(hostname, port)));
 				}
 			}
-		}
+		//}
 		return client;
 	}
 	

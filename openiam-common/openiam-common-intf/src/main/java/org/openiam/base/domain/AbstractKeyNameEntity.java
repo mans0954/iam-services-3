@@ -9,7 +9,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @MappedSuperclass
 public abstract class AbstractKeyNameEntity extends KeyEntity {
 
-	@Field(type = FieldType.String, index = FieldIndex.analyzed)
+	@Field(type = FieldType.String, index = FieldIndex.analyzed, store=true)
 	protected String name;
 
 	public String getName() {

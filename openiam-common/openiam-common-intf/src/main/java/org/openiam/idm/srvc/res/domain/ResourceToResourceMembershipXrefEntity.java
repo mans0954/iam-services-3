@@ -39,17 +39,13 @@ public class ResourceToResourceMembershipXrefEntity extends AbstractMembershipXr
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
-    //@ElasticsearchField(name = "entityId", bridge=@ElasticsearchFieldBridge(impl = ResourceBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @ElasticsearchFieldBridge(impl = ResourceBridge.class)
     private ResourceEntity entity;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MEMBER_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
-    //@ElasticsearchField(name = "memberEntityId", bridge=@ElasticsearchFieldBridge(impl = ResourceBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @ElasticsearchFieldBridge(impl = ResourceBridge.class)
     private ResourceEntity memberEntity;
 

@@ -14,7 +14,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Document(indexName = ESIndexName.ROLE, type= ESIndexType.ROLE)
 public class RoleDoc extends AbstractMetadataTypeDoc {
 
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
 	private String managedSysId;
 	
 	public RoleDoc(){}

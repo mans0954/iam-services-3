@@ -3,12 +3,11 @@ package org.openiam.elasticsearch.dao;
 import java.util.Date;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDAO;
 import org.openiam.util.AuditLogHelper;
 import org.springframework.beans.factory.annotation.Autowired;

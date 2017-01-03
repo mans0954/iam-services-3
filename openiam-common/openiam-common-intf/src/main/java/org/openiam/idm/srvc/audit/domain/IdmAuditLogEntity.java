@@ -77,64 +77,64 @@ public class IdmAuditLogEntity extends KeyEntity {
     @Column(name="USER_ID", length=32)
     private String userId;
     
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="PRINCIPAL", length=320)
     private String principal;
     
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="MANAGED_SYS_ID", length=32)
     private String managedSysId;
     
-	@Field(type = FieldType.Date, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.Date, index = FieldIndex.not_analyzed, store= false)
     @Column(name="CREATED_DATETIME")
     private Date timestamp;
 
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="SOURCE", length=50)
     private String source;
     
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="CLIENT_IP", length=50)
     private String clientIP;
     
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="NODE_ID", length=50)
     private String nodeIP;
     
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="LOG_ACTION", length=50)
     private String action;
     
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="RESULT", length=50)
     private String result;
     
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="HASH", length=100)
     private String hash;
     
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="SESSION_ID", length=100)
     private String sessionID;
     
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="CORRELATION_ID", length=32)
     private String correlationId;
 	
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
 	@Transient
 	private String authProviderId;
 	
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
 	@Transient
 	private String contentProviderId;
 	
-	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
 	@Transient
 	private String uriPatternId;
 	
 	@Transient
-	@Field(type = FieldType.Nested)
+	@Field(type = FieldType.Nested, store=false)
 	private Map<String, String> attributes;
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
@@ -145,7 +145,7 @@ public class IdmAuditLogEntity extends KeyEntity {
     private Set<IdmAuditLogCustomEntity> customRecords = new LinkedHashSet<IdmAuditLogCustomEntity>();
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
-    @Field(type = FieldType.Nested, index = FieldIndex.not_analyzed, store= true, includeInParent=true)
+    @Field(type = FieldType.Nested, index = FieldIndex.not_analyzed, store= false, includeInParent=true)
     @NestedCollectionType(AuditLogTargetEntity.class)
     private Set<AuditLogTargetEntity> targets = new LinkedHashSet<AuditLogTargetEntity>();
     
@@ -168,7 +168,7 @@ public class IdmAuditLogEntity extends KeyEntity {
      * 
      * @Lev Bornovalov
      */
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Transient
     private String parentId = "null";
 

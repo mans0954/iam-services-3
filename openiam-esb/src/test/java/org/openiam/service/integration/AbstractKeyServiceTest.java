@@ -4,18 +4,14 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.elasticsearch.common.lang3.StringUtils;
-import org.openiam.base.BaseIdentity;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.KeyDTO;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
-import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

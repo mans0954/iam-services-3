@@ -6,7 +6,19 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.*;
+import javax.persistence.AttributeOverride;
+import javax.persistence.Cacheable;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -15,52 +27,33 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.constants.ESIndexName;
-import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.annotation.DocumentRepresentation;
+import org.openiam.elasticsearch.converter.LoginDocumentToEntityConverter;
+import org.openiam.elasticsearch.model.LoginDoc;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldIndex;
-import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Entity
 @Table(name="LOGIN")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Login.class)
-//@Indexed
 @Embeddable
-@Document(indexName = ESIndexName.LOGIN, type= ESIndexType.LOGIN)
-//@ElasticsearchIndex(indexName = ESIndexName.USERS)
-//@ElasticsearchMapping(typeName = ESIndexType.LOGIN/*, parent = ESIndexType.USER*/)
 @AttributeOverride(name = "id", column = @Column(name = "LOGIN_ID"))
+@DocumentRepresentation(value=LoginDoc.class, converter=LoginDocumentToEntityConverter.class)
 public class LoginEntity extends KeyEntity {
 
-    //@Field(name = "login", analyze = Analyze.YES, store = Store.YES)
-//    @ElasticsearchField(name = "login", store = ElasticsearchStore.Yes, index = Index.Analyzed)
-	/*
-    @ElasticsearchFields(fields = {@ElasticsearchField(name = "login", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
-                                    @ElasticsearchField(name = "loginTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
-	*/
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     @Column(name="LOGIN",length=320)
     private String login;
     
     @Column(name="LOWERCASE_LOGIN",length=320)
     private String lowerCaseLogin;
     
-//    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
-    //@ElasticsearchField(name = "managedSysId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
-//    @Field(name = "userId", analyze = Analyze.NO, store = Store.YES)
-    //@ElasticsearchField(name = "userId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     @Column(name="USER_ID",length=32)
     protected String userId;
 

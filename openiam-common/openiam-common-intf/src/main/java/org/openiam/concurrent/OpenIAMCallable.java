@@ -2,7 +2,7 @@ package org.openiam.concurrent;
 
 import java.util.concurrent.Callable;
 
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.util.SpringSecurityHelper;
 
 public class OpenIAMCallable<V> implements Callable<V> {

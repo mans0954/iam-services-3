@@ -16,7 +16,7 @@ public abstract class AbstractKeyNameDoc extends AbstractKeyDoc {
 		this.name = entity.getName();
 	}
 
-	@Field(type = FieldType.String, index = FieldIndex.analyzed)
+	@Field(type = FieldType.String, index = FieldIndex.analyzed, store=false)
 	private String name;
 
 	public String getName() {

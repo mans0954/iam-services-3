@@ -52,17 +52,17 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
     @Size(max = 100, message = "validator.email.description.toolong")
     private String description;
 
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
     @Column(name = "EMAIL_ADDRESS", length = 320)
     @Size(max = 320, message = "validator.email.toolong")
     protected String emailAddress;
     
     @Transient
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
     private String emailUsername;
     
     @Transient
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
     private String emailDomain;
 
     @Column(name = "IS_DEFAULT")

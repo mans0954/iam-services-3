@@ -197,12 +197,6 @@
 			<artifactId>dozer</artifactId>
 		</dependency>
 
-		<dependency>
-            <groupId>org.apache.geronimo.specs</groupId>
-            <artifactId>geronimo-jms_1.1_spec</artifactId>
-            <version>${geronimo.jms.version}</version>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-idm-intf</artifactId>

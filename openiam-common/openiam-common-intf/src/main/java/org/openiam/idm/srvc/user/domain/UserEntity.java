@@ -66,18 +66,12 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldIndex;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-//import org.hibernate.search.annotations.*;
-//import org.hibernate.search.annotations.Index;
-
 @Entity
 @FilterDef(name = "parentTypeFilter", parameters = @ParamDef(name = "parentFilter", type = "string"))
 @Table(name = "USERS")
 @DozerDTOCorrespondence(User.class)
-//@Indexed
 @Internationalized
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-//@ElasticsearchIndex(indexName = ESIndexName.USERS)
-//@ElasticsearchMapping(typeName = ESIndexType.USER)
 @Document(indexName = ESIndexName.USERS, type= ESIndexType.USER)
 @AttributeOverride(name = "id", column = @Column(name = "USER_ID"))
 public class UserEntity extends KeyEntity {
@@ -95,55 +89,31 @@ public class UserEntity extends KeyEntity {
     private String createdBy;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
-    //@ElasticsearchField(name = "employeeId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
-
-//    @Column(name = "EMPLOYEE_TYPE", length = 20)
-//    @Size(max = 20, mq = "validator.user.employee.type.toolong")
-//    @Field(index=Index.UN_TOKENIZED, name="employeeType", store=Store.YES)
-//    private String employeeType;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "EMPLOYEE_TYPE", insertable = true, updatable = true, nullable=true)
     @Internationalized
-    //@ElasticsearchField(name = "employeeType", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-//    @IndexedEmbedded
     @ElasticsearchFieldBridge(impl = MetadataTypeBridge.class)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     private MetadataTypeEntity employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
-//    @ElasticsearchField(name = "firstName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
-    /*
-    @ElasticsearchFields(fields = {@ElasticsearchField(name = "firstName", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
-                                   @ElasticsearchField(name = "firstNameTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
-	*/
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
-
-//    @Column(name = "JOB_CODE", length = 50)
-//    @Size(max = 50, mq = "validator.user.job.code.toolong")
-//    private String jobCode;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "JOB_CODE", insertable = true, updatable = true, nullable=true)
     @Internationalized
-    //@ElasticsearchField(name = "jobCode", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-//    @IndexedEmbedded
     @ElasticsearchFieldBridge(impl = MetadataTypeBridge.class)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
-//    @ElasticsearchField(name = "lastName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
-    /*
-    @ElasticsearchFields(fields = {@ElasticsearchField(name = "lastName", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
-                                   @ElasticsearchField(name = "lastNameTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
-	*/
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
     @Size(max = 50, message = "validator.user.last.name.toolong")
     private String lastName;
 
@@ -165,9 +135,7 @@ public class UserEntity extends KeyEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)
     @Internationalized
-//    @IndexedEmbedded
-    //@ElasticsearchField(name = "type", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @ElasticsearchFieldBridge(impl = MetadataTypeBridge.class)
     protected MetadataTypeEntity type;
 
@@ -189,14 +157,12 @@ public class UserEntity extends KeyEntity {
 
     @Column(name = "STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    //@ElasticsearchField(name = "userStatus", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     private UserStatusEnum status;
 
     @Column(name = "SECONDARY_STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    //@ElasticsearchField(name = "accountStatus", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     private UserStatusEnum secondaryStatus;
 
     @Column(name = "SUFFIX", length = 20)
@@ -234,12 +200,7 @@ public class UserEntity extends KeyEntity {
 
     @Column(name = "MAIDEN_NAME", length = 40)
     @Size(max = 40, message = "validator.user.maiden.name.toolong")
-//    @ElasticsearchField(name = "maidenName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
-    /*
-    @ElasticsearchFields(fields = {@ElasticsearchField(name = "maidenName", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
-                                   @ElasticsearchField(name = "maidenNameTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
-	*/
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
     private String maidenName;
 
     @Column(name = "PASSWORD_THEME", length = 20)

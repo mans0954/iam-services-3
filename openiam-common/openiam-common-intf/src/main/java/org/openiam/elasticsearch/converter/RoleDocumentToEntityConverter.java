@@ -1,6 +1,6 @@
 package org.openiam.elasticsearch.converter;
 
-import org.elasticsearch.common.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.elasticsearch.model.RoleDoc;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;

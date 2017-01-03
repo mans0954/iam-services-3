@@ -2,16 +2,18 @@ package org.openiam.elasticsearch.dao;
 
 import java.util.List;
 
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.elasticsearch.model.LoginDoc;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface LoginElasticSearchRepository extends OpeniamElasticSearchRepository<LoginEntity, String>, LoginElasticSearchRepositoryCustom {
+public interface LoginElasticSearchRepository extends OpeniamElasticSearchRepository<LoginDoc, String>, LoginElasticSearchRepositoryCustom {
 
 	@Override
-	public default Class<LoginEntity> getDocumentClass() {
-		return LoginEntity.class;
+	public default Class<LoginDoc> getDocumentClass() {
+		return LoginDoc.class;
 	}
 	
-	public List<LoginEntity> findByUserId(String userId);
+	public List<LoginDoc> findByUserId(String userId);
+	
+	public LoginDoc findFirstByUserIdAndManagedSysId(String userId, String managedSysId);
 }

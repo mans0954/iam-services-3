@@ -41,12 +41,7 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
     @Type(type = "yes_no")
     private boolean isActive = true;
 
-//    @Fields ({
-//        @Field(analyze = Analyze.NO),
-//        @Field(name = "areaCd", analyze = Analyze.NO, store = Store.YES)
-//    })
-    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
-    //@ElasticsearchField(name = "areaCd", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)
     @Column(name="AREA_CD", length=10)
     @Size(max = 10, message = "validator.phone.area.code.toolong")
     private String areaCd;
@@ -77,22 +72,14 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
     @JoinColumn(name="PARENT_ID")
     @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     @ElasticsearchFieldBridge(impl = UserBrigde.class)
-    //@ElasticsearchField(name = "userId", bridge=@ElasticsearchFieldBridge(impl = UserBrigde.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
-//    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
     @Column(name="PHONE_EXT", length=20)
     @Size(max = 20, message = "validator.phone.extension.toolong")
-    //@ElasticsearchField(name = "phoneExt", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
     private String phoneExt;
 
-//    @Fields ({
-//        @Field(analyze = Analyze.NO),
-//        @Field(name = "phoneNbr", analyze = Analyze.NO, store = Store.YES)
-//    })
-    //@ElasticsearchField(name = "phoneNbr", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
-    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= false)
     @Column(name="PHONE_NBR", length=50)
     @Size(max = 50, message = "validator.phone.number.toolong")
     private String phoneNbr;
