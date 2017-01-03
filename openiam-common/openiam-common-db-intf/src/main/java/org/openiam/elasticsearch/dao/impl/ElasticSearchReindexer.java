@@ -10,9 +10,12 @@ import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dozer.Mapper;
+import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
+import org.elasticsearch.common.collect.MapBuilder;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.concurrent.AuditLogHolder;
@@ -33,6 +36,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.mapping.ElasticsearchPersistentEntity;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Component;
@@ -184,8 +188,13 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 		}
 		final OpeniamElasticSearchRepository repo = documentRepositoryMap.get(documentClazz);
 		if(repo != null) {
+			final ElasticsearchPersistentEntity persistentEntity = elasticSearchTemplate.getPersistentEntityFor(documentClazz);
+			final Map settings = getDefaultSettings(persistentEntity);
+			settings.put("index.max_result_window", Integer.MAX_VALUE);
+			
 			elasticSearchTemplate.deleteIndex(documentClazz);
-			elasticSearchTemplate.createIndex(documentClazz);
+			elasticSearchTemplate.createIndex(documentClazz, settings);
+			
 			//curl -XPUT "http://localhost:9200/my_index/_settings" -d '{ "index" : { "max_result_window" : 500000 } }'
 			elasticSearchTemplate.putMapping(documentClazz);
 			elasticSearchTemplate.refresh(documentClazz);
@@ -199,6 +208,17 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 		} else {
 			throw new RuntimeException(String.format("No elastic search repo found for %s", documentClazz));
 		}
+	}
+	
+	private <T> Map getDefaultSettings(ElasticsearchPersistentEntity<T> persistentEntity) {
+
+		if (persistentEntity.isUseServerConfiguration())
+			return new HashMap();
+
+		return new MapBuilder<String, String>().put("index.number_of_shards", String.valueOf(persistentEntity.getShards()))
+				.put("index.number_of_replicas", String.valueOf(persistentEntity.getReplicas()))
+				.put("index.refresh_interval", persistentEntity.getRefreshInterval())
+				.put("index.store.type", persistentEntity.getIndexStoreType()).map();
 	}
 	
 	private Class<?> getDocumentClass(final Class<?> entityClass) {
