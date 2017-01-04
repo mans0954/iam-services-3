@@ -64,7 +64,7 @@ public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, M
 	@Test
 	public void testSearchWithElasticSearch() {
 		final MetadataType type = createAndSave();
-		sleep(3); /* ES thread */
+		sleep(6); /* ES thread */
 		
 		final MetadataTypeSearchBean sb = newSearchBean();
 		sb.setNameToken(new SearchParam(type.getName(), MatchType.CONTAINS));
