@@ -3,7 +3,6 @@ machine:
     version: oraclejdk8
   services:
     - rabbitmq-server
-    - elasticsearch
 dependencies:
   pre:
     - sudo apt-get install dos2unix
