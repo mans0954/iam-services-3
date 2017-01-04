@@ -20,8 +20,15 @@ sudo chef-client -o openiam-devops-properties::service-urls -j /etc/chef/attribu
 sudo chef-client -o openiam-devops-properties::rabbitmq -j /etc/chef/attributes.json
 sudo chef-client -o openiam-devops-conf -j /etc/chef/attributes.json
 sudo chef-client -o openiam-devops-hazelcast -j /etc/chef/attributes.json
-sudo chef-client -o openiam-devops-elasticsearch -j /etc/chef/attributes.json
-sudo /etc/init.d/elasticsearch start set -x
+#sudo chef-client -o openiam-devops-elasticsearch -j /etc/chef/attributes.json
+#sudo /etc/init.d/elasticsearch start set -x
+#sleep 10 && wget --waitretry=5 --retry-connrefused -v http://127.0.0.1:9200/
+
+wget https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.4.3/elasticsearch-2.4.3.tar.gz
+tar -xvf elasticsearch-2.4.3.tar.gz
+sudo cp elasticsearch.yml elasticsearch-2.4.3/config/elasticsearch.yml
+elasticsearch-2.4.3/bin/elasticsearch: {background: true}
 sleep 10 && wget --waitretry=5 --retry-connrefused -v http://127.0.0.1:9200/
+
 sudo chmod 777 /data/openiam/logs
 sudo chown ubuntu /data/openiam/logs
