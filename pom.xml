@@ -999,7 +999,7 @@
                             </artifactory>
                             -->
                             <publisher>
-                                <contextUrl>{{ARTIFACTORY_CONTEXT_URL|"https://openiam.artifactoryonline.com/openiam"}}</contextUrl>
+                                <contextUrl>{{ARTIFACTORY_CONTEXT_URL|"https://openiam.jfrog.io/openiam"}}</contextUrl>
                                 <username>sysadmin</username>
                                 <password>${env.OPENIAM_ARTIFACTORY_PASSWORD}</password>
                                 <repoKey>libs-releases-local</repoKey>
@@ -1131,7 +1131,7 @@
 		<repository>
 	        <id>openiamRepo</id>
 	        <name>openiam-releases</name>
-	        <url>https://openiam.artifactoryonline.com/openiam/repo/</url>
+	        <url>https://openiam.jfrog.io/openiam/repo/</url>
 	    </repository>
 	</repositories>
 </project>

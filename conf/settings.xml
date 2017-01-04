@@ -14,14 +14,14 @@
         <repository>
           <id>central</id>
           <name>repo</name>
-          <url>https://openiam.artifactoryonline.com/openiam/repo</url>
+          <url>https://openiam.jfrog.io/openiam/repo</url>
         </repository>
       </repositories>
       <pluginRepositories>
         <pluginRepository>
           <id>central</id>
           <name>repo</name>
-          <url>https://openiam.artifactoryonline.com/openiam/repo</url>
+          <url>https://openiam.jfrog.io/openiam/repo</url>
         </pluginRepository>
       </pluginRepositories>
       <id>artifactory</id>
