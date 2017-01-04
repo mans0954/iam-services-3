@@ -21,5 +21,7 @@ sudo chef-client -o openiam-devops-properties::rabbitmq -j /etc/chef/attributes.
 sudo chef-client -o openiam-devops-conf -j /etc/chef/attributes.json
 sudo chef-client -o openiam-devops-hazelcast -j /etc/chef/attributes.json
 sudo chef-client -o openiam-devops-elasticsearch -j /etc/chef/attributes.json
+sudo /etc/init.d/elasticsearch start set -x
+sleep 10 && wget --waitretry=5 --retry-connrefused -v http://127.0.0.1:9200/
 sudo chmod 777 /data/openiam/logs
 sudo chown ubuntu /data/openiam/logs
