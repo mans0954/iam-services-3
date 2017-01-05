@@ -272,6 +272,12 @@ public class Transformation {
                 classification = "RSC";
             }
         }
+        attr = this.getValue(lo.get("msExchRemoteRecipientType"));
+        if("3".equals(attr) || "6".equals(attr)){
+            addUserAttribute(user, new UserAttributeEntity("enableCloudArchive", "on"));
+        }else if("16".equals(attr) || "20".equals(attr)) {
+            addUserAttribute(user, new UserAttributeEntity("enableCloudArchive", "off"));
+        }
         attr = this.getValue(lo.get("otherName"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("otherName", attr));
