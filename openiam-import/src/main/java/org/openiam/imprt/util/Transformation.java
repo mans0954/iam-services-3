@@ -1109,7 +1109,7 @@ public class Transformation {
             attributeValue = adPath + ("," + baseDN.toLowerCase());
         }
 
-        this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM", String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", attributeValue, MatchType.END_WITH)));
+//        this.addUserAttribute(user, new UserAttributeEntity("DLG_FLT_PARAM", String.format("\"%s\";\"%s\";\"%s\"", "AD_PATH", attributeValue, MatchType.END_WITH)));
     }
 
     private void getLinkedOrganization(String distinguishedName, String site, String bu, String country, List<OrganizationEntity> orgs, List<LocationEntity> locations, UserEntity user) {
