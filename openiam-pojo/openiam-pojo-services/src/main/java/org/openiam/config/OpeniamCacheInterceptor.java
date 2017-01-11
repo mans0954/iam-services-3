@@ -1,4 +1,4 @@
-package org.openiam.cache;
+package org.openiam.config;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -12,24 +12,36 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.srvc.dto.jdbc.AbstractAuthorizationRight;
+import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.BaseIdentity;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
+import org.openiam.cache.CacheKeyEvictions;
+import org.openiam.cache.LanguageCacheKey;
+import org.openiam.cache.OpeniamCacheEviction;
+import org.openiam.elasticsearch.annotation.EntitlementAware;
 import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.util.AuditLogHelper;
 import org.openiam.util.SpringSecurityHelper;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.interceptor.CacheEvictOperation;
@@ -39,6 +51,7 @@ import org.springframework.cache.interceptor.CacheOperationInvoker;
 import org.springframework.cache.interceptor.CachePutOperation;
 import org.springframework.cache.interceptor.CacheableOperation;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
 
 /**
  * @author Lev Bornovalov
@@ -55,6 +68,9 @@ import org.springframework.context.ApplicationContext;
  */
 public class OpeniamCacheInterceptor extends CacheInterceptor {
 	
+	@Value("${org.openiam.ui.super.admin.resource}")
+	private String superAdminResourceId;
+	
 	private static final Log LOG = LogFactory.getLog(OpeniamCacheInterceptor.class);
 
 	private AuditLogHelper auditLogHelper;
@@ -66,6 +82,9 @@ public class OpeniamCacheInterceptor extends CacheInterceptor {
 	
 	private ApplicationContext applicationContext;
 	private CacheManager cacheManager;
+	
+	@Autowired
+	private AuthorizationManagerService authManager;
 
 	public void setHazelcastConfiguration(
 			HazelcastConfiguration hazelcastConfiguration) {

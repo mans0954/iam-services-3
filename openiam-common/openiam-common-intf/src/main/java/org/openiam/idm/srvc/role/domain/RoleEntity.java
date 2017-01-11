@@ -28,6 +28,7 @@ import org.hibernate.annotations.Where;
 import org.openiam.base.domain.AbstractEntitlementPolicyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.elasticsearch.annotation.DocumentRepresentation;
+import org.openiam.elasticsearch.annotation.EntitlementAware;
 import org.openiam.elasticsearch.converter.OrganizationDocumentToEntityConverter;
 import org.openiam.elasticsearch.converter.RoleDocumentToEntityConverter;
 import org.openiam.elasticsearch.model.OrganizationDoc;
@@ -53,6 +54,7 @@ import org.openiam.internationalization.Internationalized;
 	@AttributeOverride(name = "id", column = @Column(name = "ROLE_ID")),
     @AttributeOverride(name = "name", column = @Column(name="ROLE_NAME",length=80))
 })
+@EntitlementAware
 public class RoleEntity extends AbstractEntitlementPolicyEntity {
     
     @Column(name="DESCRIPTION")

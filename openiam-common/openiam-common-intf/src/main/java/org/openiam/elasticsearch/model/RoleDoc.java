@@ -1,5 +1,6 @@
 package org.openiam.elasticsearch.model;
 
+import org.openiam.elasticsearch.annotation.EntitlementAware;
 import org.openiam.elasticsearch.annotation.EntityRepresentation;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
@@ -12,6 +13,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @EntityRepresentation(value=RoleEntity.class, converter=RoleDocumentToEntityConverter.class)
 @Document(indexName = ESIndexName.ROLE, type= ESIndexType.ROLE)
+@EntitlementAware
 public class RoleDoc extends AbstractMetadataTypeDoc {
 
 	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= false)

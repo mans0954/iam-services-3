@@ -31,6 +31,7 @@ import org.openiam.base.domain.AbstractEntitlementPolicyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.elasticsearch.annotation.DocumentRepresentation;
 import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
+import org.openiam.elasticsearch.annotation.EntitlementAware;
 import org.openiam.elasticsearch.bridge.ManagedSysBridge;
 import org.openiam.elasticsearch.converter.GroupDocumentToEntityConverter;
 import org.openiam.elasticsearch.model.GroupDoc;
@@ -60,6 +61,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 	@AttributeOverride(name = "id", column = @Column(name = "GRP_ID")),
     @AttributeOverride(name = "name", column = @Column(name = "GRP_NAME", length = 255))
 })
+@EntitlementAware
 public class GroupEntity extends AbstractEntitlementPolicyEntity {
 
     @Column(name = "CREATE_DATE", length = 19)

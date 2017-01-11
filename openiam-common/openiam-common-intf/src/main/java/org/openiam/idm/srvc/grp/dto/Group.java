@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.EntitlementAware;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.openiam.idm.srvc.entitlements.AbstractPolicyEntitlementsDTO;
@@ -64,6 +65,7 @@ import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
         Resource.class,
         User.class
 })
+@EntitlementAware
 @DozerDTOCorrespondence(GroupEntity.class)
 public class Group extends AbstractPolicyEntitlementsDTO {
 
