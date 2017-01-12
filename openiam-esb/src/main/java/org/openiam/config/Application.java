@@ -2,7 +2,7 @@ package org.openiam.config;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import org.apache.catalina.authenticator.jaspic.AuthConfigFactoryImpl;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.openiam.authmanager.config.BaseAuthManagerConfiguration;
 import org.openiam.authmanager.web.AuthorizationManagerHessianServlet;
@@ -20,6 +20,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.orm.hibernate5.support.OpenSessionInViewFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import javax.security.auth.message.config.AuthConfigFactory;
+
 @ComponentScan(basePackages={"org.openiam"},excludeFilters={})
 @Configuration
 @SpringBootApplication
@@ -35,6 +37,9 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 public class Application {
 
 	public static void main(final String[] args) {
+		if (AuthConfigFactory.getFactory() == null) {
+			AuthConfigFactory.setFactory(new AuthConfigFactoryImpl());
+		}
     	SpringApplication.run(Application.class, args);
 	}
 	
