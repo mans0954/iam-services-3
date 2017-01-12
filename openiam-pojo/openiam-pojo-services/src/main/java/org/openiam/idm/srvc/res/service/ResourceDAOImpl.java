@@ -282,15 +282,6 @@ public class ResourceDAOImpl extends OrderDaoImpl<ResourceEntity, String>
     }
 
     @Override
-    @LocalizedDatabaseGet
-    public List<ResourceEntity> getResourcesForUserByType(final String userId, String resourceTypeId, final ResourceSearchBean searchBean) {
-        final Criteria criteria = getResourceForUserCriteria(userId);
-        addSearchBeanCriteria(criteria, searchBean);
-        criteria.createAlias("resourceType", "rt").add(Restrictions.eq("rt.id", resourceTypeId));
-        return criteria.list();
-    }
-
-    @Override
     public List<ResourceEntity> getResourcesForRoleNoLocalized(String roleId, int from, int size, ResourceSearchBean searchBean) {
         return getResourcesForRole(roleId, from, size, searchBean);
     }

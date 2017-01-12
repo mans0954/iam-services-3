@@ -195,26 +195,6 @@ implements BaseDao<T, PrimaryKey> {
     	return getByExample(searchBean, -1, -1);
     }
 
-    @Override
-    @LocalizedDatabaseGet
-    @Deprecated
-    public List<T> getByExample(T t, int startAt, int size) {
-        final Criteria criteria = getExampleCriteria(t);
-        if (startAt > -1) {
-            criteria.setFirstResult(startAt);
-        }
-
-        if (size > -1) {
-            criteria.setMaxResults(size);
-        }
-        criteria.setCacheable(this.cachable());
-        return (List<T>) criteria.list();
-    }
-
-    @Deprecated
-    public List<T> getByExampleNoLocalize(T t) {
-        return getByExample(t, -1, -1);
-    }
 
     public List<T> getByExampleNoLocalize(SearchBean searchBean, int from, int size) {
         return this.getByExample(searchBean, from, size);

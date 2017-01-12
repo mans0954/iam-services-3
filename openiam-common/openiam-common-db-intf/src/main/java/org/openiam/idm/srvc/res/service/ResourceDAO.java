@@ -14,7 +14,6 @@ public interface ResourceDAO extends BaseDao<ResourceEntity, String> {
     public List<ResourceEntity> getResourcesForRole(final String roleId,
                                                     final int from, final int size, final ResourceSearchBean searchBean);
     public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean);
-    public List<ResourceEntity> getResourcesForUserByType(final String userId, String resourceTypeId, final ResourceSearchBean searchBean);
     public List<ResourceEntity> getResourcesForRoleNoLocalized(String roleId, int from, int size, ResourceSearchBean searchBean);
     public List<ResourceEntity> getResourcesForGroupNoLocalized(String groupId, int from, int size, ResourceSearchBean searchBean);
     }
