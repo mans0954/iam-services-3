@@ -46,8 +46,8 @@ public class ProvisionConnectorDaoImpl extends BaseDaoImpl<ProvisionConnectorEnt
                 if(nameCriterion != null) {
                 	criteria.add(nameCriterion);
                 }
-				if(StringUtils.isNotBlank(sb.getTypeId())) {
-					criteria.add(Restrictions.eq("metadataTypeId", sb.getTypeId()));
+				if(sb.getMetadataType() != null && sb.getMetadataType().getId() != null && !sb.getMetadataType().getId().isEmpty()) {
+					criteria.add(Restrictions.eq("metadataType.id", sb.getMetadataType().getId()));
 				}
 			}
 		}
