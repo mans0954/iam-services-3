@@ -60,7 +60,10 @@ public enum MetadataTypeGrouping {
 	@XmlEnumValue("OAUTH_CLIENT_AUTH_TYPE")
 	OAUTH_CLIENT_AUTH_TYPE(false),
 	@XmlEnumValue("OAUTH_AUTH_GRANT")
-	OAUTH_AUTH_GRANT(false);
+	OAUTH_AUTH_GRANT(false),
+	@XmlEnumValue("CONNECTOR_TYPE")
+	CONNECTOR_TYPE(true);
+
 
 	private boolean creatable;
 	
