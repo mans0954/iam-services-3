@@ -405,22 +405,6 @@ public interface ResourceDataService {
     		final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
     /**
-     * Gets Resources that a User is entitled to by Resource type
-     * 
-     * @param userId
-     *            - the User ID
-     * @param resourceTypeId
-     *            - resource type ID
-     * @return
-     */
-    @WebMethod
-    @Deprecated
-    List<Resource> getResourcesForUserByType(
-            final @WebParam(name = "userId", targetNamespace = "") String userId,
-            final @WebParam(name = "resourceTypeId", targetNamespace = "") String resourceTypeId,
-            final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
-
-    /**
      * Tells the caller if the user can be entitled to this resource
      * 
      * @param userId

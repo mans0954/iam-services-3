@@ -19,9 +19,11 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.cache.CacheKeyEvict;
 import org.openiam.cache.CacheKeyEviction;
 import org.openiam.cache.CacheKeyEvictions;
@@ -409,12 +411,6 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     public ResourcePropEntity findResourcePropById(String id) {
         return resourcePropDao.findById(id);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ResourceEntity findResourceByName(String name) {
-        return resourceDao.findByName(name);
     }
 
     @Override
@@ -819,8 +815,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             throw new BasicDataServiceException(ResponseCode.NO_NAME, "Resource Name is null or empty");
         }
 
-	/* duplicate name check */
-        final ResourceEntity nameCheck = this.findResourceByName(entity.getName());
+        /* duplicate name check */
+        final ResourceSearchBean sb = new ResourceSearchBean();
+		sb.setFindInCache(false);
+		sb.setNameToken(new SearchParam(entity.getName(), MatchType.EXACT));
+		final List<ResourceEntity> found = findBeans(sb, 0, 1);
+		final ResourceEntity nameCheck = (CollectionUtils.isNotEmpty(found)) ? found.get(0) : null;
+        
         if (nameCheck != null) {
             if (StringUtils.isBlank(entity.getId())) {
                 throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
@@ -943,14 +944,6 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     	return resourceConverter.convertToDTOList(entities, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    @LocalizedServiceGet
-    public List<Resource> getResourcesDtoForUserByType(String userId, String resourceTypeId,
-                                                       final ResourceSearchBean searchBean) {
-        List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForUserByType(userId, resourceTypeId, searchBean);
-        return resourceConverter.convertToDTOList(resourceEntityList, true);
-    }
     @Override
     @Transactional
     public void saveAttribute(final ResourcePropEntity attribute) {

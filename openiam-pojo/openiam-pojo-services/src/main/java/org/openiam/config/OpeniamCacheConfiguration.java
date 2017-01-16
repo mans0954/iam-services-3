@@ -4,7 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.cache.CacheBeanPostProcessor;
 import org.openiam.cache.OpeniamAnnotationCacheOperationSource;
-import org.openiam.cache.OpeniamCacheInterceptor;
 import org.openiam.hazelcast.HazelcastConfiguration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;

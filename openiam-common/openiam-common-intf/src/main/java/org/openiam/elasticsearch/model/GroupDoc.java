@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.elasticsearch.annotation.EntitlementAware;
 import org.openiam.elasticsearch.annotation.EntityRepresentation;
 import org.openiam.elasticsearch.annotation.NestedMapType;
 import org.openiam.elasticsearch.constants.ESIndexName;
@@ -21,6 +22,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @EntityRepresentation(value=GroupEntity.class, converter=GroupDocumentToEntityConverter.class)
 @Document(indexName = ESIndexName.GROUP, type= ESIndexType.GROUP)
+@EntitlementAware
 public class GroupDoc extends AbstractMetadataTypeDoc {
 	
 	public GroupDoc() {}

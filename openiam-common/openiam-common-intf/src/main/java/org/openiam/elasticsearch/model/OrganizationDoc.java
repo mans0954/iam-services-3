@@ -2,6 +2,7 @@ package org.openiam.elasticsearch.model;
 
 import java.util.List;
 
+import org.openiam.elasticsearch.annotation.EntitlementAware;
 import org.openiam.elasticsearch.annotation.EntityRepresentation;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
@@ -14,6 +15,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @EntityRepresentation(value=OrganizationEntity.class, converter=OrganizationDocumentToEntityConverter.class)
 @Document(indexName = ESIndexName.ORGANIZATION, type= ESIndexType.ORGANIZATION)
+@EntitlementAware
 public class OrganizationDoc extends AbstractMetadataTypeDoc {
 	
 	public OrganizationDoc() {

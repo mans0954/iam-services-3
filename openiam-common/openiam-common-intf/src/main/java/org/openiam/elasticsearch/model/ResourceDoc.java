@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.elasticsearch.annotation.EntitlementAware;
 import org.openiam.elasticsearch.annotation.EntityRepresentation;
 import org.openiam.elasticsearch.annotation.NestedMapType;
 import org.openiam.elasticsearch.constants.ESIndexName;
@@ -22,6 +23,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @EntityRepresentation(value=ResourceEntity.class, converter=ResourceDocumentToEntityConverter.class)
 @Document(indexName = ESIndexName.RESOURCE, type= ESIndexType.RESOURCE)
+@EntitlementAware
 public class ResourceDoc extends AbstractMetadataTypeDoc {
 	
 	public ResourceDoc() {}

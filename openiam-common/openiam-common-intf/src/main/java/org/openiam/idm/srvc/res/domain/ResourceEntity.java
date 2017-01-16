@@ -35,6 +35,7 @@ import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.elasticsearch.annotation.DocumentRepresentation;
+import org.openiam.elasticsearch.annotation.EntitlementAware;
 import org.openiam.elasticsearch.converter.ResourceDocumentToEntityConverter;
 import org.openiam.elasticsearch.model.ResourceDoc;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
@@ -65,6 +66,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 })
 @Internationalized
 @DocumentRepresentation(value=ResourceDoc.class, converter=ResourceDocumentToEntityConverter.class)
+@EntitlementAware
 public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)

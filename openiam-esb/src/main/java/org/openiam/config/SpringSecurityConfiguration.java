@@ -21,7 +21,7 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
 
 @Configurable
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled=true, prePostEnabled=true)
+//@EnableGlobalMethodSecurity(securedEnabled=true, prePostEnabled=true)
 public class SpringSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Override

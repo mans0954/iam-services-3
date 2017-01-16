@@ -448,14 +448,6 @@ public class ResourceDataServiceImpl extends AbstractApiService implements Resou
     }
 
     @Override
-    //@LocalizedServiceGet
-    //@Transactional(readOnly=true)
-    @Deprecated
-    public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId, final ResourceSearchBean searchBean) {
-      return resourceService.getResourcesDtoForUserByType(userId, resourceTypeId, searchBean);
-    }
-
-    @Override
     public Response canAddUserToResource(String userId, String resourceId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
          try {

@@ -14,6 +14,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.EntitlementAware;
 import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
@@ -53,6 +54,7 @@ import org.openiam.internationalization.InternationalizedCollection;
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
 @Internationalized
+@EntitlementAware
 public class Resource extends AbstractEntitlementsDTO {
 
 	@Internationalized

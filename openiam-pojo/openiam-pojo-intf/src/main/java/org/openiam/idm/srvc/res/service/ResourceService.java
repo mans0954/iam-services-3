@@ -23,6 +23,8 @@ public interface ResourceService {
 
 	public void deleteResource(final String resourceId);
 	
+    public Resource getResourceDTO(final String resourceId);
+	public Resource getResourceDTO(String resourceId, boolean isDeepCopy);
 	
 	public void save(final ResourceEntity resource);
     public void addRequiredAttributes(ResourceEntity resource);
@@ -33,7 +35,6 @@ public interface ResourceService {
 	public Resource findResourceDtoById(String resourceId);
 	public List<ResourceEntity> findResourcesByIds(final Collection<String> resourceIdCollection);
 	public List<Resource> findResourcesDtoByIds(Collection<String> resourceIdCollection);
-	public ResourceEntity findResourceByName(final String name);
 	public int count(final ResourceSearchBean searchBean);
 	public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size);
 	public List<Resource> findBeansDTO(final ResourceSearchBean searchBean, final int from, final int size);
@@ -48,7 +49,6 @@ public interface ResourceService {
 	//public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean);
 	public List<Resource> getResourcesDtoForUser(String userId, int from, int size, final ResourceSearchBean searchBean);
     //public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId, final ResourceSearchBean searchBean);
-	public List<Resource> getResourcesDtoForUserByType(String userId, String resourceTypeId, final ResourceSearchBean searchBean);
 
 	public void save(final ResourceTypeEntity entity);
 	public ResourceTypeEntity findResourceTypeById(final String id);
@@ -71,10 +71,7 @@ public interface ResourceService {
     public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException;
     
     public boolean isMemberOfAnyEntity(final String resourceId);
-        public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException;
-    public Resource getResourceDTO(final String resourceId);
-
-	public Resource getResourceDTO(String resourceId, boolean isDeepCopy);
+    public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException;
     
     public void validateResourceDeletion(final String resourceId) throws BasicDataServiceException;
     

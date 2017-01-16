@@ -175,6 +175,12 @@
         </dependency>
         
         <dependency>
+        	<groupId>org.openiam</groupId>
+            <artifactId>openiam-auth-manager-intf</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        
+        <dependency>
 		    <groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<scope>test</scope>

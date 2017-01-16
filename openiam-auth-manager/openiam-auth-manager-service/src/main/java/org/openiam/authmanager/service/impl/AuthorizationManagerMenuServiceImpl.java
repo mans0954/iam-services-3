@@ -26,9 +26,12 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.request.MenuEntitlementsRequest;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.exception.AuthorizationMenuException;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -813,7 +816,11 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 				for(final ResourceEntity resource : resourceList) {
 					final AuthorizationMenu menu = changedMenuMap.get(resource.getId());
 
-					final ResourceEntity existingResource = resourceService.findResourceByName(menu.getName());
+					final ResourceSearchBean sb = new ResourceSearchBean();
+					sb.setFindInCache(false);
+					sb.setNameToken(new SearchParam(menu.getName(), MatchType.EXACT));
+					final List<ResourceEntity> found = resourceService.findBeans(sb, 0, 1);
+					final ResourceEntity existingResource = (CollectionUtils.isNotEmpty(found)) ? found.get(0) : null;
 					/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 					if(existingResource != null && !existingResource.getId().equals(resource.getId())) {
 						throw new AuthorizationMenuException(ResponseCode.NAME_TAKEN, resource.getName());
@@ -831,7 +838,11 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 					final ResourceEntity resource = createResource(menu);
 					newResourceList.add(resource);
 
-					final ResourceEntity existingResource = resourceService.findResourceByName(resource.getName());
+					final ResourceSearchBean sb = new ResourceSearchBean();
+					sb.setFindInCache(false);
+					sb.setNameToken(new SearchParam(menu.getName(), MatchType.EXACT));
+					final List<ResourceEntity> found = resourceService.findBeans(sb, 0, 1);
+					final ResourceEntity existingResource = (CollectionUtils.isNotEmpty(found)) ? found.get(0) : null;
 					/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 					if(existingResource != null) {
 						throw new AuthorizationMenuException(ResponseCode.NAME_TAKEN, resource.getName());
