@@ -1,34 +1,34 @@
 package org.openiam.idm.srvc.mngsys.dto;
 
+import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
+import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
-
 @XmlAccessorType(XmlAccessType.FIELD)
 
 @XmlType(name = "ProvisionConnectorSearchBean", propOrder = {
-        "metadataType"
+        "typeId"
 })
 public class ProvisionConnectorSearchBean extends AbstractKeyNameSearchBean<ProvisionConnectorDto, String> {
-	private static final long serialVersionUID = 2815129890631165531L;
-	private MetadataType metadataType;
+	private String typeId;
 
-	public MetadataType getMetadataType() {
-		return metadataType;
+	public String getTypeId() {
+		return typeId;
 	}
 
-	public void setMetadataType(MetadataType metadataType) {
-		this.metadataType = metadataType;
+	public void setTypeId(String typeId) {
+		this.typeId = typeId;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
+		result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
 		return result;
 	}
 
@@ -41,11 +41,13 @@ public class ProvisionConnectorSearchBean extends AbstractKeyNameSearchBean<Prov
 		if (getClass() != obj.getClass())
 			return false;
 		ProvisionConnectorSearchBean other = (ProvisionConnectorSearchBean) obj;
-		if (metadataType == null) {
-			if (other.metadataType != null)
+		if (typeId == null) {
+			if (other.typeId != null)
 				return false;
-		} else if (!metadataType.equals(other.metadataType))
+		} else if (!typeId.equals(other.typeId))
 			return false;
 		return true;
 	}
+
+	
 }
