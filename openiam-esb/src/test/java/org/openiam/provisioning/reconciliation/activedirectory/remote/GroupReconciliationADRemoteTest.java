@@ -89,7 +89,7 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
 
         try {
             connectorDto.setName("TEST-GROUP-POWERSHELL-AD-CONNECTOR");
-            connectorDto.setMetadataTypeId("RemoteConnector");
+            //connectorDto.setMetadataTypeId("RemoteConnector");
             connectorDto.setClientCommProtocol("CLEAR");
             connectorDto.setServiceUrl("win02.openiamdemo.com/PowershellConnectorAD/PowershellConnector.svc");
             connectorDto.setServiceNameSpace("urn:idm.openiam.org/spml2/service");

@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.mngsys.dto;
 
 import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -14,7 +15,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ProvisionConnectorDto", propOrder = {
-    "metadataTypeId",
+    "metadataType",
     "stdComplianceLevel",
     "clientCommProtocol",
     "serviceUrl",
@@ -29,7 +30,7 @@ public class ProvisionConnectorDto extends KeyNameDTO {
 
 
 	private static final long serialVersionUID = -6981651498633257018L;
-	protected String metadataTypeId;
+	protected MetadataType metadataType;
 	protected String stdComplianceLevel;
 	protected String clientCommProtocol;
 	protected String serviceUrl;
@@ -48,23 +49,23 @@ public class ProvisionConnectorDto extends KeyNameDTO {
 	}
 
 	public ProvisionConnectorDto(String id, String name,
-                                 String metdataTypeId, String stdComplianceLevel,
+			MetadataType metdataType, String stdComplianceLevel,
                                  String clientCommProtocol, String serviceUrl, String className) {
 		this.id = id;
 		this.name_ = name;
-		this.metadataTypeId = metdataTypeId;
+		this.metadataType = metdataType;
 		this.stdComplianceLevel = stdComplianceLevel;
 		this.clientCommProtocol = clientCommProtocol;
 		this.serviceUrl = serviceUrl;
 		this.className = className;
 	}
 
-	public String getMetadataTypeId() {
-		return this.metadataTypeId;
+	public MetadataType getMetadataType() {
+		return this.metadataType;
 	}
 
-	public void setMetadataTypeId(String metdataTypeId) {
-		this.metadataTypeId = metdataTypeId;
+	public void setMetadataType(MetadataType metdataType) {
+		this.metadataType = metdataType;
 	}
 
 	public String getStdComplianceLevel() {
@@ -131,45 +132,76 @@ public class ProvisionConnectorDto extends KeyNameDTO {
 		this.connectorInterface = connectorInterface;
 	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ProvisionConnectorDto that = (ProvisionConnectorDto) o;
-
-        if (className != null ? !className.equals(that.className) : that.className != null) return false;
-        if (clientCommProtocol != null ? !clientCommProtocol.equals(that.clientCommProtocol) : that.clientCommProtocol != null)
-            return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (connectorInterface != null ? !connectorInterface.equals(that.connectorInterface) : that.connectorInterface != null)
-            return false;
-        if (metadataTypeId != null ? !metadataTypeId.equals(that.metadataTypeId) : that.metadataTypeId != null)
-            return false;
-        if (name_ != null ? !name_.equals(that.name_) : that.name_ != null) return false;
-        if (serviceNameSpace != null ? !serviceNameSpace.equals(that.serviceNameSpace) : that.serviceNameSpace != null)
-            return false;
-        if (servicePort != null ? !servicePort.equals(that.servicePort) : that.servicePort != null) return false;
-        if (serviceUrl != null ? !serviceUrl.equals(that.serviceUrl) : that.serviceUrl != null) return false;
-        if (stdComplianceLevel != null ? !stdComplianceLevel.equals(that.stdComplianceLevel) : that.stdComplianceLevel != null)
-            return false;
-		return !(wsdlUrl != null ? !wsdlUrl.equals(that.wsdlUrl) : that.wsdlUrl != null);
-
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((className == null) ? 0 : className.hashCode());
+		result = prime * result + ((clientCommProtocol == null) ? 0 : clientCommProtocol.hashCode());
+		result = prime * result + ((connectorInterface == null) ? 0 : connectorInterface.hashCode());
+		result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
+		result = prime * result + ((serviceNameSpace == null) ? 0 : serviceNameSpace.hashCode());
+		result = prime * result + ((servicePort == null) ? 0 : servicePort.hashCode());
+		result = prime * result + ((serviceUrl == null) ? 0 : serviceUrl.hashCode());
+		result = prime * result + ((stdComplianceLevel == null) ? 0 : stdComplianceLevel.hashCode());
+		result = prime * result + ((wsdlUrl == null) ? 0 : wsdlUrl.hashCode());
+		return result;
 	}
 
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name_ != null ? name_.hashCode() : 0);
-        result = 31 * result + (metadataTypeId != null ? metadataTypeId.hashCode() : 0);
-        result = 31 * result + (stdComplianceLevel != null ? stdComplianceLevel.hashCode() : 0);
-        result = 31 * result + (clientCommProtocol != null ? clientCommProtocol.hashCode() : 0);
-        result = 31 * result + (serviceUrl != null ? serviceUrl.hashCode() : 0);
-        result = 31 * result + (className != null ? className.hashCode() : 0);
-        result = 31 * result + (serviceNameSpace != null ? serviceNameSpace.hashCode() : 0);
-        result = 31 * result + (servicePort != null ? servicePort.hashCode() : 0);
-        result = 31 * result + (wsdlUrl != null ? wsdlUrl.hashCode() : 0);
-        result = 31 * result + (connectorInterface != null ? connectorInterface.hashCode() : 0);
-        return result;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ProvisionConnectorDto other = (ProvisionConnectorDto) obj;
+		if (className == null) {
+			if (other.className != null)
+				return false;
+		} else if (!className.equals(other.className))
+			return false;
+		if (clientCommProtocol == null) {
+			if (other.clientCommProtocol != null)
+				return false;
+		} else if (!clientCommProtocol.equals(other.clientCommProtocol))
+			return false;
+		if (connectorInterface == null) {
+			if (other.connectorInterface != null)
+				return false;
+		} else if (!connectorInterface.equals(other.connectorInterface))
+			return false;
+		if (metadataType == null) {
+			if (other.metadataType != null)
+				return false;
+		} else if (!metadataType.equals(other.metadataType))
+			return false;
+		if (serviceNameSpace == null) {
+			if (other.serviceNameSpace != null)
+				return false;
+		} else if (!serviceNameSpace.equals(other.serviceNameSpace))
+			return false;
+		if (servicePort == null) {
+			if (other.servicePort != null)
+				return false;
+		} else if (!servicePort.equals(other.servicePort))
+			return false;
+		if (serviceUrl == null) {
+			if (other.serviceUrl != null)
+				return false;
+		} else if (!serviceUrl.equals(other.serviceUrl))
+			return false;
+		if (stdComplianceLevel == null) {
+			if (other.stdComplianceLevel != null)
+				return false;
+		} else if (!stdComplianceLevel.equals(other.stdComplianceLevel))
+			return false;
+		if (wsdlUrl == null) {
+			if (other.wsdlUrl != null)
+				return false;
+		} else if (!wsdlUrl.equals(other.wsdlUrl))
+			return false;
+		return true;
+	}
 }
