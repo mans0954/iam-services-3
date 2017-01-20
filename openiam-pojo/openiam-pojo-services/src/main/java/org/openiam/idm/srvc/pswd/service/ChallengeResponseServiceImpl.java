@@ -145,13 +145,13 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
         final PolicyAttribute attrEnterprise = policy.getAttribute("QUEST_ANSWER_CORRECT");
         final PolicyAttribute attrUserSpecified = policy.getAttribute("CUSTOM_QUEST_ANSWER_COUNT");
         if (attrEnterprise != null) {
-            if (StringUtils.isNotBlank(attrEnterprise.getValue1())) {
+            if (StringUtils.isNotBlank(attrEnterprise.getValue1()) && attrEnterprise.isRequired()) {
                 requiredCorrectEnterprise = Integer.parseInt(attrEnterprise.getValue1());
             }
         }
 
         if (attrUserSpecified != null) {
-            if (StringUtils.isNotBlank(attrUserSpecified.getValue1())) {
+            if (StringUtils.isNotBlank(attrUserSpecified.getValue1()) && attrUserSpecified.isRequired()) {
                 requiredCorrectUserSpecified = Integer.parseInt(attrUserSpecified.getValue1());
             }
         }
