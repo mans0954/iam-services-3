@@ -136,7 +136,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                                     final ProvisionUser pUser,
                                                     final Map<String, Object> tmpMap,
                                                     final Login primaryIdentity,
-                                                    final String requestId) {
+                                                    final String requestId) throws Throwable {
 
         Map<String, Object> bindingMap = new HashMap<>(tmpMap); // prevent data rewriting
         if(log.isDebugEnabled()) {
@@ -206,43 +206,49 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
 
             if (!isMngSysIdentityExistsInOpeniam) {
                 try {
-                	if(log.isDebugEnabled()) {
-                		log.debug(" - Building principal Name for: " + managedSysId);
-                	}
+                    if(log.isDebugEnabled()) {
+                        log.debug(" - Building principal Name for: " + managedSysId);
+                    }
                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, new HashMap<>());
                     String newPrincipalName = ProvisionServiceUtil
                             .buildUserPrincipalName(attrMap, scriptRunner, bindingMap);
                     if (StringUtils.isBlank(newPrincipalName)) {
-                    	if(log.isDebugEnabled()) {
-                    		log.debug("Principal name for managed sys " + managedSysId + " is blank.");
-                    	}
+                        if(log.isDebugEnabled()) {
+                            log.debug("Principal name for managed sys " + managedSysId + " is blank.");
+                        }
                         return null;
                     }
                     if(log.isDebugEnabled()) {
-                    	log.debug(" - New principalName = " + newPrincipalName);
+                        log.debug(" - New principalName = " + newPrincipalName);
                     }
 
-                    mLg = new LoginEntity();
-                    if(log.isDebugEnabled()) {
-                    	log.debug(" - PrimaryIdentity for build new identity for target system");
+                    if (loginManager.loginExists(newPrincipalName, managedSysId)) {
+                        if(log.isDebugEnabled()) {
+                            log.error(" - ERROR : PrimaryIdentity : " + newPrincipalName + " EXISTS");
+                        }
+                        throw new Throwable("New principalName: " + newPrincipalName + " - EXISTS");
+                    } else {
+                        mLg = new LoginEntity();
+                        if (log.isDebugEnabled()) {
+                            log.debug(" - PrimaryIdentity for build new identity for target system");
+                        }
+
+                        mLg.setLogin(newPrincipalName);
+                        mLg.setManagedSysId(managedSysId);
+                        mLg.setPassword(primaryIdentity.getPassword());
+                        mLg.setUserId(primaryIdentity.getUserId());
+                        mLg.setAuthFailCount(0);
+                        mLg.setCreateDate(new Date(System.currentTimeMillis()));
+                        mLg.setCreatedBy(userEntity.getLastUpdatedBy());
+                        mLg.setIsLocked(0);
+                        mLg.setFirstTimeLogin(1);
+                        mLg.setStatus(LoginStatusEnum.ACTIVE);
+                        mLg.setProvStatus(ProvLoginStatusEnum.PENDING_CREATE);
+
+                        userEntity.getPrincipalList().add(mLg); // add new identity
+                        // to user
+                        // principals
                     }
-
-                    mLg.setLogin(newPrincipalName);
-                    mLg.setManagedSysId(managedSysId);
-                    mLg.setPassword(primaryIdentity.getPassword());
-                    mLg.setUserId(primaryIdentity.getUserId());
-                    mLg.setAuthFailCount(0);
-                    mLg.setCreateDate(new Date(System.currentTimeMillis()));
-                    mLg.setCreatedBy(userEntity.getLastUpdatedBy());
-                    mLg.setIsLocked(0);
-                    mLg.setFirstTimeLogin(1);
-                    mLg.setStatus(LoginStatusEnum.ACTIVE);
-                    mLg.setProvStatus(ProvLoginStatusEnum.PENDING_CREATE);
-
-                    userEntity.getPrincipalList().add(mLg); // add new identity
-                    // to user
-                    // principals
-
                 } catch (ScriptEngineException e) {
                     e.printStackTrace();
                 }
