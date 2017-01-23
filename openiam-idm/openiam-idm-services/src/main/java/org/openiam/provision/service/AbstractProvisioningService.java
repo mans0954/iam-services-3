@@ -1575,6 +1575,34 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
             //
         }
+        if (!StringUtils.equals(pUser.getSex(), userEntity.getSex())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(requestorId);
+            auditLog.setRequestorPrincipal(requestorPrincipal);
+            auditLog.setTargetUser(tgId, strLogin + " [Gender]");
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Gender ", "old=" + userEntity.getSex() + "; new=" + pUser.getSex());
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+            if (log.isDebugEnabled()) {
+                log.debug("Gender old=" + userEntity.getSex() + "; new=" + pUser.getSex());
+            }
+        }
+        if (!StringUtils.equals(pUser.getPrefix(), userEntity.getPrefix())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(requestorId);
+            auditLog.setRequestorPrincipal(requestorPrincipal);
+            auditLog.setTargetUser(tgId, strLogin + " [Prefix]");
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Prefix ", "old=" + userEntity.getPrefix() + "; new=" + pUser.getPrefix());
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+            if (log.isDebugEnabled()) {
+                log.debug("Prefix old=" + userEntity.getPrefix() + "; new=" + pUser.getPrefix());
+            }
+        }
         if (!StringUtils.equals(pUser.getPrefixLastName(), userEntity.getPrefixLastName())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
@@ -2962,8 +2990,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         }
         // SIA Added to complete user fields
-        if (StringUtils.isNotEmpty(pUser.getUserSubTypeId()) && (userEntity.getSubType() == null ||
-                !pUser.getUserSubTypeId().equals(userEntity.getSubType().getId()))) {
+        if (StringUtils.isNotEmpty(pUser.getUserSubTypeId())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
             auditLog.setRequestorUserId(requestorId);
@@ -2979,8 +3006,38 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             }
 
         }
+        if (StringUtils.isNotEmpty(pUser.getSex())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(requestorId);
+            auditLog.setRequestorPrincipal(requestorPrincipal);
+            auditLog.setTargetUser(tgId, strLogin + " [Gender]");
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Gender ", "New=" + pUser.getSex());
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+            if (log.isDebugEnabled()) {
+                log.debug("Gender New=" + pUser.getSex());
+            }
 
-        if (!StringUtils.equals(pUser.getPrefixLastName(), userEntity.getPrefixLastName())) {
+        }
+        if (StringUtils.isNotEmpty(pUser.getPrefix())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(requestorId);
+            auditLog.setRequestorPrincipal(requestorPrincipal);
+            auditLog.setTargetUser(tgId, strLogin + " [Prefix]");
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Prefix ", "New=" + pUser.getPrefix());
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+            if (log.isDebugEnabled()) {
+                log.debug("Prefix New=" + pUser.getPrefix());
+            }
+
+        }
+
+        if (StringUtils.isNotEmpty(pUser.getPrefixLastName())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
             auditLog.setRequestorUserId(requestorId);
@@ -2996,7 +3053,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         }
 
-        if (!StringUtils.equals(pUser.getPartnerName(), userEntity.getPartnerName())) {
+        if (StringUtils.isNotEmpty(pUser.getPartnerName())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
             auditLog.setRequestorUserId(requestorId);
@@ -3012,7 +3069,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         }
 
-        if (!StringUtils.equals(pUser.getPrefixPartnerName(), userEntity.getPrefixPartnerName())) {
+        if (StringUtils.isNotEmpty(pUser.getPrefixPartnerName())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
             auditLog.setRequestorUserId(requestorId);
