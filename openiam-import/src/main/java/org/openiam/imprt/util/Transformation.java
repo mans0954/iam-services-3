@@ -433,18 +433,21 @@ public class Transformation {
 
 
         //Drive & Directory
-        attr = this.getValue(lo.get("homeDirectory"));
-        if (StringUtils.isNotBlank(attr)) {
-            addUserAttribute(user, new UserAttributeEntity("homeDirectory", attr));
-        } else {
-            addUserAttribute(user, new UserAttributeEntity("homeDirectory", ""));
-        }
         attr = this.getValue(lo.get("homeDrive"));
         if (StringUtils.isNotBlank(attr)) {
             addUserAttribute(user, new UserAttributeEntity("homeDrive", attr));
         } else {
             addUserAttribute(user, new UserAttributeEntity("homeDrive", ""));
         }
+
+        attr = this.getValue(lo.get("homeDirectory"));
+        if (StringUtils.isNotBlank(attr)) {
+            addUserAttribute(user, new UserAttributeEntity("homeDirectory", attr));
+            addUserAttribute(user, new UserAttributeEntity("homeDrive", "U:"));
+        } else {
+            addUserAttribute(user, new UserAttributeEntity("homeDirectory", ""));
+        }
+
 
         attr = this.getValue(lo.get("extensionAttribute1"));
         addUserAttribute(user, new UserAttributeEntity("legalEntity", attr));
