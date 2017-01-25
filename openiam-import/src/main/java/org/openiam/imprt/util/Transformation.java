@@ -3,7 +3,6 @@ package org.openiam.imprt.util;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.base.ws.MatchType;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
@@ -490,6 +489,21 @@ public class Transformation {
                 System.out.println("I'm remote mailbox");
                 addUserAttribute(user, new UserAttributeEntity("mailbox", "O365"));
                 mdTypeId = "AKZONOBEL_USER_MBX";
+            } else if ("8589934592".equals(mbType)) {
+                System.out.println("I'm Remote Room Mailbox ");
+                addUserAttribute(user, new UserAttributeEntity("mailbox", "O365"));
+                addUserAttribute(user, new UserAttributeEntity("mailboxType", "Room"));
+                mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+            }else if ("17173869184".equals(mbType)) {
+                System.out.println("I'm Remote Equipment Mailbox ");
+                addUserAttribute(user, new UserAttributeEntity("mailbox", "O365"));
+                addUserAttribute(user, new UserAttributeEntity("mailboxType", "Equipment"));
+                mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
+            }else if ("34359738368".equals(mbType)) {
+                System.out.println("I'm Remote Shared Mailbox");
+                addUserAttribute(user, new UserAttributeEntity("mailbox", "O365"));
+                addUserAttribute(user, new UserAttributeEntity("mailboxType", "Shared \\ Departmental"));
+                mdTypeId = "AKZONOBEL_RSC_ACCOUNT";
             }
         } catch (Exception e) {
             System.out.println("Problem with mailbox Definitions");
