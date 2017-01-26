@@ -315,7 +315,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
             msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
-            Map<String, String> msgProp = new HashMap<String, String>();
+            Map<String, Object> msgProp = new HashMap<String, Object>();
             msgProp.put("SERVICE_HOST", serviceHost);
             msgProp.put("SERVICE_CONTEXT", serviceContext);
             NotificationRequest notificationRequest = new NotificationRequest();
@@ -353,7 +353,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 //                msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
 //                msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
-                Map<String, String> msgProp = new HashMap<String, String>();
+                Map<String, Object> msgProp = new HashMap<String, Object>();
                 msgProp.put("SERVICE_HOST", serviceHost);
                 msgProp.put("SERVICE_CONTEXT", serviceContext);
                 NotificationRequest notificationRequest = new NotificationRequest();
@@ -390,7 +390,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
             msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
-            Map<String, String> msgProp = new HashMap<String, String>();
+            Map<String, Object> msgProp = new HashMap<String, Object>();
             msgProp.put("SERVICE_HOST", serviceHost);
             msgProp.put("SERVICE_CONTEXT", serviceContext);
             NotificationRequest notificationRequest = new NotificationRequest();
@@ -421,7 +421,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
             msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
-            Map<String, String> msgProp = new HashMap<String, String>();
+            Map<String, Object> msgProp = new HashMap<String, Object>();
             msgProp.put("SERVICE_HOST", serviceHost);
             msgProp.put("SERVICE_CONTEXT", serviceContext);
             NotificationRequest notificationRequest = new NotificationRequest();

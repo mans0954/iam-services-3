@@ -66,7 +66,7 @@ public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionSer
     	}
 		try {
 
-			Map<String,String> msgPropMap =  new HashMap<String,String>();
+			Map<String,Object> msgPropMap =  new HashMap<String,Object>();
 			msgPropMap.put("SERVICE_HOST", serviceHost);
 			msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
@@ -99,7 +99,7 @@ public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionSer
 
             try {
 
-                Map<String,String> msgPropMap =  new HashMap<String,String>();
+                Map<String,Object> msgPropMap =  new HashMap<String,Object>();
                 msgPropMap.put("SERVICE_HOST", serviceHost);
                 msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
@@ -129,7 +129,7 @@ public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionSer
 
         try {
 
-            Map<String,String> msgPropMap =  new HashMap<String,String>();
+            Map<String,Object> msgPropMap =  new HashMap<String,Object>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 

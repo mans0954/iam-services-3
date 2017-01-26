@@ -68,7 +68,7 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
     	}
         try {
 
-            Map<String, String> msgPropMap = new HashMap<String, String>();
+            Map<String, Object> msgPropMap = new HashMap<String, Object>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
@@ -96,7 +96,7 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
     	}
         try {
 
-            Map<String, String> msgPropMap = new HashMap<String, String>();
+            Map<String, Object> msgPropMap = new HashMap<String, Object>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
@@ -121,7 +121,7 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
     public void bulkUserMigration(BulkMigrationConfig config) {
         try {
 
-            Map<String, String> msgPropMap = new HashMap<String, String>();
+            Map<String, Object> msgPropMap = new HashMap<String, Object>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
@@ -141,7 +141,7 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
     public void resynchRole(final String roleId) {
         try {
 
-            Map<String, String> msgPropMap = new HashMap<String, String>();
+            Map<String, Object> msgPropMap = new HashMap<String, Object>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 

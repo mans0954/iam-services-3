@@ -51,7 +51,7 @@ public abstract class AbstractProvisionPreProcessor<T> implements ProvisionServi
 
             MuleClient client = new MuleClient(muleContext);
 
-            Map<String, String> msgPropMap = new HashMap<String, String>();
+            Map<String, Object> msgPropMap = new HashMap<String, Object>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 

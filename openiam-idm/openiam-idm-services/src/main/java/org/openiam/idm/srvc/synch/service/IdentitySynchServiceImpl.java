@@ -465,7 +465,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     private void invokeOperation(ProvisionUser pUser) {
         try {
 
-            Map<String, String> msgPropMap = new HashMap<String, String>();
+            Map<String, Object> msgPropMap = new HashMap<String, Object>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 

@@ -135,7 +135,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     public void addUser(ProvisionUser pUser) {
         long startTime = System.currentTimeMillis();
 
-        Map<String, String> msgPropMap = new HashMap<String, String>();
+        Map<String, Object> msgPropMap = new HashMap<String, Object>();
         msgPropMap.put("SERVICE_HOST", serviceHost);
         msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
@@ -159,7 +159,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
         long startTime = System.currentTimeMillis();
 
-        Map<String, String> msgPropMap = new HashMap<String, String>();
+        Map<String, Object> msgPropMap = new HashMap<String, Object>();
         msgPropMap.put("SERVICE_HOST", serviceHost);
         msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
